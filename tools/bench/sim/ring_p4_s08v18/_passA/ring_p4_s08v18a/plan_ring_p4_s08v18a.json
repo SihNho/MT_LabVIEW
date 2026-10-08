@@ -1,0 +1,724 @@
+{
+ "schema": "stageplan/1",
+ "context": {
+  "s1_key": "D1_s1_copy"
+ },
+ "stage": "ring_p4_s08v18a",
+ "goal": "card 150-a3-6 PASS A: P4 v18 session 8 (ops 166..184), no open_rows",
+ "base": {
+  "path": "tools/bench/sim/ring_p4_s08v18/s07end/base_provisional.json",
+  "md5": "982b7244849495489125beef2ee479a6",
+  "provisional": true,
+  "sim_of": {
+   "plan": "tools/bench/plan_ring_p4_s07v18.json",
+   "md5": "08c2ad4d2e6dd4bddd4dd5b18326562c"
+  }
+ },
+ "actions": [
+  {
+   "op": "wire",
+   "id": "p4_rbE_t",
+   "src": {
+    "uid": 9227,
+    "term_uid": 9234
+   },
+   "dst": {
+    "uid": -29,
+    "term": "t"
+   },
+   "why": "ROUTE connect | PRECEDENT | PD293(b) SR E (#9603/#10544 on #10170, graph step_18) new = For LoopTunnel #9227: new -> Select t (array/cluster t,f with scalar s never run)"
+  },
+  {
+   "op": "wire",
+   "id": "p4_rbE_f",
+   "src": {
+    "uid": 10544,
+    "term_uid": 25587
+   },
+   "dst": {
+    "uid": -29,
+    "term": "f"
+   },
+   "why": "ROUTE wire_sr | PRECEDENT | PD293(b) SR E (#9603/#10544 on #10170, graph step_18) new = For LoopTunnel #9227: old (left SR inner, branch) -> Select f"
+  },
+  {
+   "op": "wire",
+   "id": "p4_rbE_s",
+   "src": {
+    "uid": 29724,
+    "term": "valid"
+   },
+   "dst": {
+    "uid": -29,
+    "term": "s"
+   },
+   "why": "c142-P2 re-pointed src new:AND1.x .and. y? -> new:SQ1.valid (PD330(a) subVI terminal by name) | ROUTE connect | PRECEDENT | PD293(b) SR E (#9603/#10544 on #10170, graph step_18) new = For LoopTunnel #9227: valid -> Select s (branch)"
+  },
+  {
+   "op": "wire",
+   "id": "p4_rbE_out",
+   "src": {
+    "uid": -29,
+    "term": "s? t:f"
+   },
+   "dst": {
+    "uid": 9603,
+    "term_uid": 22281
+   },
+   "why": "ROUTE wire_sr | MEASURED | PD293(b) SR E (#9603/#10544 on #10170, graph step_18) new = For LoopTunnel #9227: Select -> right SR inner (wire_sr RightIn, P3a p3a_w_bn_r)"
+  },
+  {
+   "op": "delete_wire",
+   "id": "p4_rbF_dw",
+   "wire_uid": 25645,
+   "why": "ROUTE delete_wire | MEASURED | PD293(b) SR F (#25545/#25582 on #10170, graph step_18) new = For LoopTunnel #29616: detach w25645 (no single-sink disconnect op exists); delete_wire route launched P2a"
+  },
+  {
+   "op": "create",
+   "id": "p4_rbF_sel",
+   "class": "Function",
+   "diagram": 23166,
+   "as": "RB6",
+   "prim": "Select",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorErrSel_MergeErrors.vi",
+    "uid": 529
+   },
+   "terminals": [
+    {
+     "name": "s? t:f",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "f",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "s",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "t",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    }
+   ],
+   "why": "ROUTE create primitive | MEASURED | PD293(b) SR F (#25545/#25582 on #10170, graph step_18) new = For LoopTunnel #29616: Select (vilib donor #529, scalar s; diag_c128_2_donors.log:61-63, P3b-1 p3b_sel launched)"
+  },
+  {
+   "op": "wire",
+   "id": "p4_rbF_t",
+   "src": {
+    "uid": 29616,
+    "term_uid": 29624
+   },
+   "dst": "new:RB6.t",
+   "why": "ROUTE connect | PRECEDENT | PD293(b) SR F (#25545/#25582 on #10170, graph step_18) new = For LoopTunnel #29616: new -> Select t (array/cluster t,f with scalar s never run)"
+  },
+  {
+   "op": "wire",
+   "id": "p4_rbF_f",
+   "src": {
+    "uid": 25582,
+    "term_uid": 25605
+   },
+   "dst": "new:RB6.f",
+   "why": "ROUTE wire_sr | PRECEDENT | PD293(b) SR F (#25545/#25582 on #10170, graph step_18) new = For LoopTunnel #29616: old (left SR inner, branch) -> Select f"
+  },
+  {
+   "op": "wire",
+   "id": "p4_rbF_s",
+   "src": {
+    "uid": 29724,
+    "term": "valid"
+   },
+   "dst": "new:RB6.s",
+   "why": "c142-P2 re-pointed src new:AND1.x .and. y? -> new:SQ1.valid (PD330(a) subVI terminal by name) | ROUTE connect | PRECEDENT | PD293(b) SR F (#25545/#25582 on #10170, graph step_18) new = For LoopTunnel #29616: valid -> Select s (branch)"
+  },
+  {
+   "op": "wire",
+   "id": "p4_rbF_out",
+   "src": "new:RB6.s? t:f",
+   "dst": {
+    "uid": 25545,
+    "term_uid": 25596
+   },
+   "why": "ROUTE wire_sr | MEASURED | PD293(b) SR F (#25545/#25582 on #10170, graph step_18) new = For LoopTunnel #29616: Select -> right SR inner (wire_sr RightIn, P3a p3a_w_bn_r)"
+  },
+  {
+   "op": "delete_wire",
+   "id": "p4_rbR_dw",
+   "wire_uid": 25415,
+   "why": "ROUTE delete_wire | MEASURED | PD300(b)/PD308(a) reseed flag t25557 (from #9647 'x .and. y?' t9668, w25415; not a register): detach w25415 (sinks t25557 + Tunnel #10465 t10469; no single-sink disconnect op exists); delete_wire route launched P2a (as v6 p4_rbA_dw)"
+  },
+  {
+   "op": "wire",
+   "id": "p4_rbR_re0",
+   "src": {
+    "uid": 9647,
+    "term_uid": 9668
+   },
+   "dst": {
+    "uid": 10465,
+    "term_uid": 10469
+   },
+   "why": "ROUTE connect | PRECEDENT | PD300(b)/PD308(a) reseed flag t25557 (from #9647 'x .and. y?' t9668, w25415; not a register): restore Tunnel #10465 t10469 RAW (PD308(a): computation unchanged; as v6 p4_rbA_re0)"
+  },
+  {
+   "op": "create",
+   "id": "p4_rbR_sel",
+   "class": "Function",
+   "diagram": 23166,
+   "as": "RB7",
+   "prim": "Select",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorErrSel_MergeErrors.vi",
+    "uid": 529
+   },
+   "terminals": [
+    {
+     "name": "s? t:f",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "f",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "s",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "t",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    }
+   ],
+   "why": "ROUTE create primitive | MEASURED | PD300(b)/PD308(a) reseed flag t25557 (from #9647 'x .and. y?' t9668, w25415; not a register): Select (vilib donor #529, scalar s; diag_c128_2_donors.log:61-63, P3b-1 p3b_sel launched)"
+  },
+  {
+   "op": "create",
+   "id": "p4_rbR_lr",
+   "class": "Local",
+   "diagram": 23166,
+   "as": "LRR1",
+   "label": "autofocus reseed flag (1.2 to 1.1)",
+   "mode": "read",
+   "terminals": [
+    {
+     "name": "autofocus reseed flag (1.2 to 1.1)",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "ROUTE local_read | PRECEDENT | PD300(b)/PD308(a) reseed flag t25557 (from #9647 'x .and. y?' t9668, w25415; not a register): f = Local read of the same indicator (keeps last); local_read on a base While body ran (plan_l2a3_in.json:16, as v6 p4_lr_stop12); 2nd Local of this indicator (#25576 on 639 exists, graph t25585)"
+  },
+  {
+   "op": "wire",
+   "id": "p4_rbR_t",
+   "src": {
+    "uid": 9647,
+    "term_uid": 9668
+   },
+   "dst": "new:RB7.t",
+   "why": "ROUTE connect | PRECEDENT | PD300(b)/PD308(a) reseed flag t25557 (from #9647 'x .and. y?' t9668, w25415; not a register): new (raw #9647) -> Select t (as v6 p4_rbA_t)"
+  },
+  {
+   "op": "wire",
+   "id": "p4_rbR_f",
+   "src": "new:LRR1.autofocus reseed flag (1.2 to 1.1)",
+   "dst": "new:RB7.f",
+   "why": "ROUTE connect | PRECEDENT | PD300(b)/PD308(a) reseed flag t25557 (from #9647 'x .and. y?' t9668, w25415; not a register): old (Local read) -> Select f (same-diagram connect)"
+  },
+  {
+   "op": "wire",
+   "id": "p4_rbR_s",
+   "src": {
+    "uid": 29724,
+    "term": "valid"
+   },
+   "dst": "new:RB7.s",
+   "why": "c142-P2 re-pointed src new:AND1.x .and. y? -> new:SQ1.valid (PD330(a) subVI terminal by name) | ROUTE connect | PRECEDENT | PD300(b)/PD308(a) reseed flag t25557 (from #9647 'x .and. y?' t9668, w25415; not a register): valid -> Select s (branch, as v6 p4_rbA_s)"
+  },
+  {
+   "op": "wire",
+   "id": "p4_rbR_out",
+   "src": "new:RB7.s? t:f",
+   "dst": {
+    "uid": 25557,
+    "term_uid": 25557
+   },
+   "why": "ROUTE connect | PRECEDENT | PD300(b)/PD308(a) reseed flag t25557 (from #9647 'x .and. y?' t9668, w25415; not a register): Select -> indicator terminal t25557 (as v6 p4_rbD_sel_t25573)"
+  },
+  {
+   "op": "wire",
+   "id": "p4_w_n2_arr",
+   "src": {
+    "uid": 30016,
+    "term": "value"
+   },
+   "dst": {
+    "uid": 29879,
+    "term": "array"
+   },
+   "why": "ROUTE connect | PRECEDENT | same-frame connect (P3b-2 p3b_w_r_arr pattern) [draft d9d66246]"
+  }
+ ],
+ "final": false,
+ "finalized": {
+  "base": {
+   "path": "tools/bench/sim/ring_p4_s08v18/s07end/base_provisional.json",
+   "md5": "982b7244849495489125beef2ee479a6"
+  },
+  "plan_in": {
+   "path": "tools/bench/sim/ring_p4_s08v18/_passA/ring_p4_s08v18a/plan_ring_p4_s08v18a_in.json",
+   "md5": "bb1ea20d5f68747ee083267e2e92755c"
+  },
+  "last_step": {
+   "path": "tools/bench/sim/ring_p4_s08v18/_passA/ring_p4_s08v18a/step_19_wire.json",
+   "md5": "9c28ba25063ee95911c541d3fe6bb8ee"
+  },
+  "summary": {
+   "path": "tools/bench/sim/ring_p4_s08v18/_passA/ring_p4_s08v18a/summary.json",
+   "md5": "37f5c8f4c3f591bd1b0cce5e0572eecf"
+  },
+  "end_cdiff_rows": [
+   "10068|ParameterTerminal|x|0",
+   "10150|ParameterTerminal|x|0",
+   "10382|ParameterTerminal|x|0",
+   "10757|Terminal|array|0",
+   "11261|Terminal|array|0",
+   "11261|Terminal|element|0",
+   "11529|ParameterTerminal|x|0",
+   "2626|Terminal|array|0",
+   "2626|Terminal|element|0",
+   "2626|Terminal|element|1",
+   "2626|Terminal|element|2",
+   "28083|Terminal|Magnet position|0",
+   "29240|ParameterTerminal|x|0",
+   "29625|Terminal|array|0",
+   "376|Terminal|current frame data array in|0",
+   "376|Terminal|frame index|0",
+   "5058|Terminal|Bead is good? array in|0",
+   "5058|Terminal|Image In|0",
+   "5058|Terminal|pos in cal image in|0",
+   "5058|Terminal|x,y,z array|0",
+   "8634|Terminal|array|0"
+  ],
+  "failed": null,
+  "first_divergent": {
+   "n": 0,
+   "op": "base",
+   "id": null,
+   "rows_from_here": 21
+  },
+  "open_rows": [],
+  "open_rows_match": false,
+  "open_rows_match_legacy": false,
+  "open_rows_classed": {
+   "ok": false,
+   "want": [],
+   "c4_n": 0,
+   "c4_keys": 0,
+   "c4_bad": [],
+   "unclassed": []
+  },
+  "cdiff_inputs": {
+   "labels": "node_labels_default",
+   "labels_n": 626,
+   "fs_pairs": "state",
+   "fs_pairs_n": 576
+  },
+  "step_files": [
+   {
+    "n": 0,
+    "op": "base",
+    "path": "tools/bench/sim/ring_p4_s08v18/_passA/ring_p4_s08v18a/step_00_base.json",
+    "md5": "8e7a8e6c18f3364f6da9030b3793938b"
+   },
+   {
+    "n": 1,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s08v18/_passA/ring_p4_s08v18a/step_01_wire.json",
+    "md5": "fba94dad94fcaf779c97ae881e846faf"
+   },
+   {
+    "n": 2,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s08v18/_passA/ring_p4_s08v18a/step_02_wire.json",
+    "md5": "654db1fe7145d634d645c13042008b47"
+   },
+   {
+    "n": 3,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s08v18/_passA/ring_p4_s08v18a/step_03_wire.json",
+    "md5": "4222165b9c00c7beacc5a9804252123e"
+   },
+   {
+    "n": 4,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s08v18/_passA/ring_p4_s08v18a/step_04_wire.json",
+    "md5": "a54a51da6b80c474aa74fa90b611c2ad"
+   },
+   {
+    "n": 5,
+    "op": "delete_wire",
+    "path": "tools/bench/sim/ring_p4_s08v18/_passA/ring_p4_s08v18a/step_05_delete_wire.json",
+    "md5": "80e16cb0df12ce5c5fd4486eb9647780"
+   },
+   {
+    "n": 6,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_s08v18/_passA/ring_p4_s08v18a/step_06_create.json",
+    "md5": "5fdff23d3087693d90399249dd33bc52"
+   },
+   {
+    "n": 7,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s08v18/_passA/ring_p4_s08v18a/step_07_wire.json",
+    "md5": "f5443e58719c2d969774168f5abf2eea"
+   },
+   {
+    "n": 8,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s08v18/_passA/ring_p4_s08v18a/step_08_wire.json",
+    "md5": "ddfd097eecc4ac66bb09903846aa9d41"
+   },
+   {
+    "n": 9,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s08v18/_passA/ring_p4_s08v18a/step_09_wire.json",
+    "md5": "c4472aa9de1a31805357caeda4a16d26"
+   },
+   {
+    "n": 10,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s08v18/_passA/ring_p4_s08v18a/step_10_wire.json",
+    "md5": "8098eebc65f6e0453030d11c82683879"
+   },
+   {
+    "n": 11,
+    "op": "delete_wire",
+    "path": "tools/bench/sim/ring_p4_s08v18/_passA/ring_p4_s08v18a/step_11_delete_wire.json",
+    "md5": "a9b135962de17f1670063dc70d3691e5"
+   },
+   {
+    "n": 12,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s08v18/_passA/ring_p4_s08v18a/step_12_wire.json",
+    "md5": "5320d2f63aa122852f9457a01890937f"
+   },
+   {
+    "n": 13,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_s08v18/_passA/ring_p4_s08v18a/step_13_create.json",
+    "md5": "4eb2166379896a9ec6831ae53443f0a5"
+   },
+   {
+    "n": 14,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p4_s08v18/_passA/ring_p4_s08v18a/step_14_create.json",
+    "md5": "a496fe0154804a99b23daefcd2ce2215"
+   },
+   {
+    "n": 15,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s08v18/_passA/ring_p4_s08v18a/step_15_wire.json",
+    "md5": "a1a33bb0a1be290823833611d6e6aae8"
+   },
+   {
+    "n": 16,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s08v18/_passA/ring_p4_s08v18a/step_16_wire.json",
+    "md5": "d5310424b98aefa2d045ba66396af0c8"
+   },
+   {
+    "n": 17,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s08v18/_passA/ring_p4_s08v18a/step_17_wire.json",
+    "md5": "c39d822e67faeb50164c69b3c1c243c9"
+   },
+   {
+    "n": 18,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s08v18/_passA/ring_p4_s08v18a/step_18_wire.json",
+    "md5": "92307b38d00ffa5bb561702232bb3c95"
+   },
+   {
+    "n": 19,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p4_s08v18/_passA/ring_p4_s08v18a/step_19_wire.json",
+    "md5": "9c28ba25063ee95911c541d3fe6bb8ee"
+   }
+  ],
+  "undecided": 0,
+  "at": "2026-10-08 23:40:14",
+  "fs_routes": {},
+  "addr_pos": [
+   {
+    "n": 1,
+    "addr": "{\"term_uid\":9234,\"uid\":9227}",
+    "source": true,
+    "owner": 9227,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 1,
+    "addr": "{\"term\":\"t\",\"uid\":-29}",
+    "source": false,
+    "owner": -29,
+    "index": 3,
+    "class": "ParameterTerminal",
+    "name": "t"
+   },
+   {
+    "n": 2,
+    "addr": "{\"term_uid\":25587,\"uid\":10544}",
+    "source": true,
+    "owner": 10544,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 2,
+    "addr": "{\"term\":\"f\",\"uid\":-29}",
+    "source": false,
+    "owner": -29,
+    "index": 1,
+    "class": "ParameterTerminal",
+    "name": "f"
+   },
+   {
+    "n": 3,
+    "addr": "{\"term\":\"valid\",\"uid\":29724}",
+    "source": true,
+    "owner": 29724,
+    "index": 1,
+    "class": "Terminal",
+    "name": "valid"
+   },
+   {
+    "n": 3,
+    "addr": "{\"term\":\"s\",\"uid\":-29}",
+    "source": false,
+    "owner": -29,
+    "index": 2,
+    "class": "ParameterTerminal",
+    "name": "s"
+   },
+   {
+    "n": 4,
+    "addr": "{\"term\":\"s? t:f\",\"uid\":-29}",
+    "source": true,
+    "owner": -29,
+    "index": 0,
+    "class": "ParameterTerminal",
+    "name": "s? t:f"
+   },
+   {
+    "n": 4,
+    "addr": "{\"term_uid\":22281,\"uid\":9603}",
+    "source": false,
+    "owner": 9603,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 7,
+    "addr": "{\"term_uid\":29624,\"uid\":29616}",
+    "source": true,
+    "owner": 29616,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 7,
+    "addr": "new:RB6.t",
+    "source": false,
+    "owner": -36,
+    "index": 3,
+    "class": "ParameterTerminal",
+    "name": "t"
+   },
+   {
+    "n": 8,
+    "addr": "{\"term_uid\":25605,\"uid\":25582}",
+    "source": true,
+    "owner": 25582,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 8,
+    "addr": "new:RB6.f",
+    "source": false,
+    "owner": -36,
+    "index": 1,
+    "class": "ParameterTerminal",
+    "name": "f"
+   },
+   {
+    "n": 9,
+    "addr": "{\"term\":\"valid\",\"uid\":29724}",
+    "source": true,
+    "owner": 29724,
+    "index": 1,
+    "class": "Terminal",
+    "name": "valid"
+   },
+   {
+    "n": 9,
+    "addr": "new:RB6.s",
+    "source": false,
+    "owner": -36,
+    "index": 2,
+    "class": "ParameterTerminal",
+    "name": "s"
+   },
+   {
+    "n": 10,
+    "addr": "new:RB6.s? t:f",
+    "source": true,
+    "owner": -36,
+    "index": 0,
+    "class": "ParameterTerminal",
+    "name": "s? t:f"
+   },
+   {
+    "n": 10,
+    "addr": "{\"term_uid\":25596,\"uid\":25545}",
+    "source": false,
+    "owner": 25545,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 12,
+    "addr": "{\"term_uid\":9668,\"uid\":9647}",
+    "source": true,
+    "owner": 9647,
+    "index": 0,
+    "class": "ParameterTerminal",
+    "name": "x .and. y?"
+   },
+   {
+    "n": 12,
+    "addr": "{\"term_uid\":10469,\"uid\":10465}",
+    "source": false,
+    "owner": 10465,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 15,
+    "addr": "{\"term_uid\":9668,\"uid\":9647}",
+    "source": true,
+    "owner": 9647,
+    "index": 0,
+    "class": "ParameterTerminal",
+    "name": "x .and. y?"
+   },
+   {
+    "n": 15,
+    "addr": "new:RB7.t",
+    "source": false,
+    "owner": -44,
+    "index": 3,
+    "class": "ParameterTerminal",
+    "name": "t"
+   },
+   {
+    "n": 16,
+    "addr": "new:LRR1.autofocus reseed flag (1.2 to 1.1)",
+    "source": true,
+    "owner": -49,
+    "index": 0,
+    "class": "Terminal",
+    "name": "autofocus reseed flag (1.2 to 1.1)"
+   },
+   {
+    "n": 16,
+    "addr": "new:RB7.f",
+    "source": false,
+    "owner": -44,
+    "index": 1,
+    "class": "ParameterTerminal",
+    "name": "f"
+   },
+   {
+    "n": 17,
+    "addr": "{\"term\":\"valid\",\"uid\":29724}",
+    "source": true,
+    "owner": 29724,
+    "index": 1,
+    "class": "Terminal",
+    "name": "valid"
+   },
+   {
+    "n": 17,
+    "addr": "new:RB7.s",
+    "source": false,
+    "owner": -44,
+    "index": 2,
+    "class": "ParameterTerminal",
+    "name": "s"
+   },
+   {
+    "n": 18,
+    "addr": "new:RB7.s? t:f",
+    "source": true,
+    "owner": -44,
+    "index": 0,
+    "class": "ParameterTerminal",
+    "name": "s? t:f"
+   },
+   {
+    "n": 18,
+    "addr": "{\"term_uid\":25557,\"uid\":25557}",
+    "source": false,
+    "owner": 25557,
+    "index": 0,
+    "class": "ControlTerminal",
+    "name": "autofocus reseed flag (1.2 to 1.1)"
+   },
+   {
+    "n": 19,
+    "addr": "{\"term\":\"value\",\"uid\":30016}",
+    "source": true,
+    "owner": 30016,
+    "index": 0,
+    "class": "Terminal",
+    "name": "Num"
+   },
+   {
+    "n": 19,
+    "addr": "{\"term\":\"array\",\"uid\":29879}",
+    "source": false,
+    "owner": 29879,
+    "index": 0,
+    "class": "Terminal",
+    "name": "array"
+   }
+  ],
+  "fs_border_gate": {
+   "status": "PASS",
+   "unmeasured": [],
+   "used": {},
+   "note": "graph has no fs_measured"
+  }
+ }
+}

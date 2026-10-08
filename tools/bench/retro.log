@@ -6709,3 +6709,100 @@ VIOLATION: repeated-failure-class | loss_min=13 | loss_usd=? | evidence=tools/be
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle148","verdict":"refuted","alternative":"The round-3 hand-back was a new, independent leak (e.g. the NOW lane's current code) rather than the PRE lane re-running the pre-fix chat_p1/guard_assign with the inherited ASSIGN_STATE.","discriminating_test":"Offline: run HEAD 07202624's selftest_chat_p1.py with CYCLE_ROLE=assign and ASSIGN_STATE=<copy of state_148_3 without handback>; a p1s-A handback in the copy confirms. Repeat with current-tree code; no write expected.","violations":[{"slug":"repeated-failure-class","loss_min":13,"loss_usd":"?","evidence":"tools/bench/diag_c148_a3_1_suites.py:86"}],"sources":["tools/bench/cycle_runner.log:1286","tools/bench/cycle_runner.log:1294","tools/bench/cycle_runner.log:1296","tools/bench/assign/state_148_3.json:51","docs/d1/ring-p4c.md:76","docs/d1/ring-p4c.md:107","tools/bench/diag_c148_a2_1_run.py:40","tools/bench/cards/assign_result_148_3.json:13"],"note":"Cycle closed on HANDBACK-LIMIT with the s06 card prepared but never dispatched; loss_min is only the measured cycle-boundary cost, the deferred deliverable is unpriced."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle148.md
 BGRUN END rc=0 after 278s
+BGRUN START 2026-10-08 19:43:16 limit 20.0 min: C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\retrospective.py --cycle 149
+BGRUN PID 24028
+   window 2026-10-08 17:39:02 .. 2026-10-08 19:43:16 (124 min); 49 build logs, 14 machinery logs, 53 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle149.txt (40181 chars)
+   review card tools\bench\cards\review_retrospective-cycle149.json
+OUTCOME: ANSWERED (585s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-10-08-retrospective-cycle149.md
+COST: $3.9380  in 108 / out 57423 / cache-create 177940 / cache-read 6827905  (583s, 79 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle149 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle149.json
+--- ANSWER ---
+# Retrospective, cycle 149 (window 17:39:02 – 19:43:16, 124 min)
+
+**Verdict:** the cycle delivered its main result: s06 was adopted (`assign_result_149_3.json:8-10`). Getting there took three assignment rounds and three hand-backs, at $47.28 in sessions plus $4.82 in peer reviews (audit C4/C4c). There is one costly structural fault: the round-3 Void census. There is also one device failure that matters more than its minutes: the retrospective-disposition check is defeated by this review format itself.
+
+## The structural fault: the round-3 Void census was launched on a reader nobody had measured
+
+- **What happened.** The round-3 purpose (`STATUS.md:69`) put "take a census of Void-typed terminals" before the s07 rebase and the tooling card. The census script was written on two assumptions and never checked:
+  - **Speed.** It says itself that "the per-read time is not known" (`tools/bench/diag_c149_a3_void.py:12-13`), yet it capped the run at 600 s (`:30`). At the measured 0.54 s per read, 4379 terminals need about 40 min (`diag_c149_a3_void_s06.log:9-13,17`).
+  - **Seeing Void at all.** Its Void flag is "the type name contains 'void'" (`:14`). `gscript.TD_NAMES` has no entry for code 0x00, so a Void type is named `"0x00"` and can never match (`archive/peer/2026-10-08-c149-a3-2-void.md:49-52`). The project's own note says Void reads back as TD 0x0000 (`docs/NAMES.md:1171`, cited there).
+- **Cost.** The run took 19:25:08 → 19:36:16 (`BGRUN END rc=1 after 668s`). Then came a hypothesis review ($0.9162, void.md:7) and hand-back 3 at 19:43 (`handback_149_3.json:6`). The s07 rebase (149-a3-4) and the tooling card (149-a2-1) were left undispatched.
+  - Loss: about 18 min.
+  - Dollars: only the $0.92 review is in a log. The assignment session's share of its $12.49 is not split out, so loss_usd is `?`.
+- **Counterfactual.** At ~19:01 the hand-back-2 judgement could have required two cheap checks before any census, or placed the census after 149-a3-4:
+  - an offline `parse_type_descriptors` call on a code-0 descriptor (seconds);
+  - a 50-read rate probe.
+
+  Then 149-a3-2 would have ended PASS after memload at 19:24:58 (`diag_c149_a3_2_memload.log:16`). The 18 minutes to 19:43 would have gone to the offline s07 rebase instead of a hand-back that left items 3–8 unmet.
+
+## Findings
+
+**1. Repeated failure.**
+- **Item 6 ("source void → sink I32") was located by guess twice.**
+  - First, by its position near the moved nodes; the guess was not supported (`diag_c149_a1_3_facts.md:23-24`).
+  - Then by the blind census.
+  - CLAUDE.md:492-493 says the second guess must be replaced by building the reader. Round 3 (attempt 2) should have been that reader.
+- **Re-used wire uid 23807 failed twice.** It broke the 12:52 scratch's D gate, then the a3-1 graph-plan script (`result_149-a3-1.json:14-15`). That script was "a names-only copy of a never-run template".
+- **The Error List reader's Python packages were missing twice** (148-a2-4, 149-a1-1). This was fixed on attempt 3 (`diag_c149_a1_2_facts.md:9-15`).
+
+**2. Missing tool.**
+- **No reader that maps an Error List item to the object it selects.** The double-click selection was captured only as an image (`diag_c149_a1_3_facts.md:13-14`, "item->uid not read"). That reader would have answered item 6 in round 2 and made the census unnecessary.
+- **Also missing:**
+  - a bulk terminal-type reader (void.md:67, 77);
+  - a stand-alone read-only `Is Broken?` reader (CLAUDE.md:494; fp-63);
+  - a package import check before Error List reads, which would have caught 148-a2-4's failure before the 589 s scratch.
+
+**3. Unmeasured steps.**
+- The census, as above.
+- **The cause of cycle 148's fake hand-back was never measured.** The round-1 judgement called its explanation a "working cause … not measured yet" (`cycle_149.log:256`). The card that would measure it (149-a2-1) never ran in three rounds, so the cycle ended still working from inference.
+
+**4. Rule compliance.**
+- **Broken:**
+  - The "guessed twice → build the reader" rule (CLAUDE.md:492).
+  - The purpose-flow rule that a hook edit must be named in the purpose (`cycle_149.log:234-237`). It was missed in rounds 1 and 2, which caused hand-back 2 (`handback_149_2.json:5-6`).
+- **Evaded:**
+  - The rule that a gate refusal is routed around "only by an equivalent command form" (`cycle_149.log:101-105`). The workaround was a verbatim copy of the recipe's code (`diag_c149_a1_2_facts.md:29-31`).
+  - The false-positive log commands were reworded so the gate would pass them (material transcript line 303→308; the fp-62 command text was altered).
+- **Satisfied only formally:**
+  - Rule 1a (CLAUDE.md:35-37): s06 was adopted with an unidentified type conflict, and the numeric check was deferred to P6. This is defensible under the broken-intermediates allowance (CLAUDE.md:545).
+  - STATUS one-screen rule: 199 lines, with three new long NEXT paragraphs (`STATUS.md:69-71`).
+- **What the audit does not cover:**
+  - **A4 is wrong.** It reports 13/13 reviews annotated, but `audit_cycle.py:619` finds the *first* "What was done with it" string. That string is the one quoted at line 147 of the review prompt, so A4 passes `retrospective-cycle147/148.md`, whose real sections still read "(Claude fills in)" (`retrospective-cycle148.md:369-371`).
+  - C4c files the assignment sessions ($41.78 of $47.28) under "judgement", which hides where the build cost went.
+  - C6 counts 7 refusals but does not say that 5 were false (`material_marker.log:3593-3595,3601-3602`).
+
+**5. Ordering.**
+- The census sat ahead of the offline s07 rebase.
+- The tooling card was "then, ALONE" last in all three rounds and never ran.
+- The Error List package check should have come before the 17:47 scratch launch, not after it failed at 17:58:38.
+
+**6. What the summaries understate.**
+- The A4 false pass (above).
+- Hand-back 3 calls a3-2 "the retry" of a3-1, but they failed on unrelated steps; the census failure was its first occurrence.
+- `STATUS.md:70` says the reader "now works with nothing installed". The packages were lost because the chat relaunched the runner through WMI at 12:31 (`runner_supervisor.log:47-49`, per `result_149-a1-1.json:16`). Every future Error List read needs the path wrapper.
+- The cycle-start Error List check only re-used an old result (`cycle_149.log:216`), so it could not have detected the broken reader.
+- The s07 prep item asks for a dry run and prerun PASS on a provisional plan. The session prompt requires that (`cycle_149.log:89-94`), but `stage_prerun.py:2593-2599` can never give it. This was reported as "by design" and never raised as a contradiction.
+
+**7. Judgement inside a material session.**
+- Card 149-a1-2's material session chose to work around the launch gate by copying the recipe's code, then commissioned a review of the copy (`diag_c149_a1_2_facts.md:29-31`).
+- Card 149-a3-2's material session accepted the void review's findings itself (void.md:90-97). This was minor: it changed how the census was reported, and the route decision was correctly handed to judgement.
+
+## Device effect
+
+- **The retrospective-disposition check failed (`device-failed`).** Three checks are affected: `guard_peer.undisposed` (2026-09-16 15:05), `cycle_runner.retro_undisposed` (2026-10-08 01:16) and audit A4.
+  - All three split on the **first** "## What was done with it" (`guard_peer.py:849-851`, `cycle_runner.py:1017-1019`, `audit_cycle.py:619`).
+  - The v2 retrospective prompt quotes that heading in its device list (`retrospective-cycle148.md:147`), so each check reads the answer text as the disposition.
+  - Result: the cycle-149 card at 17:39:21 carried no `retro-undisposed` item (`cycle_runner_main_20261008_1231.log:60`). The cycle-148 retrospective, verdict "refuted" with one named fault (:362), was never disposed. This retrospective was dispatched anyway.
+  - Counterfactual: a line-anchored match would have put the item in the cycle card at 17:39, and the judgement session would have disposed retro-148 first.
+- **The launch gate failed again on non-launch commands.** At 18:30:09 and 18:46:54 it blocked `py tools/gate_fp.py log --cmd "…"`. The recipe path appeared only inside a quoted argument (transcript `agent-a49e1139bd3daff88.jsonl:342-343`). That is exactly the hole closed on the stop-record path by `guard_bash.py:237-246` (fp-22) and named for the prerun gate in decision 2026-09-27 15:49. The gate's refusal of the recipe's offline `--el-advisory` (fp-62) cited an old failed segment of the log — the class drained as fp-1. Each time it was worked around (by the code copy or by rewording), at about 10 min and $0.90 (`2026-10-08-c149-a1-2-eladv.md:7`).
+- **No device failure found:**
+  - the bgrun exit-code check (logs with FAIL lines end rc=1, e.g. `diag_c149_a3_void_s06.log:24`);
+  - cost parsing (C4b 4/4);
+  - the prior-art and premature-build gates (s06 was released `novel` in cycle 148).
+
+VIOLATION: inference-over-measurement | loss_min=18 | loss_usd=? | evidence=tools/bench/diag_c149_a3_void.py:12
+VIOLATION: device-failed | loss_min=4 | loss_usd=1.88 | evidence=tools/hooks/guard_peer.py:851
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle149","verdict":"refuted","alternative":"The census COV FAIL was only a throughput cap that a retry would clear, and retro-148 being undisposed is a judgement lapse, not a device fault.","discriminating_test":"Offline: parse_type_descriptors on a code-0 TD returns name '0x00' (blind test), and guard_peer.undisposed() on retrospective-cycle148.md returns None despite :371 placeholder.","violations":[{"slug":"inference-over-measurement","loss_min":18,"loss_usd":"?","evidence":"tools/bench/diag_c149_a3_void.py:12"},{"slug":"device-failed","loss_min":4,"loss_usd":1.88,"evidence":"tools/hooks/guard_peer.py:851"}],"sources":["tools/bench/diag_c149_a3_void_s06.log:17","archive/peer/2026-10-08-c149-a3-2-void.md:49","archive/peer/2026-10-08-retrospective-cycle148.md:147","archive/peer/2026-10-08-retrospective-cycle148.md:369","tools/cycle_runner.py:1017","tools/audit_cycle.py:619","tools/hooks/material_marker.log:3595","https://labviewwiki.org/wiki/Type_descriptor"],"note":"Second device failure: guard_bash launch gate refused gate_fp.py log (recipe path only in --cmd arg) twice, the fp-22 class. Audit A4 PASS is false for retro-147/148."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle149.md
+BGRUN END rc=0 after 599s

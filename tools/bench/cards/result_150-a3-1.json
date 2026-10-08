@@ -1,0 +1,22 @@
+{"schema":"result/1","id":"150-a3-1","status":"PASS","gates":{"pass":6,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/diag_c150_a3_1_facts.md","md5":"f1c382c01615bf3b5135415726d40494"},
+ {"path":"tools/bench/plan_ring_p4_s07v18.json","md5":"08c2ad4d2e6dd4bddd4dd5b18326562c"},
+ {"path":"tools/bench/plan_ring_p4_s07v18_pred.json","md5":"6f46fc3c67b3a7f3c045d07a2fa7163c"},
+ {"path":"tools/bench/plan_ring_p4_s07v18_licence.json","md5":"aedbe1f168e4cd8c18d300848ce0b788"},
+ {"path":"tools/recipes/stage_d1_ring_p4_s07v18.py","md5":"e0f1152feffa81dde5f2d3b215366e0e"},
+ {"path":"tools/recipes/stage_d1_ring_p4_s07v18_scratch.py","md5":"80dbdb4175bd9ce18911ef4b38025fe3"}],
+"facts":[
+ "V18E-R' PASS: (1) only-s07 []; (2) array|1..3 before:null, #2626 owns RENAMED-OLD; (3) #2626 sinks {array:1,element:3} == S1 (prep_c150_a3_1_pred.log:11-18)",
+ "Pred 6f46fc3c written, EL base 51 -> 52; RESULT 11/0 (prep_c150_a3_1_pred.log:25-38)",
+ "X10 no cut: pred Executor peak 673.7 (margin 6.3/21.3); MAIN prerun 678.8 (margin 1.2/16.2); scratch 673.7 (prep_c150_a3_1_prerun.log:129-131)",
+ "X11 before licence rc 2: p4_rbB_sel_t4168 #2626 flagged (op 150); after licence prerun X11 PASS (prep_c150_a3_1_prerun.log:113)",
+ "Sink gates: 2 read from prep_c150_a1_1_session.json census (n1 p4_rbA_re2, n28 p4_rbD_sel_t25573, src new:RB4.s? t:f) (stage_d1_ring_p4_s07v18.py:50-120)",
+ "Licence aedbe1f1: rename_by_uid #2626 [4168]; renames 8 owners / 9 uids, from/to unset (prep_c150_a3_1_licence.log:6-17)",
+ "MAIN dry PASS, prerun 16/0; scratch dry PASS, prerun 16/0 (prep_c150_a3_1_prerun.log:135, prep_c150_a3_1_scr_prerun.log:159)",
+ "--scratch-required rc 3 (CENSUS-UNPREDICTED rows 1-30); --check-launch scratch ALLOW (prep_c150_a3_1_scrreq.log:2-3)",
+ "PROVEN-PATTERN not emitted: X14 WARN rows 30 budget 15 proven: no; no prior-art run (prep_c150_a3_1_prerun.log:132)",
+ "Invariants: 102 files after == before, pins incl. stage_prerun c739eb86 hold, no LabVIEW, no hooks edit (prep_c150_a3_1_check_after.log)"],
+"open":["X14 says proven: no (30 rows > 15): does the s07 launch need a diff-only prior-art review of the scratch recipe first? This card had peers [] (prep_c150_a3_1_prerun.log:132)"],
+"cost":{"usd":null,"minutes":22,"labview_runs":0},
+"note":"Licence read-back in prep script uses a copy of stagekit.licence_renames (guard_write refused stagekit import under labview:none); the real reader runs in both recipe dry runs."}

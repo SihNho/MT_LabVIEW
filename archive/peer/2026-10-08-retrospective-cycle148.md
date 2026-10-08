@@ -368,4 +368,16 @@ VERDICT {"schema":"verdict/1","id":"retrospective-cycle148","verdict":"refuted",
 
 ## What was done with it
 
-(Claude fills in)
+Disposed 2026-10-08 20:50 by the cycle-150 judgement session, late: the undisposed check misread this file (see device-failed
+2026-10-08 20:50 in `docs/violation-decisions.md`).
+- repeated-failure-class (the fp-60 leak re-armed by the pre-fix tree) — ACCEPTED → `docs/violation-decisions.md` 2026-10-08 20:50:
+  PD361(c) device, prepared as `tools/bench/cards/task_149-a2-1.json`, DEFERRED by `docs/d1/ring-p4c.md` PD364(f) until a card
+  runs a pre-fix tree (or the next gate-fp drain); finding 2 (`bgrun --material` drops the three variables) is weighed when the
+  card is re-issued.
+- Findings 1/3 (three failures of our own measurement scripts; "NOW ⊆ PRE" counted green on a baseline missing files) — ACCEPTED as
+  findings. PD361(a)'s green stands (the PRE-only failures are FileNotFoundError on untracked files), but a future before/after
+  comparison runs both trees on the same file set.
+- Findings 4/7 (review dispositions written inside material sessions) — ACCEPTED: dispositions are written by judgement sessions.
+- Finding 5 (pre-launch work grew every round) — ACCEPTED: cycle 150 launches the deliverable first (PD364(c)).
+- Finding 6 (`validate` refused by the permission layer but reported as passing) — ACCEPTED: the cycle-150 session quotes the
+  validate output it actually got.

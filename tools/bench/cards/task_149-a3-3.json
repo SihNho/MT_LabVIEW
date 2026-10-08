@@ -1,0 +1,67 @@
+{
+ "schema": "task/1",
+ "id": "149-a3-3",
+ "kind": "build",
+ "goal": "PD363(c): complete the Void-type census, 100 % of wired terminals of s06 and a byte copy of s05, flagged on the raw type code calibrated on a known Void",
+ "why": "149-a3-2 read 1112 of 4379 terminals in 600 s and its name test cannot see Void (gscript.py:4585-4588). Escalation rung 1 on the same purpose item.",
+ "retry_of": "stage_d1_ring_p4_s06v18_scratch.py",
+ "retry_of_card": "149-a3-2",
+ "escalation": 1,
+ "inputs": [
+  {"path": "tools/bench/cards/brief_149-a3-3.md", "md5": "965cb8d11b4e18611d831e16db384017"},
+  {"path": "tools/bench/diag_c149_a3_2_facts.md", "md5": "0a336f5cd78eb5aea6f1565d2d68e5b6"},
+  {"path": "archive/peer/2026-10-08-c149-a3-2-void.md", "md5": "e49c60e1dd904f8d55b401b2b40b2bb8"},
+  {"path": "tools/bench/diag_c149_a3_void.py", "md5": "a81fb4f7cbc7b1623c22b5ef7bff6c0d"},
+  {"path": "tools/bench/diag_c149_a3_void_md.py", "md5": "95a76eab721754773afc4f3be8e44ee7"},
+  {"path": "tools/bench/diag_c149_a3_void_census.md", "md5": "b895f3911cf7442d6c9661385accdf5c"},
+  {"path": "tools/bench/diag_c149_a3_void_s06.json", "md5": "a8bbd19397ee76653652ab3cd563ba33"},
+  {"path": "tools/bench/diag_c149_a3_2_inv.py", "md5": "df7107a283bb3232db850d55e869aa04"},
+  {"path": "tools/bench/diag_c149_a1_3_types.py", "md5": "159472a01f4e5dc72484028e7bee7e39"},
+  {"path": "tools/gscript.py", "md5": "1a80236ed35c1876c67f964c72fe820a"},
+  {"path": "tools/stagekit.py", "md5": "06b8d844284deacab535a9ee442d4964"},
+  {"path": "tools/stagexec.py", "md5": "1bab9cf96502dfbe2d9a755e6d4a48b6"},
+  {"path": "tools/bench/memory_model.json", "md5": "8eec443c5f0a9e6b44b0e5e180357e4b"}
+ ],
+ "pass": [
+  "Step 1 quoted: parse_type_descriptors result for a Void string, and whether allterms read_terms returns a Data Type per row, with file:line",
+  "Calibration on a known-Void terminal: raw bytes, code and descriptor count quoted; the census flag condition stated from it",
+  "Census coverage 100 % of wired terminals for BOTH the s06 byte copy and the s05 3f9ac26b byte copy, per-file counts, read, Void, errors quoted",
+  "diag_c149_a3_void_census.md: both Void lists (wire, term, owner, name, type), s06-only listed separately, counts; partial kept as _partial.md; no claim on item 6",
+  "Invariants (stage tools, errorlist_check, s05, s04, s03, bed, s06 569ffbf5, memory_model 8eec443c) unchanged; no byte copy left; LabVIEW gone"
+ ],
+ "outputs": [
+  "tools/bench/diag_c149_a3_3_facts.md",
+  "tools/bench/diag_c149_a3_void_census.md"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c149_a3_3*",
+   "tools/bench/diag_c149_a3_void*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/jev_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 110
+ },
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "D1_ring_p4s06_20261008_174730.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "tools/bench/diag_c149_a3_void.py"},
+  {"kind": "file", "name": "tools/bench/diag_c149_a3_void_md.py"}
+ ],
+ "rules": [
+  "No second scratch build; no edit verb in the census; no Is Broken? read; stage tools, gscript, graph.py not edited",
+  "Census reads BYTE COPIES only (s06 and s05); no original, bed, s03, s04 opened; memory_model.json not edited",
+  "Hold the minute budget: a read that cannot reach 100 % coverage inside it is a RETURN with the coverage reached"
+ ]
+}

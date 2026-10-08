@@ -1,0 +1,63 @@
+{
+ "schema": "task/1",
+ "id": "150-a3-4",
+ "kind": "build",
+ "goal": "Retry 150-a3-3: dispo.py heading = last column-0 heading with a non-placeholder body (else last); keeps the 8 pattern-A fixes, no pattern-B regression; self-test + archive gate rerun",
+ "why": "150-a3-3 failed only its archive-output gate: plain LAST-heading rule regresses 2 archived files (23c-r2, retrospective-cycle17) and inflates cycle17's slug tally. Classifier-explained, one retry.",
+ "retry_of_card": "150-a3-3",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_150-a3-4.md", "md5": "57019592ed1a25fb96fb0b26342beb30"},
+  {"path": "tools/bench/cards/brief_150-a3-3.md", "md5": "350b923a1bc39a5f28fdd37ff3777736"},
+  {"path": "tools/bench/diag_c150_a3_3_facts.md", "md5": "7b93f400965f0e9b6f1f9f89dfa6e1df"},
+  {"path": "tools/dispo.py", "md5": "27f2166756d0872dae71b591fdabdded"},
+  {"path": "tools/violations.py", "md5": "0cae42f3100f12e972823f69c3d2e920"},
+  {"path": "tools/cycle_runner.py", "md5": "508854cacb3699df7de0ba809e09128c"},
+  {"path": "tools/audit_cycle.py", "md5": "3bd22d7b3b057f20f3df6ca4e7973f89"},
+  {"path": "tools/bench/selftest_c150_a3_3.py", "md5": "fe3495884f88beefd9819be8781cd67c"}
+ ],
+ "pass": [
+  "dispo.py rule: last column-0 heading with non-placeholder body, else last heading; used at violations.py:177, cycle_runner.py retro_undisposed, audit_cycle.py A4 and A9",
+  "self-test incl. patterns A and B + all-placeholder: FAILS on old code at the 3 sites, PASSES new; both counts quoted",
+  "archive-output gate over all files: pattern A 8 fixed, pattern B 2 unchanged vs old, only the expected inline-quote files differ",
+  "py tools/violations.py: 0 awaiting, retros 148+149 listed, cycle17 tally equals its old value; old self-tests same counts",
+  "No tools/hooks edit (md5 before = after); invariants unchanged (brief 150-a3-3 step 6); no LabVIEW process"
+ ],
+ "outputs": [
+  "tools/dispo.py",
+  "tools/bench/selftest_c150_a3_3.py",
+  "tools/bench/diag_c150_a3_4_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/dispo.py",
+   "tools/violations.py",
+   "tools/cycle_runner.py",
+   "tools/audit_cycle.py",
+   "tools/bench/selftest_c150_a3_3*",
+   "tools/bench/diag_c150_a3_4*",
+   "tools/bench/prep_c150_a3_4*",
+   "tools/bench/gate_fp_queue.jsonl"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 45
+ },
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/dispo.py"},
+  {"kind": "file", "name": "archive/peer/2026-10-08-retrospective-cycle149.md"}
+ ],
+ "rules": [
+  "No tools/hooks edit, ever; do not re-log fp-67..fp-70",
+  "Offline only; no LabVIEW, camera or motor",
+  "RETURN at the first output difference outside the expected list"
+ ]
+}

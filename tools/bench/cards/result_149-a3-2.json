@@ -1,0 +1,26 @@
+{"schema":"result/1","id":"149-a3-2","status":"FAIL","gates":{"pass":5,"fail":1},
+"first_fail":"COV every wired terminal read within TCAP: 1112 of 4379 wired terminals typed in 600.2 s (0.54 s/read) - tools/bench/diag_c149_a3_void_s06.log",
+"blocked_by":null,
+"artefacts":[
+{"path":"tools/bench/diag_c149_a3_2_graph_plan.json","md5":"9561959c346544068c8ff03ca08e4c4f"},
+{"path":"tools/bench/graph_ring_p4s06_20261008_192149.json","md5":"a3ecb92b27654c3d85b9ab5ff58aa069"},
+{"path":"tools/bench/memory_model.json","md5":"8eec443c5f0a9e6b44b0e5e180357e4b"},
+{"path":"tools/bench/diag_c149_a3_void_census.md","md5":"b895f3911cf7442d6c9661385accdf5c"},
+{"path":"tools/bench/diag_c149_a3_void_s06.json","md5":"a8bbd19397ee76653652ab3cd563ba33"},
+{"path":"tools/bench/diag_c149_a3_2_facts.md","md5":"0a336f5cd78eb5aea6f1565d2d68e5b6"}],
+"facts":[
+"Step1 4/0 diag_c149_a3_2_disc.log: (a) 15+{23807}=16==d_new; (b) w23807 (5171,5058)->{(3173,23166),(10975,10969)}; (c) E5 as written FAIL [23807], moved PASS",
+"Fix diag_c149_a3_2_mkgraph.py:46-48 kept_by_key uid -> new_wires, not deleted_wires; mkgraph.log 4/0, W 16==16, deleted_wires []",
+"Graph read diag_c149_a3_2_graph.log 15/0: E5 PASS (2 made, 16 new present); 6062 rows 10571 objs 25 loops 23 FS; load 593.8 MB (log:24)",
+"Prerun X4/X6 failed w/o --graph (no graph for 569ffbf5); 15/0 with --graph graph_ring_p4s05_20261008_013759.json, as diag_c147_a1_1_graph_prerun.log:1",
+"memload.log 5/0: memory_model 88eeb037->8eec443c, only /load_by_vi/569ffbf5/{cite,value 593.8,vi} added; no limit/coefficient change",
+"Census diag_c149_a3_void_s06.log:15 COV FAIL: read_term_type 0.54 s/read flat; 4379 wired terms => ~40 min/file; 1112 read, w86637..w26932",
+"Script 'void' name test is blind: gscript.py:4585-4588 TD_NAMES has no 0x00. Raw codes: 0 code-0x00, 0 no-TD, 0 errors in 1112 (census md)",
+"Not covered: new wires w10166, w23807; s05 byte-copy census NOT run, so no s06-only list (diag_c149_a3_void_census.md)",
+"Jev ladder jev_gate.log:5328 our-script-bug p=0.584 -> review owed; peer archive/peer/2026-10-08-c149-a3-2-void.md ANSWERED, disposition written",
+"Invariants diag_c149_a3_2_inv_after.log 11/0 (s03-s06, bed, stage tools pinned); no byte copy left; LabVIEW count 0; census handles 48952->42412"],
+"open":[
+"Complete Void census: run per-terminal (~80 min for s06+s05) or first check whether allterms' read_terms op can return Data Type per row?",
+"Before trusting a code-0x00 Void check, calibrate on a known-Void terminal through OpTermDataType_v0 (peer sec. 4 step 2)?"],
+"cost":{"usd":null,"minutes":27,"labview_runs":2},
+"note":"Adopt and EL expected file not repeated. No stage tool edited, no edit verb, no Is Broken? read. Ladder row: diag_c149_a3_void_s06.log | our-script-bug 0.584 | hypothesis review owed | dispatched c149-a3-2-void | ANSWERED."}

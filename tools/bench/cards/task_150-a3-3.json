@@ -1,0 +1,60 @@
+{
+ "schema": "task/1",
+ "id": "150-a3-3",
+ "kind": "build",
+ "goal": "Parser device: helper tools/dispo.py (LAST line-anchored disposition heading) wired into violations.py, cycle_runner.py retro_undisposed, audit_cycle.py A4; self-test; 4 gate_fp log entries",
+ "why": "Cycle 150 round 3 pass items 6-8 (PD365(f)). Retrospective 149 quotes the heading inline, so first-occurrence parsers misread it; guard_peer.py is a hook and is only logged.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_150-a3-3.md", "md5": "350b923a1bc39a5f28fdd37ff3777736"},
+  {"path": "tools/violations.py", "md5": "7482e9b73b0b6e85b932ac7ea7638d2f"},
+  {"path": "tools/cycle_runner.py", "md5": "72ab9defc2c677ba6504d3d7f68ffdab"},
+  {"path": "tools/audit_cycle.py", "md5": "c57668a5c6dd5df27ba21cd57cec6d61"},
+  {"path": "tools/gate_fp.py", "md5": "1f427fb5b1735584c19a699c2314b826"},
+  {"path": "tools/bench/diag_c150_a3_2_facts.md", "md5": "8396b8ad21adf6b8aa6765cafcef697a"}
+ ],
+ "pass": [
+  "tools/dispo.py (non-hook, stdlib): LAST line-anchored '## What was done with it'; used at violations.py:177, cycle_runner.py retro_undisposed, audit_cycle.py A4; A9 :326 stated",
+  "self-test on retro-149/148 copies + synthetic bodies: FAILS on old code at the 3 sites, PASSES after; both counts quoted",
+  "py tools/violations.py lists retrospectives 148 and 149 with 0 awaiting; old self-tests of the 3 files rc 0 or same counts as before",
+  "gate_fp.py log ids quoted: guard_peer.py:849-851 misread, PD361(c)(1) guard_assign provenance, retro-149:374 --cmd refusal, computation_diff name keys",
+  "No tools/hooks edit (tree md5 before = after); invariants md5 unchanged (brief step 6); no LabVIEW process"
+ ],
+ "outputs": [
+  "tools/dispo.py",
+  "tools/bench/selftest_c150_a3_3.py",
+  "tools/bench/diag_c150_a3_3_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/dispo.py",
+   "tools/violations.py",
+   "tools/cycle_runner.py",
+   "tools/audit_cycle.py",
+   "tools/bench/selftest_c150_a3_3*",
+   "tools/bench/diag_c150_a3_3*",
+   "tools/bench/prep_c150_a3_3*",
+   "tools/bench/gate_fp_queue.jsonl"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/violations.py"},
+  {"kind": "file", "name": "archive/peer/2026-10-08-retrospective-cycle149.md"}
+ ],
+ "rules": [
+  "No tools/hooks edit, ever; a hook fault is logged with gate_fp.py",
+  "Offline only; no LabVIEW, camera or motor",
+  "Outputs on files with one column-0 heading stay identical to the old code"
+ ]
+}

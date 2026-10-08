@@ -1,0 +1,36 @@
+BGRUN START 2026-10-08 18:25:42 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c149-a1-2-el51 -TaskFile tools/bench/diag_c149_a1_2_peer_task.md
+BGRUN PID 22372
+OUTCOME: ANSWERED (193s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-08-c149-a1-2-el51.md
+COST: $1.8043  in 24 / out 16910 / cache-create 150263 / cache-read 1319686  (189s, 19 turn(s))
+--- ANSWER ---
+**No, the claim is not established.** Part of the 51 does look like real file content, but the claim says the four-item drop is all improvements the prediction failed to model. The record does not show that. The read also contains a new defect, and that defect fits the "resolved" items having changed into another error rather than disappearing.
+
+## 1. Strongest reason the claim is wrong
+The claim matches items by counts only. The reader has no object identity for any item: `uid_route: "none: needs a Selection List[] 6349400 op (unbuilt…)"` (`errorlist_D1_ring_p4s06_20261008_174730_20261008_181243.json:98`). Nothing links "3 undirected tunnels, 1 source-less sink and 2 output-tunnel items are gone" to any of the 21 edits. Three things in the same record argue against "resolved":
+
+- **A new type-mismatch item whose source type is void.** Item 6 reads: "The type of the source is void. The type of the sink is long [32-bit integer]" (json:322). The other mismatch, "1D array of Void → 1D array of cluster of 2 elements", was already in s04 and s05 (s04 json:701, s05 json:658). The void→I32 one is new in s06. A void-typed source is a wire whose source has no data type. That is what an undirected tunnel, or a sink-only wire, turns into once something forces a direction. It appeared in the same file where 3 undirected-tunnel items and 1 source-less-sink item vanished. That fits **a change of error class**, not a fix.
+- **An op error that was put off and never resolved.** Op 21, `wire_indicators`, raised "target BROKEN after wiring – a source terminal was probably unwired" (`diag_c147_p4s06v18_scratch.log:990-994`). It was handed to sink gate SG, which checks only that the right terminals share wire 23807 (log:998). Nothing ever read whether wire 23807 is broken. The structural PASS (log:1038) says nothing about broken wires or types.
+- **The prediction knowingly left out one item.** The pred flags `uncertain_base_newly_unwired_inputs: [[10757, ["array"]]]` (`plan_ring_p4_s06v18_pred.json:170-177`). The scratch confirms it: deleting and re-creating w23807 dropped three base sinks, namely 9519, `(10871, 10757)` and `(23798, 23508)` (log:1002). A fully counted prediction is input +1 (about 56 total), so the real gap is −5, not −4. On my reading only two base input items were touched: Index Array 30240 (ops 1–2, log:761-772) and Build Array 2626 (ops 4, 5, 18, log:788-801, 960-964). That accounts for −2 + 1 = −1 input, but the read shows −2. Build Array items went from 3 (s05 items 0, 2, 3) to 1 (s06 item 0), and no op I can find touches a second Build Array. One input item is unexplained.
+
+## 2. Alternative explanations
+- **A (most likely): the error class changed, and the file has a new defect.** Session 6's edits gave a direction to one or more undirected tunnels or the sink-only wire with no typed source behind it. LabVIEW now reports these as "different types (source void)" plus extra loose-end and unconnected-wire fragments. That matches the observed types +1, loose-ends +1 and not-connected +2. The likely I32 sinks are the new Index Array 30300's `index` (op 17, fed from w30166) or the sinks wired in ops 9–11 (log:857, 864, 873). Under A, the prediction is incomplete *and* s06 contains a new break.
+- **B: a reader artefact. This is unlikely, but it has not been checked.** The 51 is OCR of the header text (log:27), and stepping stops at that number (log:81). A misread 5→1 would cut off tail items. But both reads end in the same 16-row run of "Wire has loose ends" (s05 items 39–54, s06 items 35–50), so cutting the tail cannot explain tunnel-class items missing from the middle of the list. B cannot produce the per-class pattern; it can only affect the total.
+- **numpy 2.2.6 vs 1.26.4: no support.** The layout bands and selection rows are identical in both runs (log:26 vs c147 log:25), and the OCR noise looks the same. I found no mechanism by which it would change classes in the middle of the list.
+
+## 3. What would falsify the claim
+Either of these would show the claim is wrong:
+- The void→I32 item points at a wire or tunnel that also carried one of s05's undirected-tunnel, source-less-sink or output-tunnel items. In that case the item changed class rather than being fixed.
+- Any of s05's 3 undirected tunnels still has no source side in the s06 graph.
+
+The claim survives only if all 6 vanished items map to tunnels or wires that now have exactly one typed source, and the void→I32 item sits on an unrelated, newly created path. Even then, that path is a new defect the plan did not intend.
+
+## 4. Cheapest discriminating test (read-only, no LabVIEW)
+Every Error List item already has a "show error" screenshot of the diagram region LabVIEW scrolled to.
+1. Compare s06 items 5 and 6 (`bd_181438_after5.png`, `bd_181450_after6.png`) with s05 items 7, 8, 10–13 (`bd_012551_after7.png` … `bd_012710_after13.png`). Match them by scroll-bar position and the highlighted spot. I looked at one pair: s06 item 6 highlights the left edge of a structure, and s05 item 8 shows a broken-wire marker at lower right. That is not conclusive because the diagram scroll offsets differ between the two files.
+   - If item 6 lands on any s05 tunnel or sink location, A is confirmed.
+   - If it lands on Index Array 30300 or the op 9–11 sinks, it is a new defect from s06's own wiring. The claim's "the file is fine" part fails either way.
+2. As a cross-check without images, take the base graph (`tools/bench/sim/ring_p4_s06v18_base_real_fsmap.json`) and the scratch's last checkpoint read (op 21, log:997). List every I32 sink whose wire source is a LoopTunnel or terminal with no source on the opposite side. Also check whether the 3 tunnels undirected in s05 now have a source. I could not find an end-graph dump under `tools/bench/sim/`. If the scratch json does not hold the op-21 terminal table, only step 1 is free.
+3. For alternative B: look at the header capture for "51" and the last-row capture (item 50, which was not refined, log:83) to confirm the list scrollbar is at the bottom.
+
+**Verdict.** The reader is probably right that the file shows 51 items. The claim that the drop is purely improvements the prediction did not model is not supported. The new void→I32 item and the unchecked "target BROKEN" from op 21 point to at least one new break in s06. That should be settled by step 1 before s06 is adopted. What would change my mind: the step-1 screenshots place the void→I32 item away from every s05 tunnel or sink location, and a broken-wire read of w23807 comes back clean.
+BGRUN END rc=0 after 194s

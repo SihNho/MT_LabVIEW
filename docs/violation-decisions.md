@@ -1945,3 +1945,46 @@ test on the newest archived retrospective; if its `## What was done with it` is 
 `gates_due` (due: true) and a `RETRO-UNDISPOSED` log line, so the next judgement session disposes it first. Built offline in
 cycle 147 (purpose pass item), with a self-test: a placeholder file → entry present; a filled file → absent. Acceptance: the
 cycle-148 card. The cycle-146 and cycle-143 retrospectives were disposed by hand on 2026-10-08 01:16 by this session.
+
+## device-failed — 2026-10-08 20:50 (cycle 150 judgement, after archive/peer/2026-10-08-retrospective-cycle149.md:381)
+
+`VIOLATION: device-failed | loss_min=4 | loss_usd=1.88 | evidence=tools/hooks/guard_peer.py:851`: ACCEPTED, and wider than the
+review saw. The 01:16 device above did not hold: every v2 retrospective prompt now quotes the 01:16 decision text, which contains
+`## What was done with it` mid-line (`retrospective-cycle149.md:147`), and four parsers find that heading by its FIRST
+occurrence, so they read the prompt instead of the review: `guard_peer.undisposed` (`tools/hooks/guard_peer.py:849-851`),
+`cycle_runner.retro_undisposed` (`tools/cycle_runner.py:1017-1019`), audit A4 (`tools/audit_cycle.py:619`, also `:326`) and, found
+by this session, the violation counter itself (`tools/violations.py:177`). Effect: retrospectives 147–149 were reported disposed,
+no `retro-undisposed` entry reached the cycle-149/150 cards, and `py tools/violations.py` (run by this session, 2026-10-08)
+counts none of the violations of retrospectives 148 and 149.
+
+DECISION: device — ONE shared helper finds the heading alone at the start of a line and takes the LAST such heading; the four
+sites use it; every other parser of that heading in `tools/` (not `tools/bench/`) is listed as using it or as unable to misfire.
+Self-test on two copies of `retrospective-cycle149.md` (placeholder restored / filled): each site misreads the placeholder copy on
+the current code and reads both right after. Built in cycle 150 (`docs/d1/ring-p4c.md` PD364(e)), after the s07 LabVIEW card and
+ALONE, because it edits a hook. Acceptance: `py tools/violations.py` lists retrospectives 148 and 149 with 0 slugs awaiting.
+Retrospectives 147, 148 and 149 were disposed by hand by this session. A disposition misread by any parser after the build is
+`device-failed` again.
+
+## inference-over-measurement — 2026-10-08 20:50 (cycle 150 judgement, after archive/peer/2026-10-08-retrospective-cycle149.md:380)
+
+`VIOLATION: inference-over-measurement | loss_min=18 | loss_usd=? | evidence=tools/bench/diag_c149_a3_void.py:12`: ACCEPTED. The
+round-3 purpose (PD363(c), written by judgement) ordered a full Void census, and card 149-a3-2 ran it on a reader whose rate the
+script itself called unknown (`diag_c149_a3_void.py:12-13`) and whose Void test was a name match that `gscript.TD_NAMES` can never
+produce (`tools/gscript.py:4585-4588`). It stopped at 1112 of 4379 terminals.
+
+DECISION: no new device (1 occurrence since the 2026-10-02 01:01 decision; threshold 3). The census is withdrawn
+(`docs/d1/ring-p4c.md` PD364(b)), and a written rule takes its place for this path: a measurement card first checks its reader on
+a known case and its rate on ≤ 50 reads, before a full run. If item 6 survives s07 it is located by an Error-List-item → object
+reader, not by a census or a third guess (PD364(d)).
+
+## repeated-failure-class — 2026-10-08 20:50 (cycle 150 judgement, after archive/peer/2026-10-08-retrospective-cycle148.md:362)
+
+`VIOLATION: repeated-failure-class | loss_min=13 | loss_usd=? | evidence=tools/bench/diag_c148_a3_1_suites.py:86`: ACCEPTED, late.
+The review was never disposed and the counter could not see it (device-failed block above). The fp-60 environment leak came back
+in round 3 of cycle 148 because a pre-fix tree ran with the live `ASSIGN_STATE`.
+
+DECISION: device — PD361(c): the live `guard_assign.py` honours only hand-backs that carry card provenance, and wrappers that run a
+pre-fix tree drop `ASSIGN_STATE`/`CYCLE_ROLE`/`CYCLE_SESSION`; prepared as `tools/bench/cards/task_149-a2-1.json`. The review's
+finding 2 (`tools/bgrun.py --material` drops the three variables for every child) is weighed when that card is re-issued.
+DEFERRED by PD364(f): it runs ALONE before the next card that runs a pre-fix tree, or with the next gate-fp drain. Until then no
+card runs a pre-fix tree, so the leak cannot re-arm.

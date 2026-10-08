@@ -233,19 +233,18 @@
    "id": "D-2026-09-28-01",
    "asked": "2026-09-28T11:55",
    "by": "chat",
-   "question": "The next build step (PD233(k)) adds the frame pool between the camera loop 1.1 and tracking loop 1.2: 20 image slots, and when all 20 are waiting, 1.1 skips reading the NEWEST camera frame. So under sustained overload tracking works through older queued frames (up to 20 behind, ~0.2 s at 90 Hz) and the newest frames are the ones lost. Your 2026-09-15 rule (docs/decisions.md:25) says the opposite: discard the backlog and take the newest frame. Every frame keeps its own buffer number, so timing labels stay correct either way; what differs is which frames are lost and how far tracking lags. Which do you want?",
+   "question": "Frame pool (PD233(k)): when all 20 slots wait, loop 1.1 skips the NEWEST frame, so under overload tracking lags up to 20 frames and the newest are lost. Your 09-15 rule says the opposite (take the newest). Which? [verbatim: archive/2026-10-08-decisions-pending-verbatim.md]",
    "options": [
-    "latest-wins as decided on 09-15: when tracking falls behind, it drops the queued older frames and takes the newest (the pool stage is changed to do that)",
-    "keep the planned pool: skip the newest read when 20 are waiting (lag up to 20 frames, oldest kept)",
+    "latest-wins as decided 09-15: drop the queued older frames, take the newest",
+    "keep the planned pool: skip the newest read when 20 are waiting",
     "other (please say)"
    ],
    "recommendation": "latest-wins (your 09-15 rule); the build of the pool itself can proceed and the overload branch is set by your answer before the first real run",
    "blocks": [
-    "M4",
-    "R4"
+    "M4"
    ],
    "status": "answered",
-   "answer": "ALREADY DECIDED by the user 2026-09-15 (memory prefer_the_freshest_frame_over_a_complete_backlog; docs/decisions.md:25), re-confirmed 2026-09-28 15:3x (\"위에 프레임 관련해서는 내가 말한 내용이 있음 ... 우선순위가 있는데\"). Priority: (1) NO CORRUPTION - image memory and its buffer number change together and the consumer verifies them; a pixel/number mismatch is data corruption. (2) LATEST-WINS - discard the queued backlog, read the newest frame (time-series rigor); a gap recorded by the buffer number is fine. (3) FALLBACK - if 1 and 2 cannot be made provably safe, acquisition and tracking may stay in ONE sequential loop. So the planned full=>skip-newest branch is WRONG and must become latest-wins with the buffer-number check, or the fallback."
+   "answer": "ALREADY DECIDED 2026-09-15, re-confirmed 2026-09-28 15:3x: (1) no corruption (image and buffer number change together, verified); (2) latest-wins; (3) fallback: one sequential loop. Skip-newest is wrong. Verbatim: archive/2026-10-08-decisions-pending-verbatim.md"
   },
   {
    "id": "D-2026-09-28-02",
@@ -270,11 +269,11 @@
    "by": "cycle 123",
    "question": "The rest of the ring-buffer work (camera-loop part ~74 rows, tracking-loop part ~70, results queue ~25) cannot fit both your limit of 6 unrun broken files (5 left before the first run) and 15-25 rows per build step. Which limit should give?",
    "options": [
-    "keep 6 unrun files; allow up to ~40 rows per build step for these steps, each with a full test-copy run before the real build",
-    "keep 15-25 rows per step; raise the unrun-file limit to 9 (the first full run comes about 3 build steps later)",
+    "keep 6 unrun files; up to ~40 rows per step, full test-copy run before each",
+    "keep 15-25 rows per step; raise the unrun-file limit to 9",
     "other (please say)"
    ],
-   "recommendation": "the first option: the first end-to-end run (the reason for your limit) comes sooner, and recent steps passed first time after their test-copy run (P2a 27/0, P2b 41/0). The camera-loop control part (~24 rows) goes ahead under either answer.",
+   "recommendation": "the first: the first end-to-end run comes sooner; recent steps passed first time after a test-copy run (P2a 27/0, P2b 41/0). Verbatim: archive/2026-10-08-decisions-pending-verbatim.md",
    "blocks": [
     "M4",
     "M3"
@@ -321,7 +320,7 @@
    "options": [
     "raise the cap from 6 to 8 unrun files; keep 40 edits per step",
     "keep 6: allow P4 as one step of 93 edits, built in about 5 LabVIEW sessions",
-    "keep 6 and 40: first make the current file runnable and run it (several extra cycles)",
+    "keep 6 and 40: first make the current file runnable and run it",
     "other (please say)"
    ],
    "recommendation": "the first: 40-edit steps have worked (P3a, P3b-1), and the result is the same file either way.",
@@ -338,8 +337,8 @@
    "question": "Update to D-2026-10-02-03: the full P4 plan is 159 edits, not 93 (undoing a broken frame's result costs 43). At 40 per step that is 5 saved files plus 1 for P5; 2 of your 6 are left. Which way?",
    "options": [
     "raise the cap from 6 to 10 unrun files; keep 40 edits per step",
-    "keep 6: P4 is one step (one file), built over several LabVIEW sessions whose in-between files are deleted",
-    "keep 6 and 40: first make the current file runnable and run it (several extra cycles)",
+    "keep 6: P4 as one file built over several sessions, in-between files deleted",
+    "keep 6 and 40: first make the current file runnable and run it",
     "other (please say)"
    ],
    "recommendation": "the second: the finished file is the same either way, and memory already forces several sessions per step.",
@@ -348,6 +347,24 @@
    ],
    "status": "answered",
    "answer": "option 2 / (나) (user, chat 2026-10-02 ~16:1x: \"나 옵션\"): keep the cap of 6; P4 is ONE step (one saved file) built over several LabVIEW sessions whose in-between files are deleted; 40-edit sub-steps per session still apply"
+  },
+  {
+   "id": "D-2026-10-08-01",
+   "asked": "2026-10-08T20:50",
+   "by": "cycle 150",
+   "question": "6th outcome review in a row: nothing new runs yet; the ring rebuild first runs after about 4-6 more cycles (~$200-300). It proposes to measure first: add frame-rate control to a copy of the display-loop VI (it beat the original at 15 beads, 90 Hz) and run 150 Hz at 8 and 15 beads. Which order?",
+   "options": [
+    "keep the plan: finish the ring (P4, then P5, P6), then the first run",
+    "pause the ring after this cycle's P4 step; frame-rate control, then 150 Hz runs",
+    "pause the ring; you first run the display-loop VI with beads while watching",
+    "other (please say)"
+   ],
+   "recommendation": "Option 2: about 2 cycles; it is your 09-25 choice (camera settings inside the VI), and the 150 Hz numbers show whether the ring is what is needed. This cycle's P4 step runs either way.",
+   "blocks": [
+    "M3",
+    "M10"
+   ],
+   "status": "open"
   }
  ]
 }

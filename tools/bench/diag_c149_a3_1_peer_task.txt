@@ -1,0 +1,18 @@
+ATTACK this claim about a failed prediction in tools/bench/diag_c149_a3_1_mkgraph.py (log tools/bench/diag_c149_a3_1_mkgraph.log), card 149-a3-1.
+
+OBSERVED: gate "W new wires from term_identity.new == the log's D gate count" FAILED (diag_c149_a3_1_mkgraph.log). term_identity.new in
+tools/bench/diag_c147_p4s06v18_scratch.json holds 15 wire uids [10166, 28684, 29766, 30250, 30262, 30267, 30270, 30274, 30278, 30281, 30284,
+30295, 30304, 30409, 30418]; the scratch's own D gate line (tools/bench/diag_c147_p4s06v18_scratch.log:1002) reads "D new wires 16 == sim's 16 ...
+deleted uids re-used: noted [23807]" with reuse_noted [{wire 23807, kept_by_key True}].
+
+CLAIM (the explanation formed): the failure is a defect of the copied, never-run predicate, not of the VI or of the adopted file. tools/stagekit.py:1513
+computes d_new = len(new) + (number of reuse_noted entries with kept_by_key) = 15 + 1 = 16, while the mkgraph gate compares only len(term_identity.new)
+(15) to that 16. The template diag_c149_a1_2_mkgraph.py / diag_c148_a2_4_mkgraph.py was never run; earlier mkgraph versions ran on sessions without
+a re-used deleted uid. Consequence for the next step (diag_c149_a3_1_graph.py, not yet run): its E5 gate requires the plan's deleted wire w23807
+ABSENT from the file, but LabVIEW re-used uid 23807 for a real wire (source t5171 #5058, sinks t3173 #23166, t10975 #10969; diag_c149_a1_3_wire.log
+W1 PASS), so E5 would also fail on the same re-use.
+
+Already ruled out: adopted file md5 569ffbf5 unchanged (diag_c149_a3_1_adopt.log); the adoption itself passed 3/0; the Error List expected file
+passed 5/0 (diag_c149_a3_1_elexp.log). No LabVIEW has run in this card.
+
+Give: the strongest reason this claim is wrong; an alternative explanation; what would falsify it; the cheapest offline discriminating test.

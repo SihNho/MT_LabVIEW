@@ -346,4 +346,5 @@ Single-line JSON, no code fence. alternative/discriminating_test/note <= 300 cha
 
 ## What was done with it
 
-(Claude fills in)
+Disposed 2026-10-08 20:50 by the cycle-150 judgement session: the review produced no answer (job stopped at 600 s, `## Answer`
+above), so there is nothing to accept or refuse. Cycle 147's work was judged in `docs/d1/ring-p4c.md` PD357 and PD358.

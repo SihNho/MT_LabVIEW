@@ -1,0 +1,73 @@
+{
+ "schema": "task/1",
+ "id": "150-a1-1",
+ "kind": "build",
+ "goal": "PD364(c)1: re-make P4 session 7 on the real s06 graph a3ecb92b at the measured s06 load: longest v18 prefix from op 136 with X10<=680, <=40 actions; dry+prerun PASS; offline, not launched",
+ "why": "Cycle 150 pass item 0. The prepared 14-action s07 was cut at a guessed 627.7 MB start; s06 measured 593.8 MB. 149-a3-4 (rebase) never ran.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_150-a1-1.md", "md5": "5e84c8fcd484ac812c963166b48ba97d"},
+  {"path": "docs/d1/ring-p4c.md", "md5": "babdffba381f4fa44ffb80616f3b5ba0"},
+  {"path": "tools/bench/diag_c148_a3_3_facts.md", "md5": "2efa3514330d2ece8a577e41ec718fa5"},
+  {"path": "tools/bench/diag_c146_a1_2_facts.md", "md5": "bc17922f4461be67066bc6de38820f26"},
+  {"path": "tools/bench/graph_ring_p4s06_20261008_192149.json", "md5": "a3ecb92b27654c3d85b9ab5ff58aa069"},
+  {"path": "tools/bench/plan_ring_p4_s07v18.json", "md5": "aeae610ee123bf30d8ed92016282189f"},
+  {"path": "tools/bench/plan_ring_p4_s07v18_pred.json", "md5": "e888ab67228f04ba98ed08d4e40055f6"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s07v18.py", "md5": "d6c8da7b32377fdbde1df4747edbf6ed"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s07v18_scratch.py", "md5": "273dc3de479f1bd810f6a1ab2be43588"},
+  {"path": "tools/bench/prep_c148_a3_3_mk.py", "md5": "5f00cd4f7bade7ed9d41a9f15b36d05e"},
+  {"path": "tools/bench/prep_c148_a3_3_pred.py", "md5": "8b2ec4f10307f71a8d3ca7ccd3f4a3cc"},
+  {"path": "tools/bench/prep_c146_a1_2_mk.py", "md5": "11ce8eeb66d51ef462cd61fb1c8065dd"},
+  {"path": "tools/stage_prerun.py", "md5": "dcd45aba9be99dde809800e7f59bb2f7"},
+  {"path": "tools/stagekit.py", "md5": "06b8d844284deacab535a9ee442d4964"},
+  {"path": "tools/stagexec.py", "md5": "1bab9cf96502dfbe2d9a755e6d4a48b6"},
+  {"path": "tools/gscript.py", "md5": "1a80236ed35c1876c67f964c72fe820a"},
+  {"path": "tools/elrule.py", "md5": "a5ee7d5c8792ccf5c174e70be022544d"},
+  {"path": "tools/bench/memory_model.json", "md5": "8eec443c5f0a9e6b44b0e5e180357e4b"}
+ ],
+ "pass": [
+  "Start formula + number quoted (s06 load 593.8 + op-0 read, source line); cut = longest v18 prefix from op 136, X10<=680, <=40 actions; range, count, X10, margins, first op over 680 quoted",
+  "plan, pred (EL base = s06 measured 51) and MAIN + scratch recipes regenerated, base/start/cut only; md5 quoted; PD364(c) rebase fallback only if a tool edit is needed, stated first",
+  "dry + prerun PASS on final bytes of both recipes, --scratch-required exit 3; X10 line for both; a false positive goes to gate_fp.py log, no env bypass",
+  "Invariants unchanged (stage tools, elrule, stage_prerun, s06 569ffbf5, s05, s04, bed 39511877, memory_model 8eec443c, adopted_scratch, sim s06 tree); no LabVIEW process, no byte copy"
+ ],
+ "outputs": [
+  "tools/bench/diag_c150_a1_1_facts.md",
+  "tools/bench/plan_ring_p4_s07v18.json",
+  "tools/bench/plan_ring_p4_s07v18_pred.json",
+  "tools/recipes/stage_d1_ring_p4_s07v18.py",
+  "tools/recipes/stage_d1_ring_p4_s07v18_scratch.py"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c150_a1_1*",
+   "tools/bench/prep_c150_a1_1*",
+   "tools/bench/plan_ring_p4_s07v18*",
+   "tools/bench/sim/ring_p4_s07v18/**",
+   "tools/recipes/stage_d1_ring_p4_s07v18*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/gate_fp_queue.jsonl"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/graph_ring_p4s06_20261008_192149.json"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p4_s07v18.json"},
+  {"kind": "file", "name": "tools/stage_prerun.py"}
+ ],
+ "rules": [
+  "Offline only; no LabVIEW, camera or motor",
+  "Never touch claudeDev, memory_model.json, adopted_scratch.jsonl, sim/ring_p4_s06v18/** or graph_ring_p4s06_*",
+  "No stage-tool, hook or elrule edit; a tool fault is a RETURN with file:line and the refusal"
+ ]
+}

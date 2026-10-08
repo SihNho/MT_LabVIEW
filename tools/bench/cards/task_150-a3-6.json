@@ -1,0 +1,67 @@
+{
+ "schema": "task/1",
+ "id": "150-a3-6",
+ "kind": "build",
+ "goal": "Retry 150-a3-5: make s08 (NOT run) capped before action 20 (frame #29869 of unmeasured FS #29721); plan+pred+licence+recipes; dry+prerun PASS, --scratch-required quoted",
+ "why": "150-a3-5 failed only at stagesim.py:1805-1807 (PD289(f), FS diagram unmeasured); classifier-explained, one retry. A shorter s08 still meets pass item 9; the tail is left for a later decision.",
+ "retry_of_card": "150-a3-5",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_150-a3-6.md", "md5": "27f54256a8b32deb6a8317d0a35ce958"},
+  {"path": "tools/bench/cards/brief_150-a3-5.md", "md5": "e2a3ed3648ab738961c7d3d486b8d96d"},
+  {"path": "tools/bench/diag_c150_a3_5_facts.md", "md5": "8b3a37347a121f83d259547323895a15"},
+  {"path": "tools/bench/prep_c150_a3_5_mk.py", "md5": "b6448a4c9ba83f845dc786ab22a59286"},
+  {"path": "tools/bench/prep_c150_a3_5_mk.log", "md5": "8439972d906bef5059af0a6a5036f074"},
+  {"path": "tools/bench/prep_c150_a3_1_pred.py", "md5": "2644bdd4c011b77cbe3dcb02bd85eb9b"},
+  {"path": "tools/bench/prep_c150_a3_1_licence.py", "md5": "da47cb38923e3548899c46ac746da570"},
+  {"path": "tools/bench/graph_ring_p4s07_20261008_224835.json", "md5": "71935a845efedd8123044aab288cd81c"},
+  {"path": "tools/bench/memory_model.json", "md5": "b4a6eec651c348c395b2baa01d7f0f5f"}
+ ],
+ "pass": [
+  "s08 cut capped before action 20 (<=19 actions, no of split); START 595.3 quoted; first op not included named; rebase rc + lines quoted; tail op list stated, stagesim untouched",
+  "pred prep_c150_a3_6_pred.py: V18E-R' three checks PASS; EL base 50; X11 quoted; no s07 file overwritten",
+  "both s08 recipes carry a sink gate per wire_indicators census row (count + rows, zero allowed) and a licence by script (entries, owners)",
+  "dry + prerun PASS on final bytes of plan and both recipes; --scratch-required rc quoted; X10 MAIN and scratch; NOT launched",
+  "invariants md5 before=after; tools/hooks untouched; no LabVIEW process; facts file diag_c150_a3_6_facts.md"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p4_s08v18.json",
+  "tools/bench/plan_ring_p4_s08v18_licence.json",
+  "tools/recipes/stage_d1_ring_p4_s08v18.py",
+  "tools/recipes/stage_d1_ring_p4_s08v18_scratch.py",
+  "tools/bench/diag_c150_a3_6_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/plan_ring_p4_s08v18*",
+   "tools/bench/prep_c150_a3_5*",
+   "tools/bench/prep_c150_a3_6*",
+   "tools/bench/diag_c150_a3_5*",
+   "tools/bench/diag_c150_a3_6*",
+   "tools/recipes/stage_d1_ring_p4_s08v18*",
+   "tools/bench/sim/ring_p4_s08v18/**",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/gate_fp_queue.jsonl"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 90
+ },
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/graph_ring_p4s07_20261008_224835.json"},
+  {"kind": "file", "name": "tools/bench/prep_c150_a3_5_mk.py"}
+ ],
+ "rules": [
+  "No tools/hooks edit, no stage-tool edit (stagesim included); NO --launch; offline only",
+  "Do not overwrite any s07 file; RETURN on a second simulator/prerun refusal or a moved md5",
+  "Rule 1a: v18 ops copied as-is; only the cut point changes"
+ ]
+}

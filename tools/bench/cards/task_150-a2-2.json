@@ -1,0 +1,62 @@
+{
+ "schema": "task/1",
+ "id": "150-a2-2",
+ "kind": "build",
+ "goal": "Retry of 150-a2-1: rebind old key = (uid, owner, term class); is_source difference on an old terminal is a FLIPPED-OLD info line; R1-R4 pass; regressions unchanged",
+ "why": "Cycle 150 round 2 pass items 0-1. 150-a2-1 fixed BuildArray but its direction key misfiled 3 undirected LoopTunnels as created (BINDING LoopTunnel x0/x3).",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_150-a2-2.md", "md5": "e1b2f29259f31ac58b4366e6dc9a5f4c"},
+  {"path": "tools/bench/cards/brief_150-a2-1.md", "md5": "95c1e1f29bc2de00ef601f3f56026d84"},
+  {"path": "tools/bench/diag_c150_a2_1_facts.md", "md5": "151f82a0d3bf247fd06dddae272f86ab"},
+  {"path": "tools/stage_prerun.py", "md5": "3e5fdd53749174e7bd9731a1aa306754"},
+  {"path": "tools/bench/selftest_rebind_c150.py", "md5": "30a4dc5a00d887c1d570ca73005be442"},
+  {"path": "tools/bench/selftest_rebind_c150_pre.json", "md5": "64e2e1fb32ba1a13c30531c298ce9a41"},
+  {"path": "tools/bench/selftest_rebind_c150_post.log", "md5": "1aeccf9019127c0b9086e60afa33dc15"},
+  {"path": "tools/bench/graph_ring_p4s06_20261008_192149.json", "md5": "a3ecb92b27654c3d85b9ab5ff58aa069"},
+  {"path": "tools/bench/plan_ring_p4_s07v18.json", "md5": "10a4f59a0f1203abd08b6ae93139aa3c"}
+ ],
+ "pass": [
+  "Measured first: the 3 real LoopTunnels' uids/owners and the attribute that differs from the before row (is_source only, else STOP); key (uid, owner, term class); FLIPPED-OLD info; line ranges quoted",
+  "selftest_rebind_c150: R1 binds s07 onto real s06 (old code refuses, pre record); R2 = exactly the 5 renames; R3a class change refuses; R3b old non-tunnel direction flip = info; R4 s05->s06 same map",
+  "selftest_rebind_c142_5 4/0; rebind_c132_5, rebase_c132_6, rebase_uidreuse_c143_4 same counts as 150-a2-1 AFTER logs; py_compile stage_prerun; old 3e5fdd53 + new md5 quoted",
+  "Invariants md5 unchanged (stagekit, stagexec, gscript, elrule, s06, s05, bed, graph a3ecb92b, plan s07 10a4f59a, memory_model); no hooks edit; no LabVIEW process; --rebase not run here"
+ ],
+ "outputs": [
+  "tools/stage_prerun.py",
+  "tools/bench/selftest_rebind_c150.py",
+  "tools/bench/diag_c150_a2_2_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stage_prerun.py",
+   "tools/bench/selftest_rebind_c150*",
+   "tools/bench/diag_c150_a2_2*",
+   "tools/bench/prep_c150_a2_2*",
+   "tools/bench/gate_fp_queue.jsonl"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 50
+ },
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/graph_ring_p4s06_20261008_192149.json"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p4_s07v18_prov148.json"},
+  {"kind": "file", "name": "tools/stage_prerun.py"}
+ ],
+ "retry_of_card": "150-a2-1",
+ "retry_of": "stage_prerun.py",
+ "rules": [
+  "Offline only; no LabVIEW, camera or motor; runs ALONE (no other card live)",
+  "stage_prerun.py edit scope: rebind key, info list, docstring, CLI log lines; nothing else",
+  "Never touch claudeDev, memory_model, adopted_scratch, sim/ring_p4_s06v18, graph_ring_p4s06_*, plan s07, hooks"
+ ]
+}

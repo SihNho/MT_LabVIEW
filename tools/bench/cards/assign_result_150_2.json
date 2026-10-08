@@ -1,0 +1,25 @@
+{
+ "schema": "assign-result/1",
+ "cycle": 150,
+ "round": 2,
+ "status": "HANDBACK",
+ "cards": ["150-a2-1", "150-a2-2", "150-a2-3", "150-a2-4", "150-a2-5"],
+ "pass_evidence": [
+  {"item": 0, "met": true, "evidence": ["tools/bench/cards/result_150-a2-2.json", "tools/bench/diag_c150_a2_2_facts.md", "tools/bench/selftest_rebind_c150_post2.log"]},
+  {"item": 1, "met": true, "evidence": ["tools/bench/cards/result_150-a2-2.json", "tools/bench/diag_c150_a2_4_facts.md", "tools/bench/selftest_rebind_c150_post4.log"]},
+  {"item": 2, "met": false, "evidence": ["tools/bench/diag_c150_a2_5_facts.md:9-22", "tools/bench/prep_c150_a2_5_rebase.log:80", "tools/bench/prep_c150_a2_5_pred.log:8-9"]},
+  {"item": 3, "met": false, "evidence": ["tools/bench/diag_c150_a2_5_facts.md:23-28"]},
+  {"item": 4, "met": false, "evidence": ["tools/bench/diag_c150_a2_5_facts.md:23-28"]},
+  {"item": 5, "met": false, "evidence": ["tools/bench/diag_c150_a2_5_facts.md:23-28"]},
+  {"item": 6, "met": false, "evidence": ["docs/d1/ring-p4c.md:298-305"]},
+  {"item": 7, "met": false, "evidence": ["docs/d1/ring-p4c.md:298-305"]},
+  {"item": 8, "met": false, "evidence": ["docs/d1/ring-p4c.md:298-305"]},
+  {"item": 9, "met": false, "evidence": ["docs/d1/ring-p4c.md:306-308"]},
+  {"item": 10, "met": false, "evidence": ["tools/bench/prep_c150_a2_5_check_after.log"]}
+ ],
+ "handback": {
+  "reason": "a-unexplained-after-retry (guard_assign): 150-a2-5 (retry of 150-a2-3) FAILed at pred V18E-R, s07 end 19 rows vs v18 22 (only v18 2626|Terminal|array|1..3 = #2626 inputs renamed array->element). Card 150-a2-6 ready, dispatch refused.",
+  "question": null
+ },
+ "note": "Items 0-1 met: rebind key (uid, owner, term class); old-terminal is_source difference is info only (FLIPPED-OLD), a deviation from the purpose's literal 'direction' wording - the 3 undirected LoopTunnels t29779, t9505, t10179 made direction an unstable identity (150-a2-1 FAIL, 150-a2-2 PASS 7/0); 150-a2-4 fixed b-shadowing at stage_prerun.py:4303-4306 that 150-a2-3 hit (stage_prerun now c739eb86, selftest 8/0, regressions unchanged). s07 REBASE now PASSES (plan 10a4f59a -> 08c2ad4d2e6dd4bddd4dd5b18326562c, fsmap 765c687c, RENAMED-OLD 5, FLIPPED-OLD 3). X11 flags op 150 (rename_by_uid #2626). Open for judgement: (1) pred V18E-R should normalise the 5 measured renamed-old (uid, owner) names - own pred script only, no tool edit; (2) the MAIN recipe declares ONE sink gate but the census has TWO sink rows (n1 p4_rbA_re2, n28 p4_rbD_sel_t25573; prep_c150_a1_1_session.json:395-420), an undeclared sink error stops the run. Retry brief + card ready: tools/bench/cards/brief_150-a2-6.md and task_150-a2-6.json (validated, requires PASS). Items 2-10 otherwise not run; X10, recipes, licence, dry/prerun not done. Invariants held through a2-5 (99/99 files, no LabVIEW process, no hooks edit)."
+}

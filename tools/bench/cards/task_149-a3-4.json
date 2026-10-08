@@ -1,0 +1,66 @@
+{
+ "schema": "task/1",
+ "id": "149-a3-4",
+ "kind": "build",
+ "goal": "PD363(d): s07 plan --rebase on the real s06 graph read, then dry + prerun on current bytes, outputs quoted; offline, s07 NOT launched",
+ "why": "Pass item 4 of cycle 149 round 3. Pipeline: one offline prep card beside the census LabVIEW card; the s06 graph a3ecb92b now exists.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_149-a3-4.md", "md5": "96957c052af2c86cee35393ed2b70ba2"},
+  {"path": "tools/bench/diag_c148_a3_3_facts.md", "md5": "2efa3514330d2ece8a577e41ec718fa5"},
+  {"path": "tools/bench/cards/brief_148-a3-3.md", "md5": "d7257fdb3449db3e5051c07d83210da9"},
+  {"path": "tools/bench/graph_ring_p4s06_20261008_192149.json", "md5": "a3ecb92b27654c3d85b9ab5ff58aa069"},
+  {"path": "tools/bench/plan_ring_p4_s07v18.json", "md5": "aeae610ee123bf30d8ed92016282189f"},
+  {"path": "tools/bench/plan_ring_p4_s07v18_pred.json", "md5": "e888ab67228f04ba98ed08d4e40055f6"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s07v18.py", "md5": "d6c8da7b32377fdbde1df4747edbf6ed"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s07v18_scratch.py", "md5": "273dc3de479f1bd810f6a1ab2be43588"},
+  {"path": "tools/bench/prep_c148_a3_3_mk.py", "md5": "5f00cd4f7bade7ed9d41a9f15b36d05e"},
+  {"path": "tools/bench/prep_c147_a1_3_mk.py", "md5": "8900e0dfe3f4439774392b598edcd170"},
+  {"path": "tools/stage_prerun.py", "md5": "dcd45aba9be99dde809800e7f59bb2f7"},
+  {"path": "tools/stagekit.py", "md5": "06b8d844284deacab535a9ee442d4964"},
+  {"path": "tools/stagexec.py", "md5": "1bab9cf96502dfbe2d9a755e6d4a48b6"},
+  {"path": "tools/elrule.py", "md5": "a5ee7d5c8792ccf5c174e70be022544d"}
+ ],
+ "pass": [
+  "Rebase command and output quoted: base rule numbers before/after, plan md5 before/after, any gate line; refusal quoted with file:line if refused",
+  "Dry and prerun on the CURRENT bytes of MAIN and scratch recipes: PASS or the first failing gate; X10 for both, margins to 680/695, first op over 680",
+  "--scratch-required gives exit 3 as in the s06 pattern; s07 not launched; no LabVIEW process",
+  "Protected md5 unchanged (stage tools, claudeDev, memory_model 8eec443c, adopted_scratch.jsonl, sim/ring_p4_s06v18, graph_ring_p4s06_*); changed files listed"
+ ],
+ "outputs": [
+  "tools/bench/diag_c149_a3_4_facts.md",
+  "tools/bench/plan_ring_p4_s07v18.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c149_a3_4*",
+   "tools/bench/prep_c149_a3_4*",
+   "tools/bench/plan_ring_p4_s07v18*",
+   "tools/bench/sim/ring_p4_s07v18/**",
+   "tools/recipes/stage_d1_ring_p4_s07v18*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/gate_fp_queue.jsonl"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/graph_ring_p4s06_20261008_192149.json"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p4_s07v18.json"},
+  {"kind": "file", "name": "tools/stage_prerun.py"}
+ ],
+ "rules": [
+  "Offline only; no LabVIEW, camera or motor; runs beside the census card",
+  "Never touch claudeDev, memory_model.json, adopted_scratch.jsonl, sim/ring_p4_s06v18/** or graph_ring_p4s06_*",
+  "No stage-tool, hook or elrule edit; a tool fault is a RETURN with file:line and the refusal"
+ ]
+}

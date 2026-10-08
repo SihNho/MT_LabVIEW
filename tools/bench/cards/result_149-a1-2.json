@@ -1,0 +1,33 @@
+{"schema": "result/1", "id": "149-a1-2", "status": "FAIL", "gates": {"pass": 2, "fail": 1},
+ "first_fail": "EL-ADVISORY rc 1: s06 Error List 51 items vs predicted 55 (diff -4 > tol 3), unseen classes [] (diag_c149_a1_2_eladv.log:3)",
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/bench/diag_c149_a1_2_facts.md", "md5": "ec1326e3b6a40c562f6f732fd95a2979"},
+  {"path": "tools/bench/diag_c149_a1_2_el.log", "md5": "3f5fdeb720d0ef3ca4554e65ca6d6082"},
+  {"path": "tools/bench/errorlist_D1_ring_p4s06_20261008_174730_20261008_181243.json", "md5": "899e265612a8821ffaa8f0553e1ce5f1"},
+  {"path": "tools/bench/diag_c149_a1_2_eladv.log", "md5": "65920c43be070db68d0b61ad478f3699"},
+  {"path": "tools/bench/diag_c149_a1_2_probe.log", "md5": "65501baee5ed615b41b3b2e3b4c8169f"},
+  {"path": "tools/bench/diag_c149_a1_2_elrun.py", "md5": "0179b6001e81970d869561ecd62e72eb"},
+  {"path": "tools/bench/diag_c149_a1_2_inv.log", "md5": "63d9b9a239aca664fd5e37be47dd2eb6"},
+  {"path": "archive/peer/2026-10-08-c149-a1-2-el51.md", "md5": "1a414ba169f9a5895111085cfcacf5b0"},
+  {"path": "archive/peer/2026-10-08-c149-a1-2-eladv.md", "md5": "13de64d0455cfc48bde341fad24b9c30"}
+ ],
+ "facts": [
+  "PYTHONPATH env forms refused by the permission layer; equivalent used: LocalCache site at sys.path[0] in-process (diag_c149_a1_2_probe.py:9-15)",
+  "Probe 5/0: comtypes 1.4.17, rapidocr_onnxruntime 1.4.4, numpy 2.2.6, onnxruntime 1.23.2, cv2 5.0.0.93, all from LocalCache (diag_c149_a1_2_probe.log:6-10)",
+  "EL read via OCR rapidocr (UIA 0, MSAA 0), window's own count 51, 51 items read (diag_c149_a1_2_el.log:21-27,81); same reader path as diag_c147_a1_1_el.log:20-25",
+  "errorlist_check MISMATCH vs s05 expected: extra 5, missing 9, BY-DESIGN STOP, rc 1 after 674 s; bed md5 unchanged (diag_c149_a1_2_el.log:86-87)",
+  "EL-ADVISORY: input -2, undirected-tunnel -3, sinks-no-source -1, out-tunnel->RAS -1, out-tunnel->subVI -1, types +1, not-connected +2, loose-ends +1 (eladv.log:3)",
+  "Recipe's own --el-advisory refused by guard_bash launch gate on the OLD 12:52 scratch-log segment; logged fp-62; verbatim copy diag_c149_a1_2_eladv.py used",
+  "Peer el51: 51 is probably real, but new item 'source void -> sink I32' (read json:322) + op-21 'target BROKEN' (scratch log:990-994) suggest a new break",
+  "Peer eladv: copy is function-equivalent; rc rests on the OCR'd header '51' (alternative B unchecked) (archive/peer/2026-10-08-c149-a1-2-eladv.md)",
+  "Not adopted: no adopted_scratch/memory_model/expected/graph writes; invariants 12/0 incl. s05/s04/s03/bed/s06 md5s (diag_c149_a1_2_inv.log:3-14)",
+  "Jev: el.log new-problem 0.610 -> review dispatched, ANSWERED; eladv.log new-problem 0.740 -> review dispatched, ANSWERED (jev_gate.log:5276,5282)"
+ ],
+ "open": [
+  "Is s06's 51 a new break (void->I32, op-21 target BROKEN) or items resolved by design? Run el51's read-only capture comparison / w23807 broken-wire read before adopting?",
+  "Runner cannot see the LocalCache packages: launch the runner inside the Claude app, or keep the per-command sys.path wrapper (diag_c149_a1_2_elrun.py) for EL reads?",
+  "fp-62: launch gate judges the recipe's offline --el-advisory by an older failed segment of the appended scratch log"
+ ],
+ "cost": {"usd": 2.70, "minutes": 26, "labview_runs": 1},
+ "note": "usd = the two peer reviews only. Handles 37208 -> 31259 (el.log:85). LabVIEW gone (tasklist no tasks). Adopt chain prepared, unrun: diag_c149_a1_2_{adopt,elexp,mkgraph,graph,memload}.py."}

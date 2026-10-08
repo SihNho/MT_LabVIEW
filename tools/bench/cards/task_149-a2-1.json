@@ -1,0 +1,69 @@
+{
+ "schema": "task/1",
+ "id": "149-a2-1",
+ "kind": "build",
+ "goal": "PD361(b)+(c): quote the child running at 16:47:46 KST; guard_assign honours only provenance hand-backs; pre-fix wrapper drops the assign env vars; new self-test fails on bbaa2325",
+ "why": "The second p1s-A hand-back was written while a pre-fix tree ran with the live ASSIGN_STATE; the purpose authorises this tooling card, ALONE, after the measurement card returned with LabVIEW gone.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_149-a2-1.md", "md5": "65243d97f702c4148a6e1188c1172fab"},
+  {"path": "tools/hooks/guard_assign.py", "md5": "bbaa2325563ab45a007dfbfba24310c9"},
+  {"path": "tools/hooks/guard_session.py", "md5": "e1b661b57b92f266c7fa237f710f2e56"},
+  {"path": "tools/bench/selftest_assign_flow.py", "md5": "47906beb5abda008cddc18a665326677"},
+  {"path": "tools/bench/selftest_chat_p1.py", "md5": "8753ee8a85912b14a9fe1e46c46696ef"},
+  {"path": "tools/bench/selftest_chat_p2.py", "md5": "69460108c5f2125cb5c97321d4d6f559"},
+  {"path": "tools/bench/selftest_guard_session_pairing.py", "md5": "45592a587f08da1874ea6d4fd43ad26a"},
+  {"path": "tools/bench/selftest_guard_session.py", "md5": "d4f63b2f0d6f87a726c702a9a35a6884"},
+  {"path": "tools/bench/selftest_c148_assign_leak.py", "md5": "76c84f49992c2a2318d230204beff6ba"},
+  {"path": "tools/bench/diag_c148_a3_1_suites.py", "md5": "014319cdc5682c1cfb01f2b547cd2892"},
+  {"path": "tools/bench/diag_c148_a3_1_suites.log", "md5": "ffbe085dcb0bf4449e059b1509c08ad5"},
+  {"path": "tools/bench/assign/state_148_3.json", "md5": "087b634b9e8446f6dfd5d600aadb5b89"},
+  {"path": "tools/bench/diag_c148_a3_2_facts.md", "md5": "2685c32513ff4e065295146b0624b345"},
+  {"path": "tools/stagekit.py", "md5": "06b8d844284deacab535a9ee442d4964"},
+  {"path": "tools/stagexec.py", "md5": "1bab9cf96502dfbe2d9a755e6d4a48b6"},
+  {"path": "tools/gscript.py", "md5": "1a80236ed35c1876c67f964c72fe820a"},
+  {"path": "tools/elrule.py", "md5": "a5ee7d5c8792ccf5c174e70be022544d"},
+  {"path": "tools/bench/memory_model.json", "md5": "88eeb03748e94d422e38be802be2118a"}
+ ],
+ "pass": [
+  "PD361(b): the child (tree PRE or NOW, suite) running at 16:47:46 KST (t 1791445665.97) quoted from the wrapper's run times with path:line; a NOW child = return before any edit",
+  "PD361(c)1: guard_assign.py honours a state hand-back only with provenance (card path under tools/bench/cards/ + id), logs and ignores others (path:line quoted)",
+  "PD361(c)1: new tools/bench/selftest_c149_handback_provenance.py FAILS on a %TEMP% copy of pre-edit guard_assign.py bbaa2325 and passes on the edited one: rc + counts of both runs quoted",
+  "PD361(c)2: diag_c148_a3_1_suites.py drops ASSIGN_STATE, CYCLE_ROLE, CYCLE_SESSION from every child env (path:line quoted)",
+  "guard_session / guard_session_pairing / chat_p1 / chat_p2 / assign_flow / c148_assign_leak self-tests rc 0 or the same counts as before the edit: before and after quoted",
+  "Invariants as diag_c149_a1_2_inv.log (stage tools, errorlist_check, s06..s03, bed, memory_model 88eeb037) unchanged; adopted_scratch.jsonl unwritten; no LabVIEW process"
+ ],
+ "outputs": [
+  "tools/bench/diag_c149_a2_1_facts.md",
+  "tools/bench/selftest_c149_handback_provenance.py"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/hooks/guard_assign.py",
+   "tools/bench/diag_c148_a3_1_suites.py",
+   "tools/bench/selftest_c149_handback_provenance.py",
+   "tools/bench/diag_c149_a2_1*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/hooks/guard_assign.py"},
+  {"kind": "file", "name": "tools/bench/diag_c148_a3_1_suites.py"}
+ ],
+ "rules": [
+  "Run ALONE: no other card live; no LabVIEW process may start",
+  "Step 1 (the 16:47:46 measurement) BEFORE any edit; a NOW child is a return with no edit",
+  "Edit only the write paths; no other self-test edit; a new difference in an existing self-test is a return",
+  "Never write or point a test at a live tools/bench/assign/state_*.json"
+ ]
+}

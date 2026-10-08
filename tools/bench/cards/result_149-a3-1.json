@@ -1,0 +1,26 @@
+{"schema": "result/1", "id": "149-a3-1", "status": "FAIL", "gates": {"pass": 2, "fail": 1},
+ "first_fail": "diag_c149_a3_1_mkgraph.log: W new wires from term_identity.new (15) == the log's D gate count (16)",
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/bench/diag_c149_a3_1_facts.md", "md5": "3969b0c53bf0257c70c68fd77e017484"},
+  {"path": "tools/bench/errorlist_expected_D1_ring_p4s06_20261008_174730.json", "md5": "b47995c8b6cbad7dc6e35771b33e71be"},
+  {"path": "tools/bench/adopted_scratch.jsonl", "md5": "658fe5b9526a78bac59a5ed6c3091582"},
+  {"path": "tools/bench/diag_c149_a3_1_graph_plan.json", "md5": "84e846304fee4e0c03ebab8228872376"},
+  {"path": "archive/peer/2026-10-08-c149-a3-1-mkgraph.md", "md5": "bbaba5b5ca20338e13a2dbae9cb5542e"}
+ ],
+ "facts": [
+  "ADOPTED claudeDev D1_ring_p4s06_20261008_174730.vi md5 569ffbf5 (unchanged), adopt 3/0, scratch pass 22 log_fails 0 (diag_c149_a3_1_adopt.log)",
+  "EL expected errorlist_expected_D1_ring_p4s06_20261008_174730.json b47995c8: total 51, 12 entries, compare extra[] missing[] (diag_c149_a3_1_elexp.log)",
+  "mkgraph FAIL 3/1: term_identity.new 15 uids vs D line 16 incl. reuse_noted 23807 kept_by_key (diag_c147_p4s06v18_scratch.log:1002; stagekit.py:1513)",
+  "mkgraph is a names-only copy of never-run diag_c149_a1_2/diag_c148_a2_4 mkgraph; plan json written with new_wires 15, deleted_wires [23807]",
+  "Peer c149-a3-1-mkgraph ANSWERED: defect is in emitted plan DATA; gate-only fix would make graph E5 (graph.py:64-69) fail on w23807 in LabVIEW",
+  "NOT done: graph read, memload (memory_model 88eeb037 unchanged), Void census, graph_ring_p4s06_* (diag_c149_a3_1_facts.md:24-25)",
+  "Invariants after 11/0, no scratch copies left; LabVIEW never started in this card, tasklist none (diag_c149_a3_1_inv_after.log)",
+  "Jev ladder | diag_c149_a3_1_mkgraph.log | new-problem 0.828 | review owed | dispatched hypothesis | ANSWERED (jev_gate.log:5312)"
+ ],
+ "open": [
+  "Count re-used kept_by_key uid 23807 as new (not deleted) in the s06 graph plan per stagekit.py:1480-1481, then re-issue graph + memload + Void census?",
+  "Is 're-used uid vs never deleted' for w23807 worth a LabVIEW wire read (peer sec.2)?"
+ ],
+ "cost": {"usd": null, "minutes": 13, "labview_runs": 0},
+ "note": "Returned at first unexpected result (card chat-P2). graph script diag_c149_a3_1_graph.py written but not launched."}

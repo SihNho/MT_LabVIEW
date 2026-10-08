@@ -1,0 +1,18 @@
+ATTACK this claim about a failed gate in tools/bench/diag_c149_a3_void.py (log tools/bench/diag_c149_a3_void_s06.log), card 149-a3-2.
+
+OBSERVED: gate "COV every wired terminal read within TCAP" FAILED: 1112 of 4379 wired terminals read in 600.2 s (cap TCAP = 600 s),
+0.54 s/read (rates logged after 10/50/200/500/1000 reads: 0.59/0.63/0.58/0.56/0.54). Order wire uid DESC, last wire read w26932.
+0 Void terminals and 0 read errors among the 1112. Every other gate PASS (K1, K0, K3, R, T, G LabVIEW gone, C copy deleted, X input md5).
+The script reads each terminal's type with gscript.read_term_type(copy, uid, index=i) (OpTermDataType_v0, one op run per terminal,
+tools/gscript.py:4646-4672) after one allterms.read_terms + one report_all('Terminal') for the Traverse index.
+
+CLAIM: the FAIL is a throughput limit of the per-terminal reader, not a fault of the VI or of LabVIEW: at ~0.54 s/read a complete census
+needs ~39 min per file (~80 min for s06 + the s05 byte copy), so the 600 s cap was always going to cut it; no bulk type reader exists in
+tools/*.py (grep '^def .*type' finds only read_term_type / parse_type_descriptors). The partial result (0 Void in w30418..w26932,
+which includes all 16 session-6 new wires >= w30250 except w10166, w23807, w28684, w29766) is a measurement of that range only.
+
+Already ruled out: input md5 569ffbf5 unchanged; byte copy identical; LabVIEW gone; handles 48952 -> 42412.
+
+Give: the strongest reason this claim is wrong; an alternative explanation; what would falsify it; the cheapest discriminating test.
+In particular: is the 'void' substring test on parse_type_descriptors' TD names (tools/gscript.py:4591-4645) able to see a Void type
+at all, i.e. could '0 Void' be a reader blind spot rather than a fact?

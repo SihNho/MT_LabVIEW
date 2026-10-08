@@ -1,0 +1,11 @@
+BGRUN START 2026-10-08 19:18:39 limit 2.0 min: py -u tools/bench/diag_c149_a3_2_disc.py
+BGRUN PID 11120
+GATE PASS | a set(new)|{kept_by_key} has 16 members == d_new | {'new': 15, 'kept': [23807], 'union': 16, 'd_new': 16}
+GATE PASS | b real_end_rows: w23807 source {(5171,5058)}, sinks {(3173,23166),(10975,10969)} | {'rows': [[10975, 10969, 'array', 23807, False], [5171, 5058, 'pos in cal image out', 23807, True], [3173, 23166, 'Pos within cal image', 23807, False]]}
+FACT real_end_rows 6030 rows, 2008 distinct wire uids
+FACT c1 plan as written (deleted [23807], 15 new): E5 {'deleted_wires_present': [23807], 'new_wires_missing': []} -> FAIL
+FACT c2 23807 moved deleted->new (deleted [], 16 new): E5 {'deleted_wires_present': [], 'new_wires_missing': []} -> PASS
+GATE PASS | c1 E5 on the plan as written FAILS (predicted: 23807 present) | {'deleted_wires_present': [23807], 'new_wires_missing': []}
+GATE PASS | c2 E5 with 23807 moved deleted -> new PASSES | {'deleted_wires_present': [], 'new_wires_missing': []}
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":4,"fail":0},"first_fail":null,"artefacts":[],"card":"149-a3-2","labview":"build"}
+BGRUN END rc=0 after 1s

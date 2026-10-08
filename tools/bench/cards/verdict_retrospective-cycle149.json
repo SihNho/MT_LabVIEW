@@ -1,0 +1,32 @@
+{
+ "schema": "verdict/1",
+ "id": "retrospective-cycle149",
+ "verdict": "refuted",
+ "alternative": "The census COV FAIL was only a throughput cap that a retry would clear, and retro-148 being undisposed is a judgement lapse, not a device fault.",
+ "discriminating_test": "Offline: parse_type_descriptors on a code-0 TD returns name '0x00' (blind test), and guard_peer.undisposed() on retrospective-cycle148.md returns None despite :371 placeholder.",
+ "violations": [
+  {
+   "slug": "inference-over-measurement",
+   "loss_min": 18,
+   "loss_usd": null,
+   "evidence": "tools/bench/diag_c149_a3_void.py:12"
+  },
+  {
+   "slug": "device-failed",
+   "loss_min": 4,
+   "loss_usd": 1.88,
+   "evidence": "tools/hooks/guard_peer.py:851"
+  }
+ ],
+ "sources": [
+  "tools/bench/diag_c149_a3_void_s06.log:17",
+  "archive/peer/2026-10-08-c149-a3-2-void.md:49",
+  "archive/peer/2026-10-08-retrospective-cycle148.md:147",
+  "archive/peer/2026-10-08-retrospective-cycle148.md:369",
+  "tools/cycle_runner.py:1017",
+  "tools/audit_cycle.py:619",
+  "tools/hooks/material_marker.log:3595",
+  "https://labviewwiki.org/wiki/Type_descriptor"
+ ],
+ "note": "Second device failure: guard_bash launch gate refused gate_fp.py log (recipe path only in --cmd arg) twice, the fp-22 class. Audit A4 PASS is false for retro-147/148."
+}

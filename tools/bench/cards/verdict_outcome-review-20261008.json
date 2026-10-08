@@ -1,0 +1,49 @@
+{
+ "schema": "verdict/1",
+ "id": "outcome-review-20261008",
+ "verdict": "refuted",
+ "alternative": "P4 sessions s01-s06 are necessary steps toward a tracking/camera split that pays off at 150 Hz. Unsupported: no 150 Hz run exists, every file is ExecState 0, s06 carries an unidentified void->I32 conflict, and the first ring run is still P6 with P5 not started.",
+ "discriminating_test": "Add R8 frame-rate control to D1_s1_disp_20260927_041648.vi and run 150 Hz at 8 and 15 picks plus one supervised bead run. Loss near 0 => hand off, park the ring. Loss at 150 Hz => resume the ring on the loop the numbers name.",
+ "violations": [
+  {
+   "slug": "wrong-ordering",
+   "loss_min": 299,
+   "loss_usd": 326.47,
+   "evidence": "tools/bench/cycle_runner.log:1148,1167,1190,1211,1240,1277,1304,1331; STATUS.md:68; docs/d1/INDEX.md:61-64"
+  },
+  {
+   "slug": "unreported-fact",
+   "loss_min": 0,
+   "loss_usd": null,
+   "evidence": "archive/peer/2026-10-02-outcome-review-20261002.md:208"
+  }
+ ],
+ "sources": [
+  "project-requirements/parallelization-requirement.md:10",
+  "docs/goalmap.json:21",
+  "docs/goalmap.json:27",
+  "docs/goalmap.json:33",
+  "docs/goalmap.json:51",
+  "docs/goalmap.json:75",
+  "docs/d1/INDEX.md:26",
+  "docs/d1/INDEX.md:34",
+  "docs/d1/INDEX.md:61",
+  "STATUS.md:61",
+  "STATUS.md:65",
+  "STATUS.md:68",
+  "STATUS.md:69",
+  "STATUS.md:79",
+  "STATUS.md:182",
+  "tools/bench/cards/assign_result_149_3.json:19",
+  "archive/peer/2026-10-08-retrospective-cycle149.md:304",
+  "tools/bench/livebench/report_4arms.md:19",
+  "tools/bench/livebench/report_4arms.md:24",
+  "archive/benchmarks/INDEX.md:79",
+  "archive/benchmarks/INDEX.md:80",
+  "tools/bench/decisions_pending.json:335",
+  "archive/peer/2026-10-02-outcome-review-20261002.md:92",
+  "archive/peer/2026-10-02-outcome-review-20261002.md:208",
+  "tools/bench/cycle_runner.log:1134"
+ ],
+ "note": "Cycles 141-149: 6 P4 in-between files ExecState 0 never run, 2 subVIs run vs Python only, 0 INDEX rows, $326.47 cycles + $508.18 live bench; loss_min = measured windows of 142/143/149 only, 141/144/145 unlogged. Sixth refutation; prior refuted review undisposed. Stop and re-plan with the user."
+}

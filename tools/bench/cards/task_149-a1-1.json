@@ -1,0 +1,76 @@
+{
+ "schema": "task/1",
+ "id": "149-a1-1",
+ "kind": "build",
+ "goal": "PD354(a): restore the EL reader's missing py modules, re-read EL of saved s06 scratch 569ffbf5 (no new scratch), adopt D1_ring_p4s06_*.vi + load_by_vi",
+ "why": "Card 148-a2-4's single s06 scratch PASSED 22/0 (saved 569ffbf5) but its Error List read failed on ModuleNotFoundError comtypes / no OCR engine (diag_c148_a2_4_el.log:12-14); the same reader worked at 01:23. Environment fault, not the build.",
+ "retry_of": "stage_d1_ring_p4_s06v18_scratch.py",
+ "retry_of_card": "148-a2-4",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_149-a1-1.md", "md5": "7baf6716ac448476a1e60f603c273702"},
+  {"path": "tools/bench/cards/brief_148-a2-4.md", "md5": "a547b41be3b5f48bd058516a1ff60158"},
+  {"path": "tools/bench/diag_c148_a2_4_facts.md", "md5": "5de094eda5bc29bc98ae01af98e0e783"},
+  {"path": "tools/bench/cards/result_148-a2-4.json", "md5": "2f3dcceb4c59a25590911511072c61e5"},
+  {"path": "tools/errorlist_check.py", "md5": "2b466a89335af69efd27a663479eda53"},
+  {"path": "tools/bench/errorlist_expected_D1_ring_p4s05_20261008_002621.json", "md5": "6f2ca28a3f5a0dc48101eadb0d97dfb6"},
+  {"path": "tools/bench/plan_ring_p4_s06v18_pred.json", "md5": "c1bd6b3ed11c5641e7dacf10045af9a1"},
+  {"path": "tools/bench/diag_c148_a2_4_adopt.py", "md5": "5f5cf0f3abc4040bd7be93e225a790f8"},
+  {"path": "tools/bench/diag_c148_a2_4_elexp.py", "md5": "c3e0d7f9e52951ab37cffbf6f491c82a"},
+  {"path": "tools/bench/diag_c148_a2_4_mkgraph.py", "md5": "a9a4f8778b8371fcbd1ed4c1fbdb7f1b"},
+  {"path": "tools/bench/diag_c148_a2_4_graph.py", "md5": "e6582d575db20c4d139b4c362a91c60c"},
+  {"path": "tools/bench/diag_c148_a2_4_memload.py", "md5": "74192bfef175aa1c660e3cb8d122cc39"},
+  {"path": "tools/stagekit.py", "md5": "06b8d844284deacab535a9ee442d4964"},
+  {"path": "tools/stagexec.py", "md5": "1bab9cf96502dfbe2d9a755e6d4a48b6"},
+  {"path": "tools/gscript.py", "md5": "1a80236ed35c1876c67f964c72fe820a"},
+  {"path": "tools/elrule.py", "md5": "a5ee7d5c8792ccf5c174e70be022544d"},
+  {"path": "tools/bench/memory_model.json", "md5": "88eeb03748e94d422e38be802be2118a"}
+ ],
+ "pass": [
+  "Env facts quoted (interpreter, comtypes/OCR pip state, what changed 01:23-17:57); ONLY missing packages restored at the 01:23 version, import verified; else RETURN",
+  "EL read of a byte copy of 569ffbf5: 55 items (or a documented per-class difference); EL-ADVISORY fails only on an unseen class or |total diff| > 3; per-class diff vs pred and the s05 read explained",
+  "Adopted as claudeDev D1_ring_p4s06_<stamp>.vi + md5; final EL expected file; fresh-instance load MB; graph json + md5",
+  "memory_model.json: ONLY one load_by_vi entry for 569ffbf5 (key-by-key diff); no limit or coefficient changed",
+  "3f9ac26b, 95e408ff, 282301ca, 39511877, stagekit, stagexec, gscript, elrule unchanged; handles recorded; LabVIEW closed and verified gone"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p4s06_<stamp>.vi",
+  "tools/bench/graph_ring_p4s06_<stamp>.json",
+  "tools/bench/errorlist_expected_D1_ring_p4s06_<stamp>.json",
+  "tools/bench/diag_c149_a1_1_facts.md"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c149_a1_1*",
+   "tools/bench/errorlist_*p4s06*",
+   "tools/bench/graph_ring_p4s06_*",
+   "tools/bench/adopted_scratch.jsonl",
+   "tools/bench/memory_model.json",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/jev_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 90
+ },
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "D1_ring_p4s06_20261008_174730.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/bench/diag_c148_a2_4_adopt.py"}
+ ],
+ "rules": [
+  "NO second scratch; the saved scratch file 569ffbf5 is the artefact; edit nothing but a byte copy for the EL read",
+  "No stage-tool, hook or elrule edit; pip only for the missing packages at the version the 01:23 run used",
+  "Bed, s03, s04, s05 never opened for editing; no motor or camera"
+ ]
+}

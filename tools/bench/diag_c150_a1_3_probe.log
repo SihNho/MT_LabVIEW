@@ -1,0 +1,109 @@
+BGRUN START 2026-10-08 20:44:08 limit 5.0 min: py -u tools/bench/diag_c150_a1_3_probe.py
+BGRUN PID 23956
+IN tools\bench\plan_ring_p4_s07v18.json md5 10a4f59a0f1203abd08b6ae93139aa3c
+IN tools\bench\plan_ring_p4_s07v18_prov148.json md5 aeae610ee123bf30d8ed92016282189f
+IN tools\bench\plan_ring_p4_s06v18.json md5 cfbd9823d3b47be39de94f2125ad6b66
+IN tools\bench\plan_ring_p4_s06v18_in.json md5 db72d8af5b1f6da643e4c84b1260a61a
+IN tools\bench\graph_ring_p4s06_20261008_192149.json md5 a3ecb92b27654c3d85b9ab5ff58aa069
+IN tools\bench\graph_ring_p4s05_20261008_013759.json md5 cbeeadf5beaa5f312b0aff8f2df383ce
+IN tools\bench\creation_map\plan_ring_p4_s06v18_cfbd9823_20261008_175325.jsonl md5 99f9d2539c7f9c6ada1d4813a23ecfa2
+GATE PASS | L inputs load | 
+S7 PLAN tools\bench\plan_ring_p4_s07v18.json md5 10a4f59a0f1203abd08b6ae93139aa3c; base tools/bench/sim/ring_p4_s07v18/s06end/base_provisional.json prov=True; sim_of tools/bench/plan_ring_p4_s06v18.json cfbd9823d3b47be39de94f2125ad6b66; N's base (before) tools/bench/sim/ring_p4_s06v18_base_real_fsmap.json
+S7 COUNTS before 6022 prov 6030 real 6030; sim_new nodes 4; real_new nodes 6
+S7 SHAPE-DIFF sim 0 real 1 key ('BuildArray', (('Terminal', False), ('Terminal', False), ('Terminal', False)))
+S7 SHAPE-DIFF sim 2 real 3 key ('LoopTunnel', (('InnerTerminal', True), ('OuterTerminal', False)))
+S7 SIM-NEW node #-5 class LoopTunnel shape-in-diff True node-in-before False obj real None obj before None obj prov ('LoopTunnel', 'WhileLoop')
+S7   term -6 name '' tclass OuterTerminal src False wire -8 owner -5 frame 686 | uid absent from before
+S7   term -7 name '' tclass InnerTerminal src True wire -9 owner -5 frame 23166 | uid absent from before
+S7 SIM-NEW node #-10 class LoopTunnel shape-in-diff True node-in-before False obj real None obj before None obj prov ('LoopTunnel', 'WhileLoop')
+S7   term -11 name '' tclass OuterTerminal src False wire -13 owner -10 frame 686 | uid absent from before
+S7   term -12 name '' tclass InnerTerminal src True wire -14 owner -10 frame 23166 | uid absent from before
+S7 REAL-NEW node #30287 class LoopTunnel shape-in-diff True node-in-before False obj real ('LoopTunnel', 'WhileLoop') obj before None obj prov None
+S7   term 30292 name '# FD points' tclass OuterTerminal src False wire 30295 owner 30287 frame 686 | uid absent from before
+S7   term 30289 name '# FD points' tclass InnerTerminal src True wire 30281 owner 30287 frame 23166 | uid absent from before
+S7 REAL-NEW node #30290 class LoopTunnel shape-in-diff True node-in-before False obj real ('LoopTunnel', 'WhileLoop') obj before None obj prov None
+S7   term 30301 name '# DT points' tclass OuterTerminal src False wire 30304 owner 30290 frame 686 | uid absent from before
+S7   term 30293 name '# DT points' tclass InnerTerminal src True wire 30262 owner 30290 frame 23166 | uid absent from before
+S7 REAL-NEW node #2626 class BuildArray shape-in-diff True node-in-before True obj real ('BuildArray', 'Diagram') obj before ('BuildArray', 'Diagram') obj prov ('BuildArray', 'Diagram')
+S7   term 2832 name 'element' tclass Terminal src False wire 30418 owner 2626 frame 23166 | before had owner 2626 name 'array'
+S7   term 4160 name 'element' tclass Terminal src False wire 30270 owner 2626 frame 23166 | before had owner 2626 name 'array'
+S7   term 4165 name 'element' tclass Terminal src False wire 30274 owner 2626 frame 23166 | before had owner 2626 name 'array'
+S7   node #2626: real rows 5 / before rows 5; real terms [(2813, 'appended array'), (2832, 'element'), (4160, 'element'), (4165, 'element'), (4168, 'array')]; before terms [(2813, 'appended array'), (2832, 'array'), (4160, 'array'), (4165, 'array'), (4168, 'array')]
+S7 REAL-NEW node #9503 class LoopTunnel shape-in-diff True node-in-before True obj real ('LoopTunnel', 'ForLoop') obj before ('LoopTunnel', 'ForLoop') obj prov ('LoopTunnel', 'ForLoop')
+S7   term 9508 name '' tclass OuterTerminal src False wire 30270 owner 9503 frame 23166 | before had owner 9503 name 'Value'
+S7   term 9505 name '' tclass InnerTerminal src True wire 28684 owner 9503 frame 7911 | before had owner 9503 name 'Value'
+S7   node #9503: real rows 2 / before rows 2; real terms [(9505, ''), (9508, '')]; before terms [(9505, 'Value'), (9508, 'Value')]
+GATE PASS | S7 counters reproduce the refusal | {'BuildArray': (0, 1), 'LoopTunnel': (2, 3)}
+S7 GREP tools\bench\plan_ring_p4_s06v18.json uid 2626 lines [24, 29, 127, 130, 140, 143, 352, 355, 413, 414, 415, 416]
+S7 GREP tools\bench\plan_ring_p4_s06v18.json uid 2832 lines [353, 355, 1001]
+S7 GREP tools\bench\plan_ring_p4_s06v18.json uid 4160 lines [128, 130, 785]
+S7 GREP tools\bench\plan_ring_p4_s06v18.json uid 4165 lines [141, 143, 803]
+S7 GREP tools\bench\plan_ring_p4_s06v18.json uid 9503 lines [114, 117, 767, 769]
+S7 GREP tools\bench\plan_ring_p4_s06v18.json uid 9508 lines [115, 117, 767, 1089]
+S7 GREP tools\bench\plan_ring_p4_s06v18_in.json uid 2626 lines [29, 34, 132, 135, 145, 148, 357, 360]
+S7 GREP tools\bench\plan_ring_p4_s06v18_in.json uid 2832 lines [358, 360]
+S7 GREP tools\bench\plan_ring_p4_s06v18_in.json uid 4160 lines [133, 135]
+S7 GREP tools\bench\plan_ring_p4_s06v18_in.json uid 4165 lines [146, 148]
+S7 GREP tools\bench\plan_ring_p4_s06v18_in.json uid 9503 lines [119, 122]
+S7 GREP tools\bench\plan_ring_p4_s06v18_in.json uid 9508 lines [120, 122]
+S7 GREP tools\bench\plan_ring_p4_s06v18_licence.json uid 2626 lines [5, 7, 10, 12, 13, 18, 22]
+S7 GREP tools\bench\plan_ring_p4_s06v18_licence.json uid 2832 lines [7, 11, 13, 19]
+S7 GREP tools\bench\plan_ring_p4_s06v18_licence.json uid 4160 lines [7, 11, 13, 19]
+S7 GREP tools\bench\plan_ring_p4_s06v18_licence.json uid 4165 lines [7, 11, 13, 19]
+S7 GREP tools\bench\plan_ring_p4_s06v18_licence.json uid 9503 lines [25, 29]
+S7 GREP tools\bench\plan_ring_p4_s06v18_licence.json uid 9505 lines [26]
+S7 GREP tools\bench\plan_ring_p4_s06v18_licence.json uid 9508 lines [26]
+S7 GREP tools\bench\creation_map\plan_ring_p4_s06v18_cfbd9823_20261008_175325.jsonl uid 30287 lines [2, 3, 4]
+S7 GREP tools\bench\creation_map\plan_ring_p4_s06v18_cfbd9823_20261008_175325.jsonl uid 30289 lines [4]
+S7 GREP tools\bench\creation_map\plan_ring_p4_s06v18_cfbd9823_20261008_175325.jsonl uid 30290 lines [6, 7, 8]
+S7 GREP tools\bench\creation_map\plan_ring_p4_s06v18_cfbd9823_20261008_175325.jsonl uid 30292 lines [3]
+S7 GREP tools\bench\creation_map\plan_ring_p4_s06v18_cfbd9823_20261008_175325.jsonl uid 30293 lines [8]
+S7 GREP tools\bench\creation_map\plan_ring_p4_s06v18_cfbd9823_20261008_175325.jsonl uid 30301 lines [7]
+S6ACT #1 {"op": "wire", "id": "p4_w_idx_frameidx", "src": {"uid": 30179, "term": "outer"}, "dst": {"uid": 30240, "term": "index"}, "why": "ROUTE branch | PRECEDENT | branch of plan-made tunnel outer face [draft d9d66246]"}
+S6ACT #2 {"op": "wire", "id": "p4_w_tp_mag", "src": {"uid": 30119, "term": "element"}, "dst": {"uid": 9503, "term_uid": 9508}, "why": "ROUTE connect | PRECEDENT | into For #1359's LoopTunnel #9503 outer face t9508 (-> #28083 Magnet position, facts_c117_qrt.md:17) [draft d9d66246]"}
+S6ACT #9 {"op": "tunnel", "id": "p4_t_fd", "loop": 10170, "body": 23166, "parent": 686, "dir": "in", "as": "TFD1", "why": "ROUTE tunnel | PRECEDENT | card 137-P3 (PD305(a)/PD298(b) precedent): explicit loop-input tunnel on base While #10170 (body 23166, parent 686) for p4_x_fd '# FD points' t8936, same form as plan_ring_p4_v4.json:1069-1095 (p4_t_pool/p4_x_pool/p4_w_pool_in, PD298(b))"}
+S6ACT #12 {"op": "tunnel", "id": "p4_t_dt", "loop": 10170, "body": 23166, "parent": 686, "dir": "in", "as": "TDT1", "why": "ROUTE tunnel | PRECEDENT | card 137-P3 (PD305(a)/PD298(b) precedent): explicit loop-input tunnel on base While #10170 (body 23166, parent 686) for p4_x_dt '# DT points' t28844, same form as plan_ring_p4_v4.json:1069-1095 (p4_t_pool/p4_x_pool/p4_w_pool_in, PD298(b))"}
+S6ACT #15 {"op": "wire", "id": "p4_w_10068_out", "src": {"uid": 10068, "term": "x-y*floor(x/y)"}, "dst": {"uid": 10177, "term_uid": 10182}, "why": "ROUTE connect | PRECEDENT | into For #1359 LoopTunnel #10177 outer t10182 (-> #8634 index (col)) [draft d9d66246]"}
+S6ACT #16 {"op": "wire", "id": "p4_w_29240_out", "src": {"uid": 29240, "term": "x-y*floor(x/y)"}, "dst": {"uid": 29777, "term_uid": 29782}, "why": "ROUTE connect | PRECEDENT | into For #29874 LoopTunnel #29777 outer t29782 (-> #29625 index (col), #29973 element) [draft d9d66246]"}
+S6ACT #20 {"op": "wire", "id": "p4_w_idx_bufdiff", "src": {"uid": 30179, "term": "outer"}, "dst": "new:IAVB1.index", "why": "ROUTE branch | PRECEDENT | branch of plan-made tunnel outer face"}
+CMAP6 1 {"schema": "creation-map/1", "rec": "run", "plan": "tools/bench/plan_ring_p4_s06v18.json", "plan_md5": "cfbd9823d3b47be39de94f2125ad6b66", "stage": "plan_ring_p4_s06v18", "work": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p4s06_20261008_174730.vi", "from_step": null, "t": 1791449605.5, "iso": "2026-10-08 17:53:25"}
+CMAP6 2 {"schema": "creation-map/1", "rec": "bind", "k": 10, "op": "tunnel", "acts": [10, 11, 12], "ids": ["p4_t_fd", "p4_x_fd", "p4_w_fd_in"], "kind": "obj", "sim": -5, "real": 30287, "class": "LoopTunnel", "owner": null, "owner_real": null}
+CMAP6 3 {"schema": "creation-map/1", "rec": "bind", "k": 10, "op": "tunnel", "acts": [10, 11, 12], "ids": ["p4_t_fd", "p4_x_fd", "p4_w_fd_in"], "kind": "term", "sim": -6, "real": 30292, "class": "OuterTerminal", "owner": -5, "owner_real": 30287}
+CMAP6 4 {"schema": "creation-map/1", "rec": "bind", "k": 10, "op": "tunnel", "acts": [10, 11, 12], "ids": ["p4_t_fd", "p4_x_fd", "p4_w_fd_in"], "kind": "term", "sim": -7, "real": 30289, "class": "InnerTerminal", "owner": -5, "owner_real": 30287}
+CMAP6 5 {"schema": "creation-map/1", "rec": "step", "k": 10, "op": "tunnel", "diff": 0}
+CMAP6 6 {"schema": "creation-map/1", "rec": "bind", "k": 11, "op": "tunnel", "acts": [13, 14, 15], "ids": ["p4_t_dt", "p4_x_dt", "p4_w_dt_in"], "kind": "obj", "sim": -10, "real": 30290, "class": "LoopTunnel", "owner": null, "owner_real": null}
+CMAP6 7 {"schema": "creation-map/1", "rec": "bind", "k": 11, "op": "tunnel", "acts": [13, 14, 15], "ids": ["p4_t_dt", "p4_x_dt", "p4_w_dt_in"], "kind": "term", "sim": -11, "real": 30301, "class": "OuterTerminal", "owner": -10, "owner_real": 30290}
+CMAP6 8 {"schema": "creation-map/1", "rec": "bind", "k": 11, "op": "tunnel", "acts": [13, 14, 15], "ids": ["p4_t_dt", "p4_x_dt", "p4_w_dt_in"], "kind": "term", "sim": -12, "real": 30293, "class": "InnerTerminal", "owner": -10, "owner_real": 30290}
+CMAP6 9 {"schema": "creation-map/1", "rec": "step", "k": 11, "op": "tunnel", "diff": 0}
+CMAP6 10 {"schema": "creation-map/1", "rec": "bind", "k": 14, "op": "create", "acts": [18], "ids": ["p4_lr_bufdiff12"], "kind": "obj", "sim": -17, "real": 30294, "class": "Local", "owner": null, "owner_real": null}
+CMAP6 11 {"schema": "creation-map/1", "rec": "bind", "k": 14, "op": "create", "acts": [18], "ids": ["p4_lr_bufdiff12"], "kind": "term", "sim": -18, "real": 30311, "class": "Terminal", "owner": -17, "owner_real": 30294}
+CMAP6 12 {"schema": "creation-map/1", "rec": "step", "k": 14, "op": "create", "diff": 0}
+CMAP6 13 {"schema": "creation-map/1", "rec": "bind", "k": 15, "op": "create", "acts": [19], "ids": ["p4_ia_bufdiff"], "kind": "obj", "sim": -19, "real": 30300, "class": "IndexArray", "owner": null, "owner_real": null}
+CMAP6 14 {"schema": "creation-map/1", "rec": "bind", "k": 15, "op": "create", "acts": [19], "ids": ["p4_ia_bufdiff"], "kind": "term", "sim": -20, "real": 30314, "class": "Terminal", "owner": -19, "owner_real": 30300}
+CMAP6 15 {"schema": "creation-map/1", "rec": "bind", "k": 15, "op": "create", "acts": [19], "ids": ["p4_ia_bufdiff"], "kind": "term", "sim": -21, "real": 30354, "class": "Terminal", "owner": -19, "owner_real": 30300}
+CMAP6 16 {"schema": "creation-map/1", "rec": "bind", "k": 15, "op": "create", "acts": [19], "ids": ["p4_ia_bufdiff"], "kind": "term", "sim": -22, "real": 30399, "class": "Terminal", "owner": -19, "owner_real": 30300}
+CMAP6 17 {"schema": "creation-map/1", "rec": "step", "k": 15, "op": "create", "diff": 0}
+CMAP6 18 {"schema": "creation-map/1", "rec": "step", "k": 21, "op": "connect", "diff": 0}
+BASES s07 {"path": "tools/bench/sim/ring_p4_s07v18/s06end/base_provisional.json", "md5": "eeb22bbaad2d71affad31526ea06fdde", "provisional": true, "sim_of": {"plan": "tools/bench/plan_ring_p4_s06v18.json", "md5": "cfbd9823d3b47be39de94f2125ad6b66"}} | prov148 {"path": "tools/bench/sim/ring_p4_s07v18/s06end/base_provisional.json", "md5": "eeb22bbaad2d71affad31526ea06fdde", "provisional": true, "sim_of": {"plan": "tools/bench/plan_ring_p4_s06v18.json", "md5": "cfbd9823d3b47be39de94f2125ad6b66"}}
+S6 PLAN tools\bench\plan_ring_p4_s06v18_in.json md5 db72d8af5b1f6da643e4c84b1260a61a; base tools/bench/sim/ring_p4_s06v18/s05end/base_provisional.json prov=True; sim_of tools/bench/plan_ring_p4_s05v18.json 1fc9b486551b3f1fe42f25167375ba30; N's base (before) tools/bench/sim/ring_p4_s05v18_base_real_fsmap.json
+S6 COUNTS before 6006 prov 6022 real 6022; sim_new nodes 8; real_new nodes 8
+S6 SIM-NEW node #-1 class LoopTunnel shape-in-diff False node-in-before False obj real None obj before None obj prov ('LoopTunnel', 'WhileLoop')
+S6   term -2 name '' tclass OuterTerminal src True wire -5 owner -1 frame 23166 | uid absent from before
+S6   term -3 name '' tclass InnerTerminal src False wire -4 owner -1 frame 29699 | uid absent from before
+S6 SIM-NEW node #-6 class LoopTunnel shape-in-diff False node-in-before False obj real None obj before None obj prov ('LoopTunnel', 'WhileLoop')
+S6   term -7 name '' tclass OuterTerminal src False wire -9 owner -6 frame 686 | uid absent from before
+S6   term -8 name '' tclass InnerTerminal src True wire -10 owner -6 frame 23166 | uid absent from before
+S6 REAL-NEW node #30194 class LoopTunnel shape-in-diff False node-in-before False obj real ('LoopTunnel', 'WhileLoop') obj before None obj prov None
+S6   term 30207 name '' tclass OuterTerminal src False wire 30210 owner 30194 frame 686 | uid absent from before
+S6   term 30203 name '' tclass InnerTerminal src True wire 30174 owner 30194 frame 23166 | uid absent from before
+S6 REAL-NEW node #30179 class LoopTunnel shape-in-diff False node-in-before False obj real ('LoopTunnel', 'WhileLoop') obj before None obj prov None
+S6   term 30192 name 'min slot' tclass OuterTerminal src True wire 30166 owner 30179 frame 23166 | uid absent from before
+S6   term 30183 name 'min slot' tclass InnerTerminal src False wire 30197 owner 30179 frame 29699 | uid absent from before
+GATE PASS | S6 counters equal (that rebase passed) | []
+GATE PASS | FB copy byte-identical to prov148 | aeae610ee123bf30d8ed92016282189f
+FBLOG CREATION-MAP tools/bench/creation_map/plan_ring_p4_s06v18_cfbd9823_20261008_175325.jsonl (entries {'obj': 4, 'diag': 0, 'term': 8}; steps with a diff [])
+FB-RESULT ok=False | REBASE REFUSED: BINDING: the created objects differ (name-free shape): ['BuildArray x0 simulated vs x1 real', 'LoopTunnel x2 simulated vs x3 real']
+FB plan md5 now aeae610ee123bf30d8ed92016282189f (prov148 aeae610ee123bf30d8ed92016282189f)
+GATE PASS | FB-RESULT reported | ok=False
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":5,"fail":0},"first_fail":null,"artefacts":[],"card":"150-a1-3","labview":"none"}
+BGRUN END rc=0 after 1s

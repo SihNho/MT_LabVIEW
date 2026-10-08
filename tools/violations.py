@@ -40,7 +40,7 @@ import glob
 import os
 import re
 import sys
-
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import dispo  # noqa: E402,E702 - card 150-a3-3, tools/dispo.py
 try:                                     # slug tables reach a peer through the gate's stderr; see audit_cycle.py
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 except Exception:
@@ -174,7 +174,7 @@ def scan():
         if is_comparison(body):
             continue                     # a retroactive re-review of an already-counted cycle; see is_comparison()
         # only the peer's own answer counts; a slug quoted in the annotation must not inflate the tally
-        answer = body.split("## What was done with it")[0]
+        answer = dispo.find_disposition(body)[0]   # LAST column-0 heading; an inline quote is not one (card 150-a3-3)
         for slug, tail in SLUG_RE.findall(answer):
             if slug == "none":
                 continue

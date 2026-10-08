@@ -1,0 +1,27 @@
+{"schema": "result/1", "id": "149-a1-1", "status": "BLOCKED", "gates": {"pass": 1, "fail": 1},
+ "first_fail": "env restore: the 01:23 OCR set needs numpy 2.2.6 (opencv_python 5.0.0.93 Requires numpy>=2), installed numpy 1.26.4 -> card rule RETURN, nothing installed",
+ "blocked_by": {"device": "python-env", "message": "comtypes/rapidocr are not uninstalled: they sit in the Claude app MSIX LocalCache user site (installed 2026-09-23), invisible to this runner (relaunched 12:31); restoring them here would change numpy 1.26.4 -> 2.2.6"},
+ "artefacts": [
+  {"path": "tools/bench/diag_c149_a1_1_facts.md", "md5": "f4841cc7d61826b7d1b81853e9afba02"},
+  {"path": "tools/bench/diag_c149_a1_1_env.py", "md5": "8a8f32f11cfa0d5d43acbc649637d916"},
+  {"path": "tools/bench/diag_c149_a1_1_env.log", "md5": "0da521eece4685f6c09a6a68a932d053"},
+  {"path": "tools/bench/diag_c149_a1_1_env2.log", "md5": "ea058c0ba383ca7a019be7677dad64e9"}
+ ],
+ "facts": [
+  "py = ...\\Programs\\Python\\Python310\\python.exe 3.10.9, only interpreter, no PYTHONPATH/venv/py.ini (diag_c149_a1_1_env.log:3-16)",
+  "Missing: comtypes, rapidocr_onnxruntime, onnxruntime, cv2, winsdk, shapely, pyclipper; numpy 1.26.4 present (diag_c149_a1_1_env.log:18-29)",
+  "Global site-packages untouched since 2026-09-07 (dir mtime, no entry newer than 10-07); real %APPDATA% user site absent; pip cache empty (env.log SITEDIR/PIPCACHE)",
+  "The 15 packages exist in %LOCALAPPDATA%\\Packages\\Claude_pzs8sxrjxfjjc\\LocalCache\\Roaming\\Python\\Python310\\site-packages, installed 2026-09-23 05:25-05:39 (diag_c149_a1_1_env2.log:50-65)",
+  "Versions there: comtypes 1.4.17, rapidocr_onnxruntime 1.4.4, onnxruntime 1.23.2, opencv_python 5.0.0.93, numpy 2.2.6, shapely 2.1.2, pyclipper 1.4.0, winsdk 1.0.0b10 (env2.log:51-65)",
+  "Change 01:23->17:57: runner supervisor relaunched 2026-10-08 12:31:40 (runner_supervisor.log:47-49); 01:23 ran under the 10-07 23:43 launch (:4-6); in/out of app container is inference",
+  "opencv_python-5.0.0.93 METADATA:42 Requires-Dist numpy>=2 -> 01:23 OCR stack ran on numpy 2.2.6; restore here changes an existing package -> RETURN per brief step 2",
+  "comtypes alone is clean but useless: 01:23 items came from OCR (diag_c147_a1_1_el.log:20-26: UIA 0, MSAA 0 listitems, OCR count 55)",
+  "Nothing installed/upgraded/removed; LabVIEW never started; 569ffbf5, s05/s04/s03/bed, memory_model, adopted_scratch, stage tools not opened or written",
+  "Jev ladder: diag_c149_a1_1_env.log | offline probe, prediction met | - | facts recorded | returned (diag_c149_a1_1_facts.md)"
+ ],
+ "open": [
+  "Restore route: (a) pip install --user --no-deps the exact 15-package LocalCache set incl. numpy 2.2.6 (shadows global 1.26.4 for all non-app Python), (b) relaunch the runner from inside the Claude app, or (c) other?",
+  "Then rerun this card unchanged from step 3 (EL read of a byte copy of 569ffbf5 + adopt chain); no new scratch needed"
+ ],
+ "cost": {"usd": null, "minutes": 5, "labview_runs": 0},
+ "note": "Facts: tools/bench/diag_c149_a1_1_facts.md. fp-61 already queued by 148-a2-4 for the same count_read failure."}

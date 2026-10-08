@@ -1,0 +1,59 @@
+{
+ "schema": "task/1",
+ "id": "150-a2-4",
+ "kind": "build",
+ "goal": "Un-shadow plan-base variable b in stage_prerun rebase CLI (:4303/:4305 loop targets) so --rebase of s07 no longer raises AttributeError; R5 static check; regressions unchanged",
+ "why": "Cycle 150 round 2 pass item 2. Card 150-a2-3 returned FAIL: the RENAMED-OLD/FLIPPED-OLD log loops rebind b, read again at :4415 (prep_c150_a2_3_rebase.log:20-22).",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_150-a2-4.md", "md5": "afb288d00825173e0dd17ef2a63c35e2"},
+  {"path": "tools/bench/diag_c150_a2_3_facts.md", "md5": "c47e7df1d1f27e401b286ecad7d4a7b0"},
+  {"path": "tools/bench/diag_c150_a2_2_facts.md", "md5": "0701aecf90e10619ba9572fb2a43d278"},
+  {"path": "tools/stage_prerun.py", "md5": "6208b7b744d2d4b8379fc2fc31cb62d5"},
+  {"path": "tools/bench/selftest_rebind_c150.py", "md5": "788208161c46f99cf1a55c64c2c38b19"},
+  {"path": "tools/bench/plan_ring_p4_s07v18.json", "md5": "10a4f59a0f1203abd08b6ae93139aa3c"},
+  {"path": "tools/bench/graph_ring_p4s06_20261008_192149.json", "md5": "a3ecb92b27654c3d85b9ab5ff58aa069"}
+ ],
+ "pass": [
+  "Other names rebound in the rebase function and read after the log loops grepped and quoted; loop targets at :4303/:4305 renamed; log text byte-identical; old 6208b7b7 + new md5 and diff lines quoted",
+  "selftest_rebind_c150 R1-R4 (+R3a/R3b) still pass and new static R5 fails on the saved pre-edit file, passes after; py_compile stage_prerun rc 0",
+  "Regressions same as 150-a2-2 AFTER: rebind_c142_5 4/0, rebind_c132_5 7/0, rebase_c132_6 8/0, rebase_uidreuse_c143_4 unchanged counts (pre-existing 2/2 + KeyError rc 1)",
+  "Invariants md5 unchanged (stagekit, stagexec, gscript, elrule, s06, s05, bed, graph, plan s07, memory_model); no hooks edit; no LabVIEW process; --rebase on s07 not run here"
+ ],
+ "outputs": [
+  "tools/stage_prerun.py",
+  "tools/bench/selftest_rebind_c150.py",
+  "tools/bench/diag_c150_a2_4_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stage_prerun.py",
+   "tools/bench/selftest_rebind_c150*",
+   "tools/bench/diag_c150_a2_4*",
+   "tools/bench/prep_c150_a2_4*",
+   "tools/bench/gate_fp_queue.jsonl"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 40
+ },
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/graph_ring_p4s06_20261008_192149.json"},
+  {"kind": "file", "name": "tools/stage_prerun.py"}
+ ],
+ "retry_of_card": "150-a2-2",
+ "retry_of": "stage_prerun.py",
+ "rules": [
+  "Offline only; no LabVIEW, camera or motor; runs ALONE (no other card live)",
+  "stage_prerun.py edit scope: loop-variable names at the log loops; nothing else",
+  "Never touch claudeDev, memory_model, adopted_scratch, sim/ring_p4_s06v18, graph_ring_p4s06_*, plan s07, hooks"
+ ]
+}

@@ -1,0 +1,51 @@
+{
+ "schema": "task/1",
+ "id": "150-a1-2",
+ "kind": "doc",
+ "goal": "PD364(h): STATUS.md to about 110 lines; older NEXT paragraphs and history lines moved VERBATIM to archive/2026-10-08-status-cycle150-relocate.md; kept parts byte-identical",
+ "why": "Cycle 150 pass item 8. Offline housekeeping, runs beside the s07 re-make card; STATUS is 203 lines (rule 4 threshold ~100).",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_150-a1-2.md", "md5": "803182a68d57710335b0f4fc85df9385"},
+  {"path": "STATUS.md", "md5": "050f34f4581c483bd9e65654210fa190"},
+  {"path": "archive/2026-10-08-status-cycle150-relocate.md", "md5": "01e1727a76321f5286b05eac4d8af6d9"},
+  {"path": "docs/d1/ring-p4c.md", "md5": "babdffba381f4fa44ffb80616f3b5ba0"}
+ ],
+ "pass": [
+  "STATUS.md 100..120 lines; kept byte-identical: frontmatter, STOP/RESTARTED lines, lock block, banner + rig-state line, OPEN, parallelism rule, cycle 150 paragraphs, bed key, Where to look",
+  "Every moved line is in the archive file byte-for-byte, original order, with source line ranges; one pointer line left per moved block; archive header untouched",
+  "Mechanical check card-local script: line sets before == new STATUS (minus pointers) + archive body; doc_lint before/after quoted, no new error"
+ ],
+ "outputs": [
+  "STATUS.md",
+  "archive/2026-10-08-status-cycle150-relocate.md",
+  "tools/bench/diag_c150_a1_2_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "STATUS.md",
+   "archive/2026-10-08-status-cycle150-relocate.md",
+   "tools/bench/diag_c150_a1_2*"
+  ],
+  "status_edit": true,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 45
+ },
+ "advances": ["M3"],
+ "requires": [
+  {"kind": "file", "name": "STATUS.md"},
+  {"kind": "file", "name": "archive/2026-10-08-status-cycle150-relocate.md"}
+ ],
+ "rules": [
+  "Move, never rewrite or delete (CLAUDE.md rule 4); do not read other archive files",
+  "No edit of CLAUDE.md, docs/**, tools/** except the card-local check script",
+  "Offline only; no LabVIEW, camera or motor"
+ ]
+}

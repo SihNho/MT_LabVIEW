@@ -112,7 +112,7 @@ BGRUN_START_RE = re.compile(r"^BGRUN START (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})
 # a RESULT line it printed fails or it ended rc!=0 / TIMEOUT (protocol.run_verdict). A log with no BGRUN START at all
 # (a watchdog `stall_*` record, a hand-written note) is not a script run and keeps the FAILURE_RE reading.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import protocol  # noqa: E402
+import protocol, dispo  # noqa: E402,E401 - dispo: card 150-a3-3 (A4/A9 disposition heading, tools/dispo.py)
 
 
 def seg_failures(seg):
@@ -323,7 +323,7 @@ def a9_unlanded(root=None, peer_glob=A9_GLOB, code_override=None, detail=None):
     absent, n = [], 0
     for p in sorted(glob.glob(os.path.join(root, "archive", "peer", peer_glob))):
         body = read(p)
-        i = body.find("## What was done with it")
+        i = dispo.heading_index(body)              # LAST column-0 heading, not the first quote (card 150-a3-3)
         if i < 0:
             continue
         sec = re.split(r"^## ", body[i + 3:], maxsplit=1, flags=re.M)[0]
@@ -616,8 +616,8 @@ def main():
     blank = []
     for p in reviews:
         body = read(p)
-        i = body.find("## What was done with it")
-        tail = body[i + len("## What was done with it"):].strip() if i >= 0 else ""
+        i = dispo.heading_index(body)              # LAST column-0 heading, not the first quote (card 150-a3-3)
+        tail =body[i + len("## What was done with it"):].strip() if i >= 0 else ""
         if i < 0 or tail.startswith("(Claude fills in)") or not tail:
             blank.append(os.path.basename(p))
     say("A4 every archived review says what was done with it", not blank,

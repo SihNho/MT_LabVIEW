@@ -1,0 +1,64 @@
+{
+ "schema": "task/1",
+ "id": "149-a1-3",
+ "kind": "measure",
+ "goal": "PD354(a): MEASURE why saved s06 scratch 569ffbf5 reads 51 Error List items vs 55 predicted (header, item 5/6 captures, w23807 broken?, per-class table); no adopt",
+ "why": "149-a1-2 solved the env; EL-ADVISORY then failed on diff -4 > tol 3, with a new item (void->I32) and an op-21 target BROKEN line. The cause is a measurement question.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_149-a1-3.md", "md5": "3810fe035e05cef02698cfb6a40811b6"},
+  {"path": "tools/bench/diag_c149_a1_2_facts.md", "md5": "ec1326e3b6a40c562f6f732fd95a2979"},
+  {"path": "archive/peer/2026-10-08-c149-a1-2-el51.md", "md5": "1a414ba169f9a5895111085cfcacf5b0"},
+  {"path": "tools/bench/errorlist_D1_ring_p4s06_20261008_174730_20261008_181243.json", "md5": "899e265612a8821ffaa8f0553e1ce5f1"},
+  {"path": "tools/bench/errorlist_D1_ring_p4s06_20261008_174730_20261008_181243_raw.json", "md5": "8ea14a9c467ee983b321dab02c0e6846"},
+  {"path": "tools/bench/errorlist_D1_ring_p4s05_20261008_002621_20261008_012323.json", "md5": "b654430d322d0dccbda42321fdbd0720"},
+  {"path": "tools/bench/diag_c149_a1_2_elrun.py", "md5": "0179b6001e81970d869561ecd62e72eb"},
+  {"path": "tools/bench/diag_c149_a1_2_eladv.log", "md5": "65920c43be070db68d0b61ad478f3699"},
+  {"path": "tools/errorlist_check.py", "md5": "2b466a89335af69efd27a663479eda53"},
+  {"path": "tools/bench/plan_ring_p4_s06v18_pred.json", "md5": "c1bd6b3ed11c5641e7dacf10045af9a1"},
+  {"path": "tools/stagekit.py", "md5": "06b8d844284deacab535a9ee442d4964"},
+  {"path": "tools/stagexec.py", "md5": "1bab9cf96502dfbe2d9a755e6d4a48b6"},
+  {"path": "tools/gscript.py", "md5": "1a80236ed35c1876c67f964c72fe820a"},
+  {"path": "tools/elrule.py", "md5": "a5ee7d5c8792ccf5c174e70be022544d"},
+  {"path": "tools/bench/memory_model.json", "md5": "88eeb03748e94d422e38be802be2118a"}
+ ],
+ "pass": [
+  "Header count quoted from a capture of a byte copy of 569ffbf5 (51 confirmed or not), via the in-process sys.path wrapper",
+  "s06 items 5/6 captures vs s05 items 7,8,10-13: matches and unmatched items listed",
+  "w23807 read in saved s06: broken or not, source and sink terminals, same wire as op-21 target BROKEN line (scratch log :990-994) or not",
+  "Per-class table read/pred/s05 with each net-negative class marked explained (by which fact) or unexplained",
+  "569ffbf5, 3f9ac26b, 95e408ff, 282301ca, 39511877, stagekit, stagexec, gscript, elrule, errorlist_check, memory_model unchanged; LabVIEW gone"
+ ],
+ "outputs": [
+  "tools/bench/diag_c149_a1_3_facts.md"
+ ],
+ "flags": {
+  "labview": "read",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c149_a1_3*",
+   "tools/bench/errorlist_*p4s06*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/jev_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "D1_ring_p4s06_20261008_174730.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "tools/bench/diag_c149_a1_2_elrun.py"}
+ ],
+ "rules": [
+  "MEASURE only: no adopt, no memory_model or adopted_scratch write, no second scratch, no edit of 569ffbf5",
+  "No stage-tool, hook or elrule edit; errorlist_check.py is not edited",
+  "Bed, s03, s04, s05 never opened for editing; no motor or camera"
+ ]
+}

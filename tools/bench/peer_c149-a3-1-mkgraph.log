@@ -1,0 +1,53 @@
+BGRUN START 2026-10-08 19:11:34 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c149-a3-1-mkgraph -TaskFile tools/bench/diag_c149_a3_1_peer_task.txt
+BGRUN PID 10300
+OUTCOME: ANSWERED (127s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-08-c149-a3-1-mkgraph.md
+COST: $1.2013  in 22 / out 10676 / cache-create 96622 / cache-read 955566  (123s, 18 turn(s))
+--- ANSWER ---
+**Verdict: the arithmetic in the claim holds, but its framing is too narrow.** The fault is not one count in a predicate. mkgraph writes wrong data into the plan (`new_wires` and `deleted_wires`), and that wrong data is what would make E5 fail. Changing only the W gate would turn mkgraph green and then cost a LabVIEW run on a plan that cannot pass.
+
+**What checks out:**
+- `stagekit.py:1513` computes `n_new = len(new) + #noted kept_by_key`.
+- The scratch JSON gives `new` = 15 entries (`diag_c147_p4s06v18_scratch.json:1867-1883`), `d_new` = 16 and `reuse_noted` = [23807, kept_by_key true] (`:1965-2023`). `sim_new` has 16 entries, including `-25` (`:1893-1910`).
+- The W gate compares `len(term_identity.new)` = 15 against the D line's 16 (`diag_c149_a3_1_mkgraph.py:52-54`).
+- The only earlier mkgraph that ran was `diag_c147_a1_1_mkgraph.log:4`, on session 5, with 11 = 11 and no re-used uid. Neither template (`c149_a1_2`, `c148_a2_4`) has a log.
+- E5 at `diag_c149_a3_1_graph.py:64-69` requires every entry of `deleted_wires` to be absent from the file.
+
+### 1. Strongest reason the claim is wrong
+It treats the bad predicate as the defect. The data mkgraph emits is also wrong:
+- `out["edits"]["new_wires"] = nw` (`mkgraph.py:64`) leaves out 23807.
+- `deleted_wires` = [23807] is taken from the plan's `delete_wire` actions, not from what the file holds.
+
+The predicate is only where the inconsistency first became visible. The stagekit convention already counts a kept-by-key re-used uid as "one lost + one new" (`stagekit.py:1480-1481`). By that convention the correct plan has 16 new wires and no deleted wire that is absent by uid. Fix the gate alone (15 + 1 == 16) and the plan still says "23807 deleted, 15 new", so E5 fails in LabVIEW, as the claim itself predicts. The claim names the E5 problem but still places the fault in the predicate.
+
+### 2. Alternative explanation of the same evidence
+**The wire was never fully deleted; it was not a re-used uid.** These two cases are measured as the same thing:
+- After `delete_wire w23807` the log reads back only a node census: "Node 688 -> 688" (`diag_c147_p4s06v18_scratch.log:970-972`). The wire's absence was never read. Step 19 is not a checkpoint (`:974`).
+- Real wire 23807 has the same uid and the same source as the base wire (that is what `kept_by_key` means: the key is uid + source, `stagekit.py:1450-1461`). Its sinks {3173, 10975} are a subset of the base sinks (`scratch.json:1976-2006`).
+- That is exactly what a partial delete, or a later connect joining a surviving wire, would leave behind.
+- Op 21 also raised "target BROKEN … WI then extends an unrelated wire" (`:990-991`). Its deferred gate then passed (`:998`). That exception is the signature of extending an existing wire.
+
+Evidence against this alternative: op 20 found #10975 with wire 0 just after the delete (`:976`), so at least that sink was unwired. Re-use itself is documented behaviour: NI's UID notes say "if you delete an object, LabVIEW might assign the UID for that deleted object to a different object" ([LabVIEW Wiki, GObject UID property](https://labviewwiki.org/wiki/GObject_class/UID_property)).
+
+**The measurement does not tell re-use from never-deleted.** For E5 the conclusion is the same either way: 23807 must be present. It changes whether "delete_wire works" can be trusted in the next stage.
+
+### 3. What would falsify the claim
+Any of these:
+- The scratch's `real_end_rows` show wire 23807 with ends other than {5171} → {3173, 10975}.
+- The D line's 16 comes from a different set than `new` ∪ {23807}.
+- The new uid set does not map one-to-one onto `sim_new` through the bind table (`-25` ↔ 23807).
+
+### 4. Cheapest offline discriminating test
+This is pure Python, with no LabVIEW and no new graph read (no `graph_ring_p4s06*` file exists yet):
+1. From `diag_c147_p4s06v18_scratch.json`, check `set(new) | {w for reuse_noted with kept_by_key}`: it should have 16 members.
+2. Group `real_end_rows` (`:2028`, the same session as adopted md5 569ffbf5) by `wire_uid` and confirm that 23807 is present with source (5171, 5058) and sinks {(3173, 23166), (10975, 10969)}.
+3. Run E5's own expression (`graph.py:64`) on that wire set, once with the plan as written and once with 23807 moved from `deleted_wires` to `new_wires`.
+
+If the first run fails and the second passes, the defect is in the data mkgraph builds, not just the gate. That also rules out a gate-only fix before any LabVIEW run.
+
+Separating "re-used uid" from "never deleted" needs a wire read immediately after `delete_wire`. That is a LabVIEW step on a scratch copy, not offline.
+
+**What would change my mind:** if `real_end_rows` does not contain 23807, the claim's E5 prediction is wrong and the gate-only reading stands.
+
+Sources:
+- [LabVIEW Wiki – GObject class/UID property](https://labviewwiki.org/wiki/GObject_class/UID_property)
+BGRUN END rc=0 after 128s

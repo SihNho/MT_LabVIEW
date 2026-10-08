@@ -1,0 +1,60 @@
+{
+ "schema": "task/1",
+ "id": "150-a2-1",
+ "kind": "build",
+ "goal": "PD365(c): stage_prerun.rebind old-terminal key made name-free (uid, owner, term class, direction); renames logged RENAMED-OLD; new selftest_rebind_c150 R1-R4; regressions unchanged",
+ "why": "Cycle 150 round 2 pass items 0-1. The s07 --rebase onto the real s06 graph is refused because rebind keys old terminals by NAME (stage_prerun.py:3829); measured by 150-a1-3.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_150-a2-1.md", "md5": "95c1e1f29bc2de00ef601f3f56026d84"},
+  {"path": "docs/d1/ring-p4c.md", "md5": "6d1eb4d868fe3491dfcc5b784f927faf"},
+  {"path": "tools/bench/diag_c150_a1_3_facts.md", "md5": "65181483de46d6e67698be23104e8adc"},
+  {"path": "tools/bench/diag_c150_a1_3_probe.py", "md5": "692020200c8f87d58af9c3f14e9667a5"},
+  {"path": "tools/stage_prerun.py", "md5": "dcd45aba9be99dde809800e7f59bb2f7"},
+  {"path": "tools/bench/selftest_rebind_c142_5.py", "md5": "ea9e0a63be56b322d61a57d500da685f"},
+  {"path": "tools/bench/graph_ring_p4s06_20261008_192149.json", "md5": "a3ecb92b27654c3d85b9ab5ff58aa069"},
+  {"path": "tools/bench/plan_ring_p4_s07v18.json", "md5": "10a4f59a0f1203abd08b6ae93139aa3c"},
+  {"path": "tools/bench/plan_ring_p4_s07v18_prov148.json", "md5": "aeae610ee123bf30d8ed92016282189f"}
+ ],
+ "pass": [
+  "rebind old key = (uid, owner, term class, direction); renamed old terminal = info line RENAMED-OLD (info['renamed_old']), not a refusal; only rebind+CLI log edited; diff line ranges quoted",
+  "selftest_rebind_c150 R1-R4 PASS: R1 refuses (BINDING list) on PRE-edit code, binds after; R2 = exactly the 5 renames; R3 class change at same (uid,owner) refuses; R4 s05->s06 same node map",
+  "selftest_rebind_c142_5 4/0; rebind_c132_5, rebase_c132_6, rebase_uidreuse_c143_4 rc 0 or same counts as BEFORE (both quoted); py_compile stage_prerun",
+  "Invariants md5 unchanged (stagekit, stagexec, gscript, elrule, s06, s05, bed, graph a3ecb92b, plan s07 10a4f59a, memory_model); stage_prerun old+new md5 quoted; no hooks edit; no LabVIEW process"
+ ],
+ "outputs": [
+  "tools/stage_prerun.py",
+  "tools/bench/selftest_rebind_c150.py",
+  "tools/bench/diag_c150_a2_1_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stage_prerun.py",
+   "tools/bench/selftest_rebind_c150*",
+   "tools/bench/diag_c150_a2_1*",
+   "tools/bench/prep_c150_a2_1*",
+   "tools/bench/gate_fp_queue.jsonl"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 50
+ },
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/graph_ring_p4s06_20261008_192149.json"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p4_s07v18_prov148.json"},
+  {"kind": "file", "name": "tools/stage_prerun.py"}
+ ],
+ "rules": [
+  "Offline only; no LabVIEW, camera or motor; runs ALONE (no other card live)",
+  "stage_prerun.py edit scope: rebind key, info list, docstring, CLI RENAMED-OLD log line; nothing else",
+  "Never touch claudeDev, memory_model, adopted_scratch, sim/ring_p4_s06v18, graph_ring_p4s06_*, plan s07, hooks"
+ ]
+}

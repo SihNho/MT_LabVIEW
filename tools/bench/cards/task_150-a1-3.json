@@ -1,0 +1,60 @@
+{
+ "schema": "task/1",
+ "id": "150-a1-3",
+ "kind": "diagnose",
+ "goal": "Retry of 150-a1-1: MEASURE why --rebase of s07 onto the real s06 graph is refused (BINDING BuildArray/LoopTunnel) and whether the PD364(c) 14-action fallback rebases; no tool edit",
+ "why": "Cycle 150 pass item 0. Card 150-a1-1 FAILED at the rebase; the cause is unmeasured (sim end vs real s06 differ by 1 BuildArray, 1 LoopTunnel).",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_150-a1-3.md", "md5": "7f90112bb24fc6bdd6e5a7d5b62d0ebf"},
+  {"path": "tools/bench/diag_c150_a1_1_facts.md", "md5": "ffcad2672ba1dc8e9d41b3022165da8c"},
+  {"path": "tools/bench/prep_c150_a1_1_mk.py", "md5": "7a275061c26a2a9cb1abce3fbcef6b44"},
+  {"path": "tools/bench/plan_ring_p4_s07v18.json", "md5": "10a4f59a0f1203abd08b6ae93139aa3c"},
+  {"path": "tools/bench/plan_ring_p4_s07v18_prov148.json", "md5": "aeae610ee123bf30d8ed92016282189f"},
+  {"path": "tools/bench/plan_ring_p4_s07v18_in_prov148.json", "md5": "97e4e0911a30edd255eb82d2a091d13f"},
+  {"path": "tools/bench/graph_ring_p4s06_20261008_192149.json", "md5": "a3ecb92b27654c3d85b9ab5ff58aa069"},
+  {"path": "tools/bench/creation_map/plan_ring_p4_s06v18_cfbd9823_20261008_175325.jsonl", "md5": "99f9d2539c7f9c6ada1d4813a23ecfa2"},
+  {"path": "tools/stage_prerun.py", "md5": "dcd45aba9be99dde809800e7f59bb2f7"},
+  {"path": "docs/d1/ring-p4c.md", "md5": "babdffba381f4fa44ffb80616f3b5ba0"}
+ ],
+ "pass": [
+  "Unmatched objects named: the BuildArray x1 and LoopTunnel x2 extra in the real s06 vs the sim end (uids, owners, creating s06 row), shape key quoted",
+  "Why the s05->s06 rebase passed vs s06->s07 refused: one paragraph with file:line from stage_prerun.py and the earlier rebase log",
+  "PD364(c) fallback: 14-action plan COPY rebased on the real s06 graph; rc + last lines quoted (pass or verbatim refusal)",
+  "Invariants unchanged incl. plan_ring_p4_s07v18.json 10a4f59a; no stage-tool edit; no LabVIEW process; OPEN line names the fix class (data / tool edit / design)"
+ ],
+ "outputs": [
+  "tools/bench/diag_c150_a1_3_facts.md",
+  "tools/bench/diag_c150_a1_3_probe.py"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c150_a1_3*",
+   "tools/bench/prep_c150_a1_3*",
+   "tools/bench/plan_ring_p4_s07v18_fb150*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 45
+ },
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/graph_ring_p4s06_20261008_192149.json"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p4_s07v18_prov148.json"},
+  {"kind": "file", "name": "tools/stage_prerun.py"}
+ ],
+ "retry_of_card": "150-a1-1",
+ "retry_of": "stage_prerun.py",
+ "rules": [
+  "Offline only; no LabVIEW, camera or motor",
+  "Measure and report; choose no fix. No stage-tool, hook or elrule edit; a needed edit is a RETURN with file:line",
+  "Never touch claudeDev, memory_model.json, adopted_scratch.jsonl, sim/ring_p4_s06v18/** or graph_ring_p4s06_*"
+ ]
+}

@@ -1,0 +1,79 @@
+{
+ "schema": "task/1",
+ "id": "149-a3-1",
+ "kind": "build",
+ "goal": "PD363(b)(c): adopt s06 569ffbf5 (PD354(a) route), 51-item EL expected file, fresh load + graph read, load_by_vi s06 only, Void-type census vs byte copy of s05",
+ "why": "Hand-back 2 judged s06 ADOPTED with item 6 (source void -> sink I32) recorded as unidentified; the census is the read-only measurement that goes with it. Nothing is rebuilt.",
+ "retry_of": "stage_d1_ring_p4_s06v18_scratch.py",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_149-a3-1.md", "md5": "df90135f3617515996ea84f710e87165"},
+  {"path": "tools/bench/diag_c149_a1_2_facts.md", "md5": "ec1326e3b6a40c562f6f732fd95a2979"},
+  {"path": "tools/bench/diag_c149_a1_3_facts.md", "md5": "854c22bedec0b2b60aa9db7a265d7ecc"},
+  {"path": "tools/bench/errorlist_D1_ring_p4s06_20261008_174730_20261008_181243.json", "md5": "899e265612a8821ffaa8f0553e1ce5f1"},
+  {"path": "tools/bench/diag_c147_p4s06v18_scratch_sum.json", "md5": "2b71e9ff78b891c853479931f9e5af9d"},
+  {"path": "tools/bench/diag_c149_a1_2_adopt.py", "md5": "e5528ef097cb18edfc345e78b5af71f6"},
+  {"path": "tools/bench/diag_c149_a1_2_elexp.py", "md5": "a66de0947ad34c09a914b4e2063764b0"},
+  {"path": "tools/bench/diag_c149_a1_2_mkgraph.py", "md5": "8965cf68c7f96b15d1c61601b089a037"},
+  {"path": "tools/bench/diag_c149_a1_2_graph.py", "md5": "1d8985ca1d16ef4b755bf5c6618815a6"},
+  {"path": "tools/bench/diag_c149_a1_2_memload.py", "md5": "52b46947116b02369a72478a27297ebe"},
+  {"path": "tools/bench/diag_c149_a1_2_inv.py", "md5": "40ddb8fb16341e74d04b99fe75057a9a"},
+  {"path": "tools/bench/diag_c149_a1_2_elrun.py", "md5": "0179b6001e81970d869561ecd62e72eb"},
+  {"path": "tools/bench/diag_c149_a1_3_wire.py", "md5": "f5c831d0d9f0e1f995bfa56529e5cf26"},
+  {"path": "tools/bench/diag_c149_a1_3_types.py", "md5": "159472a01f4e5dc72484028e7bee7e39"},
+  {"path": "tools/errorlist_check.py", "md5": "2b466a89335af69efd27a663479eda53"},
+  {"path": "tools/bench/plan_ring_p4_s06v18_pred.json", "md5": "c1bd6b3ed11c5641e7dacf10045af9a1"},
+  {"path": "tools/stagekit.py", "md5": "06b8d844284deacab535a9ee442d4964"},
+  {"path": "tools/stagexec.py", "md5": "1bab9cf96502dfbe2d9a755e6d4a48b6"},
+  {"path": "tools/gscript.py", "md5": "1a80236ed35c1876c67f964c72fe820a"},
+  {"path": "tools/elrule.py", "md5": "a5ee7d5c8792ccf5c174e70be022544d"},
+  {"path": "tools/bench/memory_model.json", "md5": "88eeb03748e94d422e38be802be2118a"}
+ ],
+ "pass": [
+  "Adopted by the PD354(a) route (adopt_scratch by import): claudeDev D1_ring_p4s06_*.vi path + md5 quoted; 569ffbf5 not edited (md5 before == after)",
+  "Final EL expected file for the adopted bytes written from the 51-item read (read json 899e2656 of the byte-identical copy, or one fresh elrun read); count quoted, another count reported not fixed",
+  "Fresh-instance load + graph read: tools/bench/graph_ring_p4s06_<stamp>.json + md5 + load MB; memory_model.json diff = ONE load_by_vi entry, key-by-key quoted, no limit/MEMSTOP/X10 change",
+  "diag_c149_a3_void_census.md: Void terminals of adopted s06 vs byte copy of s05 3f9ac26b (wire, term, owner, name, type), s06-only listed, counts; plain gscript reads, no edit verb",
+  "Invariants (stage tools, errorlist_check, s05 3f9ac26b, s04 95e408ff, s03 282301ca, bed 39511877, s06 569ffbf5) unchanged; no byte copy left; LabVIEW gone"
+ ],
+ "outputs": [
+  "tools/bench/diag_c149_a3_1_facts.md",
+  "tools/bench/diag_c149_a3_void_census.md",
+  "tools/bench/graph_ring_p4s06_<stamp>.json",
+  "tools/bench/errorlist_expected_D1_ring_p4s06_<stamp>.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c149_a3*",
+   "tools/bench/errorlist_*p4s06*",
+   "tools/bench/graph_ring_p4s06_*",
+   "tools/bench/adopted_scratch.jsonl",
+   "tools/bench/memory_model.json",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/jev_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 90
+ },
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "D1_ring_p4s06_20261008_174730.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/bench/diag_c149_a1_2_adopt.py"}
+ ],
+ "rules": [
+  "NO second scratch; NO pip install; no edit verb in the census; no Is Broken? read",
+  "No stage-tool, hook or elrule edit; errorlist_check.py is not edited; memory_model.json only the s06 load_by_vi entry",
+  "Bed, s03, s04, s05 never opened for editing (census reads a BYTE COPY of s05); no motor or camera"
+ ]
+}

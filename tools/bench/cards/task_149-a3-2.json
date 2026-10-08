@@ -1,0 +1,74 @@
+{
+ "schema": "task/1",
+ "id": "149-a3-2",
+ "kind": "build",
+ "goal": "Retry 149-a3-1: fix graph-plan data for re-used uid 23807, then s06 graph read + load MB, load_by_vi s06 entry only, Void-type census vs byte copy of s05 (PD363)",
+ "why": "149-a3-1 adopted s06 and wrote the 51-item expected file, then stopped at mkgraph: our script put re-used w23807 in deleted_wires (peer: data defect). Adoption is not repeated.",
+ "retry_of": "stage_d1_ring_p4_s06v18_scratch.py",
+ "retry_of_card": "149-a3-1",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_149-a3-2.md", "md5": "5d1bdf3494672c4978f40eb8ac80ba6a"},
+  {"path": "tools/bench/diag_c149_a3_1_facts.md", "md5": "3969b0c53bf0257c70c68fd77e017484"},
+  {"path": "archive/peer/2026-10-08-c149-a3-1-mkgraph.md", "md5": "bbaba5b5ca20338e13a2dbae9cb5542e"},
+  {"path": "tools/bench/diag_c149_a3_1_mkgraph.py", "md5": "26686d06016705934043228e61766fac"},
+  {"path": "tools/bench/diag_c149_a3_1_graph.py", "md5": "9bbf18d29b79058df71c6fb412d9957c"},
+  {"path": "tools/bench/diag_c149_a3_1_graph_plan.json", "md5": "84e846304fee4e0c03ebab8228872376"},
+  {"path": "tools/bench/errorlist_expected_D1_ring_p4s06_20261008_174730.json", "md5": "b47995c8b6cbad7dc6e35771b33e71be"},
+  {"path": "tools/bench/adopted_scratch.jsonl", "md5": "658fe5b9526a78bac59a5ed6c3091582"},
+  {"path": "tools/bench/diag_c147_p4s06v18_scratch.json", "md5": "8edb8c989b27d95ad950af8ae9e2436f"},
+  {"path": "tools/bench/diag_c149_a1_2_memload.py", "md5": "52b46947116b02369a72478a27297ebe"},
+  {"path": "tools/bench/diag_c149_a1_3_wire.py", "md5": "f5c831d0d9f0e1f995bfa56529e5cf26"},
+  {"path": "tools/bench/diag_c149_a1_3_types.py", "md5": "159472a01f4e5dc72484028e7bee7e39"},
+  {"path": "tools/stagekit.py", "md5": "06b8d844284deacab535a9ee442d4964"},
+  {"path": "tools/stagexec.py", "md5": "1bab9cf96502dfbe2d9a755e6d4a48b6"},
+  {"path": "tools/gscript.py", "md5": "1a80236ed35c1876c67f964c72fe820a"},
+  {"path": "tools/elrule.py", "md5": "a5ee7d5c8792ccf5c174e70be022544d"},
+  {"path": "tools/bench/memory_model.json", "md5": "88eeb03748e94d422e38be802be2118a"}
+ ],
+ "pass": [
+  "Offline test (a)(b)(c) of the brief quoted: new|kept_by_key == 16, w23807 ends in real_end_rows, E5 expression run with 23807 deleted vs moved to new",
+  "Card-local mkgraph copy puts the kept_by_key uid in new_wires, not deleted_wires; W gate 16 == 16; plan json path + md5; no stage tool edited",
+  "Fresh-instance load + graph read of adopted s06 569ffbf5: tools/bench/graph_ring_p4s06_<stamp>.json + md5 + load MB, all graph gates PASS (or first failing gate quoted)",
+  "memory_model.json diff = ONE load_by_vi entry for 569ffbf5, key-by-key quoted, no limit/MEMSTOP/X10 change",
+  "diag_c149_a3_void_census.md: Void terminals of adopted s06 vs byte copy of s05 3f9ac26b (wire, term, owner, name, type), s06-only listed, counts; plain gscript reads, no edit verb",
+  "Invariants (stage tools, errorlist_check, s05 3f9ac26b, s04 95e408ff, s03 282301ca, bed 39511877, s06 569ffbf5) unchanged; no byte copy left; LabVIEW gone"
+ ],
+ "outputs": [
+  "tools/bench/diag_c149_a3_2_facts.md",
+  "tools/bench/diag_c149_a3_void_census.md",
+  "tools/bench/graph_ring_p4s06_<stamp>.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c149_a3*",
+   "tools/bench/graph_ring_p4s06_*",
+   "tools/bench/memory_model.json",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/jev_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 90
+ },
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "D1_ring_p4s06_20261008_174730.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "tools/bench/diag_c149_a3_1_mkgraph.py"},
+  {"kind": "file", "name": "tools/bench/diag_c149_a3_1_graph.py"}
+ ],
+ "rules": [
+  "Adopt and the 51-item expected file are DONE: not repeated, adopted_scratch.jsonl and the expected file not rewritten",
+  "NO second scratch; no edit verb in the census; no Is Broken? read; no stagekit/stagexec/graph.py/gscript edit",
+  "memory_model.json: only the s06 load_by_vi entry; census reads a BYTE COPY of s05; no motor or camera"
+ ]
+}

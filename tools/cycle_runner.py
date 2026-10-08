@@ -1014,10 +1014,10 @@ def retro_undisposed(peer_dir):
             body = f.read()
     except OSError:
         return None
-    if RETRO_DISPOSITION_H not in body:
-        return newest
-    tail = body.split(RETRO_DISPOSITION_H, 1)[1]
-    if len(RETRO_PLACEHOLDER_RE.sub("", tail).strip()) < 80:
+    import dispo   # card 150-a3-3: the LAST column-0 RETRO_DISPOSITION_H line, same RETRO_PLACEHOLDER_RE (tools/dispo.py)
+    left = dispo.disposition_len(body)
+    # None = no heading line (an inline quote of the heading is not one); < 80 = empty or still the placeholder
+    if left is None or left < 80:
         return newest
     return None
 

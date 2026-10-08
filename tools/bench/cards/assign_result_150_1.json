@@ -1,0 +1,24 @@
+{
+ "schema": "assign-result/1",
+ "cycle": 150,
+ "round": 1,
+ "status": "HANDBACK",
+ "cards": ["150-a1-1", "150-a1-2", "150-a1-3"],
+ "pass_evidence": [
+  {"item": 0, "met": false, "evidence": ["tools/bench/diag_c150_a1_1_facts.md:13", "tools/bench/diag_c150_a1_3_facts.md", "tools/bench/diag_c150_a1_3_probe.log"]},
+  {"item": 1, "met": false, "evidence": ["tools/bench/cards/result_150-a1-3.json"]},
+  {"item": 2, "met": false, "evidence": ["tools/bench/cards/result_150-a1-3.json"]},
+  {"item": 3, "met": false, "evidence": ["tools/bench/cards/result_150-a1-3.json"]},
+  {"item": 4, "met": false, "evidence": ["docs/d1/ring-p4c.md:228"]},
+  {"item": 5, "met": false, "evidence": ["docs/d1/ring-p4c.md:234"]},
+  {"item": 6, "met": false, "evidence": ["docs/d1/ring-p4c.md:237"]},
+  {"item": 7, "met": false, "evidence": ["tools/bench/diag_c150_a1_3_facts.md"]},
+  {"item": 8, "met": true, "evidence": ["tools/bench/diag_c150_a1_2_facts.md", "tools/bench/cards/result_150-a1-2.json", "archive/2026-10-08-status-cycle150-relocate.md"]},
+  {"item": 9, "met": true, "evidence": ["tools/bench/diag_c150_a1_3_check_after.log", "tools/bench/prep_c150_a1_1_check_after.log"]}
+ ],
+ "handback": {
+  "reason": "a-unexplained-after-retry: 150-a1-1 FAILed (rebase BINDING, stage_prerun.py:3849); retry 150-a1-3 explained it and the PD364(c) 14-action fallback is refused the same way; fix is a stage_prerun.py edit PD364(c) forbids",
+  "question": null
+ },
+ "note": "Item 8 met: STATUS 203->110 lines, moved verbatim. Item 9 met (107 files equal, no LabVIEW). Cause (150-a1-3, probe.log:15-35): no extra object in the real s06; two pre-existing nodes were RENAMED by s06 (#2626 t2832/t4160/t4165 array->element; For tunnel t9505/t9508 Value->empty, licensed in plan_ring_p4_s06v18_licence.json:16-30). rebind keys old terminals by (uid, owner, term_name) at stage_prerun.py:3829, so renamed ones land in real_new and break the shape count :3846-3849; stage_prerun never reads the licence renames. s05->s06 passed only because no old node was renamed. Fix needs a stage_prerun.py rebind edit (key by (uid, owner), or apply stage-N licence renames): for judgement. s07 30-action plan (md5 10a4f59a, start 599.7, ops 136..165, MAIN 678.8) is ready but provisional; pred/recipes still the stale 14-action versions. Items 1-7 not run. Parser device (4-6) was not run early: PD364(e) orders it after the s07 LabVIEW card and it edits hooks."
+}

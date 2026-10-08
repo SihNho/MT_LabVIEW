@@ -1,0 +1,52 @@
+BGRUN START 2026-10-08 18:31:36 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c149-a1-2-eladv -TaskFile tools/bench/diag_c149_a1_2_peer_task2.md
+BGRUN PID 15636
+OUTCOME: ANSWERED (82s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-08-c149-a1-2-eladv.md
+COST: $0.8995  in 10 / out 6668 / cache-create 86938 / cache-read 352736  (78s, 12 turn(s))
+--- ANSWER ---
+**On the copy question, the claim holds. On the "new evidence" framing, it doesn't.** I could not find a line in `diag_c149_a1_2_eladv.py` that changes the result compared with the recipe's rule. The rc 1 also cannot be a side effect of copying the code. But this log adds no independent evidence: it re-counts the same read file that el51 already hand-counted, and one header-text reading decides its rc entirely.
+
+## 1. Strongest reason the claim is wrong
+"A faithful evaluation of the recipe's own rule" is true of the function, but not of the recipe's mode as it would have been launched.
+
+Running `py tools/recipes/stage_d1_ring_p4_s06v18_scratch.py --el-advisory <json>` first runs import-time code before it ever reaches `el_advisory`:
+- `import stagekit as K, stagexec as SX` (`:28`)
+- `import stage_d1_ring_p4_s06v18 as R` (`:29`)
+- `SX.check_sink_gates(...)` plus an `assert` (`:31-32`)
+- the monkey-patch of `K.Stage` (`:62`)
+
+An uncaught exception in any of these also exits Python with rc 1. So the copy proves what `el_advisory()` returns on this read. It does not prove the recipe's offline mode would have exited the same way.
+
+Within the function itself, I checked every line against the recipe:
+
+| point | copy | recipe | effect |
+|---|---|---|---|
+| plan md5 | plain `hashlib.md5(...).hexdigest()` over the whole file (`diag_c149_a1_2_eladv.py:26`) | `K.md5` reads the file in 1 MiB chunks into the same hexdigest (`tools/stagekit.py:186-192`) | identical |
+| `pred` argument | removed | `None` on the `--el-advisory` path (`:162`) | identical |
+| extra `"got"` key | added | absent | output only |
+| file path | joined to ROOT | relative path | same file, because bgrun ran from the project root (`diag_c149_a1_2_eladv.log:1`) |
+| `elrule` import | from `tools/` | `tools/recipes/` comes first on `sys.path`, but no `tools/recipes/elrule*.py` exists | same module |
+
+The pred's key `cfbd9823…` (`plan_ring_p4_s06v18_pred.json:7`) passed the copy's check. Otherwise the result would have been rc 2.
+
+## 2. Could rc 1 be an artefact of the copy? No
+rc is 1 only when a class is unseen or the total differs by more than 3 (`:59`, the same as recipe `:121`). Here `unseen` is empty, so rc comes only from `len(items) - predicted_total`, which is 51 − 55 = −4. The classifier and `elrule` never touch that subtraction.
+
+**Alternative explanation of the same evidence:** rc 1 is decided entirely by the reader's OCR of the window header. The read json has `n_reported: 51` taken from the text "51 errors and warnings" (`errorlist_…_181243.json:60-61`), and the reader stops stepping at that number. If the header was misread, `len(items)` is wrong by the same amount, and both the copy and the recipe would still say rc 1.
+
+el51 called this alternative "B" and judged it unlikely but **never checked** (`archive/peer/2026-10-08-c149-a1-2-el51.md:63-64`, step 3 at `:80`). The eladv log neither strengthens nor weakens it.
+
+**A pin nobody checks:** the pred records `elrule` md5 `a5ee7d5c…` (`plan_ring_p4_s06v18_pred.json:185`). Neither the recipe nor the copy checks it at run time. A changed `elrule.py` could move items between classes. It could not change rc here, unless it produced a class name that appears in neither `start_read` nor `predicted`.
+
+## 3. What would show it is NOT the same failure as el51
+- The read json was rewritten between 18:28:56, when el51 was asked, and 18:30:57, when eladv ran. Check by md5 or mtime.
+- The per-class difference in `diag_c149_a1_2_eladv.log:3` does not match el51's hand count (`el51.md:29-31`). I checked: all eight classes match (input −2, types +1, loose ends +1, not connected +2, undirected −3, sinks with no source −1, output tunnel → Replace Array Subset −1, output tunnel → subVI −1; local and sr 0). So this falsifier does not fire.
+- One clarification about el51's own log: `diag_c149_a1_2_el.log` failed on `errorlist_check`'s MISMATCH against the s05 expected file (extra 5, missing 9). That is a different comparison. The EL-ADVISORY verdict was only hand-computed inside el51's question (`el51.md:31`). eladv is that same hand count done by code on the same read file, so "same failure" is correct. But "already reviewed" covers the rule's arithmetic, not a log in which the rule actually ran.
+- The copy's docstring predicted rc 1 RETURN (`diag_c149_a1_2_eladv.py:10`). So by its own terms this run is a successful prediction, not a failed one. The only failed prediction is still the pred's 55, which el51 is about.
+
+## 4. Cheapest read-only checks
+1. **Same input file.** Compare the md5 and mtime of `tools/bench/errorlist_D1_ring_p4s06_20261008_174730_20261008_181243.json` with a time before 18:28:56. Also confirm `md5(tools/elrule.py) == a5ee7d5c8792ccf5c174e70be022544d`. If both hold, "same failure as el51" stands and no second review is owed beyond el51.
+2. **The header-count alternative.** Open the header capture behind `n_reported_from` and the capture of the last item (item 50), and confirm the window really says 51 and the list scrollbar is at the bottom. This is el51's unrun step 3. It is the only thing that separates "the file has 51 items" from "the reader stopped at a misread 51".
+3. **The recipe's own mode.** Only needed if someone wants that claim rather than the function's. No offline route is free: running `--el-advisory` would import stagekit and gscript, which this review must not do. Treat it as unverified.
+
+**What would change my mind:** a different md5 for the read json or `elrule.py` from step 1, or a header capture in step 2 that does not say 51.
+BGRUN END rc=0 after 83s

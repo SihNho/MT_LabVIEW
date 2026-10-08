@@ -3783,8 +3783,11 @@ def rebind(before, prov, real, prov_doc=None, real_doc=None, before_doc=None, in
     passes it). stagexec.uid_reuse is a ONE-OP guard; here N's base and the real graph lie many ops and planned deletes apart,
     where LabVIEW re-issuing freed uids is expected. With `named`: a re-issued uid (uid_reuse hit, or a terminal uid whose
     OWNER changed) is FATAL only when the plan names it; otherwise it is recorded in info['reuse_noted'] (rebase logs
-    `REUSE-NOTED <uid> <old>-><new>`) and binding goes by (uid, owner, name). Without `named` (a direct call) every
-    uid_reuse hit refuses, as before.
+    `REUSE-NOTED <uid> <old>-><new>`) and binding goes by (uid, owner, term class, direction). Without `named` (a direct
+    call) every uid_reuse hit refuses, as before.
+    card 150-a2-1 (PD365(c)) + 150-a2-2: an OLD terminal is keyed (uid, owner, term class) - no name, no direction; a
+    pre-existing terminal whose NAME changed is info['renamed_old'] = [(uid, owner, old name, new name)] (rebase logs
+    `RENAMED-OLD`), one whose is_source changed is info['flipped_old'] = [(uid, owner, old, new)] (`FLIPPED-OLD`); neither is created.
     card 132-5 (PD278(c), docs/d1/ring-p3b.md:87-91): names are NEVER keyed - stagesim labels FS inner tunnels '' (real
     'error out') and the donor Unbundler's outputs 'element' (real code/source/status), diag_c132_4_rebind_keys.log:4-7.
     Order: (A) CONNECTIVITY - a created sim terminal on a wire whose other end is already bound takes the unique real
@@ -3799,7 +3802,8 @@ def rebind(before, prov, real, prov_doc=None, real_doc=None, before_doc=None, in
     import vigraph as V
     info = {} if info is None else info
     info.update({"mode": {}, "labels": [], "nodes": {}, "frames": {}, "how_frame": {}, "unbound_terms": [], "reuse_noted": [],
-                 "map_nodes": {}, "map_frames": {}, "map_rowless": {}, "map_terms": 0, "map_unused": [], "fallback": []})
+                 "map_nodes": {}, "map_frames": {}, "map_rowless": {}, "map_terms": 0, "map_unused": [], "fallback": [],
+                 "renamed_old": [], "flipped_old": []})
     dd = {}
     before, dd["before"] = V.dedupe_rows(before)
     prov, dd["prov"] = V.dedupe_rows(prov)
@@ -3826,8 +3830,18 @@ def rebind(before, prov, real, prov_doc=None, real_doc=None, before_doc=None, in
     # LabVIEW re-issues a deleted terminal's uid to a NEW node of the same class inside one session (s01: 28004/28979 of the
     # deleted #27928/#28916 came back on the new #6942/#6805, prep_c142_5_probe.log), which uid_reuse cannot see (same classes)
     # and a raw-uid key filed as old (prep_c142_p1_rebase.log:3). Same key as stagekit.term_key (not imported: line 689).
-    tkey = lambda r: (r["term_uid"], r.get("owner_uid"), str(r.get("term_name") or ""))   # noqa: E731
-    old_t = set(tkey(r) for r in before)
+    # card 150-a2-1 (PD365(c), docs/d1/ring-p4c.md:254-283): the key is NAME-FREE - (term uid, owner uid, term class,
+    # direction). LabVIEW renames inputs of PRE-EXISTING nodes (s06: #2626 'array'->'element', #9503 'Value'->'';
+    # diag_c150_a1_3_facts.md:2) and a name key filed them as created. A rename is info['renamed_old'] (rebase logs
+    # RENAMED-OLD), never a refusal; a class change at the same (uid, owner) still lands in real_new (direction: next lines).
+    # card 150-a2-2 (retry of 150-a2-1): DIRECTION is not identity either - an undirected tunnel's terminals flip is_source when
+    # wired (s06: InnerTerminals t9505/t10179/t29779 of LoopTunnels #9503/#10177/#29777 False->True, prep_c150_a2_2_measure.log;
+    # prep_c147_a1_3_rebase.log:12 BASE-FLIPS). Key = (term uid, owner uid, term class); an is_source difference on an OLD
+    # terminal is info['flipped_old'] = [(uid, owner, old, new)] (rebase logs FLIPPED-OLD), never a refusal; a CLASS change refuses.
+    tkey = lambda r: (r["term_uid"], r.get("owner_uid"), r.get("term_class", ""))   # noqa: E731
+    old_name = dict((tkey(r), str(r.get("term_name") or "")) for r in before)
+    old_src = dict((tkey(r), bool(r["is_source"])) for r in before)
+    old_t = set(old_name)
     sim_new, real_new = collections.OrderedDict(), collections.OrderedDict()
     for r in prov:
         if V.node_of(r) < 0:
@@ -3835,6 +3849,11 @@ def rebind(before, prov, real, prov_doc=None, real_doc=None, before_doc=None, in
     for r in real:
         if tkey(r) not in old_t:
             real_new.setdefault(V.node_of(r), []).append(r)
+            continue
+        if old_name[tkey(r)] != str(r.get("term_name") or ""):
+            info["renamed_old"].append((r["term_uid"], r.get("owner_uid"), old_name[tkey(r)], str(r.get("term_name") or "")))
+        if old_src[tkey(r)] != bool(r["is_source"]):
+            info["flipped_old"].append((r["term_uid"], r.get("owner_uid"), old_src[tkey(r)], bool(r["is_source"])))
     info["recycled"] = sorted(r["term_uid"] for rows in real_new.values() for r in rows
                               if r["term_uid"] in set(k[0] for k in old_t))
     dirk = lambda r: (r.get("term_class", ""), bool(r["is_source"]))               # noqa: E731
@@ -4281,6 +4300,10 @@ def rebase(plan_path, graph_path, log=print, simulate=True, out_root=None, model
     for x in info.get("reuse_noted") or []:                  # card 143-4 (PD334(b)): re-issued, not named by the plan
         u = _reuse_uid(x)
         log("REUSE-NOTED {0} {1}".format(u, x.split("#{0} ".format(u), 1)[-1]))
+    for u, o, old_v, new_v in info.get("renamed_old") or []:  # card 150-a2-1 (PD365(c)): LabVIEW renamed an OLD terminal
+        log("RENAMED-OLD {0} #{1} {2!r}->{3!r}".format(u, o, old_v, new_v))
+    for u, o, old_v, new_v in info.get("flipped_old") or []:  # card 150-a2-2: an OLD (undirected-tunnel) terminal flipped direction
+        log("FLIPPED-OLD {0} #{1} src {2}->{3}".format(u, o, old_v, new_v))   # card 150-a2-4: loop vars no longer rebind base `b`
     modes = collections.Counter(info["mode"].values())
     log("REBIND {0} node(s), {1} frame(s), terminals by {2}; unbound created terminals {3}; frames {4}; re-issued uid(s) {5}".format(
         len(info["nodes"]), len(info["frames"]), dict(modes), info["unbound_terms"][:12],

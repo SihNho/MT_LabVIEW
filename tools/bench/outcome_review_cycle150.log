@@ -1,0 +1,90 @@
+BGRUN START 2026-10-08 19:53:28 limit 20.0 min: C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe -u G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\outcome_review.py
+BGRUN PID 22864
+   cadence: 5 cycle retrospectives since 2026-10-02-outcome-review-20261002.md (every 5)
+   task written to C:\Users\KimLab\AppData\Local\Temp\outcome-review-20261008.txt (7683 chars)
+   review card tools\bench\cards\review_outcome-review-20261008.json
+OUTCOME: ANSWERED (172s)  model: fable (effort medium; peer.ps1 default for role outcome)  archived: archive\peer\2026-10-08-outcome-review-20261008.md
+COST: $3.9727  in 226 / out 13739 / cache-create 155476 / cache-read 695693  (170s, 39 turn(s))
+VERDICT-CARD: VERDICT-CARD outcome-review-20261008 verdict=refuted -> tools\bench\cards\verdict_outcome-review-20261008.json
+--- ANSWER ---
+**Outcome review of cycles 141 to 149 (2026-10-02 21:56 to 2026-10-08 19:43). Verdict on the claim: refuted.** The window produced six more in-between files of one tracking-loop step, all `ExecState` 0 and never run, two small subVIs that ran against a Python reference, and a four-arm benchmark of the agent harness itself. Nothing the user can run today differs from what they could run at the 2026-10-02 review. This is the sixth consecutive refutation.
+
+Limits of this review. `claudeDev\` is outside the searched tree, so VI file states are taken from the adopt logs and result cards, as the previous review also had to do. Costs come from `tools/bench/cycle_runner.log` and `tools/bench/livebench/report_4arms.md`. No external claim was needed, so no URL is cited. Two counter faults in the attached brief: it says five retrospectives since the last review, but nine cycles ran (141 to 149) and cycles 141, 142, 144 and 145 have no retrospective file in `archive/peer/`, so the review cadence undercounts spend by four cycles. And `Track_v6_CPU_core_v0.vi` / `Track_v6_CPU_queue_v0.vi` are still listed as deliverables while no such file exists anywhere under `zz_LabView VI`; the 2026-10-02 review reported the same phantom (`archive/peer/2026-10-02-outcome-review-20261002.md:92`).
+
+**1. Deliverable.** Nothing new is runnable.
+
+| Artefact | Cycle | What the evidence shows | Source |
+|---|---|---|---|
+| `RingPickSlot_v0.vi`, `RingSeqCheck_v0.vi` | 142 | 7/7 vectors equal to a Python reference, fresh re-run equal | `STATUS.md:95-96`, `docs/d1/INDEX.md:30` |
+| `D1_ring_p4s01` … `D1_ring_p4s06` | 141 to 149 | each adopted on structural gates only; "in-between file, not counted"; the bed stays "STRUCTURAL, ExecState 0 by design, never run" | `docs/d1/INDEX.md:26-34`, `STATUS.md:182` |
+| s06 in particular | 149 | adopted with Error List item 6 "source void -> sink I32" unidentified; the void census that was meant to find it was cut at 1112 of 4379 terminals and could not see Void at all | `tools/bench/cards/assign_result_149_3.json:19-22`, `archive/peer/2026-10-08-retrospective-cycle149.md:301-308` |
+| live bench, 4 arms | 10-06 to 10-07 | "no requirement or milestone changed state in any arm" | `tools/bench/livebench/report_4arms.md:24-25` |
+
+The benchmark catalogue still ends at row 59, dated 2026-09-27 (`archive/benchmarks/INDEX.md:80`). No frame-loss number has been produced in eleven days. Two subVIs that compute "smallest Num greater than last" are unit tests of a design fragment, not a loop the user can run.
+
+**2. Goal alignment.** Against `project-requirements/parallelization-requirement.md:10-18` and `docs/goalmap.json`:
+
+- **Requirement 1, split the post-pick loop:** structural only. The chain is at P4 session 6 of about 11 sessions, P5 and P6 are NOT STARTED, and the first run of the chain is still P6 (`docs/d1/INDEX.md:61-63`).
+- **2.1 motor control:** `met` in the original, not by this project (`goalmap.json:15`).
+- **2.2 motor reading, the bottleneck the user named:** `open`, untouched since 2026-08-24 (`goalmap.json:21`).
+- **2.3 camera acquisition in its own loop:** `open` (`:27`). Six more build sessions, no loop that runs.
+- **2.4 scheduler:** `open`, untouched since project start (`:33`).
+- **2.5 merge and save:** on the unrun chain only.
+- **3, functions run in parallel:** no running VI has more loops than the display-loop VI of cycle 110.
+- **Frame loss at 150 Hz (R4), in-VI camera settings (R8), GPU default (R6):** all `open` (`:51,63,75`). R8 has had nothing built since the user chose it on 09-25.
+
+Not moved since the project began: 2.2 motor reading, 2.4 scheduler, 2.3 as a running loop, 150 Hz, in-VI frame rate. The list is identical to the 2026-10-02 review (`…outcome-review-20261002.md:122`).
+
+**3. Cost versus product.**
+
+| Window | Cost | Bought | Source |
+|---|---|---|---|
+| cycles 142 to 149 | $326.47 | s02 to s06 in-between files, 2 subVIs, tool and gate repairs | `cycle_runner.log:1148,1167,1190,1211,1240,1277,1304,1331` |
+| cycle 141 | unknown ("$?", orphaned runner) | s01 file | `cycle_runner.log:1134` |
+| live bench, 4 arms + uncounted run | $508.18 | a comparison of agent prompts and rule sets; "no arm executed session 4" | `report_4arms.md:19-22,27` |
+| retrospectives 143, 146 to 149 | $10.92 | five reviews, each finding the same classes | `…retrospective-cycle14{3,6,8,9}.md:7` |
+
+About $845 in six days, plus un-costed chat sessions, for zero runnable product and zero new measurements of the rig. Not defensible. A competent engineer would have skipped:
+
+- **The Error List predictor and its four repairs.** The cycle-146 retrospective records that the predictor "blocked four passing sessions in a row" before judgement demoted it to a cross-check (`STATUS.md:79`, PD354). Counting error items on a VI that is broken by design never told anyone whether it works.
+- **The s06 scratch retried across three cycles** for gate-key renames, a reused wire uid, a missing Python package and a stale self-test stub (`STATUS.md:69-77`). None of these is a property of the VI.
+- **The live bench of agent configurations.** The user asked for it, so it is not the runner's scope creep, but it measured the harness and not the VI, and its own report says every arm spent its time on the same simulator mismatches (`report_4arms.md:44-47`).
+- **The void-terminal census** launched on an unmeasured reader with a name test that cannot match Void (`retrospective-cycle149.md:304-305`).
+
+Scale now: 340 op VIs, 220 recipes, 1,117 peer exchanges, 117 retrospectives, behind one measured improvement dated 2026-09-27.
+
+**4. Ordering at project scale.** The standing order (`STATUS.md:68`, `docs/d1/INDEX.md:34,61-64`) is still: finish P4 over several sessions, P5, P6, an interface-contract step, and only then design the display, motor, scheduler and focus tracks. The parallelism rule forbids designing the motor-reading track until the ring is done (`STATUS.md:68`), so the one requirement the user called a bottleneck is last by rule. The order has not changed through six refuted reviews. What should come first is unchanged: R8 frame-rate control on `D1_s1_disp_20260927_041648.vi`, one supervised bead run of the display-loop VI, and one 150 Hz run before another dollar goes into the ring.
+
+**5. Stale decisions.** Every question in `tools/bench/decisions_pending.json` is answered, and the last one was asked on 2026-10-02 (`:335`). In six days the user has been asked nothing about the goal. What is stale:
+
+- **The 2026-10-02 refuted review** still reads "(Claude fills in)" under its disposition (`…outcome-review-20261002.md:208-210`). Its instruction to stop and re-plan with the user never reached the user; the runner was relaunched the same night.
+- **OPEN 53**, controller zero versus physical zero, open since 09-18, blocks trust in the motor envelope (`STATUS.md:61`).
+- **OPEN 58**, autofocus limits, answered 09-25 and still listed (`STATUS.md:65`).
+- **A supervised bead run of the display-loop VI** has never been asked for, though it is the only artefact that beat the original (lost 16/12 versus 3,359/5,860 at 15 beads, `archive/benchmarks/INDEX.md:79`).
+- **The chat hand-off** carries a dozen "awaiting" proposals, all about model choice, review effort and bench design (`docs/chat-handoff.md:62-105`), none about running anything.
+
+**6. The experiment test.** The original. The display-loop VI has run only 120-second ABBA legs without a sample and has no in-VI frame-rate control. The ring bed and all six P4 session files are `ExecState` 0 by design and cannot execute. s06 carries an unidentified type conflict that the project itself says must be gone before P6 (`STATUS.md:69`). Nothing in cycles 141 to 149 changed either fact.
+
+**7. Termination.** The shortest path, unchanged for the sixth review:
+
+1. Write one page describing `D1_s1_disp_20260927_041648.vi` in the user's terms. No LabVIEW.
+2. Ask the user for one supervised bead run at 8 and 15 beads.
+3. Add the R8 frame-rate control to that VI and run 150 Hz once.
+4. Resume the ring only if step 3 loses frames, and on the loop the numbers name.
+
+Abandon or park: the remaining P4 sessions, the void census, the s07 rebase, the Error List pinning, the memory model and session-cut machinery, the interface-contract step, and further harness benches. The project's own rule says a repeated outcome verdict means stop and re-plan with the user. Six repetitions and about $845 this window. The runner should stop and the user should see the six-review table.
+
+Mapping notes. `goal-requirement-not-advanced`: 2.2, 2.3, 2.4, 150 Hz and R8 unmoved. `product-not-runnable`: six P4 files at `ExecState` 0, s06 with an unresolved type conflict. `tooling-over-delivery`: predictor repairs, gate drains, the census. `ordering-stale`: the bottleneck is last by rule; R8 and the hand-off unscheduled. `decision-starved`: no goal question asked in six days; the refuted review undisposed. `measurement-without-product`: $508 of harness benchmarking with no rig measurement. Not flagged: `scope-inflation`, since the bench was the user's request.
+
+OUTCOME-VIOLATION: goal-requirement-not-advanced
+OUTCOME-VIOLATION: product-not-runnable
+OUTCOME-VIOLATION: tooling-over-delivery
+OUTCOME-VIOLATION: ordering-stale
+OUTCOME-VIOLATION: decision-starved
+OUTCOME-VIOLATION: measurement-without-product
+
+VERDICT {"schema":"verdict/1","id":"outcome-review-20261008","verdict":"refuted","alternative":"P4 sessions s01-s06 are necessary steps toward a tracking/camera split that pays off at 150 Hz. Unsupported: no 150 Hz run exists, every file is ExecState 0, s06 carries an unidentified void->I32 conflict, and the first ring run is still P6 with P5 not started.","discriminating_test":"Add R8 frame-rate control to D1_s1_disp_20260927_041648.vi and run 150 Hz at 8 and 15 picks plus one supervised bead run. Loss near 0 => hand off, park the ring. Loss at 150 Hz => resume the ring on the loop the numbers name.","violations":[{"slug":"wrong-ordering","loss_min":299,"loss_usd":326.47,"evidence":"tools/bench/cycle_runner.log:1148,1167,1190,1211,1240,1277,1304,1331; STATUS.md:68; docs/d1/INDEX.md:61-64"},{"slug":"unreported-fact","loss_min":0,"loss_usd":"?","evidence":"archive/peer/2026-10-02-outcome-review-20261002.md:208"}],"sources":["project-requirements/parallelization-requirement.md:10","docs/goalmap.json:21","docs/goalmap.json:27","docs/goalmap.json:33","docs/goalmap.json:51","docs/goalmap.json:75","docs/d1/INDEX.md:26","docs/d1/INDEX.md:34","docs/d1/INDEX.md:61","STATUS.md:61","STATUS.md:65","STATUS.md:68","STATUS.md:69","STATUS.md:79","STATUS.md:182","tools/bench/cards/assign_result_149_3.json:19","archive/peer/2026-10-08-retrospective-cycle149.md:304","tools/bench/livebench/report_4arms.md:19","tools/bench/livebench/report_4arms.md:24","archive/benchmarks/INDEX.md:79","archive/benchmarks/INDEX.md:80","tools/bench/decisions_pending.json:335","archive/peer/2026-10-02-outcome-review-20261002.md:92","archive/peer/2026-10-02-outcome-review-20261002.md:208","tools/bench/cycle_runner.log:1134"],"note":"Cycles 141-149: 6 P4 in-between files ExecState 0 never run, 2 subVIs run vs Python only, 0 INDEX rows, $326.47 cycles + $508.18 live bench; loss_min = measured windows of 142/143/149 only, 141/144/145 unlogged. Sixth refutation; prior refuted review undisposed. Stop and re-plan with the user."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-outcome-review-20261008.md
+   STEER: tools\bench\cards\steer_149.json (repeated: ['decision-starved', 'goal-requirement-not-advanced', 'ordering-stale', 'product-not-runnable', 'tooling-over-delivery'])
+   Now annotate it: 'why asked' and 'verdict', and act on the OUTCOME-VIOLATION lines.
+BGRUN END rc=0 after 173s
