@@ -26,6 +26,10 @@ purpose (act, pass items, plan, goal ids), your caps, your state file and the pa
   pass, flags). A REPEATED TOOL FUNCTION is a scratch-VI verification card at the same rung, not an escalation
   (`guard_session` refuses the escalation). An UNEXPLAINED FAIL gets ONE retry; if that retry fails too, the hook
   hands the purpose back.
+- **Deliverable first (user 2026-10-08):** dispatch the purpose's LabVIEW deliverable card (build / scratch / adopt)
+  before any tooling card (gate-fp drain, suite re-runs, regression proofs); tooling cards run after it returns. Only a
+  gate that refuses the deliverable's own launch is fixed first. A gate false positive in `tools/hooks/**` is never a
+  card: log it with `tools/gate_fp.py log` and go on — the chat drains hooks between runs.
 - **Pipeline:** at most 2 cards live, at most ONE with `flags.labview` != "none"; an offline prep card may run beside
   a LabVIEW card (two Agent calls in one message). No gate-tool edit beside a LabVIEW card.
 - Dispatch in the foreground and wait for every agent you started before ending your turn. Never end a message

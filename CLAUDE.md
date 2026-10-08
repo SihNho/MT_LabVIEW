@@ -304,6 +304,12 @@ background notification is a full turn over the whole conversation. Standing rul
    (a) an unexplained failure after one retry, (b) the same failure class twice, (c) a card outside the purpose / plan /
    memory limits / user rules, (d) a question only the user can answer. Limits per assignment round: 3 h and $60
    (`tools/bench/assign/assign_config.json`, user-changeable), a 30-card runaway backstop, and process-level hard stops.
+   **DELIVERABLE FIRST, HOOKS NEVER IN A RUNNER CYCLE (user 2026-10-08: "두 가지 모두 적용하자", after cycles 147–149
+   spent $130 for one adopted file, mostly on gate clean-up):** a purpose's LabVIEW deliverable card runs before any
+   tooling card (gate-fp drain, suite re-runs, regression proof) unless that very gate refuses the deliverable's launch;
+   `tools/hooks/**` is never changed by a runner card, even when the purpose names it (`guard_assign`
+   `never_in_runner_globs`) — hook false positives are queued and the chat drains them between runs and tells the user
+   ("훅 수정 권한이면 조금 위험하지는 않을지?").
    The six-dispatch cap below applies only to `--flow legacy`.
    Runner stop conditions: a `STOP` marker in STATUS.md (written by the user), the same failure two cycles running,
    the usage-limit rule (renewal + 2 min). `tools/hooks/guard_session.py` (PreToolUse Agent) refuses material

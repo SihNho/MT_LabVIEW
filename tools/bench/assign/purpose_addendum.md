@@ -20,6 +20,14 @@ part of it; leave them out when they are your decision to make later. Also rewri
 **Do NOT run `retrospective.py` or `retro_due.py --close`** — the runner runs the retrospective when it is due, after the
 purpose is met or the cycle closes. Write next.json, validate it, end your turn.
 
+**DELIVERABLE FIRST — user 2026-10-08 ("두 가지 모두 적용하자", after cycles 147-149 spent 3 cycles and $130 for one
+adopted file, mostly on gate clean-up):** when the purpose has a LabVIEW deliverable (a build / scratch / adopt), its
+pass items come FIRST and no tooling item may gate it — a tooling item ("drain fp-…", "re-run the suites", "prove the
+fix did not regress") runs AFTER the LabVIEW card, never "FIRST, ALONE" before it. Put a tooling item before the
+deliverable only when the deliverable's own launch is refused by that very gate, and say so in `act`. **Never name
+`tools/hooks/**` in a runner purpose:** hook edits are not made inside runner cycles (guard_assign refuses them even when
+named); a hook false positive is queued with `tools/gate_fp.py` and the chat drains it between runs, with the user told.
+
 **Lines at the end of this prompt:**
 - `ASSIGN-RESULT <path>` — the previous assignment's `assign-result/1` (PURPOSE_MET with evidence, or HANDBACK). Judge it
   first: accept the evidence or not, then set the next purpose.

@@ -314,7 +314,13 @@ def card_outside(card, purpose, cfg):
         hits = [w for w in writes if protocol.path_in_globs(concrete(g), [w]) or protocol.path_in_globs(concrete(w), [g])]
         if not hits:
             continue
-        named = g.replace("\\", "/").rstrip("*/").lower() in pl or any(
+        # user 2026-10-08 ("훅 수정 권한이면 조금 위험하지는 않을지?" -> "두 가지 모두 적용하자"): hooks are never changed
+        # inside a runner cycle, not even when the purpose names them; their gate false positives are drained by the chat
+        # between runs, with the user told what changed.
+        if g in (cfg.get("never_in_runner_globs") or []):
+            return ("flags.write %s reaches %s, which no runner card may change (user 2026-10-08): queue the gate false "
+                    "positive with tools/gate_fp.py and leave it for the chat" % (hits, g))
+        named =g.replace("\\", "/").rstrip("*/").lower() in pl or any(
             "*" not in w and os.path.basename(w.replace("\\", "/")).lower() in pl for w in hits)
         if not named:
             return "flags.write %s reaches the protected path %s (user rule / memory limit / enforcement)" % (hits, g)

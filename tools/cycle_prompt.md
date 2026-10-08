@@ -100,7 +100,9 @@ whole cycle needs LabVIEW you write that in NEXT and exit rather than deciding t
   with `py tools/gate_fp.py log --gate ... --cmd ... --why "<file:line>" --card <id>` and routes around it only by an
   equivalent command form the gate accepts or an existing release, else returns BLOCKED with `blocked_by.device`
   `gate-fp:<id>`. When the cycle card's `gates_due` shows `gate-fp` DUE, spend ONE tooling card to drain the queue
-  (`py tools/gate_fp.py drain --id <fp-n> --fixed <path:line> --selftest <name>` per entry).
+  (`py tools/gate_fp.py drain --id <fp-n> --fixed <path:line> --selftest <name>` per entry) — AFTER the cycle's LabVIEW
+  deliverable card, never before it, and never for an entry in `tools/hooks/**` (user 2026-10-08: hooks are drained by the
+  chat between runs, with the user told; `guard_assign` refuses a runner card that writes there).
 - **A brief states the MEASUREMENT, never the result-dependent ACTION.** "If A removes 1, do X, else do Y" is
   not delegation; it moves the decision into the session that must not make it. Ask for the measurement, get the
   facts back, then decide.
