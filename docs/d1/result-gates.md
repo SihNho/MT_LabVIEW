@@ -9,13 +9,13 @@ tags: [d1, tooling, gates, stagekit, terminal-identity, pre-decided]
 
 # Result gates D / TD / PB key terminals by POSITION
 
-Opened by card chat-T6 because `docs/d1/tooling.md` is at its 400-line cap. The decision number is PROVISIONAL (PD365 when
-this file was written in a worktree, 2026-10-08): the judgement session that merges the card renumbers it if the cycle runner
-took 365 meanwhile; code cites this file, not the number.
+Opened by card chat-T6 because `docs/d1/tooling.md` is at its 400-line cap. Numbered PD366: the highest PD in the main tree's
+`docs/d1/*.md` was PD365 when this was written (2026-10-08, `ring-p4c.md` PD365 = cycle 150's name-free `rebind` key, the same
+rename problem on the PLAN side); code cites this file, not the number.
 
 ## Pre-decided
 
-365. **(card chat-T6, user 2026-10-08: "두 가지 모두 적용하자"; "단자 네이밍은 몇 차례나 이야기했던 것 같은데, 왜 아직도 수정이 안되는거임?")**
+366. **(card chat-T6, user 2026-10-08: "두 가지 모두 적용하자"; "단자 네이밍은 몇 차례나 이야기했던 것 같은데, 왜 아직도 수정이 안되는거임?")**
      S1 (PD337, `tooling.md`) moved PLAN ADDRESSING to (owner, terminal index, terminal class); the post-run RESULT gates of
      `tools/stagekit.py` stayed on names and wire uids, so LabVIEW's own renames on wiring (#2626 'array'->'element',
      #9503 'Value'->'') and its re-issue of a deleted wire uid (23807) failed a correct build (cycle 147, `result_147-a1-8.json`)
@@ -46,10 +46,12 @@ took 365 meanwhile; code cites this file, not the number.
        counts / `selftest_c147_b1_2`'s T3 and T4 scenarios each FAIL; renaming every terminal or renumbering every wire uid
        still PASSES; `selftest_td_key_c141_3`'s 141-2 uid-re-use case re-asked (K2-K7) as there. The 147-a1-8 end read is kept
        as `tools/bench/fixtures/t6_s06_a1_8_end.json` (git 07202624 blob e364374c). Regressions: `tools/bench/selftest_t6_regress.py`.
-     - **(i) Superseded tests:** `selftest_c147_b1_2.py` T0 / T0b / T2 / T4b and its `reuse_bad` check in T3 assert the licence
-       rules this decision removes - they now fail by design; `selftest_td_key_c141_3.py` T2 / T4 read `recycled` as term uids
-       (now position keys). Both declare `labview: read` or pin CRLF-sensitive md5s; rewriting or retiring them is the
-       judgement session's call.
+     - **(i) Old tests rewritten to these semantics** (card chat-T6 follow-up): `selftest_c147_b1_2.py` - RETIRED assertions
+       T0 "default == pre-edit code", T0b "pb_rename_rows(.., None) untouched", T2 "TD FAILS naming 9505/9508", T3
+       "reuse_bad == [23807]", T4b "TD FAILS on an unlicensed name"; their scenarios now assert name = INFO, re-use = INFO, loss /
+       owner change / kept removed sink = FAIL, plus T1n (no licence). `selftest_td_key_c141_3.py` - RETIRED `recycled == [28004,
+       28979]` (T2) and `xu in recycled` (T4); T1-T7 kept on position keys; it imports stagekit inside main() and now declares
+       `labview: none`, like `selftest_c147_b1_2.py`. Pins in both match raw OR LF-content md5 (a CRLF worktree checkout).
      - **(h) Recipes need no edit:** the s06 recipe's calls (`term_identity_gates(..., renames=REN, bind=...)`,
        `pb_rename_rows(BASE, L, real, REN)`, `unlic == []`) keep their signatures and output keys; their gate TEXT still says
        "wire uid + source identity" / "licensed" - wording only, the key is the position.
