@@ -1,0 +1,21 @@
+{
+ "schema": "assign-result/1",
+ "cycle": 147,
+ "round": 3,
+ "status": "HANDBACK",
+ "cards": ["147-b1-4", "147-c3-1", "147-c3-2", "147-c3-3"],
+ "pass_evidence": [
+  {"item": 0, "met": true, "evidence": ["tools/bench/cards/result_147-b1-4.json", "tools/bench/diag_c147_b1_4_facts.md"]},
+  {"item": 1, "met": true, "evidence": ["tools/bench/diag_c147_b1_4_facts.md"]},
+  {"item": 2, "met": true, "evidence": ["tools/bench/diag_c147_c3_1_facts.md:9-16"]},
+  {"item": 3, "met": true, "evidence": ["tools/bench/diag_c147_c3_1_blocked.log:81-84", "tools/bench/diag_c147_c3_1_selftest_c147_b1_2.log:26-27"]},
+  {"item": 4, "met": true, "evidence": ["tools/bench/diag_c147_c3_1_facts.md:22-23", "tools/bench/diag_c147_c3_2_facts.md"]},
+  {"item": 5, "met": true, "evidence": ["tools/bench/diag_c147_c3_2_facts.md", "tools/bench/diag_c147_c3_2_check2.log"]},
+  {"item": 6, "met": true, "evidence": ["tools/bench/diag_c147_c3_2_facts.md", "tools/bench/diag_c147_c3_2_dry.log:93", "tools/bench/diag_c147_c3_2_prerun.log:119", "tools/bench/diag_c147_c3_2_scr_dry.log:115", "tools/bench/diag_c147_c3_2_scr_prerun.log:141"]}
+ ],
+ "handback": {
+  "reason": "b-same-class-twice: gate false positives fp-56 (147-c3-1) and fp-59 (147-c3-3, prior-art review owed, re-run exemption misses the log name). Items 7-11 (s06 scratch, adopt, load_by_vi) not run; 147-c3-3 re-issued with priorart peer but guard_assign stopped dispatch. No LabVIEW started.",
+  "question": null
+ },
+ "note": "Items 0-6 met. Open for judgement: (1) card 147-c3-3 is re-issued and ready (task_147-c3-3.json, peers hypothesis+priorart; pre-check 25/0, scratch dry 1/0, prerun 16/0): first act is one DIFF-ONLY prior_art_review.py of the 78 scratch-recipe lines, then the single scratch; (2) drain gate-fp queue fp-56 (stage_prerun.py:3130 sha256 pin for selftest_stagekit.py -> 0007d034...) and fp-59 (guard_cycle.py:510-521 re-run exemption); (3) selftest_c147_b1_2.py P0 pins old licence 7dce79aa and recipe 9150f15b and now fails by design - re-pin."
+}

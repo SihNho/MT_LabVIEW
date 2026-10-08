@@ -317,6 +317,7 @@ def case_j_local_read_index():
     .create_local) and panel_wiring are stubbed; the real stagekit code runs. Run r5 passed None and the creator
     raised int(None) (stage_d1_disp_r5.log:452)."""
     saved_pw, saved_mod, saved_mark = K.g.panel_wiring, K.mod, K.Stage.node_mark
+    saved_clr = K.g.create_local_read
     got = []
 
     class _L(object):
@@ -328,6 +329,9 @@ def case_j_local_read_index():
         K.g.panel_wiring = lambda _t: [{"label": "a", "uid": 1}, {"label": "plot ring (display)", "uid": 2},
                                        {"label": "dup", "uid": 3}, {"label": "dup", "uid": 4}]
         K.mod = lambda name: _L if name == "diag_s3b_l0_localname_v2" else saved_mod(name)
+        # card 147-c3-1 (PD357(c)): stagekit.py:794 calls g.create_local_read since cycle 102 - route it to _L, no COM
+        K.g.create_local_read = lambda _t, i: dict(_L.create_local(_t, K.g.panel_wiring(_t)[i]["label"], i),
+                                                   is_source=[True])
         K.Stage.node_mark = lambda self, tag="": []
         s = new_stage()
         s.work = "stub.vi"
@@ -348,6 +352,7 @@ def case_j_local_read_index():
                   repr(raised[:80]))
     finally:
         K.g.panel_wiring, K.mod, K.Stage.node_mark = saved_pw, saved_mod, saved_mark
+        K.g.create_local_read = saved_clr
 
 
 def main():

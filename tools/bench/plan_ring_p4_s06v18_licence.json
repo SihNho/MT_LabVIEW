@@ -1,0 +1,32 @@
+{
+ "schema": "pb-licence/1",
+ "stage": "ring_p4_s06v18",
+ "plan": "tools/bench/plan_ring_p4_s06v18.json",
+ "decided_by": "docs/d1/ring-p4b.md:292-299 PD352(d) (cycle 145 judgement): X11 on #2626 gets a uid-keyed LICENCE, not a plan change; the session plan that carries v18 ops 118/119 gets this file; applied by card 147-a1-3 (PD353(f)); node 2626 only, no other node is licensed; `renames` added by card 147-c3-2 per PD356(d) / PD357(e) (the 5 input renames measured on the s06 retry, stagekit.licence_renames)",
+ "why_a_file": "decision 8 / stage_prerun X6: a recipe never re-types a uid; docs/protocol/stageplan.json has additionalProperties false, so the licence cannot be a field of the plan (form copied from tools/bench/plan_l2b1_licence.json, read by stage_prerun.pb_licences, tools/stage_prerun.py:1261-1278)",
+ "precedent": "tools/bench/plan_l2b1_licence.json (pb-licence/1, node 2626, term_uids 2832/4160/4165); PD331(b) (the #2626 rows are accepted v18 actions)",
+ "rename_by_uid": [
+  {
+   "node": 2626,
+   "term_uids": [2832, 4160, 4165],
+   "require": "every listed uid is an input of #2626 in the real end read with the same uid, unwired unless this session wires it, else the licence is void",
+   "why": "the still-open #2626 inputs of the adopted s05 file (tools/bench/diag_c147_a1_1_t2626.log:8-10: 2832 / 4160 / 4165 input 'array', wire 0; :11 4168 wired by w25283); this session's rows p4_w_tp_row (v18 op 118, dst 2626 term_uid 4160), p4_w_rp_row (op 119, term_uid 4165) and p4_w_bd_row (op 132, term_uid 2832) wire them by term uid while the plan's open row (2626, 'array') stays open; a rename shows up as data in the scratch's end read, a changed uid voids the licence => RETURN"
+  }
+ ],
+ "renames": [
+  {
+   "node": 2626,
+   "term_uids": [2832, 4160, 4165],
+   "from": "array",
+   "to": "element",
+   "why": "PD356(d), PD357(e): LabVIEW renamed these #2626 inputs 'array' -> 'element' when the s06 retry wired them (card 147-a1-8; re-score tools/bench/diag_c147_b1_1_rescore2.log:22-30); TD/PB pass this name change only for these (uid, owner) keys (stagekit.rename_check)"
+  },
+  {
+   "node": 9503,
+   "term_uids": [9505, 9508],
+   "from": "Value",
+   "to": "",
+   "why": "PD356(d), PD357(e): LabVIEW renamed these #9503 inputs 'Value' -> '' when the s06 retry wired them (card 147-a1-8; re-score tools/bench/diag_c147_b1_1_rescore2.log:22-30)"
+  }
+ ]
+}

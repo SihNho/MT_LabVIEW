@@ -1,0 +1,45 @@
+{
+ "schema": "task/1", "id": "147-b1-2", "kind": "build",
+ "goal": "PD356(b): stagekit D/TD/PB gates - rename passes only if the licence lists it; D REUSE-NOTED for a re-used deleted wire uid; self-tests",
+ "why": "Cycle 147 round 2 pass items 3-6. Card 147-b1-1 showed D/TD/PB fail only on name keys and a re-used wire uid; the gates must be fixed before the s06 scratch is re-run. Runs ALONE.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_147-b1-2.md", "md5": "874533c6a34a66237779f1cd8edfd239"},
+  {"path": "tools/bench/diag_c147_b1_1_facts.md", "md5": "4a0b15ce055a64b43bbfca93a3772da6"},
+  {"path": "tools/bench/diag_c147_b1_1_rescore.py", "md5": "d4296cf67d2de35cd73ba15539cccf30"},
+  {"path": "tools/bench/diag_c147_b1_1_rescore2.log", "md5": "3b64d053038c511d47082f8defbd2f30"},
+  {"path": "tools/stagekit.py", "md5": "9a3fceaf6beead4c37f142a8808a66de"},
+  {"path": "tools/vigraph.py", "md5": "13be0847aad910571d1de5af1e2071f2"},
+  {"path": "tools/stage_prerun.py", "md5": "61d6f5902e9d2a05156b0d202d90fdea"},
+  {"path": "tools/bench/selftest_stagekit.py", "md5": "f90cdaaf77af12ea5533e07a51ac1a7b"},
+  {"path": "tools/bench/diag_c147_p4s06v18_scratch.json", "md5": "8332c28c8d940f26eac9971bb563530a"}
+ ],
+ "pass": [
+  "stagekit: TD/PB pass a name change only for a uid the licence lists under 'renames'; no 'renames' key = today's verdicts",
+  "stagekit: D counts a deleted wire uid present at end REUSE-NOTED only if sources+sinks == a sim wire and sim-removed sinks gone",
+  "Self-tests rc+counts quoted: T1 147-a1-8 rows PASS; T2 unlisted rename FAIL; T3 reused uid with other sinks FAIL; T4 owner change FAIL",
+  "T5 s03/s04/s05 stored end reads: verdicts identical before and after; T6 existing stagekit self-tests same pass counts as before",
+  "Call sites of the gates in the s06 recipe pair (file:line) and what the recipes must pass listed; new stagekit md5",
+  "stagexec.py 1bab9cf9, gscript.py 1a80236e, elrule.py a5ee7d5c, plan/pred/licence/recipes, memory_model.json byte-identical; no LabVIEW"
+ ],
+ "outputs": [
+  "tools/stagekit.py",
+  "tools/bench/selftest_c147_b1_2.py",
+  "tools/bench/diag_c147_b1_2_facts.md"
+ ],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/stagekit.py", "tools/bench/selftest_stagekit.py", "tools/bench/selftest_c147_b1_2*", "tools/bench/diag_c147_b1_2*", "tools/bench/gate_fp_queue.jsonl"],
+  "status_edit": false, "git_commit": false, "peers": []},
+ "budget": {"failures": 2, "minutes": 60},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/bench/selftest_stagekit.py"},
+  {"kind": "file", "name": "tools/bench/diag_c147_b1_1_rescore.py"}
+ ],
+ "rules": [
+  "Offline only; no LabVIEW, camera or motor; runs ALONE (no LabVIEW card beside it)",
+  "Edit only write[] files; stagexec/gscript/elrule/plan/pred/licence/recipe/memory_model untouched",
+  "A defect elsewhere = RETURN with file:line; gate false positives via tools/gate_fp.py",
+  "Facts and an OPEN line only"
+ ]
+}

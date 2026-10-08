@@ -1,0 +1,14 @@
+BGRUN START 2026-10-08 12:37:40 limit 3.0 min: py -u tools/bench/diag_c147_a2_1_check.py
+BGRUN PID 24556
+PY_COMPILE OK stage_d1_ring_p4_s06v18.py md5 7e0edcf8f2a8d50e73f35bc8d29eeb65
+PY_COMPILE OK stage_d1_ring_p4_s06v18_scratch.py md5 31009bfce0c0487b0600359c3dac2bd0
+PASS  CSG build recipe check_sink_gates(SINK_GATES, SINK_FNS) has length 1, sink == [23166, 'Pos within cal image']  [{"gate": "SG-p4_rbA_re1-pos-within-cal-image", "sink": [23166, "Pos within cal image"]}]
+PASS  SSG scratch recipe's import-time SG == the build recipe's  [{"gate": "SG-p4_rbA_re1-pos-within-cal-image", "sink": [23166, "Pos within cal image"]}]
+FACT SG_TERMS [3173] SG_ACTS [('p4_rbA_re1', {'uid': 5058, 'term_uid': 5171}, {'uid': 3173, 'term_uid': 3173})] SG_SRC_NAME ['pos in cal image out']
+PASS  T1 good net: sg_read ok True expected True  (a) indicator t3173 rows [(3173, 23166, 'Pos within cal image', 900001)] wire 900001: True; (b) source t5171 #5058 rows [(5171, 5058, 'pos in cal image out', 900001)] wire(s) [900001] entry source [5058, 'pos in cal image out']: True; (c) sources on wire 900001 [5171] == [t5171]: True
+PASS  T2 indicator unwired: sg_read ok False expected False  (a) indicator t3173 rows [(3173, 23166, 'Pos within cal image', 0)] wire 0: False; (b) source t5171 #5058 rows [(5171, 5058, 'pos in cal image out', 900001)] wire(s) [900001] entry source [5058, 'pos in cal image out']: False; (c) sources on wire 0 [] == [t5171]: False
+PASS  T3 indicator on another net: sg_read ok False expected False  (a) indicator t3173 rows [(3173, 23166, 'Pos within cal image', 900002)] wire 900002: True; (b) source t5171 #5058 rows [(5171, 5058, 'pos in cal image out', 900001)] wire(s) [900001] entry source [5058, 'pos in cal image out']: False; (c) sources on wire 900002 [] == [t5171]: False
+PASS  T4 a second source on the net: sg_read ok False expected False  (a) indicator t3173 rows [(3173, 23166, 'Pos within cal image', 900001)] wire 900001: True; (b) source t5171 #5058 rows [(5171, 5058, 'pos in cal image out', 900001)] wire(s) [900001] entry source [5058, 'pos in cal image out']: True; (c) sources on wire 900001 [777, 5171] == [t5171]: False
+PASS  T5 entry source differs: sg_read ok False expected False  (a) indicator t3173 rows [(3173, 23166, 'Pos within cal image', 900001)] wire 900001: True; (b) source t5171 #5058 rows [(5171, 5058, 'pos in cal image out', 900001)] wire(s) [900001] entry source [5058, 'other']: False; (c) sources on wire 900001 [5171] == [t5171]: True
+RESULT {"schema": "result-line/1", "status": "PASS", "gates": {"pass": 7, "fail": 0}, "first_fail": null, "artefacts": []}
+BGRUN END rc=0 after 1s

@@ -988,6 +988,59 @@ def gates_due(bench, peer_dir, next_card):
     return out
 
 
+# RETRO-UNDISPOSED (card 147-a1-5; docs/violation-decisions.md:1935-1947, decision 2026-10-08 01:16). guard_peer.py:1181-1195
+# refuses a retrospective launch while the newest archived retrospective's disposition is the placeholder, but it is a
+# PreToolUse hook and the runner's own child-process launch (retrospective_hook, :633-637) never meets it. The SAME test,
+# COPIED (not imported: guard_peer pulls logclass/gateclass/protocol at import) from guard_peer.py:834-855: newest
+# `*retrospective*.md` in the peer dir BY MTIME; undisposed = no '## What was done with it' heading, or < 80 characters left
+# after the placeholder lines are removed. ADVISORY: it adds a gates_due entry and a log line, never refuses or stops.
+RETRO_DISPOSITION_H = "## What was done with it"                                            # guard_peer.py:834
+RETRO_PLACEHOLDER_RE = re.compile(r"^\s*\(?\s*claude fills in\s*\)?\s*$", re.I | re.M)      # guard_peer.py:835
+
+
+def retro_undisposed(peer_dir):
+    """Path of the newest archived retrospective whose disposition is missing, empty or still the placeholder, else None
+    (guard_peer.undisposed('retrospective'), guard_peer.py:838-855, with PEER = `peer_dir`)."""
+    try:
+        files = [os.path.join(peer_dir, fn) for fn in os.listdir(peer_dir)
+                 if "retrospective" in fn.lower() and fn.lower().endswith(".md")]   # = glob '*retrospective*.md' on Windows
+    except OSError:
+        return None
+    if not files:
+        return None
+    newest = max(files, key=os.path.getmtime)
+    try:
+        with open(newest, encoding="utf-8", errors="replace") as f:
+            body = f.read()
+    except OSError:
+        return None
+    if RETRO_DISPOSITION_H not in body:
+        return newest
+    tail = body.split(RETRO_DISPOSITION_H, 1)[1]
+    if len(RETRO_PLACEHOLDER_RE.sub("", tail).strip()) < 80:
+        return newest
+    return None
+
+
+def retro_undisposed_item(n, peer_dir, runner_log):
+    """The `retro-undisposed` gates_due item ({gate, due: True, detail}) when retro_undisposed() names a file, else None;
+    logs `RETRO-UNDISPOSED <path>`. Never raises: an error becomes one log line and None."""
+    try:
+        p = retro_undisposed(peer_dir)
+        if not p:
+            return None
+        rel = protocol._rel(p)
+        log_line(runner_log, "RETRO-UNDISPOSED %s | %s | cycle %d | guard_peer.py:1181-1195 will refuse the next "
+                 "retrospective launch until its '## What was done with it' is written" % (
+                     rel, time.strftime("%Y-%m-%d %H:%M:%S"), n))
+        return {"gate": "retro-undisposed", "due": True,
+                "detail": ("%s: '## What was done with it' is missing or still the placeholder - write the disposition "
+                           "before the cycle's retrospective is launched (guard_peer.py:1181-1195)" % rel)[:300]}
+    except Exception as e:  # noqa: BLE001 - advisory only: never stop the runner
+        log_line(runner_log, "RETRO-UNDISPOSED-CHECK error %s: %s" % (type(e).__name__, str(e)[:160]))
+        return None
+
+
 def gates_due_hook(n, a, bench, runner_log):
     """Cycle start: gates_due(), then a DUE outcome review is RUN before the session spawns (not in dry runs unless the
     self-test names a stand-in with --outcome-cmd), then the outcome check is re-read. Returns the list for the card.
@@ -1022,6 +1075,9 @@ def gates_due_hook(n, a, bench, runner_log):
             oc["detail"] = ("RAN before the session (rc %s, %s); now: %s" % (rc, protocol._rel(log), why))[:300]
             log_line(runner_log, "OUTCOME-REVIEW | %s | cycle %d | ran rc %s | still due: %s | %s"
                      % (time.strftime("%Y-%m-%d %H:%M:%S"), n, rc, still, why[:160]))
+    ru = retro_undisposed_item(n, a.peer_dir, runner_log)          # card 147-a1-5, advisory
+    if ru:
+        items.append(ru)
     log_line(runner_log, "GATES-DUE | %s | cycle %d | %s" % (
         time.strftime("%Y-%m-%d %H:%M:%S"), n,
         "; ".join("%s=%s" % (x["gate"], {True: "DUE", False: "ok", None: "ERROR"}[x["due"]]) for x in items)))

@@ -1,0 +1,17 @@
+{"schema":"result/1","id":"147-b1-1","status":"PASS","gates":{"pass":9,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/bench/diag_c147_b1_1_rescore.py","md5":"d4296cf67d2de35cd73ba15539cccf30"},{"path":"tools/bench/diag_c147_b1_1_facts.md","md5":"4a0b15ce055a64b43bbfca93a3772da6"},{"path":"tools/bench/diag_c147_b1_1_rescore2.log","md5":"3b64d053038c511d47082f8defbd2f30"}],
+"facts":[
+"Stored rows reproduce the run: D 15/16 7/8, TD lost 5 (rescore2.log:6); PB no-licence missing 2626|Terminal|array|0..3 (:12); sim PB == pred 18 rows (:11)",
+"L5 (5 renames): D PASS 16==16 8==8 (:22), TD PASS lost==gone==[] unwired [] (:24), PB PASS (:25); VERDICT ALL PASS (:30)",
+"L3 (today's licence): D PASS (:26), PB PASS (:29), TD FAIL on unlicensed renames 9505/9508 #9503 'Value'->'' (:28)",
+"PB 4th row = array|0: S1 and real hold t4168 there (src #5058 x,y,z array out, no row); sim ranks 2832 into slot 0 by uid (vigraph.py:371-372) - key defect",
+"w23807 base: src 5171 #5058; sinks 3173 #23166, 9519 #23166, 10871 #10757, 10975 #10969, 23798 #23508 (rescore2.log:18)",
+"w23807 real end: src 5171; sinks 3173, 10975 (:19) == sim wire -25 (:20); sim removed 9519/10871/23798, all gone from real -> REUSE-NOTED (:23)",
+"Sim vs real names also differ on created tunnel terms 30289/30292 ''->'# FD points', 30293/30301 ''->'# DT points' (:9); not TD's domain, NG passed",
+"stage_d1_l2b1.py:75 licence needs licensed uids UNWIRED at end -> would VOID in s06 (2832/4160/4165 are wired); PD356(b) uid+owner rule used instead",
+"md5 after: stagekit 9a3fceaf, stagexec 1bab9cf9, gscript 1a80236e, elrule a5ee7d5c (rescore2.log:31); tasklist LabVIEW count 0",
+"First run diag_c147_b1_1_rescore.log FAILed on my scorer scoring created-tunnel names; fixed to base terminals (stagekit.py:1377-1379), rerun 9/0"],
+"open":["Should the #9503 9505/9508 'Value'->'' renames be added to the licence (TD fails without them under today's licence)?",
+"Should created-tunnel name changes (# FD/# DT points) get a scorer, or stay with NG?"],
+"cost":{"usd":null,"minutes":12,"labview_runs":0},
+"note":"Offline only; no tool edited. Facts: tools/bench/diag_c147_b1_1_facts.md."}

@@ -1,0 +1,43 @@
+{
+ "schema": "task/1", "id": "147-a1-6", "kind": "build",
+ "goal": "RESUME of killed card 147-a2-1 (brief_147-a2-1.md): verify/finish ONE recipe sink gate [23166,'Pos within cal image'] in the s06 build + scratch recipes; dry + prerun PASS on FINAL bytes",
+ "why": "PD355(b). The 02:42 restart killed card 147-a2-1 mid-edit; recipes were already edited (were 41ad9d35/8554bdd6). Compare current bytes to brief_147-a2-1.md items 1-6, change only what is missing. Tools unchanged.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_147-a2-1.md", "md5": "2ed36b9a2072a49dea8719e611983753"},
+  {"path": "tools/bench/diag_c147_a1_4_facts.md", "md5": "7575e8e0ae9681b8a062a8cdfa50c4a4"},
+  {"path": "archive/peer/2026-10-08-c147-a1-4-re1.md", "md5": "7cf0b812be443b7a6a84f07d4bc774eb"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s06v18.py", "md5": "7e0edcf8f2a8d50e73f35bc8d29eeb65"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s06v18_scratch.py", "md5": "31009bfce0c0487b0600359c3dac2bd0"},
+  {"path": "tools/stagexec.py", "md5": "1bab9cf96502dfbe2d9a755e6d4a48b6"},
+  {"path": "tools/gscript.py", "md5": "1a80236ed35c1876c67f964c72fe820a"},
+  {"path": "tools/bench/plan_ring_p4_s06v18.json", "md5": "cfbd9823d3b47be39de94f2125ad6b66"},
+  {"path": "tools/bench/memory_model.json", "md5": "88eeb03748e94d422e38be802be2118a"}
+ ],
+ "pass": [
+  "Facts file lists, per recipe, each line changed by the crashed edit (found by diffing against git HEAD) and each line this card changed or kept; new md5s of both recipes",
+  "Build recipe declares exactly ONE sink gate [23166,'Pos within cal image'] (file:line); scratch recipe declares or asserts the same ONE; check_sink_gates on the pair returns length 1 (printed)",
+  "Gate reads indicator's one wire = net of #5058 with one source, else ok=False; 3 readbacks in detail; diag_c147_a2_1_check.py re-run on FINAL bytes passes",
+  "py_compile, dry of both recipes (rc 3 where --scratch-required says so) and offline stage_prerun PASS on the FINAL bytes; commands + rc quoted",
+  "stagexec.py 1bab9cf9, gscript.py 1a80236e, plan_ring_p4_s06v18*.json, memory_model.json 88eeb037 byte-identical; no LabVIEW process started"
+ ],
+ "outputs": [
+  "tools/recipes/stage_d1_ring_p4_s06v18.py",
+  "tools/recipes/stage_d1_ring_p4_s06v18_scratch.py",
+  "tools/bench/diag_c147_a2_1_facts.md"
+ ],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/recipes/stage_d1_ring_p4_s06v18.py", "tools/recipes/stage_d1_ring_p4_s06v18_scratch.py", "tools/bench/diag_c147_a2_1*", "tools/bench/prerun_records.jsonl", "tools/bench/sim/ring_p4_s06v18/**", "tools/bench/gate_fp_queue.jsonl"],
+  "status_edit": false, "git_commit": false, "peers": []},
+ "budget": {"failures": 2, "minutes": 45},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p4_s06v18.py"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p4_s06v18_scratch.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"}
+ ],
+ "rules": [
+  "Offline only; no LabVIEW, camera or motor; runs ALONE (no LabVIEW card beside it)",
+  "No edit of stagexec.py, gscript.py, any plan, pred, licence or memory_model.json; tool defect = RETURN with file:line",
+  "Gate false positives go to gate_fp_queue via tools/gate_fp.py, never an env bypass"
+ ]
+}

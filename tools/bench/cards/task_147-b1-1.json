@@ -1,0 +1,38 @@
+{
+ "schema": "task/1", "id": "147-b1-1", "kind": "build",
+ "goal": "PD356(c): offline re-score of D/TD/PB on the stored s06 retry end read by the PD356(b) rules; explain PB's 4 missing rows; quote w23807 base vs end sinks",
+ "why": "Cycle 147 round 2 pass items 1-2. 147-a1-8 built the right graph but D/TD/PB failed on name keys and a reused wire uid; the review says all PASS on (uid, owner) keys. This card measures that before any gate is edited.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_147-b1-1.md", "md5": "e0fc840946273aa55f21ad41d7a1a8e9"},
+  {"path": "tools/bench/diag_c147_p4s06v18_scratch.json", "md5": "8332c28c8d940f26eac9971bb563530a"},
+  {"path": "tools/bench/diag_c147_p4s06v18_scratch.log", "md5": "ed022f7aa6b26ddbe3a331390afc45ad"},
+  {"path": "tools/bench/diag_c147_a1_8_facts.md", "md5": "a074bb8dc9a65c42886c361acab3bd83"},
+  {"path": "archive/peer/2026-10-08-c147-a1-8-re1.md", "md5": "0a95a6146a226dd23ee141d6bfd4ade6"},
+  {"path": "tools/bench/plan_ring_p4_s06v18_licence.json", "md5": "7dce79aaa168e30e7b4af11968e18e19"},
+  {"path": "tools/stagekit.py", "md5": "9a3fceaf6beead4c37f142a8808a66de"}
+ ],
+ "pass": [
+  "D/TD/PB re-scored by PD356(b) rules, verdict+counts under 5-rename AND today's licence; ALL PASS under 5-rename, else RETURN naming the first failing scorer",
+  "PB's '4 missing rows for 3 renamed' explained with file:line (stagekit + log/json rows)",
+  "w23807 sources+sinks (terminal uid, owner, name) in the base read and in the real end rows quoted, plus the sim's end wire with the same source and the sinks the sim removed",
+  "tools/stagekit.py 9a3fceaf, stagexec.py 1bab9cf9, gscript.py 1a80236e, elrule.py a5ee7d5c byte-identical after; no LabVIEW process started"
+ ],
+ "outputs": [
+  "tools/bench/diag_c147_b1_1_rescore.py",
+  "tools/bench/diag_c147_b1_1_facts.md"
+ ],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/diag_c147_b1_1*"],
+  "status_edit": false, "git_commit": false, "peers": []},
+ "budget": {"failures": 2, "minutes": 40},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/bench/diag_c147_p4s06v18_scratch.json"}
+ ],
+ "rules": [
+  "Offline only; no LabVIEW, camera or motor; READ-ONLY on every tool, plan, licence, recipe and memory_model.json",
+  "Your only writes are the two outputs; a tool defect = report file:line, never edit",
+  "Facts and an OPEN line only; no result-dependent next action"
+ ]
+}

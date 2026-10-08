@@ -1,0 +1,29 @@
+{"schema": "result/1", "id": "147-b1-2", "status": "BLOCKED",
+ "gates": {"pass": 5, "fail": 1},
+ "first_fail": "T6 partial: selftest_stagekit.py / selftest_td_key_c141_3.py refused by guard_bash under this labview-none card (header labview: read) - fp-55",
+ "blocked_by": {"device": "gate-fp:fp-55", "message": "guard_bash: flags.labview is 'none' - tools/bench/selftest_stagekit.py declares labview: read (scope header); both self-tests are pure (selftest_stagekit.py:1-2, selftest_td_key_c141_3.py:1)"},
+ "artefacts": [
+  {"path": "tools/stagekit.py", "md5": "06b8d844284deacab535a9ee442d4964"},
+  {"path": "tools/bench/selftest_c147_b1_2.py", "md5": "24c56042965eb1d5d5140fc2c3455f17"},
+  {"path": "tools/bench/selftest_c147_b1_2.log", "md5": "fa3598478a8798373fa9e7ea900f762a"},
+  {"path": "tools/bench/diag_c147_b1_2_facts.md", "md5": "d2a7d610816806da2c20e2e06eb21756"}
+ ],
+ "facts": [
+  "stagekit.py:1374 term_identity_gates(.., renames=None, bind=None); :1386-1387 either set -> term_identity_356 (:1476); default path = old body, unchanged",
+  "new pure fns: licence_renames :1412, rename_check :1432, wire_keys_356 :1450, _ends :1464, pb_rename_rows :1522; licence key `renames` [{node, term_uids, from?, to?}]",
+  "selftest_c147_b1_2.log RESULT 17/0 rc 0: T1 L5 D 16==16/8==8 reuse_noted [23807] :8, TD unlicensed [] :9, PB cdiff == pred 18 rows :10",
+  "T2 L3 TD FAIL naming (9505,9503),(9508,9503) 'Value'->'' :11; T3 sink 9519 on w23807 -> D FAIL reuse_bad :13; T4 owner change TD FAIL :15; T4b wrong 'to' TD FAIL :16",
+  "T0/T5 default call == verbatim pre-edit code == stored run verdict for s06 :5 and s03/s04/s05 scratch jsons (adopted 282301ca/95e408ff/3f9ac26b named) :17,:19,:21",
+  "T6 selftest_rebind_c142_5 4/0 and selftest_d4_l2b2a 19/0 before == after (diag_c147_b1_2_t6_*_before/after.log); F1/F2 stagekit format checks PASS :23-24",
+  "Call site to wire: stage_d1_ring_p4_s06v18.py:127 add renames=K.licence_renames(lic), bind={'term': x.bind['term'], 'obj': x.bind['obj']}; scratch recipe only calls R.body (:29)",
+  "PB: stage_d1_ring_p4_s06v18.py:139 build4 on K.pb_rename_rows(BASE terminals, L terminals, real, renames)[0]; gate :142-144 AND not unlicensed",
+  "Keep rename_by_uid in the licence: stage_prerun.pb_licences reads only that key (tools/stage_prerun.py:1276)",
+  "Pins after == inputs: stagexec 1bab9cf9, gscript 1a80236e, elrule a5ee7d5c, memory_model 88eeb037, plan/pred/licence/in/recipes unchanged (selftest :3,:25); no LabVIEW"
+ ],
+ "open": [
+  "selftest_stagekit.py / selftest_td_key_c141_3.py still owe a before/after run: a labview-read card, or resolve fp-55 (their headers say read only because they import stagekit)",
+  "PB now fails on an unlicensed rename even when cdiff is equal (T2 :12) - keep, or let TD alone fail it?",
+  "Licence the #9503 'Value'->'' renames (9505/9508) like #2626? (carried from 147-b1-1)"
+ ],
+ "cost": {"usd": null, "minutes": 9, "labview_runs": 0},
+ "note": "Offline only. Everything except the two refused self-tests passed; the blocked part is a gate false positive (fp-55), not a code fault."}

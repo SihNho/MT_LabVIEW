@@ -1,0 +1,8 @@
+BGRUN START 2026-10-08 13:58:42 limit 3.0 min: py -u tools/bench/diag_c147_c3_2_check.py --before
+BGRUN PID 21804
+  PASS  P0 pins before: stagekit.py 06b8d844, stagexec.py 1bab9cf9, gscript.py 1a80236e, elrule.py a5ee7d5c, memory_model.json 88eeb037, plan_ring_p4_s06v18.json cfbd9823, plan_ring_p4_s06v18_pred.json c4a6a35a, plan_ring_p4_s06v18_in.json db72d8af  
+  FACT  licence md5 7dce79aaa168e30e7b4af11968e18e19; pb_licences(plan) {2626: 'tools/bench/plan_ring_p4_s06v18_licence.json'}; licence_renames None
+  PASS  C2 stage_prerun.pb_licences(plan) == {2626: the licence file}  {2626: 'tools/bench/plan_ring_p4_s06v18_licence.json'}
+  PASS  C3 rename_by_uid node/term_uids unchanged  [{'node': 2626, 'term_uids': [2832, 4160, 4165], 'require': 'every listed uid is an input of #2626 in the real end read with the same uid, unwired unless this session wires it, else the licence is void', 'why': "the still-open #2626 inputs of the adopted s05 file (tools/bench/diag_c147_a1_1_t2626.log:8-10: 2832 / 4160 / 4165 input 'array', wire 0; :11 4168 wired by w25283); this session's rows p4_w_tp_row (v18 op 118, dst 2626 term_uid 4160), p4_w_rp_row (op 119, term_uid 4165) and p4_w_bd_row (op 132, term_uid 2832) wire them by term uid while the plan's open row (2626, 'array') stays open; a rename shows up as data in the scratch's end read, a changed uid voids the licence => RETURN"}]
+RESULT {"status":"PASS","gates":{"pass":3,"fail":0},"first_fail":null,"artefacts":[],"schema":"result-line/1","card":"147-c3-2","labview":"read"}
+BGRUN END rc=0 after 1s

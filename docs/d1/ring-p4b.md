@@ -334,3 +334,66 @@ How to add: see the 5-line note at the top of `docs/d1/INDEX.md`.
        provisional 623.5 is void), cut = longest group-respecting prefix with X10 ≤ 680, #2626 licence per PD352(d) (t4160 op 118 and
        t4165 op 119 fall in s06), EL by the fixed rule (c), dry + prerun both recipes, `--scratch-required`; then ONE s06 scratch on a
        byte copy of the adopted s05 → adopt on full PASS + full EL == pred PER CLASS + fresh load + graph read. A miss = RETURN.
+     - ⚠️ (c) and the "EL == pred PER CLASS" clause of (f) are SUPERSEDED by PD354 (cycle 147).
+354. **(cycle 147 judgement, 2026-10-08 01:16 — `tools/bench/cards/assign_result_146_3.json`, facts
+     `tools/bench/diag_c146_a2_1_facts.md`, retrospective `archive/peer/2026-10-08-retrospective-cycle146.md:460-517`)**
+     USER-RULES: U1 (relied on: the computation check is the scratch's real == sim graph comparison, unchanged; nothing about
+     the v18 actions changes); none contradicted.
+     - **(a) The Error List is a RECORDED CROSS-CHECK, no longer an adoption gate** (violation decision 2026-10-08 01:16). A
+       scratch whose structural gates all PASS (E1 real == sim at every op, D new/lost, PB, prim, term identity, peak ≤ limit) is
+       adopted; its full final EL read is the expected file; the per-class difference against the elrule prediction goes into the
+       result card with one line of explanation. RETURN only when a class appears that is in neither the start read nor the
+       prediction, or the total differs by more than 3. Four sessions (s02..s05) were held back by predictor gaps, none by a build
+       fault — the EL items are unwired inputs of a broken-by-design in-between file, not the computation check.
+     - **(b) elrule is NOT patched this cycle.** 146-a3-1's options V1/V3/VX are declined: the exact SubVI class needs #5058's
+       identity and pane requiredness, i.e. a reader that binds an EL item to its node (the retrospective's missing tool, :489-492);
+       that reader is wanted only if EL differences start to cost again. `tools/elrule.py` a5ee7d5c stays.
+     - **(c) Order of cycle 147:** (1) ADOPT s05 3f9ac26b (PD353(d), unchanged) — FIRST, it never depended on elrule; its measured
+       load is written into `memory_model.json` `load_by_vi` (that one entry; every limit unchanged). Beside it, offline: the s06
+       maker kind gate (PD353(e)). (2) s06 on the real s05 graph (PD353(f), pred by the CURRENT elrule, scratch EL step made
+       advisory per (a)). (3) ONE s06 scratch → adopt by (a). (4) Offline, any time: the runner's `retro-undisposed` gates_due
+       entry (violation decision 2026-10-08 01:16).
+355. **(cycle 147 hand-back 1 judgement, 2026-10-08 — `tools/bench/cards/handback_147_1.json`, facts
+     `tools/bench/diag_c147_a1_4_facts.md`, review `archive/peer/2026-10-08-c147-a1-4-re1.md` (ANSWERED, disposed))**
+     USER-RULES: none apply (a scratch-tool gate declaration; the v18 actions and the computation check are unchanged).
+     - **(a) Cause accepted from the review, read from the code:** `gscript.wire_indicators` raises AFTER the wire is made whenever
+       the target's ExecState != 1 (`tools/gscript.py:2148-2155`); every P4 bed is ExecState 0 by design, so on op 21 (`p4_rbA_re1`,
+       #5058 'pos in cal image out' → indicator 'Pos within cal image') the raise says nothing about the wire. The device for exactly
+       this is the recipe-owned SINK GATE (`tools/stagexec.py:2734-2758`, card 80-3): an op error passes only through a named gate that
+       reads that exact sink. The s06 plan declared none (scratch log :310).
+     - **(b) Fix = declare ONE sink gate in the s06 scratch recipe (and the s06 build recipe, same bytes of the declaration)** for
+       the sink key as the run reports it, `[23166, 'Pos within cal image']`. The gate PASSes only when, read back from LabVIEW after op
+       21, that indicator terminal is on the same wire net as #5058 'pos in cal image out' and the indicator terminal has exactly one
+       source; anything else = ExecStop. No other sink is declared. `stagexec.py` and `gscript.py` are NOT edited (the device exists).
+       E1 (real == sim at op 21) still has to pass on top of the gate.
+     - **(c) Re-cutting s06 to end before `p4_rbA_re1` is declined:** the op still has to run in s07 on the same kind of bed and would
+       hit the same raise.
+     - **(d) Rerun, not resume:** ONE retry scratch (RETRY_CARD, `retry_of` the s06 scratch recipe) on a NEW byte copy of the adopted
+       s05 `claudeDev\D1_ring_p4s05_20261008_002621.vi` (3f9ac26b), ops 1..21 from the start (443 s last time), so E1 covers every op
+       on one file. The stopped work copy `D1_ring_p4s06_20261008_020717.vi` (b58046e3) is not resumed and not adopted; it may be
+       deleted after the retry is adopted. A stop at any op other than this gate-covered sink = RETURN, no further retry this cycle.
+     - **(e) Adopt by PD354(a)** (structural gates + EL recorded per class); then `memory_model.json` `load_by_vi` gets the s06
+       measured load (that entry only; X10 / MEMSTOP limits unchanged). Calibration note kept: metered start 570.2 vs assumed 612.6,
+       peak 618.7 vs X10 674.2 (the X10 start term is conservative by ~42 MB; not acted on this cycle).
+356. **(cycle 147 hand-back judgement, 2026-10-08 — `tools/bench/cards/handback_147_1.json`, facts `tools/bench/diag_c147_a1_8_facts.md`,
+     review `archive/peer/2026-10-08-c147-a1-8-re1.md` ANSWERED)** USER-RULES: U1 (relied on: wiring/edges must equal the sim; a
+     name change is tolerated only where listed, and the S1 names must be back at the first ExecState-1 file); none contradicted.
+     - **(a) Accepted from the review:** the retry's end wiring == the sim's end (t5171 → t10975 + t3173 on one wire); SG and E1 PASS
+       at every op. D/TD/PB fail on their KEYS, not on the graph: TD/PB key by (uid, owner, NAME) (`tools/stagekit.py:1355-1357`) and
+       ops 3/4/5/18 renamed #2626 2832/4160/4165 'array'→'element' and #9503 9505/9508 'Value'→'' (same uids, owners, wires); D keys
+       by (wire uid, source) (`:1360-1371`), so w23807 reused on the same source t5171 reads as "kept" (15/16, 7/8).
+     - **(b) Fix the GATES (stagekit, shared), not the plan:** a name change passes TD/PB ONLY when the session's licence file lists it
+       exactly (`renames`: uid, owner, from, to), uid/owner/class are unchanged and the terminal's edges equal the sim's; any other
+       rename still FAILs. D: a wire uid that a plan `delete_wire` removed and that is present at the end counts as lost + new
+       (`REUSE-NOTED`) only when its end source+sink set equals a sim-created wire's AND the base sinks the sim takes off that net are
+       absent from it; else FAIL. TD's "unwired" must read by (uid, owner), not by the old name. Self-tests: the 147-a1-8 end rows PASS;
+       an unlisted rename FAILs; a reused uid with a different sink set FAILs; the stored s03/s04/s05 scratch verdicts are unchanged.
+       Run ALONE (stage-tool edit), BEFORE any LabVIEW card.
+     - **(c) Re-score first, offline:** D/TD/PB re-scored on `tools/bench/diag_c147_p4s06v18_scratch.json` with (b)'s rules must all
+       PASS, PB's "4 missing for 3 renamed" must be explained from the code, and w23807's base sinks vs end sinks must be quoted (that
+       settles "deleted + reused" vs "never deleted" without LabVIEW). Any remaining FAIL = a real graph difference ⇒ return.
+     - **(d) The s06 licence gains the 5 measured renames;** the rename is a broken-intermediate type-propagation transient
+       (`stagekit.py:1399-1404`, precedent `tools/bench/diag_c126_8_orig.py:79`), so **the first ExecState-1 file (P6) must read #2626's
+       inputs back as 'array'** — a P6 gate, recorded here so it is not lost.
+     - **(e) Then ONE more s06 scratch** (new RETRY_CARD, `retry_of` the s06 scratch recipe; the cycle's two runs are spent) on a NEW
+       byte copy of 3f9ac26b, ops 1..21, no resume → adopt by PD354(a)/PD355(e). A stop on anything else = return, no further run.

@@ -1,0 +1,37 @@
+{
+ "schema": "task/1", "id": "147-b1-3", "kind": "build",
+ "goal": "Finish T6 of 147-b1-2: run selftest_stagekit.py and selftest_td_key_c141_3.py against the new and the pre-edit stagekit, compare counts",
+ "why": "147-b1-2 passed T1-T5 and was BLOCKED only by gate-fp fp-55 (guard_bash vs the self-tests' labview:read header). Retry under a labview:read card; no LabVIEW is started.",
+ "retry_of_card": "147-b1-2",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_147-b1-3.md", "md5": "fbf09ad89116d59e26ea7ca69d1c2a3d"},
+  {"path": "tools/bench/diag_c147_b1_2_facts.md", "md5": "d2a7d610816806da2c20e2e06eb21756"},
+  {"path": "tools/stagekit.py", "md5": "06b8d844284deacab535a9ee442d4964"},
+  {"path": "tools/bench/selftest_stagekit.py", "md5": "f90cdaaf77af12ea5533e07a51ac1a7b"},
+  {"path": "tools/bench/selftest_td_key_c141_3.py", "md5": "13aec440a797aa695ffb929e68c0ece7"},
+  {"path": "tools/bench/selftest_c147_b1_2.py", "md5": "24c56042965eb1d5d5140fc2c3455f17"}
+ ],
+ "pass": [
+  "selftest_stagekit.py and selftest_td_key_c141_3.py: command, rc, counts for NEW stagekit 06b8d844 and for PRE-EDIT 9a3fceaf (HEAD copy)",
+  "Counts identical before/after, else the first failing line file:line and RETURN",
+  "selftest_c147_b1_2.py re-run: rc and 17/0; stagekit md5 06b8d844 unchanged",
+  "stagexec 1bab9cf9, gscript 1a80236e, elrule a5ee7d5c, s06 plan/pred/licence/recipes, memory_model 88eeb037 byte-identical; no LabVIEW process"
+ ],
+ "outputs": [
+  "tools/bench/diag_c147_b1_3_facts.md"
+ ],
+ "flags": {"labview": "read", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/diag_c147_b1_3*", "tools/bench/selftest_stagekit*.log", "tools/bench/selftest_td_key*.log"],
+  "status_edit": false, "git_commit": false, "peers": []},
+ "budget": {"failures": 2, "minutes": 25},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/bench/selftest_td_key_c141_3.py"}
+ ],
+ "rules": [
+  "No LabVIEW process may start; check tasklist before and after",
+  "No edit of any tool, plan, licence, recipe or memory_model.json",
+  "Facts and an OPEN line only"
+ ]
+}

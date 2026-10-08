@@ -1,0 +1,44 @@
+{
+ "schema": "task/1", "id": "147-a1-7", "kind": "build",
+ "goal": "Retry of 147-a1-6: s06 build recipe prerun 16/0 with ONE sink gate whose sink reaches the recipe without a re-typed uid/name (X6) and whose readback is bounded offline (X10)",
+ "why": "147-a1-6 prerun 14/2: X6 (uid 23166 and name typed at build recipe line 41) and X10 UNMEASURED (sg_read read_terms line 72 not bounded). Pre-edit bytes were 16/0.",
+ "retry_of_card": "147-a1-6",
+ "inputs": [
+  {"path": "tools/bench/diag_c147_a2_1_facts.md", "md5": "86fc267d340d6de3d1f4e2ba329d0128"},
+  {"path": "tools/bench/diag_c147_a2_1_prerun.log", "md5": "c16806fb83e4f739e683ca6cb550a209"},
+  {"path": "tools/bench/cards/brief_147-a2-1.md", "md5": "2ed36b9a2072a49dea8719e611983753"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s06v18.py", "md5": "7e0edcf8f2a8d50e73f35bc8d29eeb65"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s06v18_scratch.py", "md5": "31009bfce0c0487b0600359c3dac2bd0"},
+  {"path": "tools/stage_prerun.py", "md5": "61d6f5902e9d2a05156b0d202d90fdea"},
+  {"path": "tools/stagexec.py", "md5": "1bab9cf96502dfbe2d9a755e6d4a48b6"},
+  {"path": "tools/gscript.py", "md5": "1a80236ed35c1876c67f964c72fe820a"},
+  {"path": "tools/bench/plan_ring_p4_s06v18.json", "md5": "cfbd9823d3b47be39de94f2125ad6b66"},
+  {"path": "tools/bench/memory_model.json", "md5": "88eeb03748e94d422e38be802be2118a"}
+ ],
+ "pass": [
+  "X6 satisfied by sourcing the sink from the plan row p4_rbA_re1 / executor binding (or a form X6 accepts), no uid/name typed; check_sink_gates still length 1, sink [23166,'Pos within cal image']",
+  "X10 bounded offline by a form stage_prerun.py X10 (docs :57-81) accepts, e.g. reuse the executor's final read; memory_model.json NOT edited",
+  "py_compile, both dry (rc 3 under --scratch-required), prerun PASS 16/0 on the FINAL bytes; commands+rc quoted; new md5s; diag_c147_a2_1_check.py still passes",
+  "stagexec 1bab9cf9, gscript 1a80236e, plan*.json, memory_model 88eeb037 unchanged; no LabVIEW process"
+ ],
+ "outputs": [
+  "tools/recipes/stage_d1_ring_p4_s06v18.py",
+  "tools/recipes/stage_d1_ring_p4_s06v18_scratch.py",
+  "tools/bench/diag_c147_a2_1_facts.md"
+ ],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/recipes/stage_d1_ring_p4_s06v18.py", "tools/recipes/stage_d1_ring_p4_s06v18_scratch.py", "tools/bench/diag_c147_a2_1*", "tools/bench/prerun_records.jsonl", "tools/bench/sim/ring_p4_s06v18/**", "tools/bench/gate_fp_queue.jsonl"],
+  "status_edit": false, "git_commit": false, "peers": []},
+ "budget": {"failures": 2, "minutes": 45},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p4_s06v18.py"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p4_s06v18_scratch.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"}
+ ],
+ "rules": [
+  "Offline only; no LabVIEW, camera or motor; runs ALONE",
+  "No edit of stagexec/gscript/stage_prerun/plans/memory_model; tool defect = RETURN with file:line",
+  "A gate false positive goes to gate_fp_queue via tools/gate_fp.py, never an env bypass"
+ ]
+}

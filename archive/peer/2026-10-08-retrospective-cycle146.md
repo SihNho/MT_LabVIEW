@@ -553,4 +553,10 @@ VERDICT {"schema":"verdict/1","id":"retrospective-cycle146","verdict":"refuted",
 
 ## What was done with it
 
-(Claude fills in)
+Disposed 2026-10-08 01:16 by the cycle-147 judgement session. ACCEPTED both violations and the ordering finding:
+- repeated-failure-class → `docs/violation-decisions.md` 2026-10-08 01:16 + `docs/d1/ring-p4b.md` PD354: the Error List is a
+  recorded cross-check, no longer an adoption gate; elrule is not patched again (options V1/V3/VX of card 146-a3-1 declined).
+- device-failed → `docs/violation-decisions.md` 2026-10-08 01:16: the runner itself records an undisposed retrospective as a
+  `gates_due` entry; built in cycle 147.
+- Findings 5/6 (adopt should precede the predictor fix; the round-3 purpose contradicted itself on `load_by_vi`) → the
+  cycle-147 purpose puts the s05 adoption FIRST and authorises the `load_by_vi` record (limits unchanged) by name.

@@ -1,0 +1,35 @@
+{
+ "schema": "task/1", "id": "147-a1-2", "kind": "build",
+ "goal": "s06 maker kind gate allows branch->connect for a source made in an earlier session (new prep file only); provisional s06 sim end == v18 end; negative control",
+ "why": "Cycle 147 pass item 2 (PD353(e)). Card 146-a1-5 stopped on the maker's own whitelist at op 116 (src TS1 became an s05 uid). Offline, beside the LabVIEW card 147-a1-1; touches no stage tool, no claudeDev, no s05 file.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_147-a1-2.md", "md5": "0d472fb8df2bcc757bdaaec374c37ccf"},
+  {"path": "tools/bench/prep_c146_a1_5_mk.py", "md5": "94275a2c6d5ba6861ccc64890a982c20"},
+  {"path": "tools/bench/diag_c146_a1_5_facts.md", "md5": "18a7d27441f076b7fadc640229e9ed5a"},
+  {"path": "tools/bench/plan_ring_p4_s06v18.json", "md5": "8f33ad758acb6d054c69ae34317dbf7d"},
+  {"path": "tools/bench/plan_ring_p4_s06v18_in.json", "md5": "08b8dbe2b9e9f0c4c1a547b610d5fdad"},
+  {"path": "tools/bench/plan_ring_p4_v18.json", "md5": "2ea6cafa7d368dc7a054346d398daa3e"},
+  {"path": "tools/bench/memory_model.json", "md5": "559be4cf4989e39c84fa584a01a2e503"}
+ ],
+ "pass": [
+  "prep_c147_a1_2_mk.py = copy of prep_c146_a1_5_mk.py with ONLY the kind gate widened (branch->connect, source made before this session's first op); diff by file:line",
+  "run on the provisional s05-end base: op 116 decision line quoted; cut / start assumption / +-5 MB sensitivity reported; s06 sim end == v18 end over the same ops (cdiff) reported",
+  "negative control: a branch->connect whose source is created in THIS session is refused (one line, no file written)",
+  "stagexec.py, stagekit.py, stagesim.py, stage_prerun.py, v18, s05 files, memory_model.json byte-identical before/after; no LabVIEW process"
+ ],
+ "outputs": ["tools/bench/prep_c147_a1_2_mk.py", "tools/bench/diag_c147_a1_2_facts.md"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/plan_ring_p4_s06v18*", "tools/bench/sim/ring_p4_s06v18/**", "tools/bench/prep_c147_a1_2*", "tools/bench/diag_c147_a1_2*"],
+  "status_edit": false, "git_commit": false, "peers": []},
+ "budget": {"failures": 2, "minutes": 60},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/prep_c146_a1_5_mk.py"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p4_v18.json"}
+ ],
+ "rules": [
+  "Offline only; no LabVIEW process; no stage-tool edit (a tool fault is a RETURN)",
+  "Widening lives in the prep script only; the end comparison stays (rule 1a): cdiff != 0 is a RETURN",
+  "Quote every refusal; never patch around a gate"
+ ]
+}

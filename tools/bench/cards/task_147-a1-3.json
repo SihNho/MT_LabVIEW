@@ -1,0 +1,43 @@
+{
+ "schema": "task/1", "id": "147-a1-3", "kind": "build",
+ "goal": "s06 re-made on the REAL adopted-s05 graph: rebase, X10 start, cut, #2626 licence, elrule pred, recipe pair with advisory EL step, dry + prerun",
+ "why": "Cycle 147 pass items 3-4 (PD353(f), PD354(a)). The provisional s06 start 623.5 is void now that s05 is adopted with a measured load of 606.7 MB. Offline, ALONE.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_147-a1-3.md", "md5": "4859b088a815b5298da237a80937f4f7"},
+  {"path": "tools/bench/diag_c147_a1_1_facts.md", "md5": "3b712f9617502764edd547674a283142"},
+  {"path": "tools/bench/diag_c147_a1_2_facts.md", "md5": "a0ae2c8026b31482c04f0c6464193258"},
+  {"path": "tools/bench/prep_c147_a1_2_mk.py", "md5": "d57fdd4f9d038a6f99cc5919e43ca42c"},
+  {"path": "tools/bench/prep_c146_a1_2_pred.py", "md5": "19270d62bfaf328b4170b4e220eb9ba4"},
+  {"path": "tools/bench/graph_ring_p4s05_20261008_013759.json", "md5": "cbeeadf5beaa5f312b0aff8f2df383ce"},
+  {"path": "tools/bench/diag_c147_a1_1_t2626.log", "md5": "be50e238a3e1dc70c604e72732b42efc"},
+  {"path": "tools/bench/memory_model.json", "md5": "88eeb03748e94d422e38be802be2118a"},
+  {"path": "tools/bench/plan_ring_p4_s06v18.json", "md5": "0bc28fde1c7461b1caa435f0ec88b992"},
+  {"path": "tools/stage_prerun.py", "md5": "61d6f5902e9d2a05156b0d202d90fdea"},
+  {"path": "tools/elrule.py", "md5": "a5ee7d5c8792ccf5c174e70be022544d"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s05v18_scratch.py", "md5": "cd14eb476d2ccbe314cb8d5d36cbb67d"}
+ ],
+ "pass": [
+  "s06 rebased on real s05 graph cbeeadf5 (FALLBACK 0); start = 606.7 + op-0 read; cut = longest group-respecting prefix with MAIN prerun X10 <= 680; s06 sim end == v18 end (cdiff 0)",
+  "#2626: licence file if v18 ops 118/119 are in the cut (uids from the t2626 log), else X11 PASS unlicensed and the carrying session named",
+  "pred EL by elrule a5ee7d5c from the adopted-s05 EL file, total and per-class reported; memory_model.json stays 88eeb037",
+  "s06 recipe pair made; scratch EL step advisory (EL-ADVISORY; non-zero only on a class in neither read nor pred, or |total diff| > 3); offline test of 3 cases",
+  "dry + prerun 0 FAIL on BOTH recipes; --scratch-required exit 3; protected md5 (tools, v18, s05, s04, s03, bed) unchanged; no LabVIEW process"
+ ],
+ "outputs": ["tools/bench/diag_c147_a1_3_facts.md", "tools/recipes/stage_d1_ring_p4_s06v18.py", "tools/recipes/stage_d1_ring_p4_s06v18_scratch.py"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/plan_ring_p4_s06v18*", "tools/bench/sim/ring_p4_s06v18/**", "tools/bench/prep_c147_a1_3*", "tools/bench/diag_c147_a1_3*", "tools/bench/gate_fp_queue.jsonl", "tools/bench/prerun_records.jsonl", "tools/recipes/stage_d1_ring_p4_s06v18*"],
+  "status_edit": false, "git_commit": false, "peers": []},
+ "budget": {"failures": 2, "minutes": 75},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/prep_c147_a1_2_mk.py"},
+  {"kind": "file", "name": "tools/bench/graph_ring_p4s05_20261008_013759.json"},
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/elrule.py"}
+ ],
+ "rules": [
+  "Offline only; runs ALONE; nothing launched; no LabVIEW",
+  "The prerun's own X10 line decides the cut; edit no stage tool, elrule, v18 or s05 file",
+  "Quote a refusal, never patch around it; RETURN with the file:line if a stage tool must change"
+ ]
+}

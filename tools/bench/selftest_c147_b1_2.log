@@ -1,0 +1,27 @@
+BGRUN START 2026-10-08 13:34:05 limit 5.0 min: py -u tools/bench/selftest_c147_b1_2.py
+BGRUN PID 11600
+  PASS  P0 pins before == card inputs: stagexec.py 1bab9cf9, gscript.py 1a80236e, elrule.py a5ee7d5c, memory_model.json 88eeb037, plan_ring_p4_s06v18.json cfbd9823, plan_ring_p4_s06v18_pred.json c4a6a35a, plan_ring_p4_s06v18_licence.json 7dce79aa, plan_ring_p4_s06v18_in.json db72d8af, stage_d1_ring_p4_s06v18.py 9150f15b, stage_d1_ring_p4_s06v18_scratch.py 31009bfc  
+  FACT  stagekit md5 06b8d844284deacab535a9ee442d4964
+  PASS  T0 s06 default call == pre-edit code (whole dict) == explicit renames=None, bind=None == run's stored term_identity  (False, False, 15, 16, 7, 8, 5, 1)
+  PASS  T0b today's licence file (rename_by_uid only) -> licence_renames None (today's verdicts); pb_rename_rows(.., None) returns the rows untouched  
+  PASS  R1 every sim end row binds to one real end row  (6030, 6030, 6030)
+  PASS  T1 L5 (5 renames) D PASS: new 16 == sim 16, lost 8 == sim 8, reuse_noted [23807], reuse_bad []  
+  PASS  T1 L5 TD PASS: lost [] == gone [], unwired [], renames 5, unlicensed []  
+  PASS  T1 L5 PB PASS: cdiff == pred 18 rows, open pairs, no unlicensed rename  {'extra': [], 'missing': [], 'restored': [(2832, 2626), (4160, 2626), (4165, 2626), (9505, 9503), (9508, 9503)], 'unlicensed': []}
+  PASS  T2 L3 (2832/4160/4165 only) TD FAILS naming 9505/9508: td_ok False, unlicensed [((9505, 9503), 'Value', ''), ((9508, 9503), 'Value', '')]  
+  FACT  T2 L3 D True; PB (False, {'extra': [], 'missing': [], 'restored': [(2832, 2626), (4160, 2626), (4165, 2626)], 'unlicensed': [((9505, 9503), 'Value', ''), ((9508, 9503), 'Value', '')]})
+  PASS  T3 w23807 keeps sink 9519 -> D FAILS: d_ok False, reuse_bad [(23807, [(3173, 23166), (9519, 23166), (10975, 10969)])]  
+  FACT  T3 same rows, today's call (no bind): d_ok False new 15/16 lost 7/8
+  PASS  T4 licensed 2832 changes owner 2626 -> 9503: TD FAILS (lost [(2832, 2626)] != gone [])  
+  PASS  T4b licensed 2832 renamed 'array'->'index' (licence says 'element'): TD FAILS, unlicensed [((2832, 2626), 'array', 'index')]  
+  PASS  T5 s03 (diag_c143_p4s03v18_scratch.json, adopted 282301ca named in it: True) new default == pre-edit == stored run verdict (True, True, 9, 9, 1, 1, 0, 0)  
+  FACT  T5 s03 under the new rules with an EMPTY licence + obj binding (info): D True TD True renames [] reuse_noted [] reuse_bad []
+  PASS  T5 s04 (diag_c144_p4s04v18_scratch.json, adopted 95e408ff named in it: True) new default == pre-edit == stored run verdict (True, True, 9, 9, 0, 0, 0, 0)  
+  FACT  T5 s04 under the new rules with an EMPTY licence + obj binding (info): D True TD True renames [] reuse_noted [] reuse_bad []
+  PASS  T5 s05 (diag_c145_p4s05v18_scratch.json, adopted 3f9ac26b named in it: True) new default == pre-edit == stored run verdict (True, True, 11, 11, 1, 1, 0, 0)  
+  FACT  T5 s05 under the new rules with an EMPTY licence + obj binding (info): D True TD True renames [] reuse_noted [] reuse_bad []
+  PASS  F1 stagekit builds no message with the `%` operator  []
+  PASS  F2 stagekit's own source carries no bold-FAIL marker  
+  PASS  P1 pins after == before  
+RESULT {"status":"PASS","gates":{"pass":17,"fail":0},"first_fail":null,"artefacts":[],"schema":"result-line/1","card":"147-b1-2","labview":"none"}
+BGRUN END rc=0 after 7s

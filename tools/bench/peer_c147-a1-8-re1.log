@@ -1,0 +1,74 @@
+BGRUN START 2026-10-08 13:07:22 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c147-a1-8-re1 -TaskFile tools/bench/diag_c147_a1_8_hyp_task.md
+BGRUN PID 24196
+OUTCOME: ANSWERED (258s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-08-c147-a1-8-re1.md
+COST: $2.1678  in 48 / out 22682 / cache-create 136220 / cache-read 2887631  (255s, 29 turn(s))
+--- ANSWER ---
+# The claim is wrong: all three failures come from renamed terminals and a reused wire id, and none of them happened at ops 19–21
+
+The real end read in `tools/bench/diag_c147_p4s06v18_scratch.json` (`real_end_rows`) has the same wiring as the simulator's end state. It differs only in terminal names and in one wire's id. Those renames happened at **ops 3, 4, 5 and 18**, which are 14–16 ops before ops 19–21 on the #5058 net.
+
+## 1. Strongest reason the claim is wrong
+The claim says op 20's t5171 → #10975 wire is not on t5171 after op 21. The real end rows show it is:
+- **t10975** (#10969 'array') is on **wire 23807** (`diag_c147_p4s06v18_scratch.json:11893-11897`).
+- **t5171** (#5058 'pos in cal image out') is on **wire 23807**, as the source (`:12425-12429`).
+- **t3173** ('Pos within cal image') is on **wire 23807** (`:12502-12506`).
+
+This is the simulator's end state exactly. In `sim/ring_p4_s06v18/step_25_wire.json`, one wire (-25) has t5171 as its source and t10975 and t3173 as its sinks. The only difference is the wire's id: 23807 in the real read, symbolic in the simulation. The sink gate SG reported "t5171 on 23807 only". That is a statement about the terminal (a terminal sits on one wire). It does not mean t10975 is off the wire.
+
+## 2. Alternative explanation
+**Each of the three gates fails because of how it builds its key, not because the graph is different.**
+
+- **TD and PB: the terminals were renamed, not re-created.** Each uid still has the same owner and is still wired; only the name changed.
+
+  | terminal | name in base / sim end | name in real end | wire | real-end row |
+  |---|---|---|---|---|
+  | 2832 on #2626 | 'array' | 'element' | 30418 | `:10584-10588` |
+  | 4160 on #2626 | 'array' | 'element' | 30270 | `:10591-10595` |
+  | 4165 on #2626 | 'array' | 'element' | 30274 | `:10598-10602` |
+  | 4168 on #2626 (not touched by any op) | 'array' | 'array' | 25283 | `:10605-10609` |
+  | 9508 on #9503 | 'Value' | '' | 30270 | `:10990-10994` |
+  | 9505 on #9503 | 'Value' | '' | 28684, still the source | `:11494-11498` |
+
+  - TD keys a terminal by (uid, owner, **name**) (`stagekit.py:1355-1357`). A rename therefore counts as "lost".
+  - TD's "unwired" check reads the wire under the old key, gets nothing, and treats that as 0 (`:1387`). So TD's **"unwired 9505" is not real**: 9505 is still the source of wire 28684.
+  - The "recycled" list only means "this uid is present under a different owner or name" (`:1392`). It includes a plain rename, so it does not show that anything was re-created.
+- **Which op first changed #9503 and #2626.**
+  - **#9503 was first changed by op 3** (`p4_w_tp_mag`), which wired the Index Array 'element' into the tunnel's outer face t9508 (log `:427-433`).
+  - **#2626 was first changed by op 4** (`p4_w_tp_row` → #4160). The read taken just before op 5 already shows `('element', False, 30270)` at #2626's t2 (log `:444`), where the plan expected 'array'. Ops 5 and 18 then did the same to 4165 and 2832.
+- **This is a known class.**
+  - The note above rule D4 says the simulator does not model type propagation restoring S1-form terminals on polymorphic nodes (`stagekit.py:1399-1404`).
+  - #2626's 'element'/'array' switch was already a licensed rename (`tools/bench/diag_c126_8_orig.py:79`).
+  - This session's licence says "a rename shows up as data in the scratch's end read, a changed uid voids the licence" (`plan_ring_p4_s06v18_licence.json:13`). The uids did not change. PB still fails because its key `2626|Terminal|array|i` includes the name, so the rename defeats the licence.
+- **D: a reused wire id on the same source cannot be seen by design.**
+  - `wire_keys` keys a wire by (wire uid, identities of its source terminals) (`stagekit.py:1360-1371`).
+  - A new wire that reuses uid 23807 with the same source t5171 gets a key identical to the old wire's. It therefore counts as "kept", not as one lost wire plus one new wire. That is exactly the one-wire gap in D (15/16 new, 7/8 lost).
+  - LabVIEW does reuse deleted objects' UIDs ([LabVIEW Wiki, GObject UID](https://labviewwiki.org/wiki/GObject_class/UID_property): "If you delete an object, LabVIEW might assign the UID for that deleted object to a different object").
+  - It happened twice in this same run: uid 9000 was a wire at op 10 (log `:514`) and an Invoke node at op 14 (`:560`); uid 30244 was issued at op 6 and again at op 7.
+- **E1 PASS alongside D/TD FAIL is not a contradiction.**
+  - E1 compares sets of terminal uids and (source uid, sink uid) edges (`stagexec.py:845-858, 872-888`). It ignores names and wire ids.
+  - D and TD compare names and wire ids. They measure different things, and the real end agrees with the simulation on E1's terms.
+  - There is a gap in the gate design, though. E1 cannot see a rename, so checkpoint 10 passed even though #9503 and #2626 had already been renamed. The cause only showed up in the end-of-run gates, which is what let it be pinned on ops 19–21.
+
+## 3. What would falsify my alternative (and support the claim)
+- t10975 is not on t5171's wire in the real end. The rows above already rule this out.
+- 2832, 4160 or 4165 have a different owner or class in the real end, which would be true re-creation. The rows above rule this out: all three are still on #2626.
+- 9505 has wire 0. It does not; it is on wire 28684.
+
+## 4. What is still open
+Whether op 19 actually deleted w23807 is **not settled** by any read. Both readings give the same end graph, so it does not affect the deliverable. It does decide how D should be fixed.
+- **Pointing to "deleted, then 23807 reused":**
+  - The log line "deleted wire w23807", err '' (`:619-620`).
+  - The stale-address hit on t5171 at op 21 (`:637`), meaning t5171's wire had changed since the read taken during op 20's retry.
+  - The two observed uid reuses in this run.
+- **Pointing to "never deleted":** only the fact that the uid is still there.
+
+## 5. Cheapest discriminating test
+1. **Offline, already done above.** Read `real_end_rows` for 2832/4160/4165/4168/9505/9508/10975/5171/3173. This is enough to reject both "re-created" and "op 20's wire is off t5171", and to show that TD's "unwired" entry is not real. Next, re-score D, TD and PB offline with a key that drops the name (uid and owner only), applied to the base rows and the real end rows in the JSON. If all three pass, the plan rows are right and the fix belongs in the gates (rename-tolerant keys within the licence, plus a rename model for Build Array and loop-tunnel terminals in the simulator). If something still fails, there is a real graph difference that I missed.
+2. **Only for the op-19 question.** First check whether the scratch JSON stored the k=20 retry read; if it shows t5171's wire as 0, that settles it. Otherwise, on the next scratch, add op 19 to the checkpoint list (a whole-VI read after the delete). If t5171's wire is 0 after op 19, the wire was deleted and 23807 was reused. If it is 23807, `delete_wire` did nothing and its err '' is wrong.
+
+Not checked: why PB reports **four** missing 'array' rows when only three terminals were renamed (4168 is still 'array'). This depends on how PB counts rows against S1, and I did not trace it.
+
+Sources:
+- [GObject class/UID property – LabVIEW Wiki](https://labviewwiki.org/wiki/GObject_class/UID_property)
+- [Build Array function – LabVIEW Wiki](https://labviewwiki.org/wiki/Build_Array_function)
+BGRUN END rc=0 after 260s

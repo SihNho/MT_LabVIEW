@@ -1,0 +1,119 @@
+{
+ "schema": "task/1",
+ "id": "147-c3-2",
+ "kind": "build",
+ "goal": "s06 licence gains 'renames' (5 measured); s06 build recipe calls the new gate API (:127 renames+bind; :139-144 pb_rename_rows); py_compile + dry + prerun PASS on final bytes",
+ "why": "PD356(d), PD357(e)(f): D/TD/PB failed the s06 retry only on LabVIEW's input renames of #2626/#9503; stagekit 06b8d844 gates them by licence. The recipe must use the new API before the one s06 scratch.",
+ "inputs": [
+  {
+   "path": "tools/bench/cards/brief_147-c3-2.md",
+   "md5": "6a6b2aa5daecd7d0aa0690862081f8ae"
+  },
+  {
+   "path": "tools/bench/diag_c147_b1_1_rescore.py",
+   "md5": "d4296cf67d2de35cd73ba15539cccf30"
+  },
+  {
+   "path": "tools/bench/selftest_c147_b1_2.py",
+   "md5": "24c56042965eb1d5d5140fc2c3455f17"
+  },
+  {
+   "path": "tools/bench/diag_c147_a2_1_facts.md",
+   "md5": "81f7ae61257b967a7ba8cb9c6b5a59a6"
+  },
+  {
+   "path": "tools/recipes/stage_d1_ring_p4_s06v18.py",
+   "md5": "9150f15bb13c622031eee7086225037c"
+  },
+  {
+   "path": "tools/recipes/stage_d1_ring_p4_s06v18_scratch.py",
+   "md5": "31009bfce0c0487b0600359c3dac2bd0"
+  },
+  {
+   "path": "tools/bench/plan_ring_p4_s06v18_licence.json",
+   "md5": "7dce79aaa168e30e7b4af11968e18e19"
+  },
+  {
+   "path": "tools/bench/plan_ring_p4_s06v18.json",
+   "md5": "cfbd9823d3b47be39de94f2125ad6b66"
+  },
+  {
+   "path": "tools/bench/plan_ring_p4_s06v18_pred.json",
+   "md5": "c4a6a35aff6f71d508ea2c43c24ec510"
+  },
+  {
+   "path": "tools/bench/plan_ring_p4_s06v18_in.json",
+   "md5": "db72d8af5b1f6da643e4c84b1260a61a"
+  },
+  {
+   "path": "tools/stagekit.py",
+   "md5": "06b8d844284deacab535a9ee442d4964"
+  },
+  {
+   "path": "tools/stagexec.py",
+   "md5": "1bab9cf96502dfbe2d9a755e6d4a48b6"
+  },
+  {
+   "path": "tools/gscript.py",
+   "md5": "1a80236ed35c1876c67f964c72fe820a"
+  },
+  {
+   "path": "tools/bench/memory_model.json",
+   "md5": "88eeb03748e94d422e38be802be2118a"
+  }
+ ],
+ "pass": [
+  "Licence has 'renames' = exactly the 5 measured (#2626 2832/4160/4165 array->element; #9503 9505/9508 Value->''), rename_by_uid kept; licence_renames() = 5 keys",
+  "Build recipe calls the new gate API (renames + bind at :127, PB via pb_rename_rows and unlicensed==[] at :139-144); no other gate changed",
+  "py_compile + dry of both recipes + offline stage_prerun PASS on the FINAL bytes; commands + rc + new md5s quoted",
+  "New D/TD/PB path on the stored s06 retry read = ALL PASS, unlicensed empty",
+  "stagekit 06b8d844, stagexec 1bab9cf9, gscript 1a80236e, elrule a5ee7d5c, memory_model 88eeb037, plan/pred/in unchanged; no LabVIEW process before/after"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p4_s06v18_licence.json",
+  "tools/recipes/stage_d1_ring_p4_s06v18.py",
+  "tools/bench/diag_c147_c3_2_facts.md"
+ ],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/plan_ring_p4_s06v18_licence.json",
+   "tools/recipes/stage_d1_ring_p4_s06v18.py",
+   "tools/recipes/stage_d1_ring_p4_s06v18_scratch.py",
+   "tools/bench/diag_c147_c3_2*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/sim/ring_p4_s06v18/**",
+   "tools/bench/gate_fp_queue.jsonl"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "advances": [
+  "M3",
+  "R1"
+ ],
+ "requires": [
+  {
+   "kind": "file",
+   "name": "tools/recipes/stage_d1_ring_p4_s06v18.py"
+  },
+  {
+   "kind": "file",
+   "name": "tools/stage_prerun.py"
+  }
+ ],
+ "rules": [
+  "No LabVIEW process may start; check tasklist before and after",
+  "No edit of stagekit/stagexec/gscript/elrule, self-tests, plan/pred/in, memory_model; defect = RETURN",
+  "Do not touch selftest_stagekit.py (card 147-c3-1 edits it beside this one)",
+  "Gate false positives go to gate_fp_queue via tools/gate_fp.py, never an env bypass"
+ ]
+}

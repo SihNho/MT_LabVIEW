@@ -1,0 +1,50 @@
+{
+ "schema": "task/1", "id": "147-a1-8", "kind": "build",
+ "goal": "PD355(d)(e): ONE retry s06 scratch on a NEW byte copy of adopted s05 3f9ac26b, ops 1..21; on structural PASS adopt D1_ring_p4s06_<stamp>.vi + final EL + fresh load + graph + load_by_vi",
+ "why": "Cycle 147 pass items 3-6. 147-a1-4 stopped in op 21 (ExecState-0 raise); the s06 recipes now carry the sink gate (147-a1-7, prerun 16/0).",
+ "retry_of": "stage_d1_ring_p4_s06v18_scratch.py",
+ "retry_of_card": "147-a1-4",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_147-a1-8.md", "md5": "2c8c50d737ef79e52135f97a75608bd4"},
+  {"path": "tools/bench/cards/brief_147-a1-4.md", "md5": "880380cc5743c475a3256fd2eb175f66"},
+  {"path": "tools/bench/diag_c147_a2_1_facts.md", "md5": "81f7ae61257b967a7ba8cb9c6b5a59a6"},
+  {"path": "tools/bench/plan_ring_p4_s06v18.json", "md5": "cfbd9823d3b47be39de94f2125ad6b66"},
+  {"path": "tools/bench/plan_ring_p4_s06v18_pred.json", "md5": "c4a6a35aff6f71d508ea2c43c24ec510"},
+  {"path": "tools/bench/plan_ring_p4_s06v18_in.json", "md5": "db72d8af5b1f6da643e4c84b1260a61a"},
+  {"path": "tools/bench/plan_ring_p4_s06v18_licence.json", "md5": "7dce79aaa168e30e7b4af11968e18e19"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s06v18.py", "md5": "9150f15bb13c622031eee7086225037c"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s06v18_scratch.py", "md5": "31009bfce0c0487b0600359c3dac2bd0"},
+  {"path": "tools/bench/memory_model.json", "md5": "88eeb03748e94d422e38be802be2118a"},
+  {"path": "tools/bench/diag_c147_a1_1_adopt.py", "md5": "db16b3b6925269945b632fbf1246e43c"},
+  {"path": "tools/bench/diag_c147_a1_1_mkgraph.py", "md5": "4c494fe3519430953cae024d1a4b2f83"},
+  {"path": "tools/bench/diag_c147_a1_1_graph.py", "md5": "5ccd0da90a0b3b5d7c5b12a51cf443ce"}
+ ],
+ "pass": [
+  "ONE scratch: E1 real == sim at every op incl. op 21; sink gate PASS with readback logged; prim, D/TD, PB, licence PASS; peak <= 680; metered start/peak MB reported",
+  "EL ADVISORY: total + per-class vs pred 55 and the s05 read; fails only on an unseen class or |total diff| > 3",
+  "Structural PASS => adopted D1_ring_p4s06_<stamp>.vi + md5, final EL expected file, per-class EL diff explained, fresh-instance load MB, graph json + md5",
+  "memory_model.json: ONLY one load_by_vi entry for the adopted md5 (key-by-key diff); no limit or coefficient changed",
+  "3f9ac26b, 95e408ff, 282301ca, 39511877 unchanged; handles flat; LabVIEW closed and verified gone"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p4s06_<stamp>.vi",
+  "tools/bench/graph_ring_p4s06_<stamp>.json",
+  "tools/bench/errorlist_expected_D1_ring_p4s06_<stamp>.json",
+  "tools/bench/diag_c147_a1_8_facts.md"
+ ],
+ "flags": {"labview": "build", "gui": true, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/diag_c147_a1_8*", "tools/bench/launch_*c147*", "tools/bench/scratch_*c147*", "tools/bench/plan_ring_p4_s06v18_pred.json", "tools/bench/graph_ring_p4s06_*", "tools/bench/errorlist_*p4s06*", "tools/bench/adopted_scratch.jsonl", "tools/bench/memory_model.json", "tools/bench/gate_fp_queue.jsonl", "tools/bench/sim/ring_p4_s06v18/**", "tools/bench/prerun_records.jsonl", "tools/bench/jev_*", "archive/peer/**"],
+  "status_edit": false, "git_commit": false, "peers": ["hypothesis"]},
+ "budget": {"failures": 2, "minutes": 120},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "D1_ring_p4s05_20261008_002621.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p4_s06v18_scratch.py"}
+ ],
+ "rules": [
+  "Bed, s03, s04, adopted s05 never opened for editing; edit a byte copy only",
+  "ONE scratch; RETURN at first result differing from prediction; no retry",
+  "No stage-tool edits; no other plan; no motor or camera"
+ ]
+}

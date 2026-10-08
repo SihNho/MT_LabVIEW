@@ -1,0 +1,97 @@
+{
+ "schema": "task/1",
+ "id": "147-c3-1",
+ "kind": "build",
+ "goal": "selftest_stagekit.py case J also stubs create_local_read (no other line); selftest_stagekit on 06b8d844 with COM blocked = 0 fails, 0 COM calls",
+ "why": "PD357(c): 147-b1-4 showed pre-edit and new stagekit give identical 51/0 with COM blocked, so the J1 COM call (stagekit.py:794) is a stale self-test stub, not a regression.",
+ "inputs": [
+  {
+   "path": "tools/bench/cards/brief_147-c3-1.md",
+   "md5": "dec2fed1a7d349c89e1d86b1ded896e2"
+  },
+  {
+   "path": "tools/bench/diag_c147_b1_4_facts.md",
+   "md5": "a1f9351dc572be8552a76311fd783574"
+  },
+  {
+   "path": "tools/bench/diag_c147_b1_4_run.py",
+   "md5": "2f7f348fd10911189757519b205feb60"
+  },
+  {
+   "path": "tools/bench/selftest_stagekit.py",
+   "md5": "f90cdaaf77af12ea5533e07a51ac1a7b"
+  },
+  {
+   "path": "tools/bench/selftest_td_key_c141_3.py",
+   "md5": "13aec440a797aa695ffb929e68c0ece7"
+  },
+  {
+   "path": "tools/bench/selftest_c147_b1_2.py",
+   "md5": "24c56042965eb1d5d5140fc2c3455f17"
+  },
+  {
+   "path": "tools/stagekit.py",
+   "md5": "06b8d844284deacab535a9ee442d4964"
+  },
+  {
+   "path": "tools/stagexec.py",
+   "md5": "1bab9cf96502dfbe2d9a755e6d4a48b6"
+  },
+  {
+   "path": "tools/gscript.py",
+   "md5": "1a80236ed35c1876c67f964c72fe820a"
+  },
+  {
+   "path": "tools/bench/memory_model.json",
+   "md5": "88eeb03748e94d422e38be802be2118a"
+  }
+ ],
+ "pass": [
+  "selftest_stagekit.py case J also stubs create_local_read, no other line changed (git diff quoted)",
+  "selftest_stagekit on stagekit 06b8d844 with COM blocked = 0 fails, 0 COM calls, rc quoted; plain run rc + counts quoted",
+  "selftest_c147_b1_2 17/0 and selftest_td_key_c141_3 9/0, rc quoted",
+  "stagekit 06b8d844, stagexec 1bab9cf9, gscript 1a80236e, elrule a5ee7d5c, memory_model 88eeb037, s06 plan/pred/in/licence/recipes unchanged; no LabVIEW process before/after"
+ ],
+ "outputs": [
+  "tools/bench/selftest_stagekit.py",
+  "tools/bench/diag_c147_c3_1_facts.md"
+ ],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/selftest_stagekit.py",
+   "tools/bench/diag_c147_c3_1*",
+   "tools/bench/selftest_stagekit*.log",
+   "tools/bench/gate_fp_queue.jsonl"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 30
+ },
+ "advances": [
+  "M3",
+  "R1"
+ ],
+ "requires": [
+  {
+   "kind": "file",
+   "name": "tools/bench/selftest_stagekit.py"
+  },
+  {
+   "kind": "file",
+   "name": "tools/bench/diag_c147_b1_4_run.py"
+  }
+ ],
+ "rules": [
+  "No LabVIEW process may start; check tasklist before and after",
+  "Edit only case J of selftest_stagekit.py; no tool, plan, licence, recipe or memory_model.json edit",
+  "Gate false positives go to gate_fp_queue via tools/gate_fp.py, never an env bypass"
+ ]
+}

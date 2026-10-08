@@ -1,0 +1,114 @@
+BGRUN START 2026-10-08 01:24:28 limit 10.0 min: py -u tools/bench/prep_c147_a1_2_mk.py
+BGRUN PID 4696
+GATE PASS | M0 input md5 == card / pins | {'plan_ring_p4_v18.json': '2ea6cafa7d368dc7a054346d398daa3e', 'plan_ring_p4_s05v18.json': '1fc9b486551b3f1fe42f25167375ba30', 'plan_ring_p4_s04v18.json': 'f349c39a17330531e688ff1f70ce426e', 'plan_ring_p4_s03v18.json': 'da66a0300851133d93881be3c28f2fdc', 'step_21_create.json': 'ca3661f3e02bcac1749e1edcf0a1f018', 'step_23_wire.json': 'b5ae7f79975b9faca0722bb4dc6e3781', 'step_20_create.json': '5f31db45b1b8c7f66b48cf28d92a1e03'}
+GATE PASS | X0 PROVISIONAL start: load_by_vi[95e408ff] == 605.4; 17 compiled s05 ops; START 623.5 = 605.4 + 0.719 x 17 + 5.9 | (617.6, 623.5)
+FACT X10 START 623.5 = PROVISIONAL: predicted s05 file load 617.6 = load_by_vi[95e408ff] 605.4 (memory_model.json load_by_vi, diag_c145_2_graph.log:24) + load_growth_mb_per_op 0.719 (memory_model.json:70-73) x 17 compiled ops of plan_ring_p4_s05v18.json 1fc9b486; + op0_read_mb 5.9 (x10_start rule, stage_prerun.py:2043-2052). REPLACE by the s05 file's measured load at rebase
+FACT alt start by ACTIONS (21 s05 actions x 0.719) = 626.4 (not used; the model is per op)
+GATE PASS | E5 s05v18 finalized last step file == tools/bench/sim/ring_p4_s05v18/step_21_create.json (pinned md5); base real (not provisional) | {'n': 21, 'op': 'create', 'path': 'tools/bench/sim/ring_p4_s05v18/step_21_create.json', 'md5': 'ca3661f3e02bcac1749e1edcf0a1f018'}
+GATE PASS | E5b END5 state sym/neg present | ({'new:TS1': -1, 'new:TP1': -6, 'new:LRVT1': -16, 'new:IAVT1': -18, 'new:LRVR1': -23, 'new:IAVR1': -25, 'new:LRVF1': -30, 'new:IAVF1': -32}, -35)
+FACT provisional base tools/bench/sim/ring_p4_s06v18/s05end/base_provisional.json a6762a055fed468f1c3a2a6f58beb8f3 sym {"new:TS1": -1, "new:TP1": -6, "new:LRVT1": -16, "new:IAVT1": -18, "new:LRVR1": -23, "new:IAVR1": -25, "new:LRVF1": -30, "new:IAVF1": -32} neg -35 vi md5 95e408ff14a406edd3f16b32ba7324f1
+GATE PASS | S5 v18 ops 1..114 = s01's 24 + s02's 34 + s03's 20 + s04's 23 + s05's 21 ids | 
+GATE PASS | CUT longest prefix from op 115 splitting no 'of' group with MAIN X10 <= 680.0 at 623.5: op 129 | {'first_over': 130, 'groups_split_at': []}
+FACT SENS start 618.5 (-5.0 MB): cut op 131, MAIN peak 679.6, Executor peak 674.5, actions 21
+FACT SENS start 623.5 (+0.0 MB): cut op 129, MAIN peak 679.3, Executor peak 674.2, actions 19
+FACT SENS start 628.5 (+5.0 MB): cut op 127, MAIN peak 679.1, Executor peak 674.0, actions 17
+FACT X10-MAIN at 623.5: ops 115..129 MAIN peak 679.3 (Executor 674.2; fail_above 680.0 margin 0.7; MEMSTOP 695.0 margin 15.7); next op 130 MAIN 683.3; first op over: 130; group-split ops skipped above the cut []
+FACT next session at the SAME start would end at op 146 (formula only)
+FACT X10-OP op 115 kind connect bind False exec 647.3 main 652.4 cut_ok True
+FACT X10-OP op 116 kind branch bind False exec 648.7 main 653.8 cut_ok True
+FACT X10-OP op 117 kind connect bind False exec 650.1 main 655.2 cut_ok True
+FACT X10-OP op 118 kind connect bind False exec 651.5 main 656.6 cut_ok True
+FACT X10-OP op 119 kind connect bind False exec 652.9 main 658.0 cut_ok True
+FACT X10-OP op 120 kind move_in bind False exec 654.2 main 659.3 cut_ok True
+FACT X10-OP op 121 kind move_in bind False exec 655.6 main 660.7 cut_ok True
+FACT X10-OP op 122 kind connect bind False exec 657.0 main 662.1 cut_ok True
+FACT X10-OP op 123 kind connect bind False exec 658.4 main 663.5 cut_ok True
+FACT X10-OP op 124 kind tunnel bind True exec 659.8 main 664.9 cut_ok True
+FACT X10-OP op 125 kind tunnel bind True exec 663.7 main 668.8 cut_ok True
+FACT X10-OP op 126 kind connect bind False exec 667.6 main 672.7 cut_ok True
+FACT X10-OP op 127 kind connect bind False exec 669.0 main 674.1 cut_ok True
+FACT X10-OP op 128 kind create bind True exec 670.3 main 675.4 cut_ok True
+FACT X10-OP op 129 kind create bind True exec 674.2 main 679.3 cut_ok True
+FACT X10-OP op 130 kind connect bind False exec 678.2 main 683.3 cut_ok True
+FACT X10-OP op 131 kind branch bind False exec 679.5 main 684.6 cut_ok True
+FACT X10-OP op 132 kind connect bind False exec 680.9 main 686.0 cut_ok True
+FACT session 6 = 19 actions p4_w_arr_frameidx..p4_ia_bufdiff; ops 115..129; subVI drops {'PS1': {'op': 79, 'in_session': False}, 'SQ1': {'op': 88, 'in_session': False}}; ops left after s06 61 of 190
+FACT X11 #2626 rows by v18 op: {"118": {"id": "p4_w_tp_row", "v18_op_ids": ["p4_w_tp_row"], "in_s06": true}, "119": {"id": "p4_w_rp_row", "v18_op_ids": ["p4_w_rp_row"], "in_s06": true}, "132": {"id": "p4_w_bd_row", "v18_op_ids": ["p4_w_bd_row"], "in_s06": false}, "150": {"id": "p4_rbB_sel_t4168", "v18_op_ids": ["p4_rbB_sel_t4168"], "in_s06": false}}
+GATE PASS | CM s03 / s04 creation map headers == plans da66a030 / f349c39a | ({'schema': 'creation-map/1', 'rec': 'run', 'plan': 'tools/bench/plan_ring_p4_s03v18.json', 'plan_md5': 'da66a0300851133d93881be3c28f2fdc', 'stage': 'plan_ring_p4_s03v18', 'work': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p4s03_20261007_202957.vi', 'from_step': None, 't': 1791372745.7, 'iso': '2026-10-07 20:32:25'}, {'schema': 'creation-map/1', 'rec': 'run', 'plan': 'tools/bench/plan_ring_p4_s04v18.json', 'plan_md5': 'f349c39a17330531e688ff1f70ce426e', 'stage': 'plan_ring_p4_s04v18', 'work': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p4s04_20261007_215031.vi', 'from_step': None, 't': 1791377566.3, 'iso': '2026-10-07 21:52:46'})
+GATE PASS | R 0 s01..s04 symbol(s) -> real uid by that session's creation map, (uid, class) equal in END5, == the s05 rebase where it bound them | {}
+GATE PASS | C2 9 cross ref(s): s05 symbols -> negative provisional uids, s01..s04 -> real uids [('p4_w_arr_frameidx', 'new:LRVF1.value', -30), ('p4_w_arr_frameidx', 'new:IAVF1.array', -32), ('p4_w_idx_frameidx', 'new:TS1.outer', -1), ('p4_w_idx_frameidx', 'new:IAVF1.index', -32), ('p4_w_tp_mag', 'new:IAVT1.element', -18), ('p4_w_tp_row', 'new:IAVT1.element', -18), ('p4_w_rp_row', 'new:IAVR1.element', -25), ('p4_w_fi_10068', 'new:IAVF1.element', -32), ('p4_w_fi_29240', 'new:IAVF1.element', -32)]; no ref to a later session's symbol | {'bad': [], 'late': []}
+GATE PASS | S0 pass-A input validates (19 actions) | OK stageplan/1
+GATE PASS | SA pass A replays to its end | None
+GATE PASS | TIE every end row (15) tied to a session-6 action or an s05v18 open row | []
+GATE PASS | SB plan FINAL on the provisional base, end rows == pass A, open_rows_match (10 pairs) | {'final': True, 'failed': None}
+FACT KIND op 115 connect -> connect action p4_w_arr_frameidx: PASS - same kind
+FACT KIND op 116 branch -> connect action p4_w_idx_frameidx: REFUSED - branch -> connect REFUSED (source not made in an earlier session): source tunnel new:TS1 created by v18 op None; session first op 115; s06 src uid -1
+FACT KIND op 117 connect -> connect action p4_w_tp_mag: PASS - same kind
+FACT KIND op 118 connect -> connect action p4_w_tp_row: PASS - same kind
+FACT KIND op 119 connect -> connect action p4_w_rp_row: PASS - same kind
+FACT KIND op 120 move_in -> move_in action p4_mv_10068: PASS - same kind
+FACT KIND op 121 move_in -> move_in action p4_mv_29240: PASS - same kind
+FACT KIND op 122 connect -> connect action p4_w_fi_10068: PASS - same kind
+FACT KIND op 123 connect -> connect action p4_w_fi_29240: PASS - same kind
+FACT KIND op 124 tunnel -> tunnel action p4_t_fd: PASS - same kind
+FACT KIND op 125 tunnel -> tunnel action p4_t_dt: PASS - same kind
+FACT KIND op 126 connect -> connect action p4_w_10068_out: PASS - same kind
+FACT KIND op 127 connect -> connect action p4_w_29240_out: PASS - same kind
+FACT KIND op 128 create -> create action p4_lr_bufdiff12: PASS - same kind
+FACT KIND op 129 create -> create action p4_ia_bufdiff: PASS - same kind
+FACT kind differences v18 -> s06 (op, v18 reg symbol): [(116, None)]
+NEGCTL synthetic branch -> connect on v18 op 116 (op 116 with the session started at its source's creating op), session first op None, fake src uid -999: REFUSED - branch -> connect REFUSED (source not made in an earlier session): source tunnel new:TS1 created by v18 op None; session first op None; s06 src uid -999 (no file written)
+GATE PASS | NEG negative control: branch -> connect with the source made in this session is REFUSED | branch -> connect REFUSED (source not made in an earlier session): source tunnel new:TS1 created by v18 op None; session first op None; s06 src uid -999
+FACT X10s compiled plan N 15 R 5 Executor peak 674.2, MAIN 679.3 at 623.5; MEMSTOP 695.0
+GATE FAIL | X10s compiled plan: Executor peak 674.2 == table 674.2; MAIN 679.3 <= 680.0; kinds == v18 ops 115..129 except wire_sr -> connect on an earlier register / branch -> connect on an earlier-session source [(116, None)] | {'connect': 9, 'move_in': 2, 'tunnel': 2, 'create': 2}
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":14,"fail":1},"first_fail":"X10s compiled plan: Executor peak 674.2 == table 674.2; MAIN 679.3 <= 680.0; kinds == v18 ops 115..129 except wire_sr -> connect on an earlier register / branch -> connect on an earlier-session source","artefacts":[],"card":"147-a1-2","labview":"none"}
+BGRUN END rc=1 after 68s
+BGRUN START 2026-10-08 01:26:06 limit 10.0 min: py -u tools/bench/prep_c147_a1_2_mk.py
+BGRUN PID 22520
+GATE PASS | M0 input md5 == card / pins | {'plan_ring_p4_v18.json': '2ea6cafa7d368dc7a054346d398daa3e', 'plan_ring_p4_s05v18.json': '1fc9b486551b3f1fe42f25167375ba30', 'plan_ring_p4_s04v18.json': 'f349c39a17330531e688ff1f70ce426e', 'plan_ring_p4_s03v18.json': 'da66a0300851133d93881be3c28f2fdc', 'step_21_create.json': 'ca3661f3e02bcac1749e1edcf0a1f018', 'step_23_wire.json': 'b5ae7f79975b9faca0722bb4dc6e3781', 'step_20_create.json': '5f31db45b1b8c7f66b48cf28d92a1e03'}
+GATE PASS | X0 PROVISIONAL start: load_by_vi[95e408ff] == 605.4; 17 compiled s05 ops; START 623.5 = 605.4 + 0.719 x 17 + 5.9 | (617.6, 623.5)
+FACT X10 START 623.5 = PROVISIONAL: predicted s05 file load 617.6 = load_by_vi[95e408ff] 605.4 (memory_model.json load_by_vi, diag_c145_2_graph.log:24) + load_growth_mb_per_op 0.719 (memory_model.json:70-73) x 17 compiled ops of plan_ring_p4_s05v18.json 1fc9b486; + op0_read_mb 5.9 (x10_start rule, stage_prerun.py:2043-2052). REPLACE by the s05 file's measured load at rebase
+FACT alt start by ACTIONS (21 s05 actions x 0.719) = 626.4 (not used; the model is per op)
+GATE PASS | E5 s05v18 finalized last step file == tools/bench/sim/ring_p4_s05v18/step_21_create.json (pinned md5); base real (not provisional) | {'n': 21, 'op': 'create', 'path': 'tools/bench/sim/ring_p4_s05v18/step_21_create.json', 'md5': 'ca3661f3e02bcac1749e1edcf0a1f018'}
+GATE PASS | E5b END5 state sym/neg present | ({'new:TS1': -1, 'new:TP1': -6, 'new:LRVT1': -16, 'new:IAVT1': -18, 'new:LRVR1': -23, 'new:IAVR1': -25, 'new:LRVF1': -30, 'new:IAVF1': -32}, -35)
+FACT provisional base tools/bench/sim/ring_p4_s06v18/s05end/base_provisional.json a6762a055fed468f1c3a2a6f58beb8f3 sym {"new:TS1": -1, "new:TP1": -6, "new:LRVT1": -16, "new:IAVT1": -18, "new:LRVR1": -23, "new:IAVR1": -25, "new:LRVF1": -30, "new:IAVF1": -32} neg -35 vi md5 95e408ff14a406edd3f16b32ba7324f1
+GATE PASS | S5 v18 ops 1..114 = s01's 24 + s02's 34 + s03's 20 + s04's 23 + s05's 21 ids | 
+GATE PASS | CUT longest prefix from op 115 splitting no 'of' group with MAIN X10 <= 680.0 at 623.5: op 129 | {'first_over': 130, 'groups_split_at': []}
+FACT SENS start 618.5 (-5.0 MB): cut op 131, MAIN peak 679.6, Executor peak 674.5, actions 21
+FACT SENS start 623.5 (+0.0 MB): cut op 129, MAIN peak 679.3, Executor peak 674.2, actions 19
+FACT SENS start 628.5 (+5.0 MB): cut op 127, MAIN peak 679.1, Executor peak 674.0, actions 17
+FACT X10-MAIN at 623.5: ops 115..129 MAIN peak 679.3 (Executor 674.2; fail_above 680.0 margin 0.7; MEMSTOP 695.0 margin 15.7); next op 130 MAIN 683.3; first op over: 130; group-split ops skipped above the cut []
+FACT next session at the SAME start would end at op 146 (formula only)
+FACT X10-OP op 115 kind connect bind False exec 647.3 main 652.4 cut_ok True
+FACT X10-OP op 116 kind branch bind False exec 648.7 main 653.8 cut_ok True
+FACT X10-OP op 117 kind connect bind False exec 650.1 main 655.2 cut_ok True
+FACT X10-OP op 118 kind connect bind False exec 651.5 main 656.6 cut_ok True
+FACT X10-OP op 119 kind connect bind False exec 652.9 main 658.0 cut_ok True
+FACT X10-OP op 120 kind move_in bind False exec 654.2 main 659.3 cut_ok True
+FACT X10-OP op 121 kind move_in bind False exec 655.6 main 660.7 cut_ok True
+FACT X10-OP op 122 kind connect bind False exec 657.0 main 662.1 cut_ok True
+FACT X10-OP op 123 kind connect bind False exec 658.4 main 663.5 cut_ok True
+FACT X10-OP op 124 kind tunnel bind True exec 659.8 main 664.9 cut_ok True
+FACT X10-OP op 125 kind tunnel bind True exec 663.7 main 668.8 cut_ok True
+FACT X10-OP op 126 kind connect bind False exec 667.6 main 672.7 cut_ok True
+FACT X10-OP op 127 kind connect bind False exec 669.0 main 674.1 cut_ok True
+FACT X10-OP op 128 kind create bind True exec 670.3 main 675.4 cut_ok True
+FACT X10-OP op 129 kind create bind True exec 674.2 main 679.3 cut_ok True
+FACT X10-OP op 130 kind connect bind False exec 678.2 main 683.3 cut_ok True
+FACT X10-OP op 131 kind branch bind False exec 679.5 main 684.6 cut_ok True
+FACT X10-OP op 132 kind connect bind False exec 680.9 main 686.0 cut_ok True
+FACT session 6 = 19 actions p4_w_arr_frameidx..p4_ia_bufdiff; ops 115..129; subVI drops {'PS1': {'op': 79, 'in_session': False}, 'SQ1': {'op': 88, 'in_session': False}}; ops left after s06 61 of 190
+FACT X11 #2626 rows by v18 op: {"118": {"id": "p4_w_tp_row", "v18_op_ids": ["p4_w_tp_row"], "in_s06": true}, "119": {"id": "p4_w_rp_row", "v18_op_ids": ["p4_w_rp_row"], "in_s06": true}, "132": {"id": "p4_w_bd_row", "v18_op_ids": ["p4_w_bd_row"], "in_s06": false}, "150": {"id": "p4_rbB_sel_t4168", "v18_op_ids": ["p4_rbB_sel_t4168"], "in_s06": false}}
+GATE PASS | CM s03 / s04 creation map headers == plans da66a030 / f349c39a | ({'schema': 'creation-map/1', 'rec': 'run', 'plan': 'tools/bench/plan_ring_p4_s03v18.json', 'plan_md5': 'da66a0300851133d93881be3c28f2fdc', 'stage': 'plan_ring_p4_s03v18', 'work': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p4s03_20261007_202957.vi', 'from_step': None, 't': 1791372745.7, 'iso': '2026-10-07 20:32:25'}, {'schema': 'creation-map/1', 'rec': 'run', 'plan': 'tools/bench/plan_ring_p4_s04v18.json', 'plan_md5': 'f349c39a17330531e688ff1f70ce426e', 'stage': 'plan_ring_p4_s04v18', 'work': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p4s04_20261007_215031.vi', 'from_step': None, 't': 1791377566.3, 'iso': '2026-10-07 21:52:46'})
+GATE PASS | R 0 s01..s04 symbol(s) -> real uid by that session's creation map, (uid, class) equal in END5, == the s05 rebase where it bound them | {}
+GATE PASS | C2 9 cross ref(s): s05 symbols -> negative provisional uids, s01..s04 -> real uids [('p4_w_arr_frameidx', 'new:LRVF1.value', -30), ('p4_w_arr_frameidx', 'new:IAVF1.array', -32), ('p4_w_idx_frameidx', 'new:TS1.outer', -1), ('p4_w_idx_frameidx', 'new:IAVF1.index', -32), ('p4_w_tp_mag', 'new:IAVT1.element', -18), ('p4_w_tp_row', 'new:IAVT1.element', -18), ('p4_w_rp_row', 'new:IAVR1.element', -25), ('p4_w_fi_10068', 'new:IAVF1.element', -32), ('p4_w_fi_29240', 'new:IAVF1.element', -32)]; no ref to a later session's symbol | {'bad': [], 'late': []}
+GATE PASS | S0 pass-A input validates (19 actions) | OK stageplan/1
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\prep_c147_a1_2_mk.py", line 232, in <module>
+    SA = SS.simulate(AIN, PROVB, out_root=PAROOT, plan_out_dir=DA, log=lambda *x: None, route_check=False)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stagesim.py", line 2452, in simulate
+    os.remove(old)
+PermissionError: [WinError 5] 액세스가 거부되었습니다: 'G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\ring_p4_s06v18\\_passA\\ring_p4_s06v18a\\step_19_create.json'
+GATE FAIL | SA pass A simulate returned | [WinError 5] 액세스가 거부되었습니다: 'G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\ring_p4_s06v18\\_passA\\ring_p4_s06v18a\\step_19_create.json'
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":10,"fail":1},"first_fail":"SA pass A simulate returned","artefacts":[],"card":"147-a1-2","labview":"none"}
+BGRUN END rc=1 after 1s

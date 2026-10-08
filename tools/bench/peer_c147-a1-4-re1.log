@@ -1,0 +1,58 @@
+BGRUN START 2026-10-08 02:16:15 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c147-a1-4-re1 -TaskFile tools/bench/diag_c147_a1_4_hyp_task.md
+BGRUN PID 21032
+OUTCOME: ANSWERED (172s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-08-c147-a1-4-re1.md
+COST: $1.7513  in 38 / out 14990 / cache-create 128313 / cache-read 1999820  (168s, 34 turn(s))
+--- ANSWER ---
+# The claim is wrong: op 20's connect did not silently decline
+
+The log shows op 20 changed the wire on t5171. Op 21's "target BROKEN" error is a false alarm. The VI was already broken (ExecState 0) before op 21 started, so the check that raised the error could not have passed.
+
+## 1. Strongest reason the claim is wrong
+- **The error comes from a check that could not pass on this file.**
+  - `gscript.wire_indicators` raises "target BROKEN after wiring" whenever `exec_state(target) != 1`, at `tools/gscript.py:2152-2155`. It does not look at whether the wire was made.
+  - ExecState 1 means "Idle" and 0 means "Bad" ([NI: Execution:State](https://zone.ni.com/reference/en-XX/help/371361J-01/lvprop/vi_exestate/), [LabVIEW Wiki](https://labviewwiki.org/wiki/VI_class/Execution.State_property)).
+  - This bed is broken by design. It read `ExecState [after open] ... = 0` at `diag_c147_p4s06v18_scratch.log:57`, and 0 again before the save at `:303`.
+  - So the RuntimeError says nothing about op 21's wire, and nothing about op 20 either.
+- **The same error has happened before on the same pair, and the run still passed.**
+  - In `stage_d1_k_r2.log:232-239`, the same source (#5058 'pos in cal image out') wired to 'Pos within cal image' raised the identical RuntimeError.
+  - That run still got `PASS E1 every real op's graph == its simulated step` at `:243`.
+  - This is why the sink-gate mechanism exists (`stagexec.py:2734-2748`, card 80-3). This recipe declared no sink gate: `declared sinks: []` at `:310`.
+
+## 2. Alternative explanation, and why `'UID 2': 0` means nothing
+- **`'UID 2': 0` is not evidence that op 20 failed.**
+  - The wrapper's own comment says those readouts may run before the wire exists and are reported but never gated (`tools/recipes/build_opconnectnested_v1.py:445-446`).
+  - It reads 0 on all 9 connect_nested_v1 calls in this log, at `:68, 84, 104, 153, 188, 197, 251, 267, 286`. That includes op 18, which the claim treats as successful.
+  - The same zero readback was traced to the readback's ordering before (`build_opconnectfromwire_v0.py:56`).
+- **The log shows that op 20 changed t5171:**
+  - **The route choice proves t5171 was wired at op 21.** On the retry, `connect_route` picks "indicator" (wire_indicators) only when the fresh read shows the source's `wire_uid` as non-zero (`stagexec.py:1374, 1397`). `indicator()` also stops with "needs a WIRED source" on a bare source (`:2976-2977`). wire_indicators was called (`:296`), so the live read at op 21 showed t5171 wired.
+  - **The op 21 STALE-ADDRESS says t5171's wire changed after delete_wire.** The (name, dir, wire) match is at `stagexec.py:1739-1751`. At op 21 the address data being used was the read taken during op 20's retry, after delete_wire and before op 20's connect. The live wire on t5171 no longer matched it (`:294`).
+  - **Op 20 is the only edit in between, and its result points the same way.** Its "how" includes `cached index (proved by its wire uid while wired)` (scratch json `:1790-1794`).
+- **So the more likely sequence is:**
+  1. Op 19 deleted w23807, leaving t5171 and t10975 unwired (op 20's address check shows `('array', False, 0)` at `:283`).
+  2. Op 20 wired t5171 to t10975.
+  3. Op 21's wire_indicators branched 'Pos within cal image' onto that wire, or did nothing.
+  4. The ExecState check raised anyway, because the bed was 0 before op 21.
+- **The real fault is in the plan and recipe, not in the connect tool.** The plan sends re1 to wire_indicators on a bed that is broken by design, and declares no sink gate. The prerun (16/0) did not catch this, because nothing models wire_indicators' "ExecState must be 1 afterwards" check.
+
+## 3. What would falsify my alternative (and support the claim)
+A fresh terminal read after op 20 showing **t10975 with wire 0**, or **t5171 with wire 0**.
+
+What would falsify the claim instead: t5171, t10975 and t3173 all on one wire. That is one source and two sinks, with `Wire.Is Broken?` False.
+
+Caveat: the log does not tell us whether op 21's branch onto t3173 actually happened. The address list at `:294` is cut at 200 characters, so the live wire uid on t5171 is not recorded.
+
+## 4. Cheapest discriminating test
+- **Offline, free, already done above:** the route-choice argument (`stagexec.py:1374/1397/2976`) together with ExecState 0 at `:57`. That is enough to reject "op 20 left t5171 bare."
+- **Smallest LabVIEW check:** rule 6 says the saved file b58046e3 must not be cold-loaded headless, so do this in a scratch run instead.
+  - Resume from step 20 on a new byte copy of the input VI (3f9ac26b).
+  - Declare a sink gate for `[3173, 'Pos within cal image']` that reads the terminal tables of #5058 t5171, #10969 t10975 and CT #3173, after op 20 and after op 21.
+  - Also read `Wire.Is Broken?` on t5171's wire.
+  - Same wire uid on all three terminals: my alternative holds, and the fix is a sink gate, or skipping the ExecState check when the bed is already 0.
+  - t10975 unwired after op 20: the claim holds.
+
+Note: plan mode asked me to write a plan file, but `Write` is disabled in this session, so this answer is the whole deliverable.
+
+Sources:
+- [Execution:State Property – LabVIEW Help (NI)](https://zone.ni.com/reference/en-XX/help/371361J-01/lvprop/vi_exestate/)
+- [VI class/Execution.State property – LabVIEW Wiki](https://labviewwiki.org/wiki/VI_class/Execution.State_property)
+BGRUN END rc=0 after 173s

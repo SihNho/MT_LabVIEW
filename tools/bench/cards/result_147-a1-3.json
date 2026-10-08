@@ -1,0 +1,30 @@
+{"schema": "result/1", "id": "147-a1-3", "status": "PASS", "gates": {"pass": 5, "fail": 0}, "first_fail": null, "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/bench/diag_c147_a1_3_facts.md", "md5": "b0f69147edabc2cdf2a8496104263706"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s06v18.py", "md5": "41ad9d3584a0999d741c4a3a7df6a4d1"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s06v18_scratch.py", "md5": "8554bdd67d1e98e6be91b491f55a3859"},
+  {"path": "tools/bench/plan_ring_p4_s06v18.json", "md5": "cfbd9823d3b47be39de94f2125ad6b66"},
+  {"path": "tools/bench/plan_ring_p4_s06v18_in.json", "md5": "db72d8af5b1f6da643e4c84b1260a61a"},
+  {"path": "tools/bench/plan_ring_p4_s06v18_pred.json", "md5": "c4a6a35aff6f71d508ea2c43c24ec510"},
+  {"path": "tools/bench/plan_ring_p4_s06v18_licence.json", "md5": "7dce79aaa168e30e7b4af11968e18e19"},
+  {"path": "tools/bench/sim/ring_p4_s06v18_base_real_fsmap.json", "md5": "a4f9e39da768284e96f0b5d26606fb6f"}
+ ],
+ "facts": [
+  "START 612.6 = x10_start(3f9ac26b) = 606.7 + op-0 5.9; prerun x10_plan_start == pred == maker (prep_c147_a1_3_pred.log X1)",
+  "cut v18 ops 115..135, 25 actions p4_w_arr_frameidx..p4_rbA_re1; MAIN X10 679.3 (margin 0.7 / MEMSTOP 15.7); first over op 136 (prep_c147_a1_3_mk.log)",
+  "prerun's own X10: main 679.3 PASS (prep_c147_a1_3_prerun.log:109-111), scratch 674.2 PASS (_scr_prerun.log:131-133); sens 607.6->137, 617.6->131",
+  "rebase onto cbeeadf5: FALLBACK-COUNT 0, 30 uids, final; end 18 rows == v18 sim #147, cdiff 0 (prep_c147_a1_3_rebase.log; _pred.log V18E-R)",
+  "ops 118/119 AND 132 in s06: licence plan_ring_p4_s06v18_licence.json node 2626 uids [2832,4160,4165]; X11 PASS licensed (prep_c147_a1_3_prerun.log:92)",
+  "pred EL 55 = base 55 + new [sr 23508] - closed [local 30239]; per class local 2->1, sr 0->1, rest = start read b654430d; uncertain base [10757 array]",
+  "scratch recipe = s05 copy + advisory EL block (scratch.py:81-155, argv :157-165); structural gates unchanged; diff hunks in diag_c147_a1_3_facts.md:70-98",
+  "dry PASS both; prerun 16/0 both (X14 WARN rows 25 > 15, X13 WARN scratch); --scratch-required main rc=3 (prep_c147_a1_3_scrreq.log)",
+  "advisory selftest 5/0: unseen class rc1, +4 rc1, +2 rc0, exact rc0 (prep_c147_a1_3_elselftest.log); bgrun counted it as a stage run -> fp-52",
+  "protected md5 159/159 unchanged incl. memory_model 88eeb037, elrule a5ee7d5c; no LabVIEW process (prep_c147_a1_3_check_after.log)"
+ ],
+ "open": [
+  "fp-52: the offline selftest took 1 of 2 RETRY_CAP slots of the s06 scratch in cycle 147 (stage_runs.jsonl last line); only one scratch run is left without a retry card",
+  "rebase wrote tools/bench/sim/ring_p4_s06v18_base_real_fsmap.json, outside the card's write globs (tool-fixed path, stage_prerun.py:4352)",
+  "advisory class granularity: all 'unwired/required input' items are one class 'input' (elcls); an unseen input-type node would not count as a new class"
+ ],
+ "cost": {"usd": null, "minutes": 19, "labview_runs": 0},
+ "note": "Offline, alone. Ops 116/131 branch->connect allowed by the PD353(e) rule (source TS1 from op 98)."}

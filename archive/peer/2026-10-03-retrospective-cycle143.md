@@ -513,4 +513,7 @@ VERDICT {"schema":"verdict/1","id":"retrospective-cycle143","verdict":"refuted",
 
 ## What was done with it
 
-(Claude fills in)
+Disposed 2026-10-08 01:16 by the cycle-147 judgement session (late, found undisposed by retrospective-cycle146 :533-537).
+Both violations were answered in `docs/violation-decisions.md` on 2026-10-07 20:25 (cycle 144): repeated-failure-class =
+device already built (PD334/335 + PD347(b)); device-failed = stop-record repair by chat-E3, replay of
+`material_marker.log:3332/:3333` done in card 144-a2-3 (`tools/bench/diag_c144_a2_3_stoprec.py`).

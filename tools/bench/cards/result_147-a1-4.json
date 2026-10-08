@@ -1,0 +1,24 @@
+{"schema":"result/1","id":"147-a1-4","status":"FAIL","gates":{"pass":12,"fail":2},
+"first_fail":"E1 the run reached its last op (stopped IN op k 21 connect, ids ['p4_rbA_re1']): wire_indicators #5058 -> 'Pos within cal image' raised 'target BROKEN after wiring'",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/diag_c147_p4s06v18_scratch.log","md5":"784211e860f9f9ad8ba93904fa3b1bd1"},
+ {"path":"tools/bench/diag_c147_p4s06v18_scratch.json","md5":"c13aea2fcd5e66bcec0afc36f4221228"},
+ {"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p4s06_20261008_020717.vi","md5":"b58046e33c1f8def1d6b5552d94b7b85"},
+ {"path":"archive/peer/2026-10-08-c147-a1-4-re1.md","md5":"7cf0b812be443b7a6a84f07d4bc774eb"},
+ {"path":"tools/bench/diag_c147_a1_4_facts.md","md5":"7575e8e0ae9681b8a062a8cdfa50c4a4"}],
+"facts":[
+ "Before 22/0 (diag_c147_a1_4_check.log); dry PASS; prerun 16/0 X10 674.2 X11 licensed (diag_c147_a1_4_scr_prerun.log:114,133,137); scratch-required rc 3",
+ "ONE scratch rc=1 443 s, RESULT 12/2: ops 1..20 ran, PRIM PASS #30300 (diag_c147_p4s06v18_scratch.log:245); stopped IN op 21 p4_rbA_re1 (:311)",
+ "Op 21: wire_indicators N[26] 'pos in cal image out' -> 'Pos within cal image' RuntimeError 'target BROKEN after wiring' (:297); declared sinks [] (:310)",
+ "Op 19 delete_wire w23807 err '' (:277); op 20 connect #5171->#10975 err '' after STALE-ADDRESS retry, readback 'UID 2': 0 (:283,:286,:288)",
+ "Work copy D1_ring_p4s06_20261008_020717.vi b58046e3 saved ExecState 0, NOT adopted; resume record from_step 20 (:303,:306,:309)",
+ "Metered start 570.2 MB (:60), op-0 read 576.8 (:61) vs assumed 612.6; peak 618.7 (:295) vs X10 674.2 (d -55.5); MEM/MEML/IN/GONE PASS (:336-339)",
+ "Refs 22/22 (:316); handles post-open 45745 (:60) -> exit 33021 (:328); H2/H3/H6 PASS",
+ "JEV-LADDER new-problem p=0.804 review owed -> hypothesis review ANSWERED 172 s archive/peer/2026-10-08-c147-a1-4-re1.md (disposition written)",
+ "Review rejects 'op 20 declined': wire_indicators raises on any ExecState != 1 (tools/gscript.py:2152-2155) and the bed is 0 by design (log :57)",
+ "After 20/0 (diag_c147_a1_4_check_after.log): s05/s04/s03/bed unchanged, pred and memory_model untouched, no LabVIEW process"],
+"open":[
+ "Op 21 hit wire_indicators' ExecState==1 check on a broken-by-design bed (same pair passed E1 via a sink gate, stage_d1_k_r2.log:232-243). Re-issue s06 with a sink gate for [3173,'Pos within cal image'] (resume step 20 on a new copy of 3f9ac26b), or reroute p4_rbA_re1?"],
+"cost":{"usd":null,"minutes":20,"labview_runs":1},
+"note":"JEV-LADDER row: diag_c147_p4s06v18_scratch.log | new-problem p=0.804 | hypothesis review owed | dispatched -Role hypothesis | ANSWERED, claim rejected. Census/adopt/EL/graph/memload scripts written (diag_c147_a1_4_*.py), unrun."}

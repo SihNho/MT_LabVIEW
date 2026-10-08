@@ -1,0 +1,14 @@
+BGRUN START 2026-10-08 13:59:39 limit 3.0 min: py -u tools/bench/diag_c147_c3_2_check.py
+BGRUN PID 13408
+  PASS  P0 pins before: stagekit.py 06b8d844, stagexec.py 1bab9cf9, gscript.py 1a80236e, elrule.py a5ee7d5c, memory_model.json 88eeb037, plan_ring_p4_s06v18.json cfbd9823, plan_ring_p4_s06v18_pred.json c4a6a35a, plan_ring_p4_s06v18_in.json db72d8af  
+  FACT  licence md5 7f70bbf9f64de105f25380f260632d56; pb_licences(plan) {2626: 'tools/bench/plan_ring_p4_s06v18_licence.json'}; licence_renames {(2832, 2626): ('array', 'element'), (4160, 2626): ('array', 'element'), (4165, 2626): ('array', 'element'), (9505, 9503): ('Value', ''), (9508, 9503): ('Value', '')}
+  PASS  C2 stage_prerun.pb_licences(plan) == {2626: the licence file}  {2626: 'tools/bench/plan_ring_p4_s06v18_licence.json'}
+  PASS  C3 rename_by_uid node/term_uids unchanged  [{'node': 2626, 'term_uids': [2832, 4160, 4165], 'require': 'every listed uid is an input of #2626 in the real end read with the same uid, unwired unless this session wires it, else the licence is void', 'why': "the still-open #2626 inputs of the adopted s05 file (tools/bench/diag_c147_a1_1_t2626.log:8-10: 2832 / 4160 / 4165 input 'array', wire 0; :11 4168 wired by w25283); this session's rows p4_w_tp_row (v18 op 118, dst 2626 term_uid 4160), p4_w_rp_row (op 119, term_uid 4165) and p4_w_bd_row (op 132, term_uid 2832) wire them by term uid while the plan's open row (2626, 'array') stays open; a rename shows up as data in the scratch's end read, a changed uid voids the licence => RETURN"}]
+  PASS  C1 licence_renames(file) == exactly the 5 measured renames (5 keys)  {(2832, 2626): ('array', 'element'), (4160, 2626): ('array', 'element'), (4165, 2626): ('array', 'element'), (9505, 9503): ('Value', ''), (9508, 9503): ('Value', '')}
+  PASS  R1 every sim end row binds to one real end row  (6030, 6030, 6030)
+  PASS  D new 16 == sim 16; lost 8 == sim 8; reuse_noted [23807]; reuse_bad []  
+  PASS  TD lost [] == gone []; unwired []; renames [((2832, 2626), 'array', 'element'), ((4160, 2626), 'array', 'element'), ((4165, 2626), 'array', 'element'), ((9505, 9503), 'Value', ''), ((9508, 9503), 'Value', '')]; unlicensed []  
+  PASS  PB cdiff == pred 18 rows and the plan's 13 open pairs; unlicensed == []  {'extra': [], 'missing': [], 'restored': [(2832, 2626), (4160, 2626), (4165, 2626), (9505, 9503), (9508, 9503)], 'unlicensed': []}
+  PASS  P1 pins after == before  
+RESULT {"status":"PASS","gates":{"pass":9,"fail":0},"first_fail":null,"artefacts":[],"schema":"result-line/1","card":"147-c3-2","labview":"read"}
+BGRUN END rc=0 after 4s

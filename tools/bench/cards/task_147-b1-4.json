@@ -1,0 +1,40 @@
+{
+ "schema": "task/1", "id": "147-b1-4", "kind": "build",
+ "goal": "Finish T6 of 147-b1-2: selftest_stagekit.py and selftest_td_key_c141_3.py on pre-edit and new stagekit with COM blocked, compare per-check",
+ "why": "147-b1-3 found selftest_stagekit.py J1/case_j failing on the new stagekit through a stray COM call (stagekit.py:794); the pre-edit run was not measured. Retry with a driver that blocks COM.",
+ "retry_of_card": "147-b1-3",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_147-b1-4.md", "md5": "62228bb371d6efae2f8f9cfd604daca5"},
+  {"path": "tools/bench/diag_c147_b1_3_facts.md", "md5": "f5f4b34b0a4504e45fe897febcfc77cc"},
+  {"path": "tools/bench/diag_c147_b1_3_runold.py", "md5": "e9fe026ead2f625deb07b2b01c94a89f"},
+  {"path": "tools/stagekit.py", "md5": "06b8d844284deacab535a9ee442d4964"},
+  {"path": "tools/bench/selftest_stagekit.py", "md5": "f90cdaaf77af12ea5533e07a51ac1a7b"},
+  {"path": "tools/bench/selftest_td_key_c141_3.py", "md5": "13aec440a797aa695ffb929e68c0ece7"},
+  {"path": "tools/bench/selftest_c147_b1_2.py", "md5": "24c56042965eb1d5d5140fc2c3455f17"}
+ ],
+ "pass": [
+  "selftest_stagekit.py on PRE-EDIT 9a3fceaf and NEW 06b8d844 with COM blocked: command, rc, counts, failing check ids, COM-leak counts",
+  "selftest_td_key_c141_3.py on PRE-EDIT: command, rc, counts (NEW 9/0 known)",
+  "Per-check results identical before/after, else the differing checks with file:line and RETURN",
+  "selftest_c147_b1_2.py re-run rc and 17/0; stagekit md5 06b8d844 unchanged",
+  "stagexec 1bab9cf9, gscript 1a80236e, elrule a5ee7d5c, s06 files, memory_model 88eeb037 byte-identical; no LabVIEW process before/after"
+ ],
+ "outputs": [
+  "tools/bench/diag_c147_b1_4_facts.md"
+ ],
+ "flags": {"labview": "read", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/diag_c147_b1_4*", "tools/bench/selftest_stagekit*.log", "tools/bench/selftest_td_key*.log"],
+  "status_edit": false, "git_commit": false, "peers": []},
+ "budget": {"failures": 2, "minutes": 25},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/bench/selftest_td_key_c141_3.py"}
+ ],
+ "rules": [
+  "No LabVIEW process may start; check tasklist before and after",
+  "No edit of any tool, self-test, plan, licence, recipe or memory_model.json",
+  "Every COM-reaching gscript function is stubbed to raise and count",
+  "Facts and an OPEN line only"
+ ]
+}

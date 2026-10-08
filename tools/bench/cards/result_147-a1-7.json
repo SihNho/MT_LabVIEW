@@ -1,0 +1,21 @@
+{"schema":"result/1","id":"147-a1-7","status":"PASS","gates":{"pass":6,"fail":0},
+"first_fail":null,
+"blocked_by":null,
+"artefacts":[{"path":"tools/recipes/stage_d1_ring_p4_s06v18.py","md5":"9150f15bb13c622031eee7086225037c"},{"path":"tools/recipes/stage_d1_ring_p4_s06v18_scratch.py","md5":"31009bfce0c0487b0600359c3dac2bd0"},{"path":"tools/bench/diag_c147_a2_1_facts.md","md5":"81f7ae61257b967a7ba8cb9c6b5a59a6"},{"path":"tools/bench/diag_c147_a2_1_check.py","md5":"cfbf0872b6f03adf788ea99e763987b2"},{"path":"tools/bench/diag_c147_a2_1_prerun3.log","md5":"e1245a580c61eb597467a4e75ea8adbe"}],
+"facts":[
+"X6: SINK derived from plan row SG_ROW 'p4_rbA_re1' dst term 3173 -> base (owner,name), stage_d1_ring_p4_s06v18.py:45-51; prerun X6 uids [] names [] (diag_c147_a2_1_prerun3.log:109)",
+"X10: SGBackend(SX.LVBackend) keeps the executor's own read (:55-60); sg_read uses it, no read_terms, requires read after last op (:72-73); stagexec.py:2385-2390,2491-2493",
+"prerun build PASS 16/0 rc0 (diag_c147_a2_1_prerun3.log:118-120); X10 PASS peak 679.3 MB vs fail 680.0, R 8 = census_snapshot@38x2 + Executor 6 (:112-114)",
+"check_sink_gates len 1, sink [23166,'Pos within cal image'] (diag_c147_a2_1_check3.log:4-5); check.py RESULT 10/0 rc0 (:16-17) incl new T6/T7 stale/no read -> False",
+"diag_c147_a2_1_check.py edited to stub the new read source (be.last_terms; AT.read_terms stubbed to raise) + SGB/T6/T7; 7/0 -> 10/0",
+"dry build PASS rc0 (diag_c147_a2_1_dry3.log:92-94); dry scratch PASS rc0 (diag_c147_a2_1_scr_dry3.log:114-116); prerun scratch 16/0 rc0 (diag_c147_a2_1_scr_prerun3.log:140-142)",
+"--scratch-required build rc 3 as expected, CENSUS-UNPREDICTED rows 1..25 (diag_c147_a2_1_scrreq3.log)",
+"unchanged: stagexec 1bab9cf9, gscript 1a80236e, stage_prerun 61d6f590, plan cfbd9823, _in db72d8af, _pred c4a6a35a, _licence 7dce79aa, memory_model 88eeb037; tasklist labview 0",
+"Jev ladder: no failed prediction in this card | NEXT-ACTION none | - | PASS"
+],
+"open":[
+"X10 margin is 0.7 MB (679.3 of 680.0) with the recipe's 2 census_snapshot reads; same peak as the plan's cut (docstring :8) - acceptable for launch?",
+"--el-advisory-selftest of the scratch recipe still not run (outside this card's pass list)"
+],
+"cost":{"usd":null,"minutes":7,"labview_runs":0},
+"note":"Offline only. Scratch recipe bytes unchanged (it asserts sink == R.SINK, which is now derived)."}

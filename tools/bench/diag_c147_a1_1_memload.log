@@ -1,0 +1,15 @@
+BGRUN START 2026-10-08 01:41:16 limit 2.0 min: py -u tools/bench/diag_c147_a1_1_memload.py
+BGRUN PID 23036
+GATE PASS | M exactly one 'MEM after load' line in the graph log | [(24, '  FACT  MEM after load: 606.7 MB private; handles 45655')]
+GATE PASS | K md5 3f9ac26b not yet a load_by_vi key | ['4dfa44aac8fb32f706b3eb792ee7d3cc', '9d7bf28738b7c154280e5e7c2c9d4961', '6cc6922192b3e330f163561bb95a8115', '49cf7f770fc331e06607687af640ad5e', '395118775a52bc90073f4449b99f899d', '95e408ff14a406edd3f16b32ba7324f1']
+GATE PASS | D flattened key-by-key diff: only the 3 leaves of load_by_vi/3f9ac26b added | {'added': ['/load_by_vi/3f9ac26b69179eb53c202d90407ce7ee/cite', '/load_by_vi/3f9ac26b69179eb53c202d90407ce7ee/value', '/load_by_vi/3f9ac26b69179eb53c202d90407ce7ee/vi'], 'removed': [], 'changed': []}
+GATE PASS | F re-dump of the OLD object reproduces the old file byte for byte (so only the new entry's lines differ) | 
+GATE PASS | T text diff = inserted lines + the previous last entry's closing brace gaining its comma (JSON syntax) | ['+  },', '+  "3f9ac26b69179eb53c202d90407ce7ee": {', '+   "value": 606.7,', '+   "vi": "claudeDev\\\\D1_ring_p4s05_20261008_002621.vi (P4 v18 session 5 ADOPTED file without a rerun, card 147-a1-1; PD354(c), PD353(d))",', '+   "cite": "tools/bench/diag_c147_a1_1_graph.log:24 (MEM after load: 606.7 MB private)"']
+DIFF +  },
+DIFF +  "3f9ac26b69179eb53c202d90407ce7ee": {
+DIFF +   "value": 606.7,
+DIFF +   "vi": "claudeDev\\D1_ring_p4s05_20261008_002621.vi (P4 v18 session 5 ADOPTED file without a rerun, card 147-a1-1; PD354(c), PD353(d))",
+DIFF +   "cite": "tools/bench/diag_c147_a1_1_graph.log:24 (MEM after load: 606.7 MB private)"
+FACT memory_model.json md5 559be4cf4989e39c84fa584a01a2e503 -> 88eeb03748e94d422e38be802be2118a; added key load_by_vi/3f9ac26b69179eb53c202d90407ce7ee value 606.7 (cite log :24)
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":5,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/bench/memory_model.json","md5":"88eeb03748e94d422e38be802be2118a"}],"card":"147-a1-1","labview":"build"}
+BGRUN END rc=0 after 1s

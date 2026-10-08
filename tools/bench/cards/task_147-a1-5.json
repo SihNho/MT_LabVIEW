@@ -1,0 +1,36 @@
+{
+ "schema": "task/1", "id": "147-a1-5", "kind": "build",
+ "goal": "cycle_runner.py: undisposed newest retrospective => retro-undisposed gates_due entry + RETRO-UNDISPOSED log (no refusal), self-test; plus ONE gate_fp entry for the 146-a2-1 guard_assign refusal",
+ "why": "Cycle 147 pass items 6-7 (violation decision 2026-10-08 01:16, docs/violation-decisions.md:1935-1947). Runner/gate tool edit, so offline and ALONE.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_147-a1-5.md", "md5": "a4c9a60ad3d9f1f70fea33252802d5e0"},
+  {"path": "tools/cycle_runner.py", "md5": "4c7c9be366d67640bf66042ed3e80b2a"},
+  {"path": "tools/hooks/guard_peer.py", "md5": "f30355d144a34cc0cffc47b6b3edfd05"},
+  {"path": "tools/hooks/guard_assign.py", "md5": "b9dc09bb935d23b5649e852886e1ebc7"},
+  {"path": "tools/gate_fp.py", "md5": "1f427fb5b1735584c19a699c2314b826"},
+  {"path": "tools/bench/selftest_cycle_runner_ff.py", "md5": "ecb0b58429e28fa7e851514eeb5418ff"},
+  {"path": "tools/bench/cards/handback_146_2.json", "md5": "b09847bd853389fd2966f12fc84cf925"}
+ ],
+ "pass": [
+  "cycle_runner.py: newest archived retrospective with a placeholder disposition => gates_due entry retro-undisposed (due true) + RETRO-UNDISPOSED log line; never refuses or raises; diff by file:line",
+  "self-test: placeholder file -> entry present; filled file -> absent; no file -> absent, no exception; selftest_cycle_runner_ff still 2/2; py_compile OK",
+  "ONE tools/gate_fp.py entry for the guard_assign.py:321-328 refusal of card 146-a2-1 (quoted refusal, why false positive); guard_assign.py and guard_peer.py byte-identical",
+  "no LabVIEW process; no real archived retrospective touched; runner not restarted"
+ ],
+ "outputs": ["tools/cycle_runner.py", "tools/bench/selftest_cycle_runner_retro.py", "tools/bench/diag_c147_a1_5_facts.md"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/cycle_runner.py", "tools/bench/selftest_cycle_runner_retro*", "tools/bench/diag_c147_a1_5*", "tools/bench/gate_fp_queue.jsonl"],
+  "status_edit": false, "git_commit": false, "peers": []},
+ "budget": {"failures": 2, "minutes": 60},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/cycle_runner.py"},
+  {"kind": "file", "name": "tools/gate_fp.py"},
+  {"kind": "file", "name": "tools/hooks/guard_peer.py"}
+ ],
+ "rules": [
+  "Offline only; runs ALONE; no LabVIEW, camera or motor",
+  "The new check never refuses, raises or stops the runner; edit no hook",
+  "RETURN with the file:line if the check cannot live in cycle_runner.py"
+ ]
+}

@@ -1916,3 +1916,32 @@ that exact command. The cycle-144 tooling card owes that check, offline: put the
 `material_marker.log:3332` and `:3333` through the stop-record classifier. Neither may be refused, and a command that
 launches the stopped recipe must still be refused. If either is still refused, fix it in the same card and add a self-test
 case. A later refusal of a read-only `git`/hash/diff segment that names a stopped recipe is `device-failed` again.
+
+## repeated-failure-class — 2026-10-08 01:16 (cycle 147 judgement, after archive/peer/2026-10-08-retrospective-cycle146.md:546)
+
+`VIOLATION: repeated-failure-class | loss_min=19 | loss_usd=10.79 | evidence=tools/bench/cards/result_146-a1-4.json:3`:
+ACCEPTED. The Error List predictor (`tools/elrule.py`) blocked adoption of a structurally passing P4 session four times running
+(s02 cycle 143, s03 cycle 144 per-class, s04 cycle 145, s05 cycle 146), and each time the answer was one more rule patch.
+PD353(c) made it worse: a per-class exact match that needed a requiredness nobody had measured (base SubVI #5058).
+
+DECISION: device — the Error List stops being an ADOPTION GATE (`docs/d1/ring-p4b.md` PD354). A scratch whose structural gates
+all PASS (real == sim at every op, D new/lost, PB, prim, term identity, peak) is adopted; its full final EL read becomes the
+expected file; the difference against the elrule prediction is RECORDED per class in the result card with a one-line
+explanation. Only a class that is in neither the start read nor the prediction, or a total off by more than 3, is a RETURN.
+elrule is not patched again this cycle. Built into the s06 scratch recipe's EL step in cycle 147 (the EL check prints
+`EL-ADVISORY` and does not fail the run under those bounds). Acceptance: the s06 scratch is adopted or returned by that rule
+alone. A further adoption held back by an EL difference inside those bounds is `device-failed`.
+
+## device-failed — 2026-10-08 01:16 (cycle 147 judgement, after archive/peer/2026-10-08-retrospective-cycle146.md:547)
+
+`VIOLATION: device-failed | loss_min=0 | loss_usd=? | evidence=tools/cycle_runner.py:633`: ACCEPTED. The undisposed-review
+check (`tools/hooks/guard_peer.py:1181-1195`, decision of 2026-09-16 15:05) is a PreToolUse hook; since the purpose flow the
+runner launches retrospectives as its own child process (`tools/cycle_runner.py:633-637`), so the check never runs and the
+cycle-143 retrospective stayed "(Claude fills in)" while cycle 146's was launched.
+
+DECISION: device — the runner checks it itself. Before launching a retrospective, `cycle_runner.py` runs the same undisposed
+test on the newest archived retrospective; if its `## What was done with it` is still the placeholder it does NOT refuse
+(a refusal there would only stall an unattended runner) but writes a `retro-undisposed` entry into the next cycle card's
+`gates_due` (due: true) and a `RETRO-UNDISPOSED` log line, so the next judgement session disposes it first. Built offline in
+cycle 147 (purpose pass item), with a self-test: a placeholder file → entry present; a filled file → absent. Acceptance: the
+cycle-148 card. The cycle-146 and cycle-143 retrospectives were disposed by hand on 2026-10-08 01:16 by this session.

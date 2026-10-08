@@ -1,0 +1,51 @@
+{
+ "schema": "task/1", "id": "147-a1-4", "kind": "build",
+ "goal": "ONE s06 scratch (v18 ops 115..135) on a byte copy of adopted s05 3f9ac26b; on structural PASS adopt D1_ring_p4s06_<stamp>.vi + final EL + fresh load + graph read + load_by_vi entry",
+ "why": "Cycle 147 pass item 5 (PD329(a), PD352, PD354(a)). s06 re-made on the real s05 graph by 147-a1-3: main X10 679.3, scratch 674.2, X11 licensed. Same shape as the proven s04/s05 scratches.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_147-a1-4.md", "md5": "880380cc5743c475a3256fd2eb175f66"},
+  {"path": "tools/bench/cards/brief_146-a1-4.md", "md5": "387346df3f95f8367974436bb104abba"},
+  {"path": "tools/bench/diag_c147_a1_3_facts.md", "md5": "b0f69147edabc2cdf2a8496104263706"},
+  {"path": "tools/bench/diag_c147_a1_1_facts.md", "md5": "3b712f9617502764edd547674a283142"},
+  {"path": "tools/bench/plan_ring_p4_s06v18.json", "md5": "cfbd9823d3b47be39de94f2125ad6b66"},
+  {"path": "tools/bench/plan_ring_p4_s06v18_pred.json", "md5": "c4a6a35aff6f71d508ea2c43c24ec510"},
+  {"path": "tools/bench/plan_ring_p4_s06v18_in.json", "md5": "db72d8af5b1f6da643e4c84b1260a61a"},
+  {"path": "tools/bench/plan_ring_p4_s06v18_licence.json", "md5": "7dce79aaa168e30e7b4af11968e18e19"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s06v18.py", "md5": "41ad9d3584a0999d741c4a3a7df6a4d1"},
+  {"path": "tools/recipes/stage_d1_ring_p4_s06v18_scratch.py", "md5": "8554bdd67d1e98e6be91b491f55a3859"},
+  {"path": "tools/bench/memory_model.json", "md5": "88eeb03748e94d422e38be802be2118a"},
+  {"path": "tools/bench/graph_ring_p4s05_20261008_013759.json", "md5": "cbeeadf5beaa5f312b0aff8f2df383ce"},
+  {"path": "tools/bench/errorlist_expected_D1_ring_p4s05_20261008_002621.json", "md5": "6f2ca28a3f5a0dc48101eadb0d97dfb6"},
+  {"path": "tools/bench/diag_c147_a1_1_adopt.py", "md5": "db16b3b6925269945b632fbf1246e43c"},
+  {"path": "tools/bench/diag_c147_a1_1_mkgraph.py", "md5": "4c494fe3519430953cae024d1a4b2f83"},
+  {"path": "tools/bench/diag_c147_a1_1_graph.py", "md5": "5ccd0da90a0b3b5d7c5b12a51cf443ce"}
+ ],
+ "pass": [
+  "ONE scratch: every op real == sim, prim + D/TD gates PASS, #2626 licence used as licensed, peak <= 680 (MEM_STOP), MEMSTOP 695 not hit; metered start and peak MB reported",
+  "Error List ADVISORY: EL-ADVISORY total + per-class vs pred 55 and the s05 read; fails only on an unseen class or |total diff| > 3; measured census written into the pred",
+  "structural PASS => adopted D1_ring_p4s06_<stamp>.vi + md5 by import, final EL expected file, per-class EL diff explained, fresh-instance load MB, graph_ring_p4s06_<stamp>.json + md5",
+  "memory_model.json: ONLY one load_by_vi entry for the adopted s06 md5 (key-by-key diff); start 612.6 and X10 peak compared with the metered values, no coefficient changed",
+  "3f9ac26b, 95e408ff, 282301ca, 39511877 unchanged; handles flat; LabVIEW closed and verified gone"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p4s06_<stamp>.vi",
+  "tools/bench/graph_ring_p4s06_<stamp>.json",
+  "tools/bench/errorlist_expected_D1_ring_p4s06_<stamp>.json",
+  "tools/bench/diag_c147_a1_4_facts.md"
+ ],
+ "flags": {"labview": "build", "gui": true, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/diag_c147_a1_4*", "tools/bench/launch_*c147*", "tools/bench/scratch_*c147*", "tools/bench/plan_ring_p4_s06v18_pred.json", "tools/bench/graph_ring_p4s06_*", "tools/bench/errorlist_*p4s06*", "tools/bench/adopted_scratch.jsonl", "tools/bench/memory_model.json", "tools/bench/gate_fp_queue.jsonl", "tools/bench/sim/ring_p4_s06v18/**", "tools/bench/prerun_records.jsonl", "tools/bench/jev_*", "archive/peer/**"],
+  "status_edit": false, "git_commit": false, "peers": ["hypothesis"]},
+ "budget": {"failures": 2, "minutes": 120},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "D1_ring_p4s05_20261008_002621.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p4_s06v18_scratch.py"}
+ ],
+ "rules": [
+  "Bed, s03, s04 and adopted s05 never opened for editing; the scratch edits a byte copy only",
+  "ONE scratch; return at the first result that differs from the prediction; no diagnose-and-retry",
+  "No stage-tool edits (tool fault = RETURN + gate-fp); touch no other plan; no motor or camera"
+ ]
+}
