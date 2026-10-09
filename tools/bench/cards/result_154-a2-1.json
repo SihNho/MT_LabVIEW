@@ -1,0 +1,23 @@
+{"schema": "result/1", "id": "154-a2-1", "status": "FAIL",
+ "gates": {"pass": 18, "fail": 1},
+ "first_fail": "TypeError at diag_c154_a2_1_donor.py:82 (node_labels(strict=False) rows are lists) - read-back after save; json/handles-after/cold read not run",
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/DonorQueue_v0.vi", "md5": "81dba822efec5226123b3b88ee4383bc"},
+  {"path": "tools/bench/diag_c154_a2_1_donor.py", "md5": "19062c735ad0c65dfb484f21d31df7f4"},
+  {"path": "tools/bench/diag_c154_a2_1_donor.log", "md5": "ccdc2d415f0ca1279b57c92b29381304"},
+  {"path": "tools/bench/diag_c154_a2_1_facts.md", "md5": "1d6230e5766e3d503c451a3e05132e09"}],
+ "facts": [
+  "DonorQueue_v0.vi built by script and saved by COM, ExecState 1, md5 81dba822 (diag_c154_a2_1_donor.log: PASS ES / PASS SV)",
+  "uids: ArrayConstant #52 (elem #73, src t51 'x,y,z array', DBL[20] 0.0 copy of DonorRingConst #101), Obtain #108, Enqueue #44, Dequeue #45, Release #46 (log C1..Q)",
+  "Obtain typed via temp RAS #85 (DonorRAS1D #175) then deleted; const->'element data type' t117 and ->Enqueue 'element' t89 on w82, not broken (log W1/W2)",
+  "E/D/R are wired from Obtain 'queue out' (queue_node always wires src); Dequeue outputs + error terminals unwired",
+  "FAIL: diag_c154_a2_1_donor.py:82 g.node_labels(DON,0,strict=False) returns list rows, x['uid'] TypeError -> donor_queue_v0.json NOT written",
+  "Not done after the fail: terminal read-back, handles AFTER (BEFORE 34470), cold re-read in a fresh LabVIEW",
+  "ref_counts opened 9 closed 9 live 0; LabVIEW processes 0 at end; warm scratch deleted; 27 pins unchanged incl s09 eb1d0f31 (log 'pins changed []')",
+  "Jev ladder: no JEV-LADDER row for diag_c154_a2_1_donor.log in tools/bench/jev_gate.log | NEXT-ACTION none | returned per chat-P2 | -"],
+ "open": [
+  "Re-run only the read-back (json + handles + cold read) on the saved DonorQueue_v0.vi md5 81dba822, or rebuild? (script gate S refuses an existing donor)",
+  "DBL const is DBL[20] 0.0 (DonorRingConst #101 copy), not the empty DBL array brief line 13 asked; acceptable for typing?"],
+ "cost": {"usd": null, "minutes": 8, "labview_runs": 1},
+ "note": "Returned at the first unexpected result (card chat-P2); no retry inside the card."}

@@ -1,0 +1,78 @@
+{
+ "schema": "task/1",
+ "id": "156-a1-2",
+ "kind": "build",
+ "goal": "PD379(b) narrow fix in stagexec/stagesim: a case in-tunnel pass wire to an out-tunnel face compiles+simulates; new self-test; other plans' ops unchanged.",
+ "why": "Card 156-a1-1 measured K3/K4 (t3/t4 SR groups) refused at stagesim.py:1536; PD379(b) authorises the narrow tool fix.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_156-a1-2.md", "md5": "60f69042cc4ed997a668873b2888a8d3"},
+  {"path": "tools/bench/diag_c156_a1_1_facts.md", "md5": "b3721f78ff11328c6a0131cf8439a6c0"},
+  {"path": "tools/bench/cards/brief_155-a1-1.md", "md5": "9b1bdbc6b58a3a823ccea56e7c08ec97"},
+  {"path": "tools/bench/diag_c155_a1_1_facts.md", "md5": "635f0031f46f152120d874708be27084"},
+  {"path": "tools/bench/plan_ring_p5s02r_all.json", "md5": "15da9551b4e1ab8620f4fa815c224da3"},
+  {"path": "tools/bench/plan_ring_p5s02a.json", "md5": "4284c22a540f9e3f39c7092affe516af"},
+  {"path": "tools/bench/plan_ring_p5s01a.json", "md5": "ed62e8d66aa788c21525cee1ed38646d"},
+  {"path": "tools/bench/plan_ring_p5s01b.json", "md5": "75a77a000e111591b93565def74869cf"},
+  {"path": "tools/bench/plan_ring_p5s01_in.json", "md5": "fabc4b9ca47ac2ea8f713b88c8d25cb5"},
+  {"path": "tools/bench/graph_ring_p5s01_20261009_125622.json", "md5": "6716c49948f097b8ac0e1780930bfab1"},
+  {"path": "tools/bench/selftest_c155_basecase_frame.py", "md5": "9ecb15b89e3553181c85bc8161e7d3e3"},
+  {"path": "docs/d1/ring-p5.md", "md5": "742e54c46c1871fd5ff100ce8c07b475"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+  {"path": "tools/stagexec.py", "md5": "53e17623961d2fd2be711d2754891bd4"},
+  {"path": "tools/stagesim.py", "md5": "eb99c6bab81633f9bdd7c10dce6bfc0a"},
+  {"path": "tools/stagekit.py", "md5": "aec03c6c4b319e1056b6a856c5a6bd2c"},
+  {"path": "tools/stage_prerun.py", "md5": "9decb20f6d67793abad967347e2a37ab"},
+  {"path": "tools/vigraph.py", "md5": "a7eb58c7e35a134f93df168ea4cdea80"},
+  {"path": "tools/addrcheck.py", "md5": "207beb0d09102c78b1e06d1f076eec7e"},
+  {"path": "tools/gscript.py", "md5": "1a80236ed35c1876c67f964c72fe820a"}
+ ],
+ "pass": [
+  "Refusal reproduced offline on K3: the two resolved terminals (uid, class, frame_diagram) quoted; frame placement of both inner faces cited from code or a recorded graph",
+  "stagexec+stagesim only: K3 and K4 groups of plan_ring_p5s02r_all.json compile and simulate with 0 PROVISIONAL; sim shows #6384/#2048 sinks fed by the R.inner net",
+  "New tools/bench/selftest_c156_passwire.py PASS (brief cases a-d on recorded data); existing stagexec/stagesim self-tests PASS with last counts",
+  "Op lists before == after for p5s01a, p5s01b, p5s01_in, p5s02a (and existing 155 step plans); before-lists stored first",
+  "Pins unchanged (stagekit, stage_prerun, addrcheck, gscript, vigraph); new stagexec/stagesim md5 reported; no LabVIEW process; no hook edit",
+  "tools/bench/diag_c156_a1_2_facts.md written (<= 40 lines, facts only, OPEN: line)"
+ ],
+ "outputs": [
+  "tools/stagexec.py",
+  "tools/stagesim.py",
+  "tools/bench/selftest_c156_passwire.py",
+  "tools/bench/diag_c156_a1_2_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/bench/selftest_c156_*",
+   "tools/bench/diag_c156_a1_2*",
+   "tools/bench/prep_c156_a1_2*",
+   "tools/bench/sim/ring_p5s02pw/**",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/jev_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 75
+ },
+ "rules": [
+  "Offline; no LabVIEW; no tools/hooks edit; no edit to other tools or any stored plan/recipe/P5 file",
+  "Rule 1a: only how stage tools ADDRESS a wire changes; no VI content or computation",
+  "script-writing.md: call shared helpers, do not copy; docstring on new functions",
+  "Return if the change alters any other plan's op list or a measurement disagrees"
+ ],
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/graph_ring_p5s01_20261009_125622.json"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p5s02r_all.json"}
+ ]
+}

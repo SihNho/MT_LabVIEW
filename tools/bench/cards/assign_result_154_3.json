@@ -1,0 +1,26 @@
+{
+ "schema": "assign-result/1",
+ "cycle": 154,
+ "round": 3,
+ "status": "HANDBACK",
+ "cards": ["154-a3-1", "154-a3-2", "154-a3-2b", "154-a3-3", "154-a3-3b", "154-a4-1"],
+ "pass_evidence": [
+  {"item": 0, "met": true, "evidence": ["tools/bench/cards/result_154-a2-2.json"]},
+  {"item": 1, "met": true, "evidence": ["tools/bench/p5_route_census.md", "tools/bench/cards/result_154-a3-1.json"]},
+  {"item": 2, "met": true, "evidence": ["tools/stage_prerun.py:2809-2813", "tools/bench/selftest_c154_a3_1_x17.py", "tools/bench/cards/result_154-a3-1.json"]},
+  {"item": 3, "met": true, "evidence": ["tools/bench/plan_ring_p5s01a.json", "tools/bench/diag_c154_a3_2b_facts.md:7-14", "tools/bench/cards/result_154-a3-2b.json"]},
+  {"item": 4, "met": true, "evidence": ["tools/bench/diag_c154_a3_2b_facts.md:21-36", "archive/peer/2026-10-09-priorart-priorart-c154-a3-2b-p5s01a.md:300"]},
+  {"item": 5, "met": true, "evidence": ["tools/bench/diag_c154_a3_3b_facts.md:16-22", "tools/bench/diag_c154_p5s01a_scratch.log:271-277"]},
+  {"item": 6, "met": true, "evidence": ["tools/bench/diag_c154_a3_3b_facts.md:25-30", "tools/bench/errorlist_expected_D1_ring_p5s01a_20261009_101219.json"]},
+  {"item": 7, "met": true, "evidence": ["tools/bench/diag_c154_a3_3b_facts.md:23-24", "tools/bench/graph_ring_p5s01a_20261009_103621.json"]},
+  {"item": 8, "met": true, "evidence": ["tools/bench/diag_c154_a3_3b_facts.md:42", "tools/bench/memory_model.json"]},
+  {"item": 12, "met": true, "evidence": ["tools/bench/cards/result_154-a1-2.json"]},
+  {"item": 13, "met": true, "evidence": ["tools/bench/diag_c154_a3_3b_facts.md:43", "tools/bench/prep_c154_a4_1_inv_after.log:5"]},
+  {"item": 14, "met": true, "evidence": ["tools/bench/diag_c154_a3_3b_facts.md:43", "tools/bench/prep_c154_a4_1_inv_after.log:5"]}
+ ],
+ "handback": {
+  "reason": "Card 154-a4-1 (P5-1b plan) FAILED on a tool gap: actions 21/32 name the False frame of BASE case #30726, but `frame` addressing works only for a plan-made case (stagexec.py:613-615; stagesim.py:797-800). Needs a stage-tool edit or re-addressing.",
+  "question": null
+ },
+ "note": "Done: items 0-8, 12-14 (P5-1a built, scratch PASS 23/0, adopted claudeDev D1_ring_p5s01a_20261009_101219.vi 2482fe7b, EL 47 vs pred 48, graph bd67a511, load_by_vi added). Not done: item 9 (P5-2 plan needs the real P5-1b graph, which needs P5-1b built: plan blocked by the frame gap; a P5-1b scratch is a second LabVIEW scratch beyond the purpose's ONE), 10 (fp-70), 11 (fp-73; it changes the stage_prerun md5 that every open P5 card pins, so ordering is for judgement). For judgement: (1) choose how P5-1b rows 21/32 are addressed (base-case frame names in the stage tools, or term_uid routes, or re-cut P5-1 so the case and its False pass-through land in one plan); the 154-a4-1 maker prep_c154_a4_1_mk.py already maps symbols to real uids (log:7-15) and is reusable; (2) docs/d1/ring-p5.md lines 27 and 60 still put Obtain on #4866, PD376(a) moved it to 686; (3) elrule.py:153-158 over-counts optional unwired primitive sinks and has no tunnel class (archive/peer/2026-10-09-c154-a3-3b-el47.md:55-59): EL 47 vs pred 48 is explained, non-gating; (4) gate-fp fp-74 and fp-75 queued (fp-75 drained by a one-token format fix of docs/violation-decisions.md:1992, precedent :1469/:1504); (5) open cards 149-a3-4 / 150-a2-6 pin the old stage_prerun md5."
+}

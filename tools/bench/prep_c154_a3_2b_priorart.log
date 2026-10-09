@@ -1,0 +1,36 @@
+BGRUN START 2026-10-09 09:52:54 limit 12.0 min: py -u tools/prior_art_review.py --plan-file tools/bench/prep_c154_a3_2b_priorart_plan.md --slug priorart-c154-a3-2b-p5s01a --trigger new-op --recipe tools/recipes/stage_d1_ring_p5s01a.py
+BGRUN PID 25608
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-c154-a3-2b-p5s01a.txt (58455 chars)
+   review card tools\bench\cards\review_priorart-priorart-c154-a3-2b-p5s01a.json
+OUTCOME: ANSWERED (70s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-10-09-priorart-priorart-c154-a3-2b-p5s01a.md
+COST: $1.3432  in 16 / out 5967 / cache-create 130546 / cache-read 897223  (66s, 11 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-priorart-c154-a3-2b-p5s01a verdict=novel -> tools\bench\cards\verdict_priorart-priorart-c154-a3-2b-p5s01a.json
+--- ANSWER ---
+**Verdict: novel.** None of the things this review checks for apply. No 1.2 → 1.7 results queue has been built, tried and abandoned, or measured anywhere in the project, and the plan does not break any rule in `docs/user-rules.md`. I found three small notes, none of them blocking.
+
+**Part A: has the direction been settled, refuted or contradicted?**
+- **A1, settled already.** No. The direction is the current plan's own decision: `docs/d1/ring-p5.md:20-70` (PD374), `:72-97` (PD375) and `:99-127` (PD376, form S). It rests on an earlier decision, `docs/d1-loop12-17-split-plan.md:2257` (PD238(d)): "Results 1.2 → 1.7 stay a lossless FIFO". That is where the plan's authority comes from, not a decision it repeats.
+- **A2, refuted already.** No. The only queue design that was dropped is the pool's `Q_free`/`Q_work`, which sat at the 1.1 → 1.2 acquisition boundary (`docs/user-rules.md` U13; `docs/d1-loop12-17-split-plan.md:2257`). `Q_res` in `docs/d1-build-plan.md:575-604` was planned but never built. The one old queue run failure, `archive/peer/2026-09-14-opqueue-test-run-hang.md:18-53`, was a hang while running. P5-1a is structural only, and that record's advice ("prove both boundary sides of the refnum tunnel") applies to P5-2 and P6, not here.
+- **A3, contradicted.** No real conflict. `docs/d1-loop12-17-split-plan.md:2137` says t7 "rides through 1.2 with the tracked row: Q_work → Q_res", while `docs/d1/ring-p5.md:34-41` replaces that with a record counter. PD374(b) states the amendment explicitly, and P5-1a does not touch t7 anyway. Note 1 covers how `ring-p5.md` reads after the PD376 amendments.
+- **A4, unread evidence.** None. The cut uses the measured prefix table: `tools/bench/diag_c154_a3_2_facts.md:25` and `tools/bench/prep_c154_a3_2b_mk.log:7-8,150-151` (ops 1..14 = actions 1..20, MAIN 677.3 ≤ 680).
+
+**Part B: does the artefact already exist?**
+- **B1, already built.** No `claudeDev` VI or recipe contains a 1.2 → 1.7 queue. The donor `DonorQueue_v0` (`docs/d1/ring-p5.md:104-105`) is an input this plan uses, not an earlier copy of the same work.
+- **B2, already failed.** The full P5-1 was refused by the memory check X10 (701.0 > 680, `diag_c154_a3_2_facts.md:24`). P5-1a fixes that with the cut PD374(e) allows (`ring-p5.md:63-64`).
+- **B3, helper exists.** The plan already uses the existing helpers. Form S rows S1-S8 map to proven routes in `tools/bench/p5_route_census.md:64-71`: `create_primitive_nested`, the shift-register-to-case-tunnel route R1/R2 and `case_frame_wire`. The four queue donors are registered in X17 at `stage_prerun.py:2809-2813` (`p5_route_census.md:96-97`).
+- **B4, already measured.** No earlier run measured this graph.
+
+**Part C: the user's rules.** No conflict. The queue carries the lossless 1.2 → 1.7 data stream, which rule U4 allows. The `records final` counter goes by local variable, with no queue and no edge detection, as U4 and CLAUDE.md rule 1c'' require. Loop 1.1 and the ring are not touched (U6, U13). No serial call is added (U3), and no per-bead maths changes (U1).
+
+**Notes, not blocking:**
+1. `docs/d1/ring-p5.md` still says "Obtain on `#4866`" at `:27` (PD374(a)) and in the P5-1 row of the step table at `:60`. PD376(a) at `:109` moves Obtain to frame 686 and drops the Release route tool. The table should be updated so nobody plans from the old row.
+2. The recipe's result record still carries text copied from the P4 recipe. `tools/recipes/stage_d1_ring_p5s01a.py:191` says `"in-between file of P4 (v18 session 8)"` and `:173` says "session 8's in-between file". The saved record will mislabel its own step.
+3. Because the cut stops at op 14, the count shift register and Enqueue 'queue' are left without their False-frame pass-through and refnum wiring. That makes the file broken by design, as an in-between file is allowed to be (`diag_c154_a3_2_facts.md:25-26`). The Error List prediction should expect those open tunnels.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-priorart-c154-a3-2b-p5s01a","verdict":"novel","alternative":"Only near-miss: PD232(f)(2) t7-rides-Q_res (d1-loop12-17-split-plan.md:2137), explicitly amended by PD374(b) and not touched by P5-1a.","discriminating_test":"Scratch run on s09 byte copy: E1 graph==sim for ops 1..14 and X10 peak <=680; Error List shows the unwired False-frame count/refnum tunnels predicted as open.","violations":[],"sources":["docs/d1/ring-p5.md:20-127","docs/d1-loop12-17-split-plan.md:2257","tools/bench/p5_route_census.md:64-97","tools/bench/diag_c154_a3_2_facts.md:24-26","tools/bench/prep_c154_a3_2b_mk.log:7-8","archive/peer/2026-09-14-opqueue-test-run-hang.md:18-53"],"note":"Non-blocking: ring-p5.md:27 and :60 still put Obtain on #4866 (PD376(a) moved it to 686); recipe :173/:191 result label copied from P4 ('v18 session 8')."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-c154-a3-2b-p5s01a.md
+   STOP RECORD: none - 2026-10-09-priorart-priorart-c154-a3-2b-p5s01a.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_ring_p5s01a.py sha d4c0528daf2e -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 73s

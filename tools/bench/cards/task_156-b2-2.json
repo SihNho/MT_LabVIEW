@@ -1,0 +1,52 @@
+{
+ "schema": "task/1",
+ "id": "156-b2-2",
+ "kind": "build",
+ "goal": "Offline: extract the per-card inv helper (23 copies) into ONE module tools/invcheck.py; self-test reproduces the recorded 156-a2-1 inv logs.",
+ "why": "PD380(e), docs/script-writing.md rules 1/4/7: the inv script was copied per card; one shared function plus a thin caller ends the copying.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_156-b2-2.md", "md5": "009ff551961153fd8b37d9e20574a8c2"},
+  {"path": "docs/d1/ring-p5.md", "md5": "aa238a09e46737cd2fcd90b869cd31bf"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+  {"path": "tools/bench/diag_c156_a2_1_inv.py", "md5": "ab4ff13cd8e25e7df02e0b3d4ccccd37"},
+  {"path": "tools/bench/diag_c156_a2_1_inv_after.log", "md5": "028ff54106ec5eb298873af28104a1ae"},
+  {"path": "tools/bench/diag_c156_a2_1_inv_before.log", "md5": "7a1c9b4762b2f4a00423dd0e6c4dc8b5"}
+ ],
+ "pass": [
+  "tools/invcheck.py exists, scope header labview none, outside tools/hooks and not in stagekit; every public function has a docstring naming its self-test",
+  "thin caller diag_c156_b2_2_inv_c156a21.py <= 40 lines reproduces the 156-a2-1 config by calling the module; old inv files untouched",
+  "selftest_c156_b2_2_invcheck.py (bgrun) reproduces the recorded after/before logs gate by gate; drifted pins listed as DRIFT; one FAIL case reproduced",
+  "pins unchanged: stagexec 25a1494c, stagesim eb99c6ba, stagekit aec03c6c, addrcheck 207beb0d, gscript 1a80236e, vigraph a7eb58c7, stage_prerun 9decb20f; tools/hooks untouched"
+ ],
+ "outputs": [
+  "tools/invcheck.py",
+  "tools/bench/diag_c156_b2_2_inv_c156a21.py",
+  "tools/bench/selftest_c156_b2_2_invcheck.py",
+  "tools/bench/selftest_c156_b2_2_invcheck.log"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/invcheck.py",
+   "tools/bench/diag_c156_b2_2*",
+   "tools/bench/selftest_c156_b2_2*",
+   "tools/bench/jev_*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 50
+ },
+ "rules": [
+  "Offline; no LabVIEW; no tools/hooks or stage-tool edit",
+  "Do not edit any existing *_inv.py; they are the record",
+  "Shared module: call, do not copy (docs/script-writing.md)"
+ ],
+ "advances": ["M3", "R1"]
+}

@@ -678,14 +678,37 @@ def parse_addr(a):
 CASE_FACE_CLS = ("SelectorTunnel", "Tunnel")        # card 124-2: a case data tunnel / a case selector (one inner per frame)
 
 
+def base_case_frames(owners, case):
+    """card 155-a1-1 (PD378(a)): the frame diagram uids of CaseStructure #case, read from an owner map ({uid: [owner class,
+    owner uid]}) in the map's order, which is LabVIEW's frame index (Frames[k]) - MEASURED on two cases, both orders equal:
+    #30726 [30914, 30922] (graph bd67a511 vs the Frames[k] binding at diag_c154_p5s01a_scratch.log:144) and #22694
+    [27219, 27232] (graph_ring_p3a_20261001_190155.json vs stage_d1_ring_p3a.log:146,231,256). Returns [] when #case owns
+    no frame. Self-test: tools/bench/selftest_c155_basecase_frame.py."""
+    return [int(k) for k, v in (owners or {}).items()
+            if v and v[0] == "CaseStructure" and int(v[1] or 0) == int(case or 0)]
+
+
+def case_frame_names(st, case):
+    """card 155-a1-1 (PD378(a)): [[name, frame diagram uid], ...] of CaseStructure #case in frame-index order. A case THIS
+    plan created: st['case_frames'] (the plan's names). A BASE-graph case: base_case_frames, each named '#<diagram uid>' -
+    the form a Flat Sequence face already uses (_fsit_rows); a base case's frame NAMES are never inferred. [] when #case
+    has no frame. Self-test: tools/bench/selftest_c155_basecase_frame.py."""
+    fr = (st.get("case_frames") or {}).get(str(int(case or 0)))
+    if fr:
+        return [[nm, int(f)] for nm, f in fr]
+    return [["#{0}".format(f), f] for f in base_case_frames(st.get("owners"), case)]
+
+
 def case_frame_of(st, frame_diag):
     """card 124-2 (PD249(d)): (case uid, frame index, frame name) of `frame_diag` when it is a frame of a case THIS plan
     created (st['case_frames'], written by _create_case / _create_case_wired in the case's frame order), else None. The
-    frame index is the case's frame order (boolean case: False = 0, True = 1), the index gscript.case_frame_wire takes."""
+    frame index is the case's frame order (boolean case: False = 0, True = 1), the index gscript.case_frame_wire takes.
+    card 155-a1-1 (PD378(a)): a frame of a BASE-graph case -> (case, its index in base_case_frames, '#<diagram uid>')
+    via case_frame_names; a plan-made case is answered exactly as before. Self-test: selftest_c155_basecase_frame.py."""
     own = (st.get("owners") or {}).get(str(int(frame_diag or 0)))
     if not own or own[0] != "CaseStructure":
         return None
-    fr = (st.get("case_frames") or {}).get(str(int(own[1] or 0)))
+    fr = case_frame_names(st, own[1])
     for k, (nm, f) in enumerate(fr or []):
         if int(f) == int(frame_diag or 0):
             return int(own[1]), k, nm
@@ -795,6 +818,12 @@ def resolve_addr(st, a, want_source):
             raise SimError("address {0}: `frame` {1!r} on #{2}, which has no case-tunnel inner face".format(a, frame, uid))
         named = [(r, case_frame_of(st, r["frame_diagram"])) for r in rows]
         hit = [r for r, cf in named if cf is not None and cf[2] == frame]
+        bases = sorted(set(cf[0] for _r, cf in named if cf and str(cf[2]).startswith("#")))
+        if not hit and bases:
+            # card 155-a1-1 (PD378(a)): a BASE-graph case's faces are addressed by '#<frame diagram uid>' only
+            raise SimError("address {0}: #{1} is a tunnel of BASE case(s) {2}, which has no frame {3!r} (its frames {4}; a "
+                           "base case's frame is named '#<diagram uid>', never by name)".format(
+                               a, uid, bases, frame, [n for c in bases for n, _f in case_frame_names(st, c)]))
         if not hit:
             raise SimError("address {0}: #{1} has no inner face on a frame named {2!r} (frames {3}; only a case this plan "
                            "created carries frame names)".format(a, uid, frame, sorted(set(cf[2] for _r, cf in named if cf))))
@@ -1323,7 +1352,7 @@ def _case_tunnel(st, a, case, body, parent):
     (purged, card 124-1): modelled +0. ASSUMED, still UNMEASURED: an OUTPUT tunnel is created with 'Use Default If
     Unwired' OFF (LabVIEW's default), so each unwired frame breaks the VI until it is wired or the flag is set - recorded
     as `broken_unless_wired`, never hidden."""
-    frames = [int(k) for k, v in (st.get("owners") or {}).items() if v[0] == "CaseStructure" and int(v[1] or 0) == case]
+    frames = base_case_frames(st.get("owners"), case)
     if body not in frames:
         raise SimError("tunnel {0}: body #{1} is not a frame of CaseStructure #{2} (frames {3})".format(a.get("as"), body, case, frames))
     if a.get("indexing"):

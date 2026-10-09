@@ -1,0 +1,50 @@
+{
+ "schema": "task/1",
+ "id": "156-b2-1",
+ "kind": "build",
+ "goal": "Offline: close fp-73 citing diag_c155_a5_1_facts.md; make violations.py DEC_RE read an 'HH:Mx' header as 'HH:M9', self-tested.",
+ "why": "PD379(f)/(g), docs/d1/ring-p5.md:202-206. A header like '2026-10-09 12:2x' misses the HH:MM group, is read date-only and sorts before the retrospective that raised the slug (retrospective-cycle155 device-failed).",
+ "inputs": [
+  {"path": "docs/d1/ring-p5.md", "md5": "aa238a09e46737cd2fcd90b869cd31bf"},
+  {"path": "tools/bench/diag_c155_a5_1_facts.md", "md5": "a8b34101431216ef9c8cbb5c96dca746"},
+  {"path": "tools/violations.py", "md5": "0cae42f3100f12e972823f69c3d2e920"},
+  {"path": "tools/gate_fp.py", "md5": "1f427fb5b1735584c19a699c2314b826"}
+ ],
+ "pass": [
+  "fp-73 status closed in tools/bench/gate_fp_queue.jsonl, close_reason cites tools/bench/diag_c155_a5_1_facts.md (file:line), written by 'py tools/gate_fp.py close --id fp-73 --reason ...'",
+  "tools/violations.py: DEC_RE (line 94) and _stamp (line 97) read 'HH:Mx' as 'HH:M9'; no other behaviour change (an existing header 'HH:MM' and a date-only header give the same stamp as before)",
+  "self-test selftest_c156_b2_1_violations.py (bgrun, .log beside it): PASS on literal '12:2x' (-> 12:29), '07:0x' (-> 07:09) and one HH:MM (unchanged)",
+  "pins unchanged: stagexec 25a1494c, stagesim eb99c6ba, stagekit aec03c6c, addrcheck 207beb0d, gscript 1a80236e, vigraph a7eb58c7, stage_prerun 9decb20f; tools/hooks untouched"
+ ],
+ "outputs": [
+  "tools/violations.py",
+  "tools/bench/selftest_c156_b2_1_violations.py",
+  "tools/bench/selftest_c156_b2_1_violations.log",
+  "tools/bench/gate_fp_queue.jsonl"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/violations.py",
+   "tools/bench/selftest_c156_b2_1*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/jev_*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 40
+ },
+ "rules": [
+  "Offline; no LabVIEW; no tools/hooks edit; no stage-tool edit",
+  "Edit violations.py with Edit (no heredoc); change only DEC_RE / _stamp",
+  "A hook false positive: gate_fp.py log it, never work around it"
+ ],
+ "advances": ["M3", "R1"]
+}

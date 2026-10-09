@@ -1,0 +1,374 @@
+{
+ "schema": "stageplan/1",
+ "context": {
+  "s1_key": "D1_s1_copy"
+ },
+ "stage": "ring_p5s01bq",
+ "goal": "card 154-a4-1 PROBE (fact only): P5-1b mapped actions without the frame wires",
+ "base": {
+  "path": "tools/bench/graph_ring_p5s01a_20261009_103621.json",
+  "md5": "bd67a51131d6205d170200e098a9bd99"
+ },
+ "actions": [
+  {
+   "op": "create",
+   "id": "c_lw",
+   "class": "Local",
+   "diagram": 686,
+   "as": "LW1",
+   "label": "records final (1.2 to 1.7)",
+   "mode": "write",
+   "terminals": [
+    {
+     "name": "records final (1.2 to 1.7)",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py A0, p5_route_census.md row 17"
+  },
+  {
+   "op": "wire",
+   "id": "w_final",
+   "src": {
+    "uid": 30996,
+    "term": "outer"
+   },
+   "dst": "new:LW1.value",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py A0, p5_route_census.md row 18"
+  },
+  {
+   "op": "add_shift_reg",
+   "id": "sr_q",
+   "loop": 10170,
+   "body": 23166,
+   "parent": 686,
+   "as": "QS1",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py S_REF, p5_route_census.md row S4"
+  },
+  {
+   "op": "wire",
+   "id": "w_obt_srq",
+   "src": {
+    "uid": 31258,
+    "term": "queue out"
+   },
+   "dst": "new:QS1L.outer",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py S_REF, p5_route_census.md row S5"
+  },
+  {
+   "op": "tunnel",
+   "id": "t_qi",
+   "loop": 30726,
+   "body": 30922,
+   "parent": 23166,
+   "dir": "in",
+   "as": "TQ1",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py S_REF, p5_route_census.md row S6"
+  },
+  {
+   "op": "wire",
+   "id": "w_srq_qi",
+   "src": "new:QS1L.inner",
+   "dst": "new:TQ1.outer",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py S_REF, p5_route_census.md row S6"
+  },
+  {
+   "op": "wire",
+   "id": "w_qi_enq",
+   "src": "new:TQ1.inner",
+   "dst": {
+    "uid": 30756,
+    "term": "queue"
+   },
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py S_REF, p5_route_census.md row S6"
+  },
+  {
+   "op": "tunnel",
+   "id": "t_qo",
+   "loop": 30726,
+   "body": 30922,
+   "parent": 23166,
+   "dir": "out",
+   "as": "TQ2",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py S_REF, p5_route_census.md row S7"
+  },
+  {
+   "op": "wire",
+   "id": "w_enq_qo",
+   "src": {
+    "uid": 30756,
+    "term": "queue out"
+   },
+   "dst": "new:TQ2.inner",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py S_REF, p5_route_census.md row S7"
+  },
+  {
+   "op": "wire",
+   "id": "w_qo_srq",
+   "src": "new:TQ2.outer",
+   "dst": "new:QS1R.inner",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py S_REF, p5_route_census.md row S7"
+  }
+ ],
+ "final": false,
+ "finalized": {
+  "base": {
+   "path": "tools/bench/graph_ring_p5s01a_20261009_103621.json",
+   "md5": "bd67a51131d6205d170200e098a9bd99"
+  },
+  "plan_in": {
+   "path": "tools/bench/sim/ring_p5s01b/_probe/plan_ring_p5s01bq_in.json",
+   "md5": "b50b16c8e470b26132f9e2b58f375ff2"
+  },
+  "last_step": {
+   "path": "tools/bench/sim/ring_p5s01b/_probe/ring_p5s01bq/step_10_wire.json",
+   "md5": "cada0c902875f7c9ed8602ba3a6eac34"
+  },
+  "summary": {
+   "path": "tools/bench/sim/ring_p5s01b/_probe/ring_p5s01bq/summary.json",
+   "md5": "6d8acf3d11144a3a56486ae928f685ad"
+  },
+  "end_cdiff_rows": [
+   "10068|ParameterTerminal|x|0",
+   "10150|ParameterTerminal|x|0",
+   "10382|ParameterTerminal|x|0",
+   "10757|Terminal|array|0",
+   "11261|Terminal|array|0",
+   "11261|Terminal|element|0",
+   "11529|ParameterTerminal|x|0",
+   "2626|Terminal|array|0",
+   "2626|Terminal|element|0",
+   "2626|Terminal|element|1",
+   "2626|Terminal|element|2",
+   "28083|Terminal|Magnet position|0",
+   "29240|ParameterTerminal|x|0",
+   "29625|Terminal|array|0",
+   "376|Terminal|current frame data array in|0",
+   "376|Terminal|frame index|0",
+   "5058|Terminal|Bead is good? array in|0",
+   "5058|Terminal|Image In|0",
+   "5058|Terminal|pos in cal image in|0",
+   "5058|Terminal|x,y,z array|0",
+   "8634|Terminal|array|0"
+  ],
+  "failed": null,
+  "first_divergent": {
+   "n": 0,
+   "op": "base",
+   "id": null,
+   "rows_from_here": 21
+  },
+  "open_rows": [],
+  "open_rows_match": false,
+  "open_rows_match_legacy": false,
+  "open_rows_classed": {
+   "ok": false,
+   "want": [],
+   "c4_n": 0,
+   "c4_keys": 0,
+   "c4_bad": [],
+   "unclassed": []
+  },
+  "cdiff_inputs": {
+   "labels": "node_labels_default",
+   "labels_n": 626,
+   "fs_pairs": "state",
+   "fs_pairs_n": 576
+  },
+  "step_files": [
+   {
+    "n": 0,
+    "op": "base",
+    "path": "tools/bench/sim/ring_p5s01b/_probe/ring_p5s01bq/step_00_base.json",
+    "md5": "d267e5274808030b175eed157ee165c9"
+   },
+   {
+    "n": 1,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p5s01b/_probe/ring_p5s01bq/step_01_create.json",
+    "md5": "62e0ca4efdc01aa67442600df77759ac"
+   },
+   {
+    "n": 2,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s01b/_probe/ring_p5s01bq/step_02_wire.json",
+    "md5": "363c34958008a95230c0ffcf9fd8a1e9"
+   },
+   {
+    "n": 3,
+    "op": "add_shift_reg",
+    "path": "tools/bench/sim/ring_p5s01b/_probe/ring_p5s01bq/step_03_add_shift_reg.json",
+    "md5": "b65d12f712dfe93a0d96aabb3566863b"
+   },
+   {
+    "n": 4,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s01b/_probe/ring_p5s01bq/step_04_wire.json",
+    "md5": "674f2669046141e17339360123634ece"
+   },
+   {
+    "n": 5,
+    "op": "tunnel",
+    "path": "tools/bench/sim/ring_p5s01b/_probe/ring_p5s01bq/step_05_tunnel.json",
+    "md5": "0bcc9c16fbf8c00ffc439470ace927c5"
+   },
+   {
+    "n": 6,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s01b/_probe/ring_p5s01bq/step_06_wire.json",
+    "md5": "67815fefa7f745945a57475bb5a9d97d"
+   },
+   {
+    "n": 7,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s01b/_probe/ring_p5s01bq/step_07_wire.json",
+    "md5": "60bf4e1e77c5107407ff92f40c459b2f"
+   },
+   {
+    "n": 8,
+    "op": "tunnel",
+    "path": "tools/bench/sim/ring_p5s01b/_probe/ring_p5s01bq/step_08_tunnel.json",
+    "md5": "9216915f971ab938a8a724100c3df0f0"
+   },
+   {
+    "n": 9,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s01b/_probe/ring_p5s01bq/step_09_wire.json",
+    "md5": "1e2017dffbc65e5bf14a42009d8ef694"
+   },
+   {
+    "n": 10,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s01b/_probe/ring_p5s01bq/step_10_wire.json",
+    "md5": "cada0c902875f7c9ed8602ba3a6eac34"
+   }
+  ],
+  "undecided": 0,
+  "at": "2026-10-09 10:53:49",
+  "fs_routes": {},
+  "addr_pos": [
+   {
+    "n": 2,
+    "addr": "{\"term\":\"outer\",\"uid\":30996}",
+    "source": true,
+    "owner": 30996,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 2,
+    "addr": "new:LW1.value",
+    "source": false,
+    "owner": -1,
+    "index": 0,
+    "class": "Terminal",
+    "name": "records final (1.2 to 1.7)"
+   },
+   {
+    "n": 4,
+    "addr": "{\"term\":\"queue out\",\"uid\":31258}",
+    "source": true,
+    "owner": 31258,
+    "index": 5,
+    "class": "ParameterTerminal",
+    "name": "queue out"
+   },
+   {
+    "n": 4,
+    "addr": "new:QS1L.outer",
+    "source": false,
+    "owner": -5,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 6,
+    "addr": "new:QS1L.inner",
+    "source": true,
+    "owner": -5,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 6,
+    "addr": "new:TQ1.outer",
+    "source": false,
+    "owner": -11,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 7,
+    "addr": "new:TQ1.inner",
+    "source": true,
+    "owner": -11,
+    "index": 2,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 7,
+    "addr": "{\"term\":\"queue\",\"uid\":30756}",
+    "source": false,
+    "owner": 30756,
+    "index": 0,
+    "class": "ParameterTerminal",
+    "name": "queue"
+   },
+   {
+    "n": 9,
+    "addr": "{\"term\":\"queue out\",\"uid\":30756}",
+    "source": true,
+    "owner": 30756,
+    "index": 4,
+    "class": "ParameterTerminal",
+    "name": "queue out"
+   },
+   {
+    "n": 9,
+    "addr": "new:TQ2.inner",
+    "source": false,
+    "owner": -17,
+    "index": 2,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 10,
+    "addr": "new:TQ2.outer",
+    "source": true,
+    "owner": -17,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 10,
+    "addr": "new:QS1R.inner",
+    "source": false,
+    "owner": -4,
+    "index": 0,
+    "class": "InnerTerminal",
+    "name": ""
+   }
+  ],
+  "fs_border_gate": {
+   "status": "PASS",
+   "unmeasured": [
+    14430,
+    31050,
+    34409,
+    34489,
+    43605,
+    44160,
+    44164
+   ],
+   "used": {}
+  }
+ }
+}

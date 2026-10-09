@@ -1,0 +1,74 @@
+{
+ "schema": "task/1",
+ "id": "155-a3-2",
+ "kind": "build",
+ "goal": "Continue 155-a3-1: byte-copy the PASSED P5-1b file to D1_ring_p5s01_<stamp>.vi, adopt it, final EL, graph json, load_by_vi entry. No new scratch.",
+ "why": "155-a3-1 passed the ONE scratch (20/0, 7f2582ae) and returned only because adopt_scratch cannot rename to the PD378 name. PD378(c) still owes adopt, EL, graph and load_by_vi.",
+ "retry_of_card": "155-a3-1",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_155-a3-2.md", "md5": "56ae9e2093e1f31a1abe7c177ebda0d4"},
+  {"path": "tools/bench/cards/brief_155-a3-1.md", "md5": "3fdafc11e8931ea18e98c3e512442274"},
+  {"path": "tools/bench/diag_c155_a3_1_facts.md", "md5": "4f4596a1f5792f565253b350bfcb8737"},
+  {"path": "tools/bench/diag_c155_p5s01b_scratch.log", "md5": "7b1a8cc54edf84338b47c4d4c336b1b8"},
+  {"path": "tools/bench/diag_c155_a3_1_inv.py", "md5": "cfa8ef91d3576cd9404231545aa31655"},
+  {"path": "tools/bench/memory_model.json", "md5": "386a4cf453224251acaf4220f206434f"},
+  {"path": "tools/bench/diag_c154_a3_3_adopt.py", "md5": "a8ad90b8e78cf034e82239fb5ac728fd"},
+  {"path": "tools/bench/diag_c154_a3_3_elexp.py", "md5": "6ff1dc315d81eb05181456b06210a055"},
+  {"path": "tools/bench/diag_c154_a3_3_mkgraph.py", "md5": "21f478e2aac8b7d5c825f27ffd7c9490"},
+  {"path": "tools/bench/diag_c154_a3_3_graph.py", "md5": "29e8a288123f674c53dda3af538756ff"},
+  {"path": "tools/bench/diag_c154_a3_3_memload.py", "md5": "325f7439bee7719a251bbe0324ccbd4e"},
+  {"path": "tools/bench/diag_c154_a3_3_nodes.py", "md5": "90ee623345843d16474c34426e2e7c82"},
+  {"path": "tools/stagexec.py", "md5": "53e17623961d2fd2be711d2754891bd4"},
+  {"path": "tools/stagesim.py", "md5": "eb99c6bab81633f9bdd7c10dce6bfc0a"},
+  {"path": "tools/stage_prerun.py", "md5": "9decb20f6d67793abad967347e2a37ab"},
+  {"path": "tools/vigraph.py", "md5": "a7eb58c7e35a134f93df168ea4cdea80"},
+  {"path": "docs/d1/ring-p5.md", "md5": "a4b596f001b01a046e98734495c969dd"}
+ ],
+ "pass": [
+  "byte copy claudeDev D1_ring_p5s01_<stamp>.vi of 7f2582ae (md5 equal) adopted by import (PD354(a)); both paths+md5 and adopt/1 record quoted; the p5s01b file untouched",
+  "final EL expected file written: total + per-class vs P5-1a 47 and vs hand prediction 45 (both elrule totals), non-gating",
+  "fresh load + graph json (path+md5, load MB); Case #30726, SelectorTunnels, sr_q on #10170, #30914 wires, Enqueue queue rows quoted",
+  "memory_model.json gets ONLY the load_by_vi entry, diff quoted; invariants md5 unchanged; LabVIEW closed and verified gone"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p5s01_<stamp>.vi",
+  "tools/bench/graph_ring_p5s01_<stamp>.json",
+  "tools/bench/errorlist_expected_D1_ring_p5s01_<stamp>.json",
+  "tools/bench/diag_c155_a3_2_facts.md"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c155_a3_2*",
+   "tools/bench/launch_*c155*",
+   "tools/bench/graph_ring_p5s01_*",
+   "tools/bench/errorlist_*p5s01_*",
+   "tools/bench/adopted_scratch.jsonl",
+   "tools/bench/memory_model.json",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/jev_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 90
+ },
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "D1_ring_p5s01b_20261009_123319.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "tools/errorlist_check.py"}
+ ],
+ "rules": [
+  "NO new scratch and no second launch of any recipe; no recipe, plan, stage-tool or hook edit",
+  "The p5s01b and P5-1a files are never edited; copy only",
+  "memory_model.json: add ONLY the load_by_vi entry for the P5-1 file; no motor or camera"
+ ]
+}

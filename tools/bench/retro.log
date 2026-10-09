@@ -6948,3 +6948,98 @@ VIOLATION: inference-over-measurement | loss_min=19 | loss_usd=? | evidence=docs
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle152","verdict":"refuted","alternative":"Op 187's naming gap could only be found after the real owner read, so the hand-back was unavoidable.","discriminating_test":"Replay ops 185..190 on s08 END with owner(29721)=v18 create target 23166 (no LabVIEW): if it stops at op 187 naming, the gap was findable at 04:01. Round 1's measured owner equals 23166 and it stopped there (prep_c152_a2_2_mk.log:38).","violations":[{"slug":"inference-over-measurement","loss_min":19,"loss_usd":"?","evidence":"docs/d1/ring-p4d.md:29"}],"sources":["docs/d1/ring-p4d.md:29","tools/bench/prep_c151_a3_2_mk.log:35","tools/bench/prep_c152_a2_2_mk.log:38","tools/stagesim.py:1868","tools/bench/cycle_runner_main_20261009_0250.log:38","tools/bench/cycle_152_handback_1.log:271"],"note":"Window spans cycles 150-152; judged 152 only (04:01-06:26, $46.29). Deliverable met: s09 adopted, P4 ended. Logged loss part $1.52 (hand-back judgement); a2-2 share of $16.20 unlogged."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle152.md
 BGRUN END rc=0 after 392s
+BGRUN START 2026-10-09 13:39:58 limit 20.0 min: C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\retrospective.py --cycle 155
+BGRUN PID 24932
+   window 2026-10-09 06:32:49 .. 2026-10-09 13:39:59 (427 min); 227 build logs, 27 machinery logs, 56 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle155.txt (54529 chars)
+   review card tools\bench\cards\review_retrospective-cycle155.json
+OUTCOME: ANSWERED (586s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-10-09-retrospective-cycle155.md
+COST: $2.6799  in 80 / out 37683 / cache-create 143674 / cache-read 3882874  (584s, 48 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle155 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle155.json
+--- ANSWER ---
+**Window note.** The evidence window (06:32:49–13:39:59) holds three runner cycles, not one: cycle 153 (06:33–08:09), cycle 154 (08:09–10:55) and cycle 155 (11:38–13:40). The source is `tools/bench/cycle_runner.log` lines 1421–1479. Between 10:55 and 11:38 the user stopped the runner for chat cards T7 and T8 (`cycle_runner.log:1471`). That was user-ordered work, not cycle work. This retrospective is every-3-cards, so the span is by design (`cycle_runner.log:1461` "not due"). Per the window rule I judge the whole interval. Cycle 155 on its own (11:38–13:40, `PURPOSE_MET` 11/11, `assign_result_155_1.json:5`) had no structural fault. The fault named below happened in cycle 154.
+
+Spend in the window: cycle 153 $46.65, cycle 154 $63.46 (`cycle_runner.log:1441,1468`), cycle 155's assignment $35.69 (`:1479`), reviews $9.30 (audit C4).
+
+## The one structural fault: a device failed (the gates_due check and the HH:MM header rule)
+
+**What happened.** The 2026-09-27 08:30 decision (`docs/violation-decisions.md:1526-1539`) did two things:
+- It built `gates_due`: every "due" gate is computed at cycle start and the judgement is told to answer it "BEFORE the first dispatch that would trip them".
+- It accepted the rule "decision-header times are always written HH:MM", because an `HH:Mx` time "silently parsed as 00:00 and kept a slug DUE".
+
+The same fault happened again here:
+1. Cycle 153's judgement wrote the heading `07:0x` at `docs/violation-decisions.md:1992`. The original text is shown at `tools/bench/diag_c154_a3_3b_diff.log:7`.
+2. At 08:09:45 the cycle-154 card reported `violations: DUE inference-over-measurement` (`tools/bench/cards/cycle_154.json:30-32`). All three cycle-154 judgement sessions got the instruction to answer it first (`cycle_154.log:221`, `cycle_154_handback_1.log:221`, `cycle_154_handback_2.log:221`).
+3. The hand-back-2 judgement saw it and only noted that it "still stand[s]" (`cycle_154_handback_2.log:271`).
+4. At about 10:05 `guard_cycle` refused the P5-1a scratch launch. The cause was that `07:0x` parsed as 00:00 (`tools/bench/cards/result_154-a3-3.json:1`).
+
+So the device fired correctly, and the judgement ignored it. The header rule exists only as a discipline: `doc_lint` L8 still flags a fifth instance, `12:2x` at `:1875`. Earlier instances were fixed at `:1469`, `:1504` and `:1513`.
+
+- **Loss:** about 8 minutes. The last launch pre-check ended at 10:04:27 (`diag_c154_a3_3_checklaunch.log:1`) and the scratch actually started at 10:12:18 (`diag_c154_p5s01a_scratch.log:1`). `result_154-a3-3.json` records `cost.minutes 8` and `usd null`, so `loss_usd=?`.
+- **Counterfactual:** had the cycle-154 judgement (08:09–08:18) or hand-back-2 (09:12–09:15) run `py tools/violations.py` and changed the one token, the scratch would have started at about 10:05, not 10:12. Round 3 would have ended about 8 minutes before 10:55. Nothing else in the outcome changes.
+- **Magnitude:** the loss is small. It is reported only because the device threshold is 1.
+
+## FINDINGS
+
+**1. Repeated failure.**
+- In cycle 154, stage-tool route gaps were found one hand-back round at a time:
+  - round 1: the queue route cannot place Enqueue in a Case frame (`handback_154_1.json:6`);
+  - round 2: no route for census rows 9–10 (`handback_154_2.json:6`);
+  - round 3: `frame` addressing on a base case (`handback_154_3.json:46`).
+- The approach should have changed at round 1. PD374 was written without a route census. PD375(c) added the census only after round 1 (`docs/d1/ring-p5.md:89-93`).
+- Separately, fp-70 failed in all three rounds of cycle 153 (`handback_153_1`/`_2`/`_3`). It was finally settled in 154 by declaring the stored P4 recipes superseded (PD373(c), `docs/d1/ring-p4d.md:240-244`). That ruling was available in round 2.
+
+**2. Missing tool.** Two cheap fixes were not built:
+- a write-time refusal of an `HH:Mx` decision header, or letting `violations.py:94` DEC_RE read one as its lower bound;
+- a gate-fp release path in `guard_cycle` (`diag_c154_a3_3_facts.md:25`).
+
+Either would have stopped the a3-3 refusal.
+
+**3. Unmeasured steps.**
+- PD374(e) inferred from F7 that the obtain/enqueue routes were usable. A route census cost minutes and was skipped.
+- The P5-1b half was not compiled when the cut was made (a3-2b, about 09:50). It was compiled only at a4-1 (10:53). This is defensible, because PD378(a) cites P5-1a's measured frame order.
+- The P5-2 plan has X10 headroom of 0 (680.0 against a limit of 680, `assign_result_155_1.json:21`).
+
+**4. Rule compliance.**
+- A1: 18 logs have no BGRUN line. Most are wrapper sub-logs, e.g. `diag_c153_a2_3_*` under `diag_c153_a2_5_run.py`.
+- A3: three failing `prep_c155_a5_1_*` logs have no review.
+- L3: STATUS.md is 123 lines, over the 110 cap.
+- L10: `docs/chat-handoff.md` is 566 lines, over the 400 cap.
+- The assignment session edited the append-only `docs/violation-decisions.md` in place (`brief_154-a3-3b.md:11`).
+- What the audit does not cover:
+  - whether a `gates_due` entry was answered before the dispatch that tripped it (the fault above);
+  - whether the judgement read the hand-back notes it was asked to check;
+  - C7 lists 522 files against `ring-p5.md`. That is saturated noise, not a scope measurement.
+
+**5. Ordering.** A route census before PD374's round-1 dispatch would have folded rounds 1 and 2 into one. It would have saved about 15 minutes and $8.52 (`handback_154_1.json:25-26`). Cycle 155's tool fix before P5-1b was the correct deliverable-first exception (PD378(b)).
+
+**6. What was not reported.**
+- `cycle_runner.log:1462` says "nothing to commit / rc=128". rc=128 is a git fatal error, so cycle 154's work went uncommitted until the chat's lock fix (commit 57e7de7d).
+- Audit C4c counts the Sonnet assignment sessions as "judgement session" time. That inflates the reported 74% judgement share.
+- The gate-fp queue grew from 11 to 12 open items while it was DUE in all three cycles (`cycle_155.json:47`).
+
+**7. Judgement inside a material session.**
+- The cycle-154 round-3 assignment (`claude -p`) chose to rewrite a judgement document's decision timestamp to `07:00` (`brief_154-a3-3b.md:11`, `diag_c154_a3_3b_diff.log:8`). It asked judgement to check the edit (`cycle_154_assign_3.log:60`), but PD378 never answers that request.
+- The X10 cut (PD374(e):63) and the fp-73 "returned with reason" (`assign_155_1.json:16`) were both pre-authorised.
+- 153-a2-5's open_rows choice was made in material and ratified afterwards (PD372(c)).
+
+## DEVICE EFFECT
+
+- **Failed:** 2026-09-27 08:30, the `gates_due` check plus the HH:MM header rule (above).
+- **Fired on a technically by-design case:** the stop record refused a read-only `md5sum` (`tools/hooks/material_marker.log:3790`). The whole command carried `| xargs`, and `stop_record.py:248-249,355` taints every segment of such a command. This is by design and cost nothing, because a review was owed anyway. It is borderline, not counted.
+- **Worked:**
+  - the X10 memory margin (154-a3-2 stopped before launch);
+  - prior-art before builds (4 reviews);
+  - the plan dry reports all unroutable rows (a4-1 reported actions 21 and 32 together);
+  - the bgrun inner-failure scan (`diag_c154_a3_3b_diff.log:14`);
+  - cost-line parsing (7 of 7);
+  - retro-undisposed (`cycle_runner.log:1419`);
+  - op hygiene (153-a2-8).
+- **Built but not triggered:** the collect-all replay.
+- **Saturated:** C7, the scope-creep counter.
+
+VIOLATION: device-failed | loss_min=8 | loss_usd=? | evidence=tools/bench/cards/result_154-a3-3.json:1
+
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle155","verdict":"refuted","alternative":"Cycle 155 proper (11:38-13:40) was clean; the only device failure is in cycle 154 inside the same window, and its loss is ~8 min, so the claim fails only on the threshold-1 device rule.","discriminating_test":"Diff docs/violation-decisions.md:1992 at HEAD~ vs HEAD and confirm cycle_154.json gates_due listed violations=DUE at 08:09:45, before the 10:04 refusal in result_154-a3-3.json.","violations":[{"slug":"device-failed","loss_min":8,"loss_usd":"?","evidence":"tools/bench/cards/result_154-a3-3.json:1"}],"sources":["tools/bench/cards/result_154-a3-3.json:1","tools/bench/cards/cycle_154.json:30","tools/bench/cycle_154_handback_2.log:271","docs/violation-decisions.md:1538","tools/bench/diag_c154_p5s01a_scratch.log:1"],"note":"Device = 2026-09-27 08:30 gates_due plus HH:MM header rule; fifth Mx header still at violation-decisions.md:1875."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle155.md
+BGRUN END rc=0 after 606s

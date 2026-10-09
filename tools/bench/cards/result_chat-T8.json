@@ -1,0 +1,12 @@
+{"schema":"result/1","id":"chat-T8","status":"PASS","gates":{"pass":17,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/gen_capabilities.py","md5":"78e9c328657bbd7165cce62c7f9369c4"},{"path":"docs/fn_descriptions.json","md5":"672bbe87a44871cad7c5a779ec3a8164"},{"path":"tools/bench/selftest_t7_capabilities.py","md5":"29d9d5435c16ac32dc028e743dffdd35"},{"path":"docs/toolkit-capabilities.md","md5":"81c30c2497cba8aba96c6eb09f07c469"},{"path":"docs/script-writing.md","md5":"0165fb24dc476b0b6fd863c96a346728"},{"path":"tools/bench/selftest_t7_capabilities_t8b.log","md5":"4a3fc575f4400512376de96230f397f2"}],
+"facts":["side file schema fn-descriptions/1, key <module>.<function>, 3 code-read examples: stage_prerun.sha256, stagesim.parse_addr, stagexec.edges (docs/fn_descriptions.json:5-7)",
+"describe_row: docstring first line > side-file entry > '(undocumented)'; row gets a 'from' column docstring/side file/- (tools/gen_capabilities.py:282)",
+"TOC gains 'side file' + 'undocumented' columns per module; header: 1286 docstring, 3 side file, 1152 undocumented of 2441 (docs/toolkit-capabilities.md:1033)",
+"stale key (gone function / unknown module / malformed file) -> drift()['stale_descriptions'] -> drift_line -> doc_lint L12 WARN (tools/gen_capabilities.py:291,485,503)",
+"selftest 17/0: 10 existing + D1-D7 new; G2b expected text changed '(no docstring)' -> '(undocumented) | -' per the brief's wording (tools/bench/selftest_t7_capabilities_t8b.log)",
+"first run 15/2: D5/D6 counted the TOC header row as a 'side file' row - test filter bug, fixed; not a generator fault (tools/bench/selftest_t7_capabilities_t8.log)",
+"block regenerated once: --summary 'rewrote', --check DRIFT none, doc_lint L12 PASS; diff in toolkit-capabilities.md only below the fn-table marker (line 866)",
+"script-writing.md rule 9 sentence added (docs/script-writing.md:58-60); committed 8b4c43f5 by explicit path"],
+"open":["guard_write regenerates only on a write to a shared .py, so an edit to docs/fn_descriptions.json shows in the list at the next cycle end (or a manual run), not at once - hook edit was out of scope"],
+"cost":{"usd":null,"minutes":10,"labview_runs":0},"note":"offline, no LabVIEW; tools/doc_lint.py unchanged (L12 already WARNs on any drift_line part)"}

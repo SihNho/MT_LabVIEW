@@ -1,0 +1,58 @@
+{
+ "schema": "task/1",
+ "id": "154-a2-3",
+ "kind": "build",
+ "goal": "Offline route census of every P5-1 create/wire; register the 4 queue primitives in stagexec/stagesim only; report stage_prerun X17 need",
+ "why": "Cycle 154 round 2 pass item 1 (PD375(c)). Census comes first; a row with no route is a hand-back, not a tool edit.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_154-a2-3.md", "md5": "33faba1535b7e05f918045d7c90f9391"},
+  {"path": "docs/d1/ring-p5.md", "md5": "81df09ca12a046990ad1194bb5cd41c6"},
+  {"path": "tools/bench/donor_queue_v0.json", "md5": "15269b6cea348c20567204cbbd604478"},
+  {"path": "tools/bench/p5_facts.md", "md5": "1df5c37d7e214af604bcd079df218912"},
+  {"path": "tools/bench/diag_c154_a1_1_facts.md", "md5": "5dcd8d0ddb938842e9527e58f7f4419e"},
+  {"path": "tools/bench/graph_ring_p4s09_20261009_062044.json", "md5": "22f967b513726a01c9d8f63269f689e6"},
+  {"path": "tools/stagexec.py", "md5": "1bab9cf96502dfbe2d9a755e6d4a48b6"},
+  {"path": "tools/stagesim.py", "md5": "78b8d5a16dc98509311840cd2140917f"},
+  {"path": "tools/stage_prerun.py", "md5": "c739eb86e0aa3644a1008b8f3fa2af38"}
+ ],
+ "pass": [
+  "tools/bench/p5_route_census.md: every P5-1 create and wire mapped to an existing route + stagesim support (file:line), status OK/REGISTERED/GAP",
+  "Any GAP row returned verbatim with the code lines searched; no tool edit made for a GAP",
+  "Only registration entries added to stagexec/stagesim for the 4 queue primitives + DBL array const; self-tests run directly, counts quoted",
+  "stage_prerun.py unchanged; report says whether X17 would refuse the DonorQueue_v0 uids and the entries needed",
+  "Invariants md5 unchanged (brief step 6); old -> new md5 of stagexec/stagesim quoted; no LabVIEW process"
+ ],
+ "outputs": [
+  "tools/bench/p5_route_census.md",
+  "tools/bench/diag_c154_a2_3_facts.md",
+  "tools/bench/diag_c154_a2_3_selftest.py",
+  "tools/bench/diag_c154_a2_3_selftest.log"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/p5_route_census.md",
+   "tools/bench/diag_c154_a2_3*",
+   "tools/stagexec.py",
+   "tools/stagesim.py"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/donor_queue_v0.json"},
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/stagesim.py"}
+ ],
+ "rules": [
+  "Offline: no LabVIEW, no VI opened; registration entries only, no new route or op kind",
+  "A route gap: RETURN with facts, no tool edit; stage_prerun and tools/hooks not edited",
+  "Return on a second failure at the same place; no motor or camera"
+ ]
+}

@@ -1,0 +1,1899 @@
+{
+ "schema": "stageplan/1",
+ "context": {
+  "s1_key": "D1_s1_copy"
+ },
+ "stage": "ring_p5s02c",
+ "goal": "card 155-a4-1 ROUTE CENSUS round 3: groups ['A', 'B', 'C', 'D', 'E', 'F1', 'F2', 'F3', 'G', 'H', 'I', 'J']",
+ "base": {
+  "path": "tools/bench/graph_ring_p5s01_20261009_125622.json",
+  "md5": "6716c49948f097b8ac0e1780930bfab1"
+ },
+ "actions": [
+  {
+   "op": "add_shift_reg",
+   "id": "sr_q7",
+   "loop": 23041,
+   "body": 23405,
+   "parent": 686,
+   "as": "QS7",
+   "why": "PD376(d) refnum SR on 1.7"
+  },
+  {
+   "op": "wire",
+   "id": "w_obt_q7",
+   "src": {
+    "uid": 31258,
+    "term": "queue out",
+    "term_uid": 31335
+   },
+   "dst": "new:QS7L.outer",
+   "why": "PD376(d) 2nd branch of Obtain #31258 'queue out'"
+  },
+  {
+   "op": "create",
+   "id": "c_deq",
+   "class": "Function",
+   "diagram": 23405,
+   "as": "DQ1",
+   "prim": "Dequeue Element",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorQueue_v0.vi",
+    "uid": 45
+   },
+   "terminals": [
+    {
+     "name": "queue",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "timeout in ms (-1)",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "error in (no error)",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "queue out",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "element",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "timed out?",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "error out",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    }
+   ],
+   "data_stream": true,
+   "why": "PD376(d); DATA stream 1.2 -> 1.7 results FIFO (PD374(a), CLAUDE.md 1c'': queues for lossless data only)"
+  },
+  {
+   "op": "wire",
+   "id": "w_q7_deq",
+   "src": "new:QS7L.inner",
+   "dst": "new:DQ1.queue",
+   "why": "PD376(d) Dequeue on L.inner"
+  },
+  {
+   "op": "wire",
+   "id": "w_deq_q7",
+   "src": "new:DQ1.queue out",
+   "dst": "new:QS7R.inner",
+   "why": "PD376(d) refnum back to R.inner"
+  },
+  {
+   "op": "create",
+   "id": "c_rel",
+   "class": "Function",
+   "diagram": 686,
+   "as": "RQ1",
+   "prim": "Release Queue",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorQueue_v0.vi",
+    "uid": 46
+   },
+   "terminals": [
+    {
+     "name": "queue",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "force destroy? (F)",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "error in (no error)",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "queue name",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "remaining elements",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "error out",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    }
+   ],
+   "data_stream": true,
+   "why": "PD376(d) Release on 686 after 1.7; DATA stream 1.2 -> 1.7 results FIFO (CLAUDE.md 1c'')"
+  },
+  {
+   "op": "wire",
+   "id": "w_q7_rel",
+   "src": "new:QS7R.outer",
+   "dst": "new:RQ1.queue",
+   "why": "PD376(d) R.outer -> Release (row-18 route)"
+  },
+  {
+   "op": "create",
+   "id": "c_tmo",
+   "class": "DigitalNumericConstant",
+   "diagram": 23405,
+   "as": "TM1",
+   "on": "new:DQ1.timeout in ms (-1)",
+   "value": 100,
+   "why": "PD374(a) Dequeue with timeout 100 ms (const_on_term, plan_ring_p4_s04v18_in.json p4_wait_k)"
+  },
+  {
+   "op": "create",
+   "id": "c_case7",
+   "class": "CaseStructure",
+   "diagram": 23405,
+   "as": "CQ7",
+   "selector_as": "SL7",
+   "frames": [
+    "False",
+    "True"
+   ],
+   "src": "new:DQ1.timed out?",
+   "why": "PD374(d) NEW Case on Dequeue 'timed out?'; False = an element was dequeued"
+  },
+  {
+   "op": "move_in",
+   "id": "mv_376",
+   "nodes": [
+    376
+   ],
+   "dest_diagram": "new:CQ7.f0",
+   "pos": [
+    10194,
+    18599
+   ],
+   "why": "PD374(d) `#376` MOVED in (not changed)"
+  },
+  {
+   "op": "move_in",
+   "id": "mv_3052",
+   "nodes": [
+    3052
+   ],
+   "dest_diagram": "new:CQ7.f0",
+   "pos": [
+    10094,
+    18534
+   ],
+   "why": "PD374(d) `#3052` refnum constant"
+  },
+  {
+   "op": "move_in",
+   "id": "mv_3453",
+   "nodes": [
+    3453
+   ],
+   "dest_diagram": "new:CQ7.f0",
+   "pos": [
+    10334,
+    18534
+   ],
+   "why": "PD374(d) `#3453` 'file progress'"
+  },
+  {
+   "op": "wire",
+   "id": "w_ref",
+   "src": {
+    "uid": 3052,
+    "term": "File # Saved",
+    "term_uid": 3060
+   },
+   "dst": {
+    "uid": 376,
+    "term": "saved file refnum",
+    "term_uid": 5772
+   },
+   "why": "PD374(d) the wire #3052 -> #376 as in the P5-1 graph (w10394)"
+  },
+  {
+   "op": "wire",
+   "id": "w_prog",
+   "src": {
+    "uid": 376,
+    "term": "file progress",
+    "term_uid": 5704
+   },
+   "dst": {
+    "uid": 3453,
+    "term_uid": 3453
+   },
+   "why": "PD374(d) the wire #376 -> #3453 as in the P5-1 graph (w10362)"
+  },
+  {
+   "op": "tunnel",
+   "id": "t_el7",
+   "loop": "new:CQ7",
+   "body": "new:CQ7.f0",
+   "parent": 23405,
+   "dir": "in",
+   "as": "TE7",
+   "why": "PD374(d) t5 <- the dequeued element"
+  },
+  {
+   "op": "wire",
+   "id": "w_el7_in",
+   "src": "new:DQ1.element",
+   "dst": "new:TE7.outer",
+   "why": "PD374(d)"
+  },
+  {
+   "op": "wire",
+   "id": "w_el7_376",
+   "src": "new:TE7.inner",
+   "dst": {
+    "uid": 376,
+    "term": "current frame data array in",
+    "term_uid": 5754
+   },
+   "why": "PD374(d)"
+  },
+  {
+   "op": "tunnel",
+   "id": "t_in1",
+   "loop": "new:CQ7",
+   "body": "new:CQ7.f0",
+   "parent": 23405,
+   "dir": "in",
+   "as": "TF1",
+   "why": "PD374(d) in-tunnel #24357 keeps its source"
+  },
+  {
+   "op": "wire",
+   "id": "w_in1_t",
+   "src": {
+    "uid": 24357,
+    "term": "",
+    "term_uid": 24360
+   },
+   "dst": "new:TF1.outer",
+   "why": "PD374(d)"
+  },
+  {
+   "op": "wire",
+   "id": "w_in1_376",
+   "src": "new:TF1.inner",
+   "dst": {
+    "uid": 376,
+    "term": "cal cluster path",
+    "term_uid": 5760
+   },
+   "why": "PD374(d)"
+  },
+  {
+   "op": "tunnel",
+   "id": "t_in2",
+   "loop": "new:CQ7",
+   "body": "new:CQ7.f0",
+   "parent": 23405,
+   "dir": "in",
+   "as": "TF2",
+   "why": "PD374(d) in-tunnel #24361 keeps its source"
+  },
+  {
+   "op": "wire",
+   "id": "w_in2_t",
+   "src": {
+    "uid": 24361,
+    "term": "",
+    "term_uid": 24367
+   },
+   "dst": "new:TF2.outer",
+   "why": "PD374(d)"
+  },
+  {
+   "op": "wire",
+   "id": "w_in2_376",
+   "src": "new:TF2.inner",
+   "dst": {
+    "uid": 376,
+    "term": "file size",
+    "term_uid": 5778
+   },
+   "why": "PD374(d)"
+  },
+  {
+   "op": "tunnel",
+   "id": "t_in3",
+   "loop": "new:CQ7",
+   "body": "new:CQ7.f0",
+   "parent": 23405,
+   "dir": "in",
+   "as": "TF3",
+   "why": "PD374(d) in-tunnel #25223 keeps its source"
+  },
+  {
+   "op": "wire",
+   "id": "w_in3_t",
+   "src": {
+    "uid": 25223,
+    "term": "",
+    "term_uid": 25235
+   },
+   "dst": "new:TF3.outer",
+   "why": "PD374(d)"
+  },
+  {
+   "op": "wire",
+   "id": "w_in3_376",
+   "src": "new:TF3.inner",
+   "dst": {
+    "uid": 376,
+    "term": "selected path",
+    "term_uid": 5787
+   },
+   "why": "PD374(d)"
+  },
+  {
+   "op": "tunnel",
+   "id": "t_gi",
+   "loop": "new:CQ7",
+   "body": "new:CQ7.f0",
+   "parent": 23405,
+   "dir": "in",
+   "as": "TG1",
+   "why": "PD374(d) existing SR of #376 (LSR #24133)"
+  },
+  {
+   "op": "wire",
+   "id": "w_gl",
+   "src": {
+    "uid": 24133,
+    "term": "error out",
+    "term_uid": 24190
+   },
+   "dst": "new:TG1.outer",
+   "why": "PD374(d)"
+  },
+  {
+   "op": "wire",
+   "id": "w_g376",
+   "src": "new:TG1.inner",
+   "dst": {
+    "uid": 376,
+    "term": "error in",
+    "term_uid": 5683
+   },
+   "why": "PD374(d)"
+  },
+  {
+   "op": "tunnel",
+   "id": "t_go",
+   "loop": "new:CQ7",
+   "body": "new:CQ7.f0",
+   "parent": 23405,
+   "dir": "out",
+   "as": "TG2",
+   "why": "PD374(d) existing SR of #376 (RSR #24083)"
+  },
+  {
+   "op": "wire",
+   "id": "w_gout",
+   "src": {
+    "uid": 376,
+    "term": "error out",
+    "term_uid": 3934
+   },
+   "dst": "new:TG2.inner",
+   "why": "PD374(d)"
+  },
+  {
+   "op": "wire",
+   "id": "w_gr",
+   "src": "new:TG2.outer",
+   "dst": {
+    "uid": 24083,
+    "term": "error out",
+    "term_uid": 24139
+   },
+   "why": "PD374(d)"
+  },
+  {
+   "op": "wire",
+   "id": "w_gpass",
+   "src": {
+    "uid": "new:TG1",
+    "side": "inner",
+    "frame": "True"
+   },
+   "dst": {
+    "uid": "new:TG2",
+    "side": "inner",
+    "frame": "True"
+   },
+   "why": "PD374(d) value passes through the timed-out frame"
+  },
+  {
+   "op": "tunnel",
+   "id": "t_hi",
+   "loop": "new:CQ7",
+   "body": "new:CQ7.f0",
+   "parent": 23405,
+   "dir": "in",
+   "as": "TH1",
+   "why": "PD374(d) existing SR of #376 (LSR #24187)"
+  },
+  {
+   "op": "wire",
+   "id": "w_hl",
+   "src": {
+    "uid": 24187,
+    "term": "",
+    "term_uid": 24288
+   },
+   "dst": "new:TH1.outer",
+   "why": "PD374(d)"
+  },
+  {
+   "op": "wire",
+   "id": "w_h376",
+   "src": "new:TH1.inner",
+   "dst": {
+    "uid": 376,
+    "term": "total data array in",
+    "term_uid": 5782
+   },
+   "why": "PD374(d)"
+  },
+  {
+   "op": "tunnel",
+   "id": "t_ho",
+   "loop": "new:CQ7",
+   "body": "new:CQ7.f0",
+   "parent": 23405,
+   "dir": "out",
+   "as": "TH2",
+   "why": "PD374(d) existing SR of #376 (RSR #24150)"
+  },
+  {
+   "op": "wire",
+   "id": "w_hout",
+   "src": {
+    "uid": 376,
+    "term": "total data array out",
+    "term_uid": 3954
+   },
+   "dst": "new:TH2.inner",
+   "why": "PD374(d)"
+  },
+  {
+   "op": "wire",
+   "id": "w_hr",
+   "src": "new:TH2.outer",
+   "dst": {
+    "uid": 24150,
+    "term": "",
+    "term_uid": 24235
+   },
+   "why": "PD374(d)"
+  },
+  {
+   "op": "wire",
+   "id": "w_hpass",
+   "src": {
+    "uid": "new:TH1",
+    "side": "inner",
+    "frame": "True"
+   },
+   "dst": {
+    "uid": "new:TH2",
+    "side": "inner",
+    "frame": "True"
+   },
+   "why": "PD374(d) value passes through the timed-out frame"
+  },
+  {
+   "op": "add_shift_reg",
+   "id": "sr_c7",
+   "loop": 23041,
+   "body": 23405,
+   "parent": 686,
+   "as": "CS7",
+   "why": "PD374(b) 1.7 record counter SR"
+  },
+  {
+   "op": "create",
+   "id": "c_k07",
+   "class": "DigitalNumericConstant",
+   "diagram": 686,
+   "as": "K07",
+   "prim": "const_donor",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorSRInit_v0.vi",
+    "uid": 248
+   },
+   "terminals": [
+    {
+     "name": "",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "PD374(b) init 0 (donor as P5-1 c_k0)"
+  },
+  {
+   "op": "wire",
+   "id": "w_k07",
+   "src": "new:K07.value",
+   "dst": "new:CS7L.outer",
+   "why": "PD374(b)"
+  },
+  {
+   "op": "create",
+   "id": "c_inc7",
+   "class": "Function",
+   "diagram": "new:CQ7.f0",
+   "as": "IN7",
+   "prim": "Increment",
+   "donor": {
+    "donor": "$work",
+    "uid": 1978
+   },
+   "terminals": [
+    {
+     "name": "x+1",
+     "is_source": true,
+     "term_class": "OverridableParameterTerminal"
+    },
+    {
+     "name": "x",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    }
+   ],
+   "why": "PD374(b) +1 only where an element was dequeued (donor as P5-1 c_inc)"
+  },
+  {
+   "op": "tunnel",
+   "id": "t_ci7",
+   "loop": "new:CQ7",
+   "body": "new:CQ7.f0",
+   "parent": 23405,
+   "dir": "in",
+   "as": "TC7",
+   "why": "PD374(b)"
+  },
+  {
+   "op": "wire",
+   "id": "w_ci7_in",
+   "src": "new:CS7L.inner",
+   "dst": "new:TC7.outer",
+   "why": "PD374(b)"
+  },
+  {
+   "op": "wire",
+   "id": "w_ci7_inc",
+   "src": "new:TC7.inner",
+   "dst": "new:IN7.x",
+   "why": "PD374(b)"
+  },
+  {
+   "op": "wire",
+   "id": "w_c7_fi",
+   "src": {
+    "uid": "new:TC7",
+    "side": "inner",
+    "frame": "False"
+   },
+   "dst": {
+    "uid": 376,
+    "term": "frame index",
+    "term_uid": 5763
+   },
+   "why": "PD374(b) t7 <- the counter's LEFT value (before this call)"
+  },
+  {
+   "op": "tunnel",
+   "id": "t_co7",
+   "loop": "new:CQ7",
+   "body": "new:CQ7.f0",
+   "parent": 23405,
+   "dir": "out",
+   "as": "TD7",
+   "why": "PD374(b)"
+  },
+  {
+   "op": "wire",
+   "id": "w_inc7_co",
+   "src": "new:IN7.x+1",
+   "dst": "new:TD7.inner",
+   "why": "PD374(b)"
+  },
+  {
+   "op": "wire",
+   "id": "w_co7_r",
+   "src": "new:TD7.outer",
+   "dst": "new:CS7R.inner",
+   "why": "PD374(b)"
+  },
+  {
+   "op": "wire",
+   "id": "w_c7_pass",
+   "src": {
+    "uid": "new:TC7",
+    "side": "inner",
+    "frame": "True"
+   },
+   "dst": {
+    "uid": "new:TD7",
+    "side": "inner",
+    "frame": "True"
+   },
+   "why": "PD374(b) no element -> no increment"
+  },
+  {
+   "op": "delete_wire",
+   "id": "dw_cond",
+   "wire_uid": 23489,
+   "why": "PD374(d) scaffold stop wire #23042 -> cond (read from the graph)"
+  },
+  {
+   "op": "delete_object",
+   "id": "do_23042",
+   "uid": 23042,
+   "why": "PD374(d) scaffold stop `#23042` removed"
+  },
+  {
+   "op": "delete_object",
+   "id": "do_23501",
+   "uid": 23501,
+   "why": "PD374(d) scaffold in-tunnel `#23501` removed (NOT #8486)"
+  },
+  {
+   "op": "create",
+   "id": "c_lr7",
+   "class": "Local",
+   "diagram": 23405,
+   "as": "LR7",
+   "label": "records final (1.2 to 1.7)",
+   "mode": "read",
+   "terminals": [
+    {
+     "name": "records final (1.2 to 1.7)",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "PD374(c) published counter read by a local"
+  },
+  {
+   "op": "create",
+   "id": "c_eq7",
+   "class": "Comparison",
+   "diagram": 23405,
+   "as": "EQ7",
+   "prim": "Equal?",
+   "donor": {
+    "donor": "$work",
+    "uid": 10019
+   },
+   "terminals": [
+    {
+     "name": "x = y?",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "y",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "x",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    }
+   ],
+   "why": "PD374(c) counter (after this iteration) == records final"
+  },
+  {
+   "op": "wire",
+   "id": "w_eq7_x",
+   "src": "new:TD7.outer",
+   "dst": "new:EQ7.x",
+   "why": "PD374(c) the counter AFTER this iteration = the case out-tunnel value"
+  },
+  {
+   "op": "wire",
+   "id": "w_eq7_y",
+   "src": "new:LR7.value",
+   "dst": "new:EQ7.y",
+   "why": "PD374(c)"
+  },
+  {
+   "op": "create",
+   "id": "c_and7",
+   "class": "Function",
+   "diagram": 23405,
+   "as": "AN7",
+   "prim": "And",
+   "donor": {
+    "donor": "$work",
+    "uid": 9647
+   },
+   "terminals": [
+    {
+     "name": "x .and. y?",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "y",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "x",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    }
+   ],
+   "why": "PD374(c) (records final >= 0) AND (counter == records final)"
+  },
+  {
+   "op": "wire",
+   "id": "w_and7_x",
+   "src": "new:EQ7.x = y?",
+   "dst": "new:AN7.x",
+   "why": "PD374(c)"
+  },
+  {
+   "op": "wire",
+   "id": "w_and7_cond",
+   "src": "new:AN7.x .and. y?",
+   "dst": {
+    "uid": 23041,
+    "term": "cond"
+   },
+   "why": "PD374(c) 1.7 stops"
+  }
+ ],
+ "final": false,
+ "finalized": {
+  "base": {
+   "path": "tools/bench/graph_ring_p5s01_20261009_125622.json",
+   "md5": "6716c49948f097b8ac0e1780930bfab1"
+  },
+  "plan_in": {
+   "path": "tools/bench/sim/ring_p5s02/_census/plan_ring_p5s02c_in.json",
+   "md5": "b5fa3d77d11db74d68647e098af9d8c7"
+  },
+  "last_step": {
+   "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_62_wire.json",
+   "md5": "0c5fe00f15c2f09cbcf83fe0be3f3a05"
+  },
+  "summary": {
+   "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/summary.json",
+   "md5": "ea17a9d77682ebc1607bbb13237bc63b"
+  },
+  "end_cdiff_rows": [
+   "10068|ParameterTerminal|x|0",
+   "10150|ParameterTerminal|x|0",
+   "10382|ParameterTerminal|x|0",
+   "10757|Terminal|array|0",
+   "11261|Terminal|array|0",
+   "11261|Terminal|element|0",
+   "11529|ParameterTerminal|x|0",
+   "2048|Terminal|array|0",
+   "2048|Terminal|length|0",
+   "2626|Terminal|array|0",
+   "2626|Terminal|element|0",
+   "2626|Terminal|element|1",
+   "2626|Terminal|element|2",
+   "28083|Terminal|Magnet position|0",
+   "29240|ParameterTerminal|x|0",
+   "29625|Terminal|array|0",
+   "376|Terminal|current frame data array in|0",
+   "376|Terminal|frame index|0",
+   "5058|Terminal|Bead is good? array in|0",
+   "5058|Terminal|Image In|0",
+   "5058|Terminal|pos in cal image in|0",
+   "5058|Terminal|x,y,z array|0",
+   "6384|Terminal|actual # data points|0",
+   "6384|Terminal|error in|0",
+   "6384|Terminal|file # to append|0",
+   "8634|Terminal|array|0"
+  ],
+  "failed": null,
+  "first_divergent": {
+   "n": 0,
+   "op": "base",
+   "id": null,
+   "rows_from_here": 26
+  },
+  "open_rows": [],
+  "open_rows_match": false,
+  "open_rows_match_legacy": false,
+  "open_rows_classed": {
+   "ok": false,
+   "want": [],
+   "c4_n": 0,
+   "c4_keys": 0,
+   "c4_bad": [],
+   "unclassed": []
+  },
+  "cdiff_inputs": {
+   "labels": "node_labels_default",
+   "labels_n": 626,
+   "fs_pairs": "state",
+   "fs_pairs_n": 576
+  },
+  "step_files": [
+   {
+    "n": 0,
+    "op": "base",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_00_base.json",
+    "md5": "71cb75bf07dd3e4f30d980029364e4c0"
+   },
+   {
+    "n": 1,
+    "op": "add_shift_reg",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_01_add_shift_reg.json",
+    "md5": "cb8182b8bd33273b35b76898c5f7bf90"
+   },
+   {
+    "n": 2,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_02_wire.json",
+    "md5": "6c9c3d5e0eab63b997e99c2763b22c6a"
+   },
+   {
+    "n": 3,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_03_create.json",
+    "md5": "dc5831b53ee48503cf87173b6b3f9178"
+   },
+   {
+    "n": 4,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_04_wire.json",
+    "md5": "bf0382fee2664b1eec779278f00aaaa7"
+   },
+   {
+    "n": 5,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_05_wire.json",
+    "md5": "e33844bff38d5c65345fd4c84407385d"
+   },
+   {
+    "n": 6,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_06_create.json",
+    "md5": "6bbb3dc72e1490f725f7310d433291ab"
+   },
+   {
+    "n": 7,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_07_wire.json",
+    "md5": "6477a42cfcc5d27d4dc2656e8304c778"
+   },
+   {
+    "n": 8,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_08_create.json",
+    "md5": "3eb41e0a571ab9eacce540ad87f85c08"
+   },
+   {
+    "n": 9,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_09_create.json",
+    "md5": "7f4a89a587687770c7a7a4e7e9f9e026"
+   },
+   {
+    "n": 10,
+    "op": "move_in",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_10_move_in.json",
+    "md5": "6294c40679b0b4f6fefd3974256c1690"
+   },
+   {
+    "n": 11,
+    "op": "move_in",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_11_move_in.json",
+    "md5": "606ed636a6bf62edc9f4827d365de0e1"
+   },
+   {
+    "n": 12,
+    "op": "move_in",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_12_move_in.json",
+    "md5": "6ee5beacf15614021a4b5498f1bf5bf9"
+   },
+   {
+    "n": 13,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_13_wire.json",
+    "md5": "3b637b892ff909ee5c3dbc79aa1c7109"
+   },
+   {
+    "n": 14,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_14_wire.json",
+    "md5": "adf6ed7794fc93d99dcae6bfebd86131"
+   },
+   {
+    "n": 15,
+    "op": "tunnel",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_15_tunnel.json",
+    "md5": "b905a07e8bd7315e0ded6c01bd6e0349"
+   },
+   {
+    "n": 16,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_16_wire.json",
+    "md5": "2670b699ca09a3de64a5be991884d09b"
+   },
+   {
+    "n": 17,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_17_wire.json",
+    "md5": "dee31d7532555ee55ba74256e415b89c"
+   },
+   {
+    "n": 18,
+    "op": "tunnel",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_18_tunnel.json",
+    "md5": "854ca5f50acc76f7f979cd08273eb54c"
+   },
+   {
+    "n": 19,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_19_wire.json",
+    "md5": "b42bdfe9ac957a735e1792a1623f7e0e"
+   },
+   {
+    "n": 20,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_20_wire.json",
+    "md5": "9567d14f34313a629be9b50ae9e614d4"
+   },
+   {
+    "n": 21,
+    "op": "tunnel",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_21_tunnel.json",
+    "md5": "ee32c2ff7d46685b636e1a7be309410f"
+   },
+   {
+    "n": 22,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_22_wire.json",
+    "md5": "1ddf1bce1b8cb5dff995730efa586edd"
+   },
+   {
+    "n": 23,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_23_wire.json",
+    "md5": "b6d861e223b4b5e6dc8f77d62a11feeb"
+   },
+   {
+    "n": 24,
+    "op": "tunnel",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_24_tunnel.json",
+    "md5": "faa326201d154d76113270260a0ad809"
+   },
+   {
+    "n": 25,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_25_wire.json",
+    "md5": "50bc9560df6ca0ee2a3814cd2c369292"
+   },
+   {
+    "n": 26,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_26_wire.json",
+    "md5": "057eec5ff21cc1c7c8e63af5d80efdb5"
+   },
+   {
+    "n": 27,
+    "op": "tunnel",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_27_tunnel.json",
+    "md5": "797f249fc6242d37abb0a2a670e97d61"
+   },
+   {
+    "n": 28,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_28_wire.json",
+    "md5": "eab8f8a3c184331d569847921bd52a26"
+   },
+   {
+    "n": 29,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_29_wire.json",
+    "md5": "31ec074dcafbc53026dd7a297bcf20fe"
+   },
+   {
+    "n": 30,
+    "op": "tunnel",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_30_tunnel.json",
+    "md5": "f0fc3b82c85243576196fa3f1bdde8b8"
+   },
+   {
+    "n": 31,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_31_wire.json",
+    "md5": "79a4d7e4df0ae0dd34a66db0ddd458a3"
+   },
+   {
+    "n": 32,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_32_wire.json",
+    "md5": "54c1854737e1eb8507785eb8a32f2def"
+   },
+   {
+    "n": 33,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_33_wire.json",
+    "md5": "44957f2a6cd24b7560df26843f4cd4c0"
+   },
+   {
+    "n": 34,
+    "op": "tunnel",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_34_tunnel.json",
+    "md5": "d8d99bd14fa82537de6c0cf18f9fc915"
+   },
+   {
+    "n": 35,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_35_wire.json",
+    "md5": "01bbb4ed46c7acd05a383ad8a68e01ad"
+   },
+   {
+    "n": 36,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_36_wire.json",
+    "md5": "f74227f8ded63621722993cb8e0e0f74"
+   },
+   {
+    "n": 37,
+    "op": "tunnel",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_37_tunnel.json",
+    "md5": "05038547150760f17341f85fce98d32c"
+   },
+   {
+    "n": 38,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_38_wire.json",
+    "md5": "a52bb81d3b547e4288c3b664adaee308"
+   },
+   {
+    "n": 39,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_39_wire.json",
+    "md5": "2aab1f56ff85eaf72bf31c7b30476988"
+   },
+   {
+    "n": 40,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_40_wire.json",
+    "md5": "47bf606e890984d5df7c5697088735a5"
+   },
+   {
+    "n": 41,
+    "op": "add_shift_reg",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_41_add_shift_reg.json",
+    "md5": "41bad30e92c95da1a58c4d5364d5047f"
+   },
+   {
+    "n": 42,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_42_create.json",
+    "md5": "c48250134354ca249cf0b015cc80bee7"
+   },
+   {
+    "n": 43,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_43_wire.json",
+    "md5": "eb103268506bd9e62768567f259e552d"
+   },
+   {
+    "n": 44,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_44_create.json",
+    "md5": "cb7255a947d932d4600b219a937f7305"
+   },
+   {
+    "n": 45,
+    "op": "tunnel",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_45_tunnel.json",
+    "md5": "acefd6b482356bd63db2c4492b95fea4"
+   },
+   {
+    "n": 46,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_46_wire.json",
+    "md5": "3b0926003639159112a9ef0f8ee575fe"
+   },
+   {
+    "n": 47,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_47_wire.json",
+    "md5": "a6d1a6d317459b208a071abd9321495e"
+   },
+   {
+    "n": 48,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_48_wire.json",
+    "md5": "0ce0bd89d7d904b7508430cd41a960c0"
+   },
+   {
+    "n": 49,
+    "op": "tunnel",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_49_tunnel.json",
+    "md5": "d1cfd60fb2068f9a181d102ce964e52e"
+   },
+   {
+    "n": 50,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_50_wire.json",
+    "md5": "76afd26febbf496ff91283f8f268a2d5"
+   },
+   {
+    "n": 51,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_51_wire.json",
+    "md5": "d11609cffd85f6f06073123aac426b51"
+   },
+   {
+    "n": 52,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_52_wire.json",
+    "md5": "98d2ddb4ecc0209e64c942c66466f84d"
+   },
+   {
+    "n": 53,
+    "op": "delete_wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_53_delete_wire.json",
+    "md5": "2861ce7d5e78a59ca095efaebba785b2"
+   },
+   {
+    "n": 54,
+    "op": "delete_object",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_54_delete_object.json",
+    "md5": "56f056aae3d0eb3d177ac414b623e587"
+   },
+   {
+    "n": 55,
+    "op": "delete_object",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_55_delete_object.json",
+    "md5": "7d80404e3ff2ba89be0041cfb49d0c79"
+   },
+   {
+    "n": 56,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_56_create.json",
+    "md5": "6c47ecfe1c074d96cbfe4e780d5cd55a"
+   },
+   {
+    "n": 57,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_57_create.json",
+    "md5": "7679800ffe50cc2979d7fb5f674be558"
+   },
+   {
+    "n": 58,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_58_wire.json",
+    "md5": "68de2ba4cc2db6491207e923e900e651"
+   },
+   {
+    "n": 59,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_59_wire.json",
+    "md5": "acbeea5001e5321d1a69c26b840d473b"
+   },
+   {
+    "n": 60,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_60_create.json",
+    "md5": "006411d6fb5a0ed647a0f10aea15aa4a"
+   },
+   {
+    "n": 61,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_61_wire.json",
+    "md5": "66ef95287d2ad7d3eae5c961a2d2db44"
+   },
+   {
+    "n": 62,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02/_census/ring_p5s02c/step_62_wire.json",
+    "md5": "0c5fe00f15c2f09cbcf83fe0be3f3a05"
+   }
+  ],
+  "undecided": 0,
+  "at": "2026-10-09 13:15:58",
+  "fs_routes": {},
+  "addr_pos": [
+   {
+    "n": 2,
+    "addr": "{\"term\":\"queue out\",\"term_uid\":31335,\"uid\":31258}",
+    "source": true,
+    "owner": 31258,
+    "index": 5,
+    "class": "ParameterTerminal",
+    "name": "queue out"
+   },
+   {
+    "n": 2,
+    "addr": "new:QS7L.outer",
+    "source": false,
+    "owner": -2,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 4,
+    "addr": "new:QS7L.inner",
+    "source": true,
+    "owner": -2,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 4,
+    "addr": "new:DQ1.queue",
+    "source": false,
+    "owner": -7,
+    "index": 0,
+    "class": "ParameterTerminal",
+    "name": "queue"
+   },
+   {
+    "n": 5,
+    "addr": "new:DQ1.queue out",
+    "source": true,
+    "owner": -7,
+    "index": 3,
+    "class": "ParameterTerminal",
+    "name": "queue out"
+   },
+   {
+    "n": 5,
+    "addr": "new:QS7R.inner",
+    "source": false,
+    "owner": -1,
+    "index": 0,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 7,
+    "addr": "new:QS7R.outer",
+    "source": true,
+    "owner": -1,
+    "index": 1,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 7,
+    "addr": "new:RQ1.queue",
+    "source": false,
+    "owner": -17,
+    "index": 0,
+    "class": "ParameterTerminal",
+    "name": "queue"
+   },
+   {
+    "n": 8,
+    "addr": "new:DQ1.timeout in ms (-1)",
+    "source": false,
+    "owner": -7,
+    "index": 1,
+    "class": "ParameterTerminal",
+    "name": "timeout in ms (-1)"
+   },
+   {
+    "n": 9,
+    "addr": "new:DQ1.timed out?",
+    "source": true,
+    "owner": -7,
+    "index": 5,
+    "class": "ParameterTerminal",
+    "name": "timed out?"
+   },
+   {
+    "n": 13,
+    "addr": "{\"term\":\"File # Saved\",\"term_uid\":3060,\"uid\":3052}",
+    "source": true,
+    "owner": 3052,
+    "index": 0,
+    "class": "Terminal",
+    "name": "File # Saved"
+   },
+   {
+    "n": 13,
+    "addr": "{\"term\":\"saved file refnum\",\"term_uid\":5772,\"uid\":376}",
+    "source": false,
+    "owner": 376,
+    "index": 8,
+    "class": "Terminal",
+    "name": "saved file refnum"
+   },
+   {
+    "n": 14,
+    "addr": "{\"term\":\"file progress\",\"term_uid\":5704,\"uid\":376}",
+    "source": true,
+    "owner": 376,
+    "index": 3,
+    "class": "Terminal",
+    "name": "file progress"
+   },
+   {
+    "n": 14,
+    "addr": "{\"term_uid\":3453,\"uid\":3453}",
+    "source": false,
+    "owner": 3453,
+    "index": 0,
+    "class": "ControlTerminal",
+    "name": "file progress"
+   },
+   {
+    "n": 16,
+    "addr": "new:DQ1.element",
+    "source": true,
+    "owner": -7,
+    "index": 4,
+    "class": "ParameterTerminal",
+    "name": "element"
+   },
+   {
+    "n": 16,
+    "addr": "new:TE7.outer",
+    "source": false,
+    "owner": -38,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 17,
+    "addr": "new:TE7.inner",
+    "source": true,
+    "owner": -38,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 17,
+    "addr": "{\"term\":\"current frame data array in\",\"term_uid\":5754,\"uid\":376}",
+    "source": false,
+    "owner": 376,
+    "index": 5,
+    "class": "Terminal",
+    "name": "current frame data array in"
+   },
+   {
+    "n": 19,
+    "addr": "{\"term\":\"\",\"term_uid\":24360,\"uid\":24357}",
+    "source": true,
+    "owner": 24357,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 19,
+    "addr": "new:TF1.outer",
+    "source": false,
+    "owner": -44,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 20,
+    "addr": "new:TF1.inner",
+    "source": true,
+    "owner": -44,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 20,
+    "addr": "{\"term\":\"cal cluster path\",\"term_uid\":5760,\"uid\":376}",
+    "source": false,
+    "owner": 376,
+    "index": 6,
+    "class": "Terminal",
+    "name": "cal cluster path"
+   },
+   {
+    "n": 22,
+    "addr": "{\"term\":\"\",\"term_uid\":24367,\"uid\":24361}",
+    "source": true,
+    "owner": 24361,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 22,
+    "addr": "new:TF2.outer",
+    "source": false,
+    "owner": -49,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 23,
+    "addr": "new:TF2.inner",
+    "source": true,
+    "owner": -49,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 23,
+    "addr": "{\"term\":\"file size\",\"term_uid\":5778,\"uid\":376}",
+    "source": false,
+    "owner": 376,
+    "index": 9,
+    "class": "Terminal",
+    "name": "file size"
+   },
+   {
+    "n": 25,
+    "addr": "{\"term\":\"\",\"term_uid\":25235,\"uid\":25223}",
+    "source": true,
+    "owner": 25223,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 25,
+    "addr": "new:TF3.outer",
+    "source": false,
+    "owner": -54,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 26,
+    "addr": "new:TF3.inner",
+    "source": true,
+    "owner": -54,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 26,
+    "addr": "{\"term\":\"selected path\",\"term_uid\":5787,\"uid\":376}",
+    "source": false,
+    "owner": 376,
+    "index": 11,
+    "class": "Terminal",
+    "name": "selected path"
+   },
+   {
+    "n": 28,
+    "addr": "{\"term\":\"error out\",\"term_uid\":24190,\"uid\":24133}",
+    "source": true,
+    "owner": 24133,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": "error out"
+   },
+   {
+    "n": 28,
+    "addr": "new:TG1.outer",
+    "source": false,
+    "owner": -59,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 29,
+    "addr": "new:TG1.inner",
+    "source": true,
+    "owner": -59,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 29,
+    "addr": "{\"term\":\"error in\",\"term_uid\":5683,\"uid\":376}",
+    "source": false,
+    "owner": 376,
+    "index": 2,
+    "class": "Terminal",
+    "name": "error in"
+   },
+   {
+    "n": 31,
+    "addr": "{\"term\":\"error out\",\"term_uid\":3934,\"uid\":376}",
+    "source": true,
+    "owner": 376,
+    "index": 0,
+    "class": "Terminal",
+    "name": "error out"
+   },
+   {
+    "n": 31,
+    "addr": "new:TG2.inner",
+    "source": false,
+    "owner": -64,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 32,
+    "addr": "new:TG2.outer",
+    "source": true,
+    "owner": -64,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 32,
+    "addr": "{\"term\":\"error out\",\"term_uid\":24139,\"uid\":24083}",
+    "source": false,
+    "owner": 24083,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": "error out"
+   },
+   {
+    "n": 33,
+    "addr": "{\"frame\":\"True\",\"side\":\"inner\",\"uid\":\"new:TG1\"}",
+    "source": true,
+    "owner": -59,
+    "index": 2,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 33,
+    "addr": "{\"frame\":\"True\",\"side\":\"inner\",\"uid\":\"new:TG2\"}",
+    "source": false,
+    "owner": -64,
+    "index": 2,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 35,
+    "addr": "{\"term\":\"\",\"term_uid\":24288,\"uid\":24187}",
+    "source": true,
+    "owner": 24187,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 35,
+    "addr": "new:TH1.outer",
+    "source": false,
+    "owner": -70,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 36,
+    "addr": "new:TH1.inner",
+    "source": true,
+    "owner": -70,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 36,
+    "addr": "{\"term\":\"total data array in\",\"term_uid\":5782,\"uid\":376}",
+    "source": false,
+    "owner": 376,
+    "index": 10,
+    "class": "Terminal",
+    "name": "total data array in"
+   },
+   {
+    "n": 38,
+    "addr": "{\"term\":\"total data array out\",\"term_uid\":3954,\"uid\":376}",
+    "source": true,
+    "owner": 376,
+    "index": 1,
+    "class": "Terminal",
+    "name": "total data array out"
+   },
+   {
+    "n": 38,
+    "addr": "new:TH2.inner",
+    "source": false,
+    "owner": -75,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 39,
+    "addr": "new:TH2.outer",
+    "source": true,
+    "owner": -75,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 39,
+    "addr": "{\"term\":\"\",\"term_uid\":24235,\"uid\":24150}",
+    "source": false,
+    "owner": 24150,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 40,
+    "addr": "{\"frame\":\"True\",\"side\":\"inner\",\"uid\":\"new:TH1\"}",
+    "source": true,
+    "owner": -70,
+    "index": 2,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 40,
+    "addr": "{\"frame\":\"True\",\"side\":\"inner\",\"uid\":\"new:TH2\"}",
+    "source": false,
+    "owner": -75,
+    "index": 2,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 43,
+    "addr": "new:K07.value",
+    "source": true,
+    "owner": -87,
+    "index": 0,
+    "class": "Terminal",
+    "name": ""
+   },
+   {
+    "n": 43,
+    "addr": "new:CS7L.outer",
+    "source": false,
+    "owner": -82,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 46,
+    "addr": "new:CS7L.inner",
+    "source": true,
+    "owner": -82,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 46,
+    "addr": "new:TC7.outer",
+    "source": false,
+    "owner": -93,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 47,
+    "addr": "new:TC7.inner",
+    "source": true,
+    "owner": -93,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 47,
+    "addr": "new:IN7.x",
+    "source": false,
+    "owner": -90,
+    "index": 1,
+    "class": "ParameterTerminal",
+    "name": "x"
+   },
+   {
+    "n": 48,
+    "addr": "{\"frame\":\"False\",\"side\":\"inner\",\"uid\":\"new:TC7\"}",
+    "source": true,
+    "owner": -93,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 48,
+    "addr": "{\"term\":\"frame index\",\"term_uid\":5763,\"uid\":376}",
+    "source": false,
+    "owner": 376,
+    "index": 7,
+    "class": "Terminal",
+    "name": "frame index"
+   },
+   {
+    "n": 50,
+    "addr": "new:IN7.x+1",
+    "source": true,
+    "owner": -90,
+    "index": 0,
+    "class": "OverridableParameterTerminal",
+    "name": "x+1"
+   },
+   {
+    "n": 50,
+    "addr": "new:TD7.inner",
+    "source": false,
+    "owner": -99,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 51,
+    "addr": "new:TD7.outer",
+    "source": true,
+    "owner": -99,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 51,
+    "addr": "new:CS7R.inner",
+    "source": false,
+    "owner": -81,
+    "index": 0,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 52,
+    "addr": "{\"frame\":\"True\",\"side\":\"inner\",\"uid\":\"new:TC7\"}",
+    "source": true,
+    "owner": -93,
+    "index": 2,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 52,
+    "addr": "{\"frame\":\"True\",\"side\":\"inner\",\"uid\":\"new:TD7\"}",
+    "source": false,
+    "owner": -99,
+    "index": 2,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 58,
+    "addr": "new:TD7.outer",
+    "source": true,
+    "owner": -99,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 58,
+    "addr": "new:EQ7.x",
+    "source": false,
+    "owner": -108,
+    "index": 2,
+    "class": "ParameterTerminal",
+    "name": "x"
+   },
+   {
+    "n": 59,
+    "addr": "new:LR7.value",
+    "source": true,
+    "owner": -106,
+    "index": 0,
+    "class": "Terminal",
+    "name": "records final (1.2 to 1.7)"
+   },
+   {
+    "n": 59,
+    "addr": "new:EQ7.y",
+    "source": false,
+    "owner": -108,
+    "index": 1,
+    "class": "ParameterTerminal",
+    "name": "y"
+   },
+   {
+    "n": 61,
+    "addr": "new:EQ7.x = y?",
+    "source": true,
+    "owner": -108,
+    "index": 0,
+    "class": "ParameterTerminal",
+    "name": "x = y?"
+   },
+   {
+    "n": 61,
+    "addr": "new:AN7.x",
+    "source": false,
+    "owner": -113,
+    "index": 2,
+    "class": "ParameterTerminal",
+    "name": "x"
+   },
+   {
+    "n": 62,
+    "addr": "new:AN7.x .and. y?",
+    "source": true,
+    "owner": -113,
+    "index": 0,
+    "class": "ParameterTerminal",
+    "name": "x .and. y?"
+   }
+  ],
+  "fs_border_gate": {
+   "status": "PASS",
+   "unmeasured": [
+    14430,
+    31050,
+    34409,
+    34489,
+    43605,
+    44160,
+    44164
+   ],
+   "used": {}
+  }
+ }
+}

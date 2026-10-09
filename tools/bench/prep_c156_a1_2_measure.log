@@ -1,0 +1,42 @@
+BGRUN START 2026-10-09 14:45:10 limit 15.0 min: py -u tools/bench/prep_c156_a1_2_measure.py
+BGRUN PID 24988
+FACT md5 stagexec 53e17623961d2fd2be711d2754891bd4 stagesim eb99c6bab81633f9bdd7c10dce6bfc0a graph 6716c49948f097b8ac0e1780930bfab1 rin d84634bdbe0f4f94669d2443af116b8e all 15da9551b4e1ab8620f4fa815c224da3
+GATE PASS | R0 first 60 actions of plan_ring_p5s02r_in.json == plan_ring_p5s02r_all.json actions | 60
+FACT R3 failed n 69 op wire id w_k3pass: wire new:IK3.inner -> new:OK3.inner: source on diagram -30, sink on diagram -29 - a border needs a tunnel/register action first
+FACT TUN IK3 #-128 case_tunnel_frame -30; rows (term, owner, class, term_class, frame, wire) [(-129, -128, 'SelectorTunnel', 'OuterTerminal', 23405, -132), (-130, -128, 'SelectorTunnel', 'InnerTerminal', -29, 0), (-131, -128, 'SelectorTunnel', 'InnerTerminal', -30, 0)]
+FACT TUN OK3 #-123 case_tunnel_frame -29; rows (term, owner, class, term_class, frame, wire) [(-124, -123, 'SelectorTunnel', 'OuterTerminal', 23405, -127), (-125, -123, 'SelectorTunnel', 'InnerTerminal', -29, -37), (-126, -123, 'SelectorTunnel', 'InnerTerminal', -30, 0)]
+FACT CASE CQ7 #-28 frames [['False', -29], ['True', -30]]
+FACT ENDS src (-131, -128, 'SelectorTunnel', 'InnerTerminal', -30, 0) | dst (-125, -123, 'SelectorTunnel', 'InnerTerminal', -29, -37)
+GATE PASS | R3 K3 as written fails at action 69 (w_k3pass) with the stagesim.py:1536 border message; src IK3.inner on frame 'True', dst OK3.inner on frame 'False' = OK3's case_tunnel_frame | ((-131, -128, 'SelectorTunnel', 'InnerTerminal', -30, 0), (-125, -123, 'SelectorTunnel', 'InnerTerminal', -29, -37))
+GATE PASS | F3 OK3 has ONE InnerTerminal on every frame of CQ7 (stagesim._case_tunnel) | [-30, -29]
+GATE PASS | F3b resolve_addr OK3 inner frame 'True' = its face on the same diagram as the source | (-126, -123, 'SelectorTunnel', 'InnerTerminal', -30, 0)
+FACT V3 current compile refuses the frame pass wire: action 67: tunnel new:IK3 must be followed by exactly one wire into it and one out of it (LabVIEW makes a tunnel only by wiring across the border)
+GATE PASS | V3 the CURRENT compile refuses `frame` on the pass wire's dst (the tunnel group needs a frameless out-wire) | action 67: tunnel new:IK3 must be followed by exactly one wire into it and one out of it (LabVIEW makes a tunnel only by wiring across the border)
+FACT V3s current stagesim on the frame pass wire: failed None; steps 70; provisional []
+FACT R4 failed n 69 op wire id w_k4pass: wire new:IK4.inner -> new:OK4.inner: source on diagram -30, sink on diagram -29 - a border needs a tunnel/register action first
+FACT TUN IK4 #-129 case_tunnel_frame -30; rows (term, owner, class, term_class, frame, wire) [(-130, -129, 'SelectorTunnel', 'OuterTerminal', 23405, -133), (-131, -129, 'SelectorTunnel', 'InnerTerminal', -29, 0), (-132, -129, 'SelectorTunnel', 'InnerTerminal', -30, 0)]
+FACT TUN OK4 #-123 case_tunnel_frame -29; rows (term, owner, class, term_class, frame, wire) [(-124, -123, 'SelectorTunnel', 'OuterTerminal', 23405, -128), (-125, -123, 'SelectorTunnel', 'InnerTerminal', -29, -127), (-126, -123, 'SelectorTunnel', 'InnerTerminal', -30, 0)]
+FACT CASE CQ7 #-28 frames [['False', -29], ['True', -30]]
+FACT ENDS src (-132, -129, 'SelectorTunnel', 'InnerTerminal', -30, 0) | dst (-125, -123, 'SelectorTunnel', 'InnerTerminal', -29, -127)
+GATE PASS | R4 K4 as written fails at action 69 (w_k4pass) with the stagesim.py:1536 border message; src IK4.inner on frame 'True', dst OK4.inner on frame 'False' = OK4's case_tunnel_frame | ((-132, -129, 'SelectorTunnel', 'InnerTerminal', -30, 0), (-125, -123, 'SelectorTunnel', 'InnerTerminal', -29, -127))
+GATE PASS | F4 OK4 has ONE InnerTerminal on every frame of CQ7 (stagesim._case_tunnel) | [-30, -29]
+GATE PASS | F4b resolve_addr OK4 inner frame 'True' = its face on the same diagram as the source | (-126, -123, 'SelectorTunnel', 'InnerTerminal', -30, 0)
+FACT V4 current compile refuses the frame pass wire: action 67: tunnel new:IK4 must be followed by exactly one wire into it and one out of it (LabVIEW makes a tunnel only by wiring across the border)
+GATE PASS | V4 the CURRENT compile refuses `frame` on the pass wire's dst (the tunnel group needs a frameless out-wire) | action 67: tunnel new:IK4 must be followed by exactly one wire into it and one out of it (LabVIEW makes a tunnel only by wiring across the border)
+FACT V4s current stagesim on the frame pass wire: failed None; steps 70; provisional []
+FACT G30726 frames [30914, 30922]; tunnel inner faces per owner {30897: [30914, 30922], 31000: [30914, 30922], 31175: [30914, 30922], 31186: [30914, 30922], 31257: [30914, 30922], 31293: [30914, 30922]}
+GATE PASS | G every tunnel/selector of base case #30726 in graph 6716c499 has an inner face on each frame [30914, 30922] | {30897: [30914, 30922], 31000: [30914, 30922], 31175: [30914, 30922], 31186: [30914, 30922], 31257: [30914, 30922], 31293: [30914, 30922]}
+FACT B plans 200 compiled 120 refused 15 skipped 65; written tools\bench\sim\ring_p5s02pw\compile_before.json 7ca1c4c4811dd0651f1c2e7599d85baf
+FACT B plan_ring_p5s01a.json md5 ed62e8d6 ops 14 error 
+FACT B plan_ring_p5s01b.json md5 75a77a00 ops 8 error 
+FACT B plan_ring_p5s01_in.json md5 fabc4b9c ops 22 error 
+FACT B plan_ring_p5s02a.json md5 4284c22a ops 17 error 
+FACT B plan_ring_p5s02.json md5 285cb59a ops 19 error 
+FACT B plan_ring_p5s02_all.json md5 fc5b38a0 ops 42 error 
+FACT B plan_ring_p5s02_in.json md5 bed3a5e7 ops 19 error 
+FACT B plan_ring_p5s02a_in.json md5 af3e925d ops 17 error 
+FACT B plan_ring_p5s02r_all.json md5 15da9551 ops 40 error 
+FACT B plan_ring_p5s02r_in.json md5 d84634bd ops 52 error 
+GATE PASS | B before-list written (200 plans) | 
+RESULT {"status":"PASS","gates":{"pass":11,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/bench/sim/ring_p5s02pw/compile_before.json","md5":"7ca1c4c4811dd0651f1c2e7599d85baf"}],"schema":"result-line/1","card":"156-a1-2","labview":"none"}
+BGRUN END rc=0 after 394s

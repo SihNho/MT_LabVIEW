@@ -1,0 +1,22 @@
+{
+ "schema": "assign-result/1",
+ "cycle": 156,
+ "round": 1,
+ "status": "HANDBACK",
+ "cards": ["156-a1-1", "156-a1-2", "156-a2-1", "156-a2-2"],
+ "pass_evidence": [
+  {"item": 0, "met": true, "evidence": ["tools/bench/diag_c156_a1_1_facts.md", "tools/bench/plan_ring_p5s02a.json"]},
+  {"item": 1, "met": true, "evidence": ["tools/bench/diag_c156_a1_1_facts.md", "tools/bench/diag_c156_a1_2_facts.md", "tools/bench/selftest_c156_passwire.py"]},
+  {"item": 2, "met": true, "evidence": ["tools/bench/diag_c156_a1_2_facts.md", "tools/bench/sim/ring_p5s02pw/compile_before.json"]},
+  {"item": 3, "met": true, "evidence": ["tools/bench/diag_c156_a1_1_facts.md", "tools/bench/plan_ring_p5s02a.json"]},
+  {"item": 4, "met": true, "evidence": ["tools/bench/diag_c156_a1_2_facts.md", "tools/bench/selftest_c156_passwire.py"]},
+  {"item": 5, "met": true, "evidence": ["tools/bench/diag_c156_a1_1_facts.md", "archive/peer/2026-10-09-priorart-priorart-c156-a1-1-p5s02a.md"]},
+  {"item": 15, "met": true, "evidence": ["tools/bench/diag_c156_a2_2_facts.md"]},
+  {"item": 16, "met": true, "evidence": ["tools/bench/diag_c156_a2_2_facts.md"]}
+ ],
+ "handback": {
+  "reason": "a-unexplained-after-retry: the P5-2 step-1 scratch (card 156-a2-2, the one retry of 156-a2-1; 156-a2-1 only hit the PD287(a) launch gate) failed 14/2 in op 16: ADDRESS #24360 is an INNER face of LoopTunnel #24357 (diag_c156_p5s02a_scratch.log:254-255). Nothing adopted; LabVIEW gone.",
+  "question": null
+ },
+ "note": "Done: plan re-made (items 0-5; the K3/K4 pass-wire fix is stagexec 25a1494c, self-test 20/0); ops 1-15 ran with E1 diff 0, meter start 605.0 / peak 654.0 MB vs X10 672.1. NOT done: items 6-14 (scratch FAIL; no adoption, no load_by_vi, no step-2 plan, no fp-73/violations/fn-description cards). For judgement: (1) two open explanations, archive/peer/2026-10-09-c156-a2-2-p5s02a-innerface.md: the sim keeps wire 24330 on #24360 as 'ambiguous' after mv_376 so the route check chose cfw, and LabVIEW dropped it so the live face was unwired; or the executor has no inner-face route. The live read was not logged. I wrote an OFFLINE measurement card, task_156-a3-1 (md5-pinned; connect_route on sim step_15 for ops 16/17 wired vs wire 0, live-state evidence, ops after move_in that depend on ambiguous wires, E1 checkpoint rule, precedent grep), but guard_assign refused its dispatch, so it did NOT run. (2) PD379(e) is unmet by this plan: move_in ops 10-12 are not E1 checkpoints (scratch log:49,55,177,196,215). (3) op 17 (source #24367, also allow_either) will probably stop the same way. (4) The failed work copy D1_ring_p5s02a_20261009_152721.vi (cac5236b) and its resume record are left in place, not adopted; keep or delete is open. (5) K3f/K4f form T and the G/H out-groups on the 60-action plan were UNROUTABLE; the SR init type for t3/t4 is unread. (6) An inv helper has now been copied five times (diag_c156_a2_1_inv.py); extract it to a shared module. (7) fp-73, violations.py HH:Mx and the fn-descriptions batch were not started (ordered after the LabVIEW card). (8) Re-splitting rule: this stage failed once at op 16; a second failure at the same place requires a decomposition plan before another scratch."
+}

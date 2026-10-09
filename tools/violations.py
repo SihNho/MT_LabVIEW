@@ -91,12 +91,15 @@ DECISIONS = os.path.join(os.path.dirname(HERE), "docs", "violation-decisions.md"
 # same-day decision discharges if and only if it was written AFTER the review landed.
 # (Found while the gate was blocking this session's own build. Not self-authorised: the block was reported and
 # stood until the user decided - regrading a gate that blocks you is the `rule-evaded` slug itself.)
-DEC_RE = re.compile(r"^##\s*([a-z0-9-]+)\s*[-—]\s*(\d{4}-\d{2}-\d{2})(?:[ T]+(\d{2}:\d{2}))?", re.M)
+DEC_RE = re.compile(r"^##\s*([a-z0-9-]+)\s*[-—]\s*(\d{4}-\d{2}-\d{2})(?:[ T]+(\d{2}:\d[\dxX]))?", re.M)
 
 
 def _stamp(date, hhmm):
     """(date, time) as one comparable string. A bare date sorts BEFORE any timed entry on that date, which keeps
-    the old strictly-after-the-day behaviour for undated-time blocks and is the conservative direction."""
+    the old strictly-after-the-day behaviour for undated-time blocks and is the conservative direction.
+    A ten-minute header 'HH:Mx' (e.g. '12:2x') is read as its latest minute 'HH:M9' (card 156-b2-1)."""
+    if hhmm and hhmm[-1] in "xX":
+        hhmm = hhmm[:-1] + "9"
     return f"{date} {hhmm or '00:00'}"
 
 

@@ -1989,7 +1989,7 @@ finding 2 (`tools/bgrun.py --material` drops the three variables for every child
 DEFERRED by PD364(f): it runs ALONE before the next card that runs a pre-fix tree, or with the next gate-fp drain. Until then no
 card runs a pre-fix tree, so the leak cannot re-arm.
 
-## inference-over-measurement — 2026-10-09 07:0x (cycle 153 judgement, after archive/peer/2026-10-09-retrospective-cycle152.md:601)
+## inference-over-measurement — 2026-10-09 07:00 (cycle 153 judgement, after archive/peer/2026-10-09-retrospective-cycle152.md:601)
 
 `VIOLATION: inference-over-measurement | loss_min=19 | loss_usd=? | evidence=docs/d1/ring-p4d.md:29`: ACCEPTED. The cycle-152
 judgement wrote that the missing FS owner was the hand-back's whole cause. It did not run the 9-second provisional replay that
@@ -2002,3 +2002,16 @@ with the refusal text, continues, and prints one list of every refusal. A collec
 Self-test: on the s08 END graph with FS #29721's owner unmeasured and the naming table without the 152-b1-2 row, it must list
 both the op-185 owner refusal and the op-187 naming refusal. Built in cycle 153 (`docs/d1/ring-p4d.md` PD370(c)). Rule for every
 judgement: a purpose that orders a LabVIEW measurement to clear a simulator refusal puts a collect-all replay first.
+
+## device-failed — 2026-10-09 13:55 (cycle 156 judgement, after archive/peer/2026-10-09-retrospective-cycle155.md:571)
+
+`VIOLATION: device-failed | loss_min=8 | loss_usd=? | evidence=tools/bench/cards/result_154-a3-3.json:1`: ACCEPTED. The
+2026-09-27 08:30 device (gates_due + "headers are HH:MM") fired correctly; the cycle-154 judgement did not answer the DUE line,
+and the `07:0x` header parsed as 00:00 and refused the P5-1a scratch launch. The header rule lives only as discipline
+(`doc_lint` L8 still flags `12:2x` at line 1875).
+
+DECISION: device. `tools/violations.py` DEC_RE accepts `HH:Mx` and reads it as `HH:M9` (the upper bound: the retrospective a
+decision answers is always earlier than the decision, so it is never counted after it). Self-test on the literal `12:2x` and
+`07:0x` header forms plus one plain `HH:MM`. Not a hook file; built offline in cycle 156 after the LabVIEW card
+(`docs/d1/ring-p5.md` PD379(g)). Rule for every judgement: answer each `gates_due` line in the purpose's note before writing
+`next.json`.

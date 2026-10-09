@@ -1,0 +1,98 @@
+BGRUN START 2026-10-09 09:06:36 limit 5.0 min: py -u tools/bench/diag_c154_a2_3_census.py
+BGRUN PID 26576
+GATE PASS | P4a protected md5s == card pins (before) | {'tools/stagekit.py': '604529e8', 'tools/addrcheck.py': '207beb0d', 'tools/gscript.py': '1a80236e', 'tools/vigraph.py': 'a7eb58c7', 'tools/bench/memory_model.json': '6f2b5687', 'tools/bench/graph_ring_p4s09_20261009_062044.json': '22f967b5', 'docs/d1/ring-p5.md': '81df09ca', 'tools/stage_prerun.py': 'c739eb86', 'tools/stagexec.py': '1bab9cf9', 'tools/stagesim.py': '78b8d5a1', 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorQueue_v0.vi': '81dba822'}
+FACT owners 4866=['FlatSequenceFrame', 0] 686=['FlatSequenceFrame', 0] 23166=['WhileLoop', 10170] 10170=['Diagram', 686] 681=None
+FACT fs_measured 681 frames [3628, 81548, 113, 124, 5031, 3121, 1817, 4866, 686, 759]
+FACT s09 objs #1978 'Function' #29724 'SubVI' #2626 'BuildArray'
+FACT stagesim fs_of 4866=(681, 7) 686=(681, 8) 23166=None
+ROW c_qk         create        ok | how=None variant=None node=new:QK1 terms=['x,y,z array']
+ROW c_obt        create        ok | how=None variant=None node=new:QO1 terms=['name (unnamed)', 'element data type', 'create if not found? (T)', 'error in (no error)', 'max queue size (-1, unlimited)', 'queue out', 'created new?', 'error out']
+ROW w_qk_obt     wire          ok | how=new variant=None node=None terms=[]
+ROW c_km1        create        ok | how=None variant=None node=new:KM1 terms=['']
+ROW i_rec        create        ok | how=None variant=None node=new:IR1 terms=['records final (1.2 to 1.7)']
+ROW c_case       create        ok | how=None variant=None node=new:CQ1 terms=[]
+ROW c_enq        create        ok | how=None variant=None node=new:EQ1 terms=['queue', 'element', 'timeout in ms (-1)', 'error in (no error)', 'queue out', 'timed out?', 'error out']
+ROW t_el         tunnel        ok | how=None variant=None node=None terms=[]
+ROW w_el_in      wire          ok | how=new variant=None node=None terms=[]
+ROW w_el_enq     wire          ok | how=new variant=None node=None terms=[]
+ROW sr_n         add_shift_reg ok | how=None variant=None node=None terms=[]
+ROW c_k0         create        ok | how=None variant=None node=new:K01 terms=['']
+ROW w_k0         wire          ok | how=new variant=None node=None terms=[]
+ROW c_inc        create        ok | how=None variant=None node=new:IN1 terms=['x+1', 'x']
+ROW t_ci         tunnel        ok | how=None variant=None node=None terms=[]
+ROW w_ci_in      wire          ok | how=new variant=None node=None terms=[]
+ROW w_ci_inc     wire          ok | how=new variant=None node=None terms=[]
+ROW t_co         tunnel        ok | how=None variant=None node=None terms=[]
+ROW w_inc_co     wire          ok | how=new variant=None node=None terms=[]
+ROW w_co_r       wire          ok | how=new variant=None node=None terms=[]
+ROW w_false_pass wire          ok | how=new variant=new_wire node=None terms=[]
+ROW c_lw         create        ok | how=None variant=None node=new:LW1 terms=['records final (1.2 to 1.7)']
+ROW w_final      wire          ok | how=new variant=None node=None terms=[]
+GATE PASS | P1 every P5-1 fragment row except the refnum applies in stagesim | []
+GATE PASS | P1b new:QO1 sim terminals == donor json names (class ParameterTerminal) | [('create if not found? (T)', False, 'ParameterTerminal'), ('created new?', True, 'ParameterTerminal'), ('element data type', False, 'ParameterTerminal'), ('error in (no error)', False, 'ParameterTerminal'), ('error out', True, 'ParameterTerminal'), ('max queue size (-1, unlimited)', False, 'ParameterTerminal'), ('name (unnamed)', False, 'ParameterTerminal'), ('queue out', True, 'ParameterTerminal')]
+GATE PASS | P1b new:EQ1 sim terminals == donor json names (class ParameterTerminal) | [('element', False, 'ParameterTerminal'), ('error in (no error)', False, 'ParameterTerminal'), ('error out', True, 'ParameterTerminal'), ('queue', False, 'ParameterTerminal'), ('queue out', True, 'ParameterTerminal'), ('timed out?', True, 'ParameterTerminal'), ('timeout in ms (-1)', False, 'ParameterTerminal')]
+REF Va direct wire Obtain->Enqueue.queue | wire new:QO1.queue out -> new:EQ1.queue: FS exit to diagram #-19, the FS #681 sits on #536 - only ONE border (frame -> the FS's own diagram) is MEASURED (U6/U6')
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c154_a2_3_census.py", line 130, in <module>
+    s2, err, eff = apply(s2, a)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c154_a2_3_census.py", line 106, in apply
+    eff, _c = SS.OPS[a["op"]](s2, a, P, None, {})
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stagesim.py", line 1501, in op_wire
+    return _fs_frame_wire(st, a, s, d, lf[0], lf[1], ld[1])
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stagesim.py", line 1783, in _fs_frame_wire
+    parent = int(st["diagrams"].get(str(fi)))
+TypeError: int() argument must be a string, a bytes-like object or a real number, not 'NoneType'
+BGRUN END rc=1 after 4s (NO RESULT LINE)
+BGRUN START 2026-10-09 09:07:04 limit 5.0 min: py -u tools/bench/diag_c154_a2_3_census.py
+BGRUN PID 7016
+GATE PASS | P4a protected md5s == card pins (before) | {'tools/stagekit.py': '604529e8', 'tools/addrcheck.py': '207beb0d', 'tools/gscript.py': '1a80236e', 'tools/vigraph.py': 'a7eb58c7', 'tools/bench/memory_model.json': '6f2b5687', 'tools/bench/graph_ring_p4s09_20261009_062044.json': '22f967b5', 'docs/d1/ring-p5.md': '81df09ca', 'tools/stage_prerun.py': 'c739eb86', 'tools/stagexec.py': '1bab9cf9', 'tools/stagesim.py': '78b8d5a1', 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorQueue_v0.vi': '81dba822'}
+FACT owners 4866=['FlatSequenceFrame', 0] 686=['FlatSequenceFrame', 0] 23166=['WhileLoop', 10170] 10170=['Diagram', 686] 681=None
+FACT fs_measured 681 frames [3628, 81548, 113, 124, 5031, 3121, 1817, 4866, 686, 759]
+FACT s09 objs #1978 'Function' #29724 'SubVI' #2626 'BuildArray'
+FACT stagesim fs_of 4866=(681, 7) 686=(681, 8) 23166=None
+ROW c_qk         create        ok | how=None variant=None node=new:QK1 terms=['x,y,z array']
+ROW c_obt        create        ok | how=None variant=None node=new:QO1 terms=['name (unnamed)', 'element data type', 'create if not found? (T)', 'error in (no error)', 'max queue size (-1, unlimited)', 'queue out', 'created new?', 'error out']
+ROW w_qk_obt     wire          ok | how=new variant=None node=None terms=[]
+ROW c_km1        create        ok | how=None variant=None node=new:KM1 terms=['']
+ROW i_rec        create        ok | how=None variant=None node=new:IR1 terms=['records final (1.2 to 1.7)']
+ROW c_case       create        ok | how=None variant=None node=new:CQ1 terms=[]
+ROW c_enq        create        ok | how=None variant=None node=new:EQ1 terms=['queue', 'element', 'timeout in ms (-1)', 'error in (no error)', 'queue out', 'timed out?', 'error out']
+ROW t_el         tunnel        ok | how=None variant=None node=None terms=[]
+ROW w_el_in      wire          ok | how=new variant=None node=None terms=[]
+ROW w_el_enq     wire          ok | how=new variant=None node=None terms=[]
+ROW sr_n         add_shift_reg ok | how=None variant=None node=None terms=[]
+ROW c_k0         create        ok | how=None variant=None node=new:K01 terms=['']
+ROW w_k0         wire          ok | how=new variant=None node=None terms=[]
+ROW c_inc        create        ok | how=None variant=None node=new:IN1 terms=['x+1', 'x']
+ROW t_ci         tunnel        ok | how=None variant=None node=None terms=[]
+ROW w_ci_in      wire          ok | how=new variant=None node=None terms=[]
+ROW w_ci_inc     wire          ok | how=new variant=None node=None terms=[]
+ROW t_co         tunnel        ok | how=None variant=None node=None terms=[]
+ROW w_inc_co     wire          ok | how=new variant=None node=None terms=[]
+ROW w_co_r       wire          ok | how=new variant=None node=None terms=[]
+ROW w_false_pass wire          ok | how=new variant=new_wire node=None terms=[]
+ROW c_lw         create        ok | how=None variant=None node=new:LW1 terms=['records final (1.2 to 1.7)']
+ROW w_final      wire          ok | how=new variant=None node=None terms=[]
+GATE PASS | P1 every P5-1 fragment row except the refnum applies in stagesim | []
+GATE PASS | P1b new:QO1 sim terminals == donor json names (class ParameterTerminal) | [('create if not found? (T)', False, 'ParameterTerminal'), ('created new?', True, 'ParameterTerminal'), ('element data type', False, 'ParameterTerminal'), ('error in (no error)', False, 'ParameterTerminal'), ('error out', True, 'ParameterTerminal'), ('max queue size (-1, unlimited)', False, 'ParameterTerminal'), ('name (unnamed)', False, 'ParameterTerminal'), ('queue out', True, 'ParameterTerminal')]
+GATE PASS | P1b new:EQ1 sim terminals == donor json names (class ParameterTerminal) | [('element', False, 'ParameterTerminal'), ('error in (no error)', False, 'ParameterTerminal'), ('error out', True, 'ParameterTerminal'), ('queue', False, 'ParameterTerminal'), ('queue out', True, 'ParameterTerminal'), ('timed out?', True, 'ParameterTerminal'), ('timeout in ms (-1)', False, 'ParameterTerminal')]
+REF Va direct wire Obtain->Enqueue.queue | wire new:QO1.queue out -> new:EQ1.queue: FS exit to diagram #-19, the FS #681 sits on #536 - only ONE border (frame -> the FS's own diagram) is MEASURED (U6/U6')
+REF Vb loop tunnel on #10170 (outer on 686) | CRASH TypeError: int() argument must be a string, a bytes-like object or a real number, not 'NoneType' (stagesim raised, not a SimError)
+REF Vc case tunnel on CQ1 (outer on 23166) | wire new:QO1.queue out -> new:TQ2.outer: FS exit to diagram #23166, the FS #681 sits on #536 - only ONE border (frame -> the FS's own diagram) is MEASURED (U6/U6')
+GATE PASS | P2 the direct wire and the case-tunnel form of the refnum are refused by stagesim | [True, True, True]
+ROUTE c_qk     -> primitive
+ROUTE c_obt    -> primitive
+ROUTE c_km1    -> primitive
+ROUTE i_rec    -> indicator
+ROUTE c_case   -> case_wired
+ROUTE c_enq    -> primitive
+ROUTE c_k0     -> primitive
+ROUTE c_inc    -> primitive
+ROUTE c_lw     -> local_write
+COMPILE fragment: 17 ops kinds [('create', None), ('create', None), ('connect', None), ('create', None), ('create', None), ('create', None), ('create', None), ('tunnel', None), ('add_sr', None), ('create', None), ('connect', None), ('create', None), ('connect_term_uid', 'register_end_case_border'), ('connect_term_uid', 'register_end_case_border'), ('case_frame_wire', 'new_wire'), ('create', None), ('connect', None)]
+COMPILE fragment+Vb+out: 18 ops kinds [('create', None), ('create', None), ('connect', None), ('create', None), ('create', None), ('create', None), ('create', None), ('tunnel', None), ('add_sr', None), ('create', None), ('connect', None), ('create', None), ('connect_term_uid', 'register_end_case_border'), ('connect_term_uid', 'register_end_case_border'), ('case_frame_wire', 'new_wire'), ('create', None), ('connect', None), ('tunnel', None)]
+FACT X17 prim_donor_check: [{"action": "c_obt", "why": "external donor DonorQueue_v0.vi uid 108: label UNMEASURED (not in PRIM_DONORS)"}, {"action": "c_enq", "why": "external donor DonorQueue_v0.vi uid 44: label UNMEASURED (not in PRIM_DONORS)"}]
+GATE PASS | P3 X17 refuses the DonorQueue_v0 prims as UNMEASURED (not in PRIM_DONORS) | [{'action': 'c_obt', 'why': 'external donor DonorQueue_v0.vi uid 108: label UNMEASURED (not in PRIM_DONORS)'}, {'action': 'c_enq', 'why': 'external donor DonorQueue_v0.vi uid 44: label UNMEASURED (not in PRIM_DONORS)'}]
+GATE PASS | P4b protected md5s unchanged (after) | []
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":7,"fail":0},"first_fail":null,"artefacts":[],"card":"154-a2-3","labview":"none"}
+BGRUN END rc=0 after 4s

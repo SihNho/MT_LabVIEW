@@ -1,0 +1,63 @@
+{
+ "schema": "task/1",
+ "id": "156-a3-1",
+ "kind": "diagnose",
+ "goal": "Offline: connect_route on sim step_15 for ops 16/17, #24360 wired vs wire 0; quote live-state evidence; list ops after move_in on ambiguous wires; why ops 10-12 are not E1 checkpoints.",
+ "why": "Scratch 156-a2-2 stopped at op 16 (INNER face #24360). Peer gave two explanations; the cheapest separator is offline. PD379(e) also needs E1 on the move_in ops.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_156-a3-1.md", "md5": "d551f7e7ef96600cb903f430b7e08698"},
+  {"path": "tools/bench/diag_c156_a2_2_facts.md", "md5": "d01538d7cb4e9b9e3b3d1f0c640065dc"},
+  {"path": "tools/bench/diag_c156_p5s02a_scratch.log", "md5": "8ba9071d8ee42c59ae2c17e95755631d"},
+  {"path": "archive/peer/2026-10-09-c156-a2-2-p5s02a-innerface.md", "md5": "491372994470eafa44dcd50b60a8a6da"},
+  {"path": "tools/bench/sim/ring_p5s02a/step_15_tunnel.json", "md5": "b7da7fa71e7643f848ec5ff85fef4f5d"},
+  {"path": "tools/bench/sim/ring_p5s02a/step_10_move_in.json", "md5": "9b820f15b508bdc56c8c58e291cd9ae4"},
+  {"path": "tools/bench/sim/ring_p5s02a/step_09_create.json", "md5": "47017e560465d41564a45d2e49e70a7f"},
+  {"path": "tools/bench/sim/ring_p5s02a/summary.json", "md5": "f07054394b5d4f396c6fc9dcaf846e3a"},
+  {"path": "tools/bench/resume/resume_plan_ring_p5s02a_20261009_153334.json", "md5": "b529d33098c903be4ab4e6cc11db633e"},
+  {"path": "tools/bench/plan_ring_p5s02a.json", "md5": "4284c22a540f9e3f39c7092affe516af"},
+  {"path": "tools/stagexec.py", "md5": "25a1494c420685f9049264ceefc8604a"},
+  {"path": "tools/stagesim.py", "md5": "eb99c6bab81633f9bdd7c10dce6bfc0a"},
+  {"path": "docs/d1/ring-p5.md", "md5": "aa238a09e46737cd2fcd90b869cd31bf"}
+ ],
+ "pass": [
+  "connect_route result for op 16 and op 17 with #24360/#24367 wired vs wire 0, quoted with the exact route or stop text",
+  "live-state lines for #24360/wire 24330 after op 12 quoted from the log/resume record, or 'not logged' with the logger file:line",
+  "list of ops after a move_in whose source is in allow_either, with route wired vs absent",
+  "rule that picks E1 checkpoints quoted (file:line) and whether a plan/recipe field can make move_in ops checkpoints",
+  "precedent search result (file:line or none, with the grep)",
+  "tools/bench/diag_c156_a3_1_facts.md written (<= 45 lines, facts only, OPEN: lines, no fix proposed)"
+ ],
+ "outputs": [
+  "tools/bench/diag_c156_a3_1_route.py",
+  "tools/bench/diag_c156_a3_1_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c156_a3_1*",
+   "tools/bench/prep_c156_a3_1*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/jev_*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 45
+ },
+ "rules": [
+  "Offline; no LabVIEW; no hook, plan, recipe, pred, licence or stage-tool edit",
+  "Measure only; propose no fix and apply none",
+  "Do not open or delete D1_ring_p5s02a_20261009_152721.vi"
+ ],
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/sim/ring_p5s02a/step_15_tunnel.json"},
+  {"kind": "file", "name": "tools/bench/diag_c156_a2_2_facts.md"}
+ ]
+}

@@ -1,0 +1,43 @@
+BGRUN START 2026-10-09 15:35:19 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c156-a2-2-p5s02a-innerface -TaskFile tools/bench/diag_c156_a2_2_peer_task.md
+BGRUN PID 12108
+OUTCOME: ANSWERED (234s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-09-c156-a2-2-p5s02a-innerface.md
+COST: $2.1895  in 56 / out 17076 / cache-create 146825 / cache-read 3365681  (230s, 42 turn(s))
+--- ANSWER ---
+I think the claim is **wrong**. The offline checks do refuse an inner LoopTunnel face, but only when that face has no wire. In the simulation #24360 still had its wire, so the route check sent it down the connect-by-wire route. In the live VI the wire was gone, so the executor fell through to the triple route and stopped. The VI's state is what changed the route.
+
+## 1. Strongest reason the claim is wrong
+- **Which route an end takes depends on whether it has a wire.** In `connect_route`, a source with a wire returns `"cfw"` (connect from wire) and never addresses the source by triple (`tools/stagexec.py:1489-1490`). Only a source with no wire reaches `addr.triple(real, src, …)` (`:1563`), which raises the INNER-face stop (`:1784-1787`). Both backends call the same function (`:2953` real, `:3783` dry).
+- **The offline route check ran op 16 as `cfw`.** The finalized plan records op 16 (`t_in1/w_in1_t/w_in1_376`) as `route: "cfw"`, `unroutable: null` (`tools/bench/plan_ring_p5s02a.json:1319-1328`). Op 17 is recorded the same way (`:1331-1340`).
+- **In the simulation #24360 was wired at op 16.** `sim/ring_p5s02a/step_15_tunnel.json` has `{"term_uid":24360, …, "wire_uid":24330, "owner_class":"LoopTunnel", "term_class":"InnerTerminal"}`.
+- **The offline checks refuse this face when it has no wire.** The dry route check flagged w_k3f/w_k4f with this exact INNER-face message (`tools/bench/diag_c156_a1_2_facts.md:26`). Self-tests G67 and T113d also refuse it (`prep_c156_a1_2_suite_after_stagesim.out:74`, `prep_c156_a1_2_suite_after_stagexec.out:127`).
+
+So "stagesim/prerun accept an inner LoopTunnel face" is false in general. They accepted this one because their state showed it with a wire.
+
+## 2. Alternative explanation
+- **LabVIEW deleted the half-wire, the simulator kept it, and the checkpoint tolerated either.**
+  - Before `mv_376`, wire 24330 ran from #24360 to #376 `cal cluster path` t5760, its only sink (`step_09_create.json`).
+  - After the move the simulator rated that wire's fate `"ambiguous"` and kept #24360 wired. It put 24360 in the step's `allow_either` list: `[3060,24190,24288,24360,24367,25235]` (`step_10_move_in.json`). Only a `delete` fate clears the wire (`tools/stagesim.py:1075-1077`).
+  - `allow_either` feeds the checkpoint compare (`stagexec.py:2533-2534`). So the op-15 "diff 0" says nothing about whether #24360 still had a wire.
+  - The live read then showed it with no wire, `connect_route` fell through to `nested`, and the triple stop fired.
+- **The stop message itself points to "no wire".** The message names the source #24360. If the source had a wire, the `cfw` route would not address it by triple at all, so the live read must have had `wire_uid` 0. This is read from the code path; the live read before op 16 is not in the log or the resume record. The other path that addresses the source by triple, the stale-retry, is ruled out: op 15 was a checkpoint, so the read was fresh.
+
+The real gap is not "no route for inner faces". It is that the route check runs on one outcome of an ambiguous wire, while the checkpoint accepts both outcomes. The route then depends on what LabVIEW actually did.
+
+## 3. What would falsify my alternative (and support the claim)
+A live read before op 16 showing #24360 with `wire_uid` 24330, or any non-zero wire. Then `connect_route` would have returned `cfw`, and the triple stop could not have come from this path. The claim would need some other caller of `_triple` on the source.
+
+Separately, the claim's last sentence ("any plan wiring from an existing LoopTunnel's inner face will stop") is wrong as stated. A wired inner face goes by `cfw`. One caveat: whether `_cfw`'s `wire_source_owner(...) owner_uid == V.node_of(rs)` (`:2943-2945`) accepts a base LoopTunnel inner face on real LabVIEW is not shown in any file I read. So "wired ⇒ works live" is unverified, only "wired ⇒ not this stop".
+
+## 4. Cheapest discriminating test (offline)
+1. Load `sim/ring_p5s02a/step_15_tunnel.json` and call `stagexec.connect_route(Addr(SimReader-state), terms, 24360, 5760, loop_of)` twice:
+   - as stored: expect `"cfw"`;
+   - with only #24360's `wire_uid` set to 0: expect the exact `ADDRESS: #24360 is an INNER face…` stop.
+
+   If both come out as predicted, the stop is fully explained by the wire being gone, not by a missing route.
+2. Free check on the saved artefact `D1_ring_p5s02a_20261009_152721.vi`: read #24357's terminals the next time a graph read is allowed (it is broken, so no headless cold load), or recover the live read after op 15 if the executor kept one. `wire_uid` 0 on t24360 settles it.
+3. Prediction to watch: op 17's source #24367 (on #24361, also `"ambiguous"` and in `allow_either`) will stop the same way when op 16 is fixed. So will the other `allow_either` sources if they are used as sources by a wire.
+
+**Bottom line:** the measurement does not by itself prove LabVIEW deleted the wire, because the live read was not logged. But the code leaves no other path to this message, and the plan's own route check shows the offline side assumed a wire. The fix belongs in how an ambiguous wire is checked: run the route check on both outcomes, or record the actual outcome per terminal. Adding an inner-face route to `_triple` is not the fix.
+
+I made no external claims, so no web search was needed. Everything above is local and cited by file:line.
+BGRUN END rc=0 after 235s

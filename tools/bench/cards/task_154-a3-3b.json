@@ -1,0 +1,90 @@
+{
+ "schema": "task/1",
+ "id": "154-a3-3b",
+ "kind": "build",
+ "goal": "Retry of 154-a3-3: fix the 07:0x heading time format (fp-75), then ONE P5-1a scratch on a NEW byte copy of s09 eb1d0f31; on PASS adopt D1_ring_p5s01a_<stamp>.vi + EL + graph + load_by_vi.",
+ "why": "154-a3-3 fixed the recipe strings and passed every pre-check, but guard_cycle refused the launch: docs/violation-decisions.md:1992 time '07:0x' is unparseable (fp-75). Lines 1469/1504 set the format precedent.",
+ "retry_of_card": "154-a3-3",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_154-a3-3b.md", "md5": "8b22725df031b82807327ea05d955547"},
+  {"path": "tools/bench/cards/brief_154-a3-3.md", "md5": "6c2c1802093c5aee7ad477211472cc3e"},
+  {"path": "tools/bench/cards/brief_152-b3-1.md", "md5": "bcd5bf5be5e94970768b2d0179d438b5"},
+  {"path": "tools/bench/diag_c154_a3_3_facts.md", "md5": "9f1b00b0c09bb4d3d88fe6e302882e80"},
+  {"path": "tools/bench/diag_c154_a3_2b_facts.md", "md5": "ead4043e68cbec2c352b1c751e2647f4"},
+  {"path": "docs/violation-decisions.md", "md5": "34da9f4f34e938f3b699280769f83e1d"},
+  {"path": "tools/bench/plan_ring_p5s01a.json", "md5": "ed62e8d66aa788c21525cee1ed38646d"},
+  {"path": "tools/bench/plan_ring_p5s01a_pred.json", "md5": "2e84eb2cb3e27cef2631b901cd480a2a"},
+  {"path": "tools/bench/plan_ring_p5s01a_licence.json", "md5": "323ac8e02e59fb6e67fe504247e1ca34"},
+  {"path": "tools/recipes/stage_d1_ring_p5s01a.py", "md5": "aee2012880d6dcbdd20a5d16f9d9a2f4"},
+  {"path": "tools/recipes/stage_d1_ring_p5s01a_scratch.py", "md5": "3b02d9a734384dcaae9d0272e3eaafa4"},
+  {"path": "tools/stage_prerun.py", "md5": "9decb20f6d67793abad967347e2a37ab"},
+  {"path": "tools/stagesim.py", "md5": "78b8d5a16dc98509311840cd2140917f"},
+  {"path": "tools/stagexec.py", "md5": "1bab9cf96502dfbe2d9a755e6d4a48b6"},
+  {"path": "tools/vigraph.py", "md5": "a7eb58c7e35a134f93df168ea4cdea80"},
+  {"path": "tools/bench/memory_model.json", "md5": "6f2b56872fd593ecaafe63221bf4f1fc"},
+  {"path": "tools/bench/graph_ring_p4s09_20261009_062044.json", "md5": "22f967b513726a01c9d8f63269f689e6"},
+  {"path": "tools/bench/errorlist_expected_D1_ring_p4s09_20261009_060515.json", "md5": "5146f980f5a4b58403ce87afc870f9a9"},
+  {"path": "tools/bench/diag_c152_b3_1_adopt.py", "md5": "2b4520956509a3b2245b421ab4f26420"},
+  {"path": "tools/bench/diag_c152_b3_1_elexp.py", "md5": "cd6b077176b9c0208c8bb3e1907250c0"},
+  {"path": "tools/bench/diag_c152_b3_1_mkgraph.py", "md5": "b18cf2af350f1aec29218f61ac094b84"},
+  {"path": "tools/bench/diag_c152_b3_1_graph.py", "md5": "d008408e2693185ba0c4ce7f00e69372"},
+  {"path": "tools/bench/diag_c152_b3_1_memload.py", "md5": "c63a0a06623ceb01e2ef247f2ba2901b"},
+  {"path": "tools/bench/diag_c152_b3_1_fs.py", "md5": "ba1faeb21ab53a9da50621d741ba9727"},
+  {"path": "tools/bench/diag_c152_b3_1_inv.py", "md5": "30fae233a1fb9c8c97a01539f167d65f"}
+ ],
+ "pass": [
+  "heading 07:0x -> 07:00 at violations-decisions.md:1992 only (one-line git diff, md5s); guard_cycle no longer refuses; pre-checks on aee20128 quoted (prerun 16/0, rc 3, ALLOW)",
+  "ONE scratch on a NEW byte copy of s09 eb1d0f31: E1 real==sim every op, D/TD/PB, licence, X11, peak<=680; metered start/peak vs pred 602.6 / 677.3",
+  "Structural PASS => adopted claudeDev D1_ring_p5s01a_<stamp>.vi by import (PD354(a)), path+md5 quoted",
+  "final EL expected file written: total + per-class diff vs s09's 45 and vs pred 48 (both elrule totals)",
+  "fresh load + graph json (path+md5, load MB), new-node rows + open terminals quoted; memory_model.json gets ONLY the load_by_vi entry, diff quoted",
+  "invariants md5 unchanged (brief step 8); handles recorded; LabVIEW closed and verified gone (tasklist count 0)"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p5s01a_<stamp>.vi",
+  "tools/bench/graph_ring_p5s01a_<stamp>.json",
+  "tools/bench/errorlist_expected_D1_ring_p5s01a_<stamp>.json",
+  "tools/bench/diag_c154_a3_3b_facts.md"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c154_a3_3*",
+   "tools/bench/launch_*c154*",
+   "tools/bench/scratch_*c154*",
+   "tools/bench/graph_ring_p5s01a_*",
+   "tools/bench/errorlist_*p5s01a*",
+   "tools/bench/adopted_scratch.jsonl",
+   "tools/bench/memory_model.json",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/recipes/stage_d1_ring_p5s01a*",
+   "tools/bench/sim/ring_p5s01a/**",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/jev_*",
+   "archive/peer/**",
+   "docs/violation-decisions.md"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 120
+ },
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "D1_ring_p4s09_20261009_060515.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "tools/errorlist_check.py"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p5s01a_scratch.py"}
+ ],
+ "rules": [
+  "docs/violation-decisions.md: change ONLY the time token 07:0x to 07:00 in the line-1992 heading; no tool or hook edit",
+  "Bed, s03..s09 never opened for editing; edit a byte copy only",
+  "ONE scratch; RETURN at first result differing from prediction; no retry",
+  "No stage-tool or hook edits; no other plan; no motor or camera"
+ ]
+}

@@ -1,0 +1,46 @@
+{
+ "schema": "result/1",
+ "id": "156-a1-2",
+ "status": "PASS",
+ "gates": {
+  "pass": 6,
+  "fail": 0
+ },
+ "first_fail": null,
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/stagexec.py", "md5": "25a1494c420685f9049264ceefc8604a"},
+  {"path": "tools/stagesim.py", "md5": "eb99c6bab81633f9bdd7c10dce6bfc0a"},
+  {"path": "tools/bench/selftest_c156_passwire.py", "md5": "8335875bc5951d425c8fcaed7ff30d30"},
+  {"path": "tools/bench/selftest_c156_passwire.log", "md5": "89c104e48a2783ed4647abd94f0f7e82"},
+  {"path": "tools/bench/diag_c156_a1_2_facts.md", "md5": "88e6a84a887a6d913f8bf29475065045"},
+  {"path": "tools/bench/prep_c156_a1_2_lib.py", "md5": "17ec7a73fbeeecec3c09afd5d280366f"},
+  {"path": "tools/bench/prep_c156_a1_2_measure.log", "md5": "17825a421878c3bf6a92d006c4628aec"},
+  {"path": "tools/bench/sim/ring_p5s02pw/compile_before.json", "md5": "7ca1c4c4811dd0651f1c2e7599d85baf"},
+  {"path": "tools/bench/prep_c156_a1_2_regress_after.log", "md5": "ff76e9ade73b3473e4385c19b720763d"},
+  {"path": "tools/bench/prep_c156_a1_2_suite_after.log", "md5": "68af23aac20a8f5d8906b223f5b5969d"}
+ ],
+ "facts": [
+  "P1 refusal reproduced: w_k3pass src IK3 t-131 SelectorTunnel InnerTerminal frame -30 'True', dst OK3 t-125 frame -29 'False' (prep_c156_a1_2_measure.log:5,9); one inner face per frame stagesim.py:1363",
+  "K rows are not in plan_ring_p5s02r_all.json (60 actions); used plan_ring_p5s02r_in.json d84634bd 61..80, whose first 60 == all-plan (measure.log:4)",
+  "Unchanged stagesim already replays the pass wire when its dst carries frame 'True': failed None, 0 PROVISIONAL (measure.log:15,26); only compile refused it (stagexec.py:857, :13)",
+  "Fix: stagexec.py:856 out-wire = grp(b) or case_pass_wire(...); new case_pass_wire stagexec.py:5997 (dst frame = in-tunnel's own body frame, dst = earlier same-case tunnel inner)",
+  "P2 K3/K4 compile (R1 connect_term_uid acts 67-69 on new:CQ7) + simulate 70/80 actions, 0 PROVISIONAL (selftest_c156_passwire.log:38-39,53-54)",
+  "P2 sinks: SK3 R.inner net holds #5204 inner t8776, #5204 outer -> #6384 t6480 + #2048 t3182; SK4 R.inner holds #10404 t24342 -> #6384 t6511 (selftest log :42-43,:50-51)",
+  "P3 selftest_c156_passwire 20/0 (log :66); suite before == after: stagexec 141/0, stagesim 106/0, c155 21/0, c120 1/0, gate 13/0, naming 21/0, fs 13/0; c124 28/1, t6 9/2 already failing",
+  "P4 200 stored plans compile EQUAL before/after (0 differ, refusal texts included), incl p5s01a 14, p5s01b 8, p5s01_in 22, p5s02a 17, p5s02* (prep_c156_a1_2_regress_after.log:5-15)",
+  "P5 pins unchanged stagekit aec03c6c stage_prerun 9decb20f vigraph a7eb58c7 addrcheck 207beb0d gscript 1a80236e; stagexec 53e17623->25a1494c; stagesim eb99c6ba unchanged; LabVIEW 0",
+  "Dry route check: K R1 groups routable; UNROUTABLE G/H rows 20/23 also on the 60-action baseline (selftest log :36) and w_k3f/w_k4f into a LoopTunnel INNER face (:40,:48)"
+ ],
+ "open": [
+  "K3f/K4f feed form T (O.outer -> #5204/#10404 INNER face) is UNROUTABLE in the dry route check (only the outer-face route is measured): keep form T, or feed from R.outer (PD379(b) allows either)?",
+  "G/H out-groups (rows 20/23, RSR #24083/#24150 'not in Diagram[124] (#23405).Nodes[]') are UNROUTABLE on the 60-action all-plan; step 1 (A..F2) passed REALSIM route check in 156-a1-1 - should step 2's plan be checked for these before launch?",
+  "compile_all/run_suite live in prep_c156_a1_2_lib.py (card scope); the card-specific copies prep_c155_a1_1_regress.py:30-43 / prep_c155_a1_1_suite.py:28-40 belong in a shared tools/ module (outside this card's write globs)"
+ ],
+ "cost": {
+  "usd": null,
+  "minutes": 40,
+  "labview_runs": 0
+ },
+ "note": "Offline. Self-test's first run FAILED 17/3 on a route-check gate I added without a baseline; re-gated in the same build step to K rows + the measured baseline (log :1-32 kept). guard_write: cards 149-a2-1/149-a3-3/149-a3-4 still pin stagexec 1bab9cf9 (stale before this card)."
+}

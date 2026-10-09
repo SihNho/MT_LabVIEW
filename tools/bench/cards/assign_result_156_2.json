@@ -1,0 +1,21 @@
+{
+ "schema": "assign-result/1",
+ "cycle": 156,
+ "round": 2,
+ "status": "PURPOSE_MET",
+ "cards": ["156-a3-1", "156-b2-1", "156-b2-2", "156-b2-3"],
+ "pass_evidence": [
+  {"item": 0, "met": true, "evidence": ["tools/bench/cards/result_156-a3-1.json", "tools/bench/diag_c156_a3_1_facts.md"]},
+  {"item": 1, "met": true, "evidence": ["tools/bench/diag_c156_a3_1_route.log", "tools/bench/diag_c156_a3_1_facts.md"]},
+  {"item": 2, "met": true, "evidence": ["tools/bench/diag_c156_a3_1_facts.md", "tools/bench/diag_c156_a3_1_route.log"]},
+  {"item": 3, "met": true, "evidence": ["tools/invcheck.py", "tools/bench/selftest_c156_b2_2_invcheck.log", "tools/bench/diag_c156_b2_2_inv_c156a21.py"]},
+  {"item": 4, "met": true, "evidence": ["tools/bench/gate_fp_queue.jsonl", "tools/bench/diag_c155_a5_1_facts.md"]},
+  {"item": 5, "met": true, "evidence": ["tools/violations.py", "tools/bench/selftest_c156_b2_1_violations.log"]},
+  {"item": 6, "met": true, "evidence": ["docs/fn_descriptions.json", "docs/toolkit-capabilities.md"]},
+  {"item": 7, "met": true, "evidence": ["tools/bench/cards/result_156-b2-1.json", "tools/bench/cards/result_156-b2-2.json", "tools/bench/cards/result_156-b2-3.json"]},
+  {"item": 8, "met": true, "evidence": ["tools/bench/plan_ring_p5s02a.json", "tools/bench/cards/result_156-a3-1.json"]},
+  {"item": 9, "met": true, "evidence": ["tools/bench/cards/result_156-a3-1.json", "tools/bench/cards/result_156-b2-2.json"]}
+ ],
+ "handback": null,
+ "note": "All 4 cards PASS. For judgement: (1) 156-a3-1 M1 reproduces the exact op-16 stop text ('INNER face of LoopTunnel #24357') in connect_route only when wire_uid is 0; with #24360/w24330 wired it routes cfw (route.log:11-34, op 17 #24367 same). The live state of #24360/w24330 was never logged (stagexec.py:2478, 2540-2542), so wire-dropped-by-LabVIEW is consistent but not proven. (2) The sim keeps the source row after move_in (fate ambiguous); ops 13, 16, 17 follow a move_in with an allow_either source. (3) E1 checkpoints are {0,last} plus BIND_KINDS ops (stagekit.py:1927-1929, stagexec.py:1978); move_in is not one and no plan field selects them, so PD379(e) needs RS.CHECKPOINTS in the recipe or a stagekit change. (4) No precedent for a LoopTunnel source moved into a case. (5) invcheck.py: self-test 20/0; 22 old *_inv.py copies left untouched (brief said 23); prep_*_inv copies use a different md5-table shape, not covered. (6) fp-73 closed; violations.py reads HH:Mx as HH:M9 (self-test 7/0; 9 of 111 decision headers change stamp). (7) docs/fn_descriptions.json 3 -> 62 entries; undocumented count 1156 -> 1097. Checked by me: stage-tool pins, plan 4284c22a, brief d551f7e7 and ring-p5.md aa238a09 unchanged; tools/hooks shows only the hook-written material_marker.log; fp-73 closed; claudeDev p5s0*/s09 files carry no newer timestamp than 152721 (md5 and process-list checks were blocked by the Bash hook, so the work copy cac5236b and absence of a LabVIEW process rest on the card reports, all labview none)."
+}

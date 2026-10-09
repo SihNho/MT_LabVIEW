@@ -1,0 +1,37 @@
+BGRUN START 2026-10-09 12:25:18 limit 12.0 min: py -u tools/prior_art_review.py --plan-file tools/bench/prep_c155_a2_1_priorart_plan.md --slug priorart-c155-a2-1-p5s01b --trigger new-op --recipe tools/recipes/stage_d1_ring_p5s01b.py
+BGRUN PID 12736
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-c155-a2-1-p5s01b.txt (61152 chars)
+   review card tools\bench\cards\review_priorart-priorart-c155-a2-1-p5s01b.json
+OUTCOME: ANSWERED (44s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-10-09-priorart-priorart-c155-a2-1-p5s01b.md
+COST: $1.0499  in 12 / out 3578 / cache-create 108326 / cache-read 558403  (40s, 9 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-priorart-c155-a2-1-p5s01b verdict=novel -> tools\bench\cards\verdict_priorart-priorart-c155-a2-1-p5s01b.json
+--- ANSWER ---
+Verdict: **novel.** I found no earlier build, failure or measurement of P5-1b's main new element, which is addressing a base-graph Case's frame by its diagram uid and using the R1/R2 routes on that case. It also contradicts none of the user's rules. (I've been reading the P5 design doc, the 155-a1-1 facts, the recipe and the plan's route check.)
+
+**PART A — direction**
+- **A1 (settled already):** No. The direction is the cycle-155 decision itself (`docs/d1/ring-p5.md:142-153`, PD378(a), 2026-10-09). It is not an older settlement that this card repeats. The tool fix it depends on landed in card 155-a1-1 (`tools/bench/diag_c155_a1_1_facts.md:13-18`, stagexec 53e17623 / stagesim eb99c6ba). That is the plan's prerequisite, not prior art that replaces the plan.
+- **A2 (refuted already):** No. `archive/peer` has no exchange about addressing base cases. The only nearby attempt is the refused compile of the first P5-1b plan (`docs/d1/ring-p5.md:137-141`, `tools/bench/diag_c154_a4_1_facts.md`). That refusal is the cause PD378(a) fixes; it does not argue against the direction.
+- **A3 (contradicted):** No. The frame order the plan uses, [30914, 30922] with False = #30914, matches the measured binding in `diag_c155_a1_1_facts.md:9` (`diag_c154_p5s01a_scratch.log:144`). A second case, #22694, agrees (`:10`).
+  - 155-a1-1 left one point open (`diag_c155_a1_1_facts.md:35`): compile sees a base case only when `plan['base']` is present.
+  - The P5-1b plan carries `base` (`tools/bench/plan_ring_p5s01b.json:8`). Its route check is PASS with both frame wires on `case_frame_wire` and both case tunnels on `connect_term_uid` (`plan_ring_p5s01b.json:702-790`). That open point is therefore answered for this plan and is not a contradiction.
+- **A4 (unread evidence):** None found.
+
+**PART B — the artifact**
+- **B1 (already built):** No `D1_ring_p5s01b_*` VI or launch log exists. The only matching files are this card's own plan, pred, licence and recipes, plus sim probes under `tools/bench/sim/ring_p5s01b/`.
+- **B2 (already failed):** The earlier P5-1b attempt failed only at compile (`ring-p5.md:137-141`). The new plan deals with that cause directly: it addresses frames as `#30914` and gives a base case the register_end_case_border variant, which 155-a1-1 added (`diag_c155_a1_1_facts.md:17,20`).
+- **B3 (helper exists):** The recipe already uses the shared helpers: `stagekit.RingSession` and the template shape (`tools/recipes/stage_d1_ring_p5s01b.py:36-56`). It does not hand-roll any of them.
+- **B4 (already measured):** Not covered.
+  - The R1/R2 single-SelectorTunnel result was measured only for a case made in the same plan (`diag_c124_p3a_scratch.log:53,61`, cited at `plan_ring_p5s01b.json:765`).
+  - On a base case it has been checked offline only (the self-test, `diag_c155_a1_1_facts.md:19-21`). No LabVIEW run has measured it.
+  - So the planned scratch run is the first measurement of it, which is exactly what PD378(b) asks for (`ring-p5.md:157`). This is a novelty, not prior art.
+
+**PART C — user rules**
+- C1: No contradiction. The queue carries only the 1.2 → 1.7 data stream (U4, `ring-p5.md:130-131`). The rows are PD374 and PD376 unchanged, so the computation is the same (U1). The plan has no control-signal queue, no camera-loop wait and no serial call.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-priorart-c155-a2-1-p5s01b","verdict":"novel","alternative":"Base-case R1/R2 might not give ONE SelectorTunnel in LabVIEW even though it compiles offline: it was measured only on a plan-made case (diag_c124_p3a_scratch.log:53,61).","discriminating_test":"The planned scratch run on a byte copy of P5-1a: check that the t_qi/t_qo tunnels land on Case #30726's border, that each of w_false_pass and w_q_false lands on #30914, and that the NG/FR gates equal the sim.","violations":[],"sources":["docs/d1/ring-p5.md:137-160","tools/bench/diag_c155_a1_1_facts.md:9-35","tools/bench/plan_ring_p5s01b.json:8","tools/bench/plan_ring_p5s01b.json:702-790","tools/recipes/stage_d1_ring_p5s01b.py:36-56"],"note":"The open point in 155-a1-1 facts:35 (compile needs a base) is met: the plan carries base at :8."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-c155-a2-1-p5s01b.md
+   STOP RECORD: none - 2026-10-09-priorart-priorart-c155-a2-1-p5s01b.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_ring_p5s01b.py sha 6d5f68b39be2 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 47s

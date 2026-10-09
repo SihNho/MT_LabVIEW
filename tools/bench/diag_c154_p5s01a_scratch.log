@@ -1,0 +1,278 @@
+BGRUN START 2026-10-09 10:12:18 limit 50.0 min: py -u tools/recipes/stage_d1_ring_p5s01a_scratch.py
+BGRUN PID 12000
+BGRUN STAGE-RUN recorded stage_d1_ring_p5s01a_scratch.py cycle='cycle 154' card=None pid=7016 -> stage_runs.jsonl
+stage_d1_ring_p5s01a_scratch - card 154-a3-2b (WRITTEN, NOT LAUNCHED): the ONE SCRATCH RUN of RING P5-1a (docs/d1/ring-p5.md PD374(e),
+PD376(a); 20 actions / 14 ops, the X10 cut of P5-1 form S) on plan_ring_p5s01a.json. COPIED from stage_d1_ring_p4_s09v18_scratch.py (b1f6a87c)
+with ONLY names changed (log, scratch name, work name D1_ring_p5s01a_<ts>.vi, out/sum json, card id, recipe module, result key, docstring); the
+sink-gate assertion = R's census count (P5-1a has ZERO such rows, prep_c154_a3_2b_session.json); launch-memory line MEML 680 kept (PD331(c));
+scratch stop = SX.X10_FAIL_MB (680, PD328(a)).
+x10() takes the limit from the md5-PINNED pred file (plan_ring_p5s01a_pred.json memory_pred.peak_mb, used only when
+pred.plan.md5 == md5(plan_ring_p5s01a.json)).
+Runs tools/recipes/stage_d1_ring_p5s01a.py's OWN body (imported UNCHANGED) with plan_ring_p5s01a.json on a dated byte copy
+claudeDev\D1_ring_p5s01a_<ts>.vi of the ADOPTED s09 file eb1d0f31 - same Executor, LVBackend (per-op census + Is Broken? + the
+run-time PRIM gate), every recipe gate and the ExecState read. No VI is run; the bed is never edited. SAVE on (rule-6 gui_save of the work
+copy) so the Error List can be read next; when every STRUCTURAL gate passes the work copy is ADOPTED as the P5-1a file by
+`py tools/stagexec.py adopt` (PD329(a), PD354(a)).
+ADDED (card 147-a1-3, PD354(a)) - the Error List step is ADVISORY, offline, and changes no structural gate: after the scratch's full EL read
+(errorlist_check.py --role final on the work copy), run this file with `--el-advisory <read json>`: it prints EL-ADVISORY with the total and
+the per-class difference against the pred's errorlist.per_class (classes by elcls(), the same copy as prep_c152_b2_1_pred.py), and exits
+NON-ZERO ONLY when a class appears that is in neither the start read nor the prediction, or |total diff| > 3; any other difference is
+recorded (rc 0). `--el-advisory-selftest` runs three synthetic reads offline. Neither mode opens LabVIEW (they return before K.Stage).
+PREDICTION (numbers in plan_ring_p5s01a_pred.json): every recipe gate PASS incl. PRIM; peak private MB <= SX.X10_FAIL_MB (680) and <= X10 + 10 and,
+for the launch, <= 680 (PD331(c)); bed md5 unchanged; LabVIEW gone. Error List (next, separate run) -> EL-ADVISORY (recorded; RETURN only by its rc).
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/diag_c154_p5s01a_scratch.log -- py -u tools/recipes/stage_d1_ring_p5s01a_scratch.py
+MEM_STOP_MB 680.0; X10 from the md5-pinned pred 672.2; declared sink gates []
+stage_d1_ring_p5s01a - card 154-a3-2b (WRITTEN, NOT LAUNCHED), RING P5-1a (docs/d1/ring-p5.md PD374(a)(c)(e), PD376(a)): on the ADOPTED
+s09 file (claudeDev\D1_ring_p4s09_20261009_060515.vi eb1d0f31, path/md5 read from the plan's base graph), apply the actions of plan_ring_p5s01a.json
+= the first 20 actions / 14 ops of P5-1 form S (card 154-a3-2 plan_ring_p5s01.json, cut at the longest op prefix with X10 MAIN <= 680:
+MAIN 677.3 at the start 602.6 = measured s09 load 596.7 + op-0 read), planned DIRECTLY on the real s09 graph 22f967b5 (tools/bench/prep_c154_a3_2b_mk.py,
+no rebase). X11 / licence plan_ring_p5s01a_licence.json (tools/bench/prep_c154_a3_2b_licence.py).
+COPIED from stage_d1_ring_p4_s09v18.py (4be3ff28) with ONLY: plan / pred / licence / session-census names, card id, out json, stage name
+(saved file D1_ring_p5s01a_<ts>.vi), result key, docstring. Every gate unchanged (FR keeps `(on or NC == 0)`; P5-1a creates objects, so `on`
+must be non-empty by the same expression).
+Sink gates: one per census row through wire_indicators, read by script - prep_c154_a3_2b_session.json has ZERO such rows.
+FRESH LabVIEW -> claudeDev\D1_ring_p5s01a_<ts>.vi (rule-6 GUI save, ExecState 0 by design) = an
+IN-BETWEEN file of step P5 (not counted, D-2026-10-02-02/04). The FIRST run is the full SCRATCH run on a byte copy
+(stage_d1_ring_p5s01a_scratch.py).
+ROWS ONLY FROM plan_ring_p5s01a.json; expected values only from plan_ring_p5s01a_pred.json. No new op.
+(PD366(e)): one declared sink gate PER row of prep_c154_a3_2b_session.json `sink_gate_census` with needs_sink_gate (read by
+script; measured 0: the census has no ControlTerminal sink), each with PD355(b)'s pass
+rule (sg_read (a)-(d), unchanged); a symbolic source would be resolved on the plan's simulated END state by stagesim.resolve_addr.
+PREDICTION (numbers in the pred file): SG one declared sink gate per census row; L1 actions -> pred ops; E1 every checkpoint == sim; NG crossing tunnel names == step files';
+PRIM every created primitive's label == plan prim; FR created objects on the sim end's frames; D new/lost wires == sim's; TD every base
+terminal that was wired stays wired, identities lost == plan deletes; CEN2 == pred census; PB cdiff(S1, end) == pred rows (FATAL, before save); HB handles <= +700;
+PS saved, input unchanged. X10 = pred memory_pred. Error List of the end = a RECORDED cross-check against pred errorlist (PD354(a)).
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/launch_c154_p5s01a.log -- py -u tools/recipes/stage_d1_ring_p5s01a.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_ring_p5s01a_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan  ('ed62e8d66aa788c21525cee1ed38646d', {'path': 'tools/bench/graph_ring_p4s09_20261009_062044.json', 'md5': '22f967b513726a01c9d8f63269f689e6'}, 'eb1d0f3107bbba49c9ae67a47c0ee50f')
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 344 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == eb1d0f3107bbba49c9ae67a47c0ee50f  got eb1d0f3107bbba49c9ae67a47c0ee50f
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 34002
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  D1_ring_p5s01a_20261009_101219.vi
+  FACT  ExecState [after open] D1_ring_p5s01a_20261009_101219.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so D1_ring_p5s01a_20261009_101219.vi is deleted at close
+  PASS  SG one declared sink gate per census row (0 rows of prep_c154_a3_2b_session.json): []; per row: sink term(s), plan action(s), source, source name []
+  PASS  L1 the 20 actions compile into 14 real ops == pred kinds, each action once; checkpoints (0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14)  ['create', 'create', 'connect', 'create', 'create', 'create', 'create', 'tunnel', 'add_sr', 'create', 'connect', 'create', 'connect_term_uid', 'connect_term_uid']
+  METER start  k   0  private 578.1 MB (d -)  handles 45751 (d -)
+  METER read   k   0  private 584.0 MB (d +5.9)  handles 45781 (d +30)
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 3 touched diagram(s) [686, 4866, 23166]: one-side-only Nodes[] entries 0
+  PRIME 0 terminal indexes proved at base; 0 ControlTerminal end(s) by 179(b); unprovable []
+  CHECKPOINTS whole-VI read+diff after ops [1, 2, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14] of 14
+  METER pre    k   1  private 567.7 MB (d -16.3)  handles 45808 (d +27)
+  FACT  create_primitive_nested node census: 696 rows
+  OBSERVED uid 30808 -> owner 'ArrayConstant' uid 30766 | self 'DigitalNumericConstant'#30808 | 482 says 'ArrayConstant' cast 'ArrayConstant' |  
+  OBSERVED uid 30766 -> owner 'Diagram' uid 686 | self 'ArrayConstant'#30766 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested 'const_donor' on #686 donor {'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorQueue_v0.vi', 'uid': 52} -> err '' (2.5 s)
+  FACT  create primitive c_qk AFTER node census: 696 rows
+  FACT  create primitive c_qk CENSUS DIFF: Node 696 -> 696 ; 0 new uid(s): []
+  METER op     k   1  private 569.4 MB (d +1.7)  handles 45887 (d +79)
+  METER read   k   1  private 571.7 MB (d +2.3)  handles 45884 (d -3)
+  CREATION-MAP G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\creation_map\plan_ring_p5s01a_ed62e8d6_20261009_101431.jsonl (plan tools/bench/plan_ring_p5s01a.json md5 ed62e8d6, work C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_ring_p5s01a_20261009_101219.vi)
+  STEPX 01 create         acts [1] ids ['c_qk'] bound {-1: 30766} diff 0
+  METER pre    k   2  private 571.7 MB (d +0.0)  handles 45884 (d +0)
+  FACT  create_primitive_nested node census: 696 rows
+  OBSERVED uid 31258 -> owner 'Diagram' uid 686 | self 'Function'#31258 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested 'Obtain Queue' on #686 donor {'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorQueue_v0.vi', 'uid': 108} -> err '' (2.0 s)
+  FACT  create primitive c_obt AFTER node census: 697 rows
+  FACT  create primitive c_obt CENSUS DIFF: Node 696 -> 697 ; 1 new uid(s): [(31258, 'Function', (2257, 248))]
+  FACT  create primitive c_obt new #31258 #31258 lives at: {'diagram_index': 19, 'diagram_uid': 686, 'diagram_class': 'Diagram', 'nodes_index': 24, 'nodes_on_diagram': 25, 'label': 'Obtain Queue'}  (20 diagram(s) scanned of 181, 1.2 s)
+  FACT  create primitive c_obt new #31258 terminal table of #31258 (Diagram idx 19, Nodes[24], echo 31258): 8 terminal(s)
+  FACT      create primitive c_obt new #31258 t0  'name (unnamed)'                   is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive c_obt new #31258 t1  'element data type'                is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive c_obt new #31258 t2  'create if not found? (T)'         is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive c_obt new #31258 t3  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive c_obt new #31258 t4  'max queue size (-1, unlimited)'   is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive c_obt new #31258 t5  'queue out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive c_obt new #31258 t6  'created new?'                     is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive c_obt new #31258 t7  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  create primitive c_obt NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #31258 class 'Function' label 'Obtain Queue', 8 terminal(s), 0 wired - REPORTED, left alone
+  PASS  PRIM created node label/class == plan prim (c_obt)  PRIM-GATE PASS c_obt: plan prim 'Obtain Queue' class 'Function' | read back #31258 label 'Obtain Queue' class 'Function'
+  METER op     k   2  private 574.4 MB (d +2.7)  handles 45912 (d +28)
+  METER read   k   2  private 575.3 MB (d +0.9)  handles 45904 (d -8)
+  STEPX 02 create         acts [2] ids ['c_obt'] bound {-3: 31258} diff 0
+  METER pre    k   3  private 575.3 MB (d +0.0)  handles 45905 (d +1)
+  FACT  wire_const node census: 697 rows
+  FACT  OP wire_const ArrayConstant[9] #30766 -> Function[28].t1 -> err '' (0.3 s)
+  FACT  connect #30765->#31287 AFTER node census: 697 rows
+  FACT  connect #30765->#31287 CENSUS DIFF: Node 697 -> 697 ; 0 new uid(s): []
+  METER op     k   3  private 575.3 MB (d +0.0)  handles 45937 (d +32)
+  STEPX 03 connect        acts [3] ids ['w_qk_obt'] diff skipped (not a checkpoint)
+  METER pre    k   4  private 575.3 MB (d +0.0)  handles 45937 (d +0)
+  FACT  create_primitive_nested node census: 697 rows
+  OBSERVED uid 30845 -> owner 'Diagram' uid 4866 | self 'DigitalNumericConstant'#30845 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested 'const_donor' on #4866 donor {'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRingConst_v0.vi', 'uid': 249} -> err '' (2.3 s)
+  FACT  create primitive c_km1 AFTER node census: 697 rows
+  FACT  create primitive c_km1 CENSUS DIFF: Node 697 -> 697 ; 0 new uid(s): []
+  METER op     k   4  private 576.4 MB (d +1.1)  handles 45938 (d +1)
+  METER read   k   4  private 578.9 MB (d +2.5)  handles 45937 (d -1)
+  STEPX 04 create         acts [4] ids ['c_km1'] bound {-13: 30845} diff 0
+  METER pre    k   5  private 578.9 MB (d +0.0)  handles 45937 (d +0)
+  FACT  indicator_on_const node census: 697 rows
+  FACT  OP indicator_on_const DigitalNumericConstant #30845 terminal #30844 (gscript.create_indicator_on_const -> OpConstInd_v0 (Constant.Terminal -> Terminal.Create Indicator, card 122-3)) -> err '' (0.8 s)
+  FACT  create indicator i_rec AFTER node census: 697 rows
+  FACT  create indicator i_rec CENSUS DIFF: Node 697 -> 697 ; 0 new uid(s): []
+  METER op     k   5  private 580.5 MB (d +1.6)  handles 46001 (d +64)
+  METER read   k   5  private 580.8 MB (d +0.3)  handles 45996 (d -5)
+  STEPX 05 create         acts [5] ids ['i_rec'] bound {-15: 31071} diff 0
+  METER pre    k   6  private 580.8 MB (d +0.0)  handles 45997 (d +1)
+  FACT  case_wired node census: 697 rows
+  OBSERVED uid 30726 -> owner 'Diagram' uid 23166 | self 'CaseStructure'#30726 | 482 says 'Diagram' cast 'Diagram' |  
+      op readback {'UID': 30726, 'Name': 'index', 'UID 2': 0, 'Is Broken?': False}
+      junk Invoke purge: 1 purged, left []
+  FACT  OP case_wired selector <- #29724.'valid' on Diagram #23166 -> err '' (2.5 s)
+  FACT  create case_wired c_case AFTER node census: 698 rows
+  FACT  create case_wired c_case CENSUS DIFF: Node 697 -> 698 ; 1 new uid(s): [(30726, 'CaseStructure', (5470, 5859))]
+  FACT  create case_wired c_case new #30726 #30726 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 40, 'nodes_on_diagram': 41, 'label': 'Case Structure'}  (22 diagram(s) scanned of 183, 1.1 s)
+  FACT  create case_wired c_case new #30726 terminal table of #30726 (Diagram idx 21, Nodes[40], echo 30726): 1 terminal(s)
+  FACT      create case_wired c_case new #30726 t0  ''                                 is_source=False wire=30457   errs=[0, 0, 0, 0]
+  FACT  create case_wired c_case NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #30726 class 'CaseStructure' label 'Case Structure', 1 terminal(s), 1 wired - REPORTED, left alone
+  METER op     k   6  private 584.3 MB (d +3.5)  handles 46138 (d +141)
+  METER read   k   6  private 585.7 MB (d +1.4)  handles 46140 (d +2)
+  STEPX 06 create         acts [6] ids ['c_case'] bound {-17: 30726, -18: 30914, -19: 30922, -20: 30897} diff 0
+  METER pre    k   7  private 585.7 MB (d +0.0)  handles 46140 (d +0)
+  FACT  create_primitive_nested node census: 698 rows
+  OBSERVED uid 30756 -> owner 'Diagram' uid 30922 | self 'Function'#30756 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested 'Enqueue Element' on #30922 donor {'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorQueue_v0.vi', 'uid': 44} -> err '' (1.9 s)
+  FACT  create primitive c_enq AFTER node census: 699 rows
+  FACT  create primitive c_enq CENSUS DIFF: Node 698 -> 699 ; 1 new uid(s): [(30756, 'Function', (5516, 5905))]
+  FACT  create primitive c_enq new #30756 #30756 lives at: {'diagram_index': 23, 'diagram_uid': 30922, 'diagram_class': 'Diagram', 'nodes_index': 0, 'nodes_on_diagram': 1, 'label': 'Enqueue Element'}  (24 diagram(s) scanned of 183, 1.1 s)
+  FACT  create primitive c_enq new #30756 terminal table of #30756 (Diagram idx 23, Nodes[0], echo 30756): 7 terminal(s)
+  FACT      create primitive c_enq new #30756 t0  'queue'                            is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive c_enq new #30756 t1  'element'                          is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive c_enq new #30756 t2  'timeout in ms (-1)'               is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive c_enq new #30756 t3  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive c_enq new #30756 t4  'queue out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive c_enq new #30756 t5  'timed out?'                       is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive c_enq new #30756 t6  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  create primitive c_enq NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #30756 class 'Function' label 'Enqueue Element', 7 terminal(s), 0 wired - REPORTED, left alone
+  PASS  PRIM created node label/class == plan prim (c_enq)  PRIM-GATE PASS c_enq: plan prim 'Enqueue Element' class 'Function' | read back #30756 label 'Enqueue Element' class 'Function'
+  METER op     k   7  private 587.0 MB (d +1.3)  handles 46141 (d +1)
+  METER read   k   7  private 589.9 MB (d +2.9)  handles 46140 (d -1)
+  STEPX 07 create         acts [7] ids ['c_enq'] bound {-24: 30756} diff 0
+  METER pre    k   8  private 589.9 MB (d +0.0)  handles 46140 (d +0)
+  FACT  connect_nested_v1 node census: 699 rows
+      op readback {'UID': 30756, 'Name': 'element', 'UID 2': 0, 'Is Broken?': False}
+      junk Invoke purge: 1 purged, left []
+  FACT  OP connect_nested_v1 D[23].N[0].t1 <- D[21].N[16].t0 -> err '' (0.5 s)
+  FACT  connect #2813->#30945 AFTER node census: 699 rows
+  FACT  connect #2813->#30945 CENSUS DIFF: Node 699 -> 699 ; 0 new uid(s): []
+  METER op     k   8  private 590.0 MB (d +0.1)  handles 46141 (d +1)
+  METER read   k   8  private 594.7 MB (d +4.7)  handles 46140 (d -1)
+  STEPX 08 tunnel         acts [8, 9, 10] ids ['t_el', 'w_el_in', 'w_el_enq'] bound {-32: 31000} diff 0
+  METER pre    k   9  private 594.7 MB (d +0.0)  handles 46141 (d +1)
+  FACT  add_shift_reg node census: 699 rows
+  FACT  OP add_shift_reg loop[1] y=120 -> err '' (0.1 s)
+  FACT  add_sr #10170 AFTER node census: 699 rows
+  FACT  add_sr #10170 CENSUS DIFF: Node 699 -> 699 ; 0 new uid(s): []
+  METER op     k   9  private 598.6 MB (d +3.9)  handles 46162 (d +21)
+  METER read   k   9  private 598.6 MB (d +0.0)  handles 46162 (d +0)
+  STEPX 09 add_sr         acts [11] ids ['sr_n'] bound {-38: 30996, -39: 31004} diff 0
+  METER pre    k  10  private 598.6 MB (d +0.0)  handles 46161 (d -1)
+  FACT  create_primitive_nested node census: 699 rows
+  OBSERVED uid 31015 -> owner 'Diagram' uid 686 | self 'DigitalNumericConstant'#31015 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested 'const_donor' on #686 donor {'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorSRInit_v0.vi', 'uid': 248} -> err '' (2.3 s)
+  FACT  create primitive c_k0 AFTER node census: 699 rows
+  FACT  create primitive c_k0 CENSUS DIFF: Node 699 -> 699 ; 0 new uid(s): []
+  METER op     k  10  private 602.6 MB (d +4.0)  handles 46162 (d +1)
+  METER read   k  10  private 602.6 MB (d +0.0)  handles 46161 (d -1)
+  STEPX 10 create         acts [12] ids ['c_k0'] bound {-44: 31015} diff 0
+  METER pre    k  11  private 602.6 MB (d +0.0)  handles 46162 (d +1)
+  FACT  wire_const_sr node census: 699 rows
+  FACT  OP wire_const_sr DigitalNumericConstant[106] #31015 -> WhileLoop[1] #10170.t32 (L register #31004 outer) -> err '' (0.4 s)
+  FACT  connect #31010->#31024 AFTER node census: 699 rows
+  FACT  connect #31010->#31024 CENSUS DIFF: Node 699 -> 699 ; 0 new uid(s): []
+  METER op     k  11  private 602.6 MB (d +0.0)  handles 46161 (d -1)
+  STEPX 11 connect        acts [13] ids ['w_k0'] diff skipped (not a checkpoint)
+  METER pre    k  12  private 602.6 MB (d +0.0)  handles 46161 (d +0)
+  FACT  create_primitive_nested node census: 699 rows
+  OBSERVED uid 31078 -> owner 'Diagram' uid 30922 | self 'Function'#31078 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  OP create_primitive_nested 'Increment' on #30922 donor {'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p5s01a_20261009_101219.vi', 'uid': 1978} -> err '' (2.1 s)
+  FACT  create primitive c_inc AFTER node census: 700 rows
+  FACT  create primitive c_inc CENSUS DIFF: Node 699 -> 700 ; 1 new uid(s): [(31078, 'Function', (5516, 5905))]
+  FACT  create primitive c_inc new #31078 #31078 lives at: {'diagram_index': 23, 'diagram_uid': 30922, 'diagram_class': 'Diagram', 'nodes_index': 1, 'nodes_on_diagram': 2, 'label': 'Increment'}  (24 diagram(s) scanned of 183, 1.3 s)
+  FACT  create primitive c_inc new #31078 terminal table of #31078 (Diagram idx 23, Nodes[1], echo 31078): 2 terminal(s)
+  FACT      create primitive c_inc new #31078 t0  'x+1'                              is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      create primitive c_inc new #31078 t1  'x'                                is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT  create primitive c_inc NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #31078 class 'Function' label 'Increment', 2 terminal(s), 0 wired - REPORTED, left alone
+  PASS  PRIM created node label/class == plan prim (c_inc)  PRIM-GATE PASS c_inc: plan prim 'Increment' class 'Function' | read back #31078 label 'Increment' class 'Function'
+  METER op     k  12  private 603.7 MB (d +1.1)  handles 46161 (d +0)
+  METER read   k  12  private 603.8 MB (d +0.1)  handles 46159 (d -2)
+  STEPX 12 create         acts [14] ids ['c_inc'] bound {-47: 31078} diff 0
+  METER pre    k  13  private 603.7 MB (d -0.1)  handles 46159 (d +0)
+  FACT  connect_term_uid node census: 700 rows
+  FACT  OP connect_term_uid connect_term_uid #31133 <- #31023 -> err '' (6.4 s)
+  FACT  connect_term_uid #31133 <- #31023 AFTER node census: 700 rows
+  FACT  connect_term_uid #31133 <- #31023 CENSUS DIFF: Node 700 -> 700 ; 0 new uid(s): []
+  METER op     k  13  private 603.8 MB (d +0.1)  handles 46182 (d +23)
+  METER read   k  13  private 607.9 MB (d +4.1)  handles 46180 (d -2)
+  STEPX 13 connect_term_uid acts [15, 16, 17] ids ['t_ci', 'w_ci_in', 'w_ci_inc'] bound {-50: 31175} diff 0
+  METER pre    k  14  private 613.8 MB (d +5.9)  handles 46179 (d -1)
+  FACT  connect_term_uid node census: 700 rows
+  FACT  OP connect_term_uid connect_term_uid #31007 <- #31110 -> err '' (5.8 s)
+  FACT  connect_term_uid #31007 <- #31110 AFTER node census: 700 rows
+  FACT  connect_term_uid #31007 <- #31110 CENSUS DIFF: Node 700 -> 700 ; 0 new uid(s): []
+  METER op     k  14  private 613.8 MB (d +0.0)  handles 46180 (d +1)
+  METER read   k  14  private 618.0 MB (d +4.2)  handles 46179 (d -1)
+  STEPX 14 connect_term_uid acts [18, 19, 20] ids ['t_co', 'w_inc_co', 'w_co_r'] bound {-56: 31186} diff 0
+  PASS  E1 every checkpoint's real graph == its simulated step (14 ops)
+  PASS  NG every crossing op's NEW tunnel names == the simulator's (stagexec.tunnel_name_check, per op, from the step files): 0 op(s) []
+  PASS  FR the 8 created objects sit on [686, 4866, 30922] frame(s) of the simulated end; real frames == the sim end's  {'on': [686, 4866, 30922], 'nc': 8, 'extra': [], 'missing': []}
+  PASS  D new wires 10 == sim's 10; lost 1 == sim's 1 (wire uid + source identity, stagekit.wire_keys_356); deleted uids re-used: noted [], bad []  {'new': ['30457', '30830', '30993', '31017', '31162', '31163', '31171', '31194', '31206', '31253'], 'lost': ['30457'], 'reuse_noted': [], 'reuse_bad': []}
+  UNPREDICTED  CEN2 new-object census (classes of the pred) == plan_ring_p5s01a_pred.json census  (declared set empty {}; measured {})
+  CENSUS-ALL net delta (every class) {"ArrayConstant": 1, "CaseStructure": 1, "ControlTerminal": 1, "Diagram": 2, "DigitalNumericConstant": 3, "Function": 3, "InnerTerminal": 10, "LeftShiftRegister": 1, "OuterTerminal": 6, "OverridableParameterTerminal": 1, "ParameterTerminal": 16, "RightShiftRegister": 1, "SelectorTunnel": 3, "Terminal": 3, "Tunnel": 1, "Wire": 9}
+  CENSUS-ALL new uids by class (every class) {"ArrayConstant": 1, "CaseStructure": 1, "ControlTerminal": 1, "Diagram": 2, "DigitalNumericConstant": 3, "Function": 3, "InnerTerminal": 10, "LeftShiftRegister": 1, "OuterTerminal": 6, "OverridableParameterTerminal": 1, "ParameterTerminal": 16, "RightShiftRegister": 1, "SelectorTunnel": 3, "Terminal": 3, "Tunnel": 1, "Wire": 9}
+  CENSUS-ALL lost uids 0
+  PASS  TD every base terminal the sim keeps wired is still wired; identities lost == the plan's deletes (key position (node, index, term class, direction), stagekit.term_identity_gates); renames 0, unlicensed []  {'unwired': [], 'lost': [], 'plan_deletes': [], 'recycled_uids': [], 'raw_lost': [], 'renames': [], 'unlicensed_renames': []}
+  FACT  ExecState [after all rows (ExecState 0 expected: P5-1a's in-between file is broken by design)] D1_ring_p5s01a_20261009_101219.vi = 0
+  PASS  PB frame-keyed cdiff(S1, real end) == the pred's 21 rows and the plan's 19 open (node, term) pairs; no unlicensed rename (FATAL, before save)  {'extra': [], 'missing': [], 'restored': [], 'unlicensed': []}
+  FACT  PH handles: post-open 45688 -> before-save 46181
+  PASS  HB open->save handle growth <= +700 (PD236(b) band; refs balance is H5)  (45688, 46181)
+
+---------- [SAVE] D1_ring_p5s01a_20261009_101219.vi
+  FACT  ExecState [before the save] D1_ring_p5s01a_20261009_101219.vi = 0
+  FACT  SAVE ROUTE = gui_save, the APPROVED broken-intermediate route (CLAUDE.md split-rule 6; evidence "user 2026-09-22 broken-intermediate save"). The artefact is BROKEN BY DESIGN and is NEVER RUN (34(f)).
+  PASS  S1 the save returned without raising (gui_save route)
+  FACT  SAVED ARTEFACT: D1_ring_p5s01a_20261009_101219.vi md5 2482fe7bf3426e18b0801c77ec629073 size 322158 B; version bytes [0, 38]
+  PASS  S2 the artefact is on disk and non-empty  322158 B
+  FACT  S3 COLD re-open check SKIPPED BY RULE: ExecState was 0, and a broken-saved VI is never cold-loaded headless (recompile spin).
+  PASS  PS artefact saved, md5 differs from the input; input unchanged  2482fe7bf3426e18b0801c77ec629073
+
+---------- [H] HYGIENE
+  FACT  gscript ref_counts: {'opened': 9, 'closed': 9, 'live': 0, 'cached_op_vis': 0}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 9, 'closed': 9, 'live': 0, 'cached_op_vis': 0}
+  FACT  LabVIEW handle count AFTER the work: 40231
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before eb1d0f3107bbba49c9ae67a47c0ee50f / after eb1d0f3107bbba49c9ae67a47c0ee50f
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: ['D1_ring_p5s01a_20261009_101219.vi']  (removed: [])
+  PASS  H6 the files left on disk == ['D1_ring_p5s01a_20261009_101219.vi'] and nothing was removed  added ['D1_ring_p5s01a_20261009_101219.vi'] removed []
+  FACT  LabVIEW handle count at exit: 40231
+
+====================================================================================================
+=== GATES: 23 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c154_p5s01a_scratch.json   elapsed 487.9 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":23,"fail":0},"first_fail":null,"artefacts":[{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p5s01a_20261009_101219.vi","md5":"2482fe7bf3426e18b0801c77ec629073"}],"card":"154-a3-3b","labview":"build"}
+LabVIEW gone at exit: True
+SCRATCH-P5S01A peak 618.0 MB (X10 672.2, d -54.2); final C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_ring_p5s01a_20261009_101219.vi md5 2482fe7bf3426e18b0801c77ec629073; bed md5 eb1d0f3107bbba49c9ae67a47c0ee50f
+GATE MEM peak <= 680.0 and peak <= X10 + 10 (PD285(d), PD328(a)): PASS
+GATE MEML peak <= 680 (launch condition, PD331(c)): PASS
+GATE IN bed md5 unchanged: PASS
+GATE GONE LabVIEW gone: PASS
+BGRUN END rc=0 after 493s

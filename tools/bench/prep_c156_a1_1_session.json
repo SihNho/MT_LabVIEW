@@ -1,0 +1,1276 @@
+{
+ "card": "156-a1-1",
+ "plan": {
+  "path": "tools/bench/plan_ring_p5s02a.json",
+  "md5": "4284c22a540f9e3f39c7092affe516af"
+ },
+ "all_plan": {
+  "path": "tools/bench/plan_ring_p5s02r_all.json",
+  "md5": "15da9551b4e1ab8620f4fa815c224da3"
+ },
+ "input_plan": {
+  "path": "tools/bench/plan_ring_p5s02r_in.json",
+  "md5": "d84634bdbe0f4f94669d2443af116b8e"
+ },
+ "symbol_map": {
+  "QO1 (Obtain, P5-1)": 31258,
+  "L17 loop 1.7": 23041,
+  "F8 frame 686": 686,
+  "B17 body": 23405,
+  "SAVE #376": 376,
+  "REF #3052": 3052,
+  "PROG #3453": 3453,
+  "OT3 out-tunnel t3": 5204,
+  "OT4 out-tunnel t4": 10404,
+  "RSR error out": 24083,
+  "RSR total data array out": 24150,
+  "LSR error in (read from the graph)": 24133,
+  "LSR total data array in (read from the graph)": 24187,
+  "TIN cal cluster path": 24357,
+  "TIN file size": 24361,
+  "TIN selected path": 25223,
+  "SCAF #23042 (scaffold stop)": 23042,
+  "SCIN #23501 (scaffold in-tunnel)": 23501
+ },
+ "census": [
+  {
+   "group": "A",
+   "link": "refnum SR on 1.7 (2nd branch of Obtain 'queue out') -> Dequeue; R.outer -> Release on 686",
+   "status": "OK",
+   "actions": [
+    "sr_q7",
+    "w_obt_q7",
+    "c_deq",
+    "w_q7_deq",
+    "w_deq_q7",
+    "c_rel",
+    "w_q7_rel"
+   ],
+   "routes": [
+    "add_sr/None",
+    "connect/None",
+    "create/primitive",
+    "wire_sr/LeftIn",
+    "wire_sr/RightIn"
+   ],
+   "sim_steps": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "model_source": [
+    "measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)",
+    "measured:tools/bench/opmodels/add_shift_reg.json@c184ce030aea6aaee181fc7b97eeca83",
+    "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def"
+   ],
+   "provisional": []
+  },
+  {
+   "group": "B",
+   "link": "I32 100 constant on Dequeue 'timeout in ms (-1)'",
+   "status": "OK",
+   "actions": [
+    "c_tmo"
+   ],
+   "routes": [
+    "create/const_on_term"
+   ],
+   "sim_steps": [
+    8
+   ],
+   "model_source": [
+    "measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)"
+   ],
+   "provisional": []
+  },
+  {
+   "group": "C",
+   "link": "Case on Dequeue 'timed out?' (case_wired, frames False/True)",
+   "status": "OK",
+   "actions": [
+    "c_case7"
+   ],
+   "routes": [
+    "create/case_wired"
+   ],
+   "sim_steps": [
+    9
+   ],
+   "model_source": [
+    "measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)"
+   ],
+   "provisional": []
+  },
+  {
+   "group": "D",
+   "link": "move #376 / #3052 / #3453 into the not-timed-out frame; #3052 -> #376, #376 -> #3453 re-wired there",
+   "status": "OK",
+   "actions": [
+    "mv_376",
+    "mv_3052",
+    "mv_3453",
+    "w_ref",
+    "w_prog"
+   ],
+   "routes": [
+    "connect/None",
+    "move_in/None"
+   ],
+   "sim_steps": [
+    10,
+    11,
+    12,
+    13,
+    14
+   ],
+   "model_source": [
+    "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+    "measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2"
+   ],
+   "provisional": []
+  },
+  {
+   "group": "E",
+   "link": "Dequeue 'element' -> case tunnel in -> #376 t5",
+   "status": "OK",
+   "actions": [
+    "t_el7",
+    "w_el7_in",
+    "w_el7_376"
+   ],
+   "routes": [
+    "tunnel/None"
+   ],
+   "sim_steps": [
+    15,
+    16,
+    17
+   ],
+   "model_source": [
+    "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+    "measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4"
+   ],
+   "provisional": []
+  },
+  {
+   "group": "F1",
+   "link": "in-tunnel #24357 inner -> case tunnel in -> #376 'cal cluster path'",
+   "status": "OK",
+   "actions": [
+    "t_in1",
+    "w_in1_t",
+    "w_in1_376"
+   ],
+   "routes": [
+    "tunnel/None"
+   ],
+   "sim_steps": [
+    18,
+    19,
+    20
+   ],
+   "model_source": [
+    "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+    "measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4"
+   ],
+   "provisional": []
+  },
+  {
+   "group": "F2",
+   "link": "in-tunnel #24361 inner -> case tunnel in -> #376 'file size'",
+   "status": "OK",
+   "actions": [
+    "t_in2",
+    "w_in2_t",
+    "w_in2_376"
+   ],
+   "routes": [
+    "tunnel/None"
+   ],
+   "sim_steps": [
+    21,
+    22,
+    23
+   ],
+   "model_source": [
+    "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+    "measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4"
+   ],
+   "provisional": []
+  },
+  {
+   "group": "F3",
+   "link": "in-tunnel #25223 inner -> case tunnel in -> #376 'selected path'",
+   "status": "OK",
+   "actions": [
+    "t_in3",
+    "w_in3_t",
+    "w_in3_376"
+   ],
+   "routes": [
+    "tunnel/None"
+   ],
+   "sim_steps": [
+    24,
+    25,
+    26
+   ],
+   "model_source": [
+    "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+    "measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4"
+   ],
+   "provisional": []
+  },
+  {
+   "group": "G",
+   "link": "#376 'error in'/'error out': LSR #24133 inner -> case tunnel in; case tunnel out -> RSR #24083 inner; timed-out frame pass-through",
+   "status": "OK",
+   "actions": [
+    "t_gi",
+    "w_gl",
+    "w_g376",
+    "t_go",
+    "w_gout",
+    "w_gr",
+    "w_gpass"
+   ],
+   "routes": [
+    "case_frame_wire/new_wire",
+    "tunnel/None"
+   ],
+   "sim_steps": [
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33
+   ],
+   "model_source": [
+    "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+    "measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4"
+   ],
+   "provisional": []
+  },
+  {
+   "group": "H",
+   "link": "#376 'total data array in'/'total data array out': LSR #24187 inner -> case tunnel in; case tunnel out -> RSR #24150 inner; timed-out frame pass-through",
+   "status": "OK",
+   "actions": [
+    "t_hi",
+    "w_hl",
+    "w_h376",
+    "t_ho",
+    "w_hout",
+    "w_hr",
+    "w_hpass"
+   ],
+   "routes": [
+    "case_frame_wire/new_wire",
+    "tunnel/None"
+   ],
+   "sim_steps": [
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40
+   ],
+   "model_source": [
+    "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+    "measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4"
+   ],
+   "provisional": []
+  },
+  {
+   "group": "I",
+   "link": "1.7 record counter SR (I32 0) -> case tunnel -> Increment (+ #376 t7 on the LEFT value) -> case tunnel out -> R.inner; pass-through",
+   "status": "OK",
+   "actions": [
+    "sr_c7",
+    "c_k07",
+    "w_k07",
+    "c_inc7",
+    "t_ci7",
+    "w_ci7_in",
+    "w_ci7_inc",
+    "w_c7_fi",
+    "t_co7",
+    "w_inc7_co",
+    "w_co7_r",
+    "w_c7_pass"
+   ],
+   "routes": [
+    "add_sr/None",
+    "case_frame_wire/branch",
+    "case_frame_wire/new_wire",
+    "connect/None",
+    "connect_term_uid/register_end_case_border",
+    "create/primitive"
+   ],
+   "sim_steps": [
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52
+   ],
+   "model_source": [
+    "measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)",
+    "measured:tools/bench/opmodels/add_shift_reg.json@c184ce030aea6aaee181fc7b97eeca83",
+    "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+    "measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4"
+   ],
+   "provisional": []
+  },
+  {
+   "group": "J",
+   "link": "stop: delete scaffold #23042 / #23501; Equal?(counter after the iteration, local 'records final') -> cond (no >= 0, no And)",
+   "status": "OK",
+   "actions": [
+    "dw_cond",
+    "do_23042",
+    "do_23501",
+    "c_lr7",
+    "c_eq7",
+    "w_eq7_x",
+    "w_eq7_y",
+    "w_eq7_cond"
+   ],
+   "routes": [
+    "branch/None",
+    "connect/None",
+    "create/local_read",
+    "create/primitive",
+    "delete_object/None",
+    "delete_wire/None",
+    "stop/None"
+   ],
+   "sim_steps": [
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60
+   ],
+   "model_source": [
+    "measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)",
+    "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+    "measured:tools/bench/opmodels/delete_object.json@872644df5c0e7f59dfef1cb44637a8ed",
+    "measured:tools/bench/opmodels/delete_wire.json@3ee49994f25b3d2d38f85b9310f3a32a"
+   ],
+   "provisional": []
+  },
+  {
+   "group": "K3",
+   "link": "NEW SR for #376 'file progress': init const -> L.outer; out-tunnel (f0) #376 -> O.inner, O.outer -> R.inner; in-tunnel (f1) L.inner -> I.outer, I.inner -> O.inner = the pass wire (the in-tunnel's one group out-wire)",
+   "status": "GAP",
+   "actions": [
+    "sr_k3",
+    "c_k3i",
+    "w_k3i",
+    "t_k3o",
+    "w_k3out",
+    "w_k3r",
+    "t_k3i",
+    "w_k3l",
+    "w_k3pass"
+   ],
+   "error": "action 69 (wire w_k3pass): wire new:IK3.inner -> new:OK3.inner: source on diagram -30, sink on diagram -29 - a border needs a tunnel/register action first",
+   "stage": "sim",
+   "tool": null
+  },
+  {
+   "group": "K3f",
+   "link": "the value at SK3 R.inner (OK3.outer) -> out-tunnel #5204 inner (form T: #5204 outer keeps feeding the P5-1 sinks)",
+   "status": "BLOCKED",
+   "actions": [
+    "w_k3f"
+   ],
+   "error": "depends on ['K3']",
+   "stage": "dep",
+   "tool": null
+  },
+  {
+   "group": "K4",
+   "link": "NEW SR for #376 'file number to append out': init const -> L.outer; out-tunnel (f0) #376 -> O.inner, O.outer -> R.inner; in-tunnel (f1) L.inner -> I.outer, I.inner -> O.inner = the pass wire (the in-tunnel's one group out-wire)",
+   "status": "GAP",
+   "actions": [
+    "sr_k4",
+    "c_k4i",
+    "w_k4i",
+    "t_k4o",
+    "w_k4out",
+    "w_k4r",
+    "t_k4i",
+    "w_k4l",
+    "w_k4pass"
+   ],
+   "error": "action 69 (wire w_k4pass): wire new:IK4.inner -> new:OK4.inner: source on diagram -30, sink on diagram -29 - a border needs a tunnel/register action first",
+   "stage": "sim",
+   "tool": null
+  },
+  {
+   "group": "K4f",
+   "link": "the value at SK4 R.inner (OK4.outer) -> out-tunnel #10404 inner (form T: #10404 outer keeps feeding the P5-1 sinks)",
+   "status": "BLOCKED",
+   "actions": [
+    "w_k4f"
+   ],
+   "error": "depends on ['K4']",
+   "stage": "dep",
+   "tool": null
+  }
+ ],
+ "t34_nets": {
+  "K3": {
+   "status": "not compiled (K3 GAP, K3f BLOCKED)"
+  },
+  "K4": {
+   "status": "not compiled (K4 GAP, K4f BLOCKED)"
+  }
+ },
+ "actions": 23,
+ "ops": 17,
+ "cut": {
+  "n_ops": 17,
+  "k_actions": 23,
+  "per_prefix_main": [
+   [
+    1,
+    632.3,
+    1
+   ],
+   [
+    2,
+    636.2,
+    2
+   ],
+   [
+    3,
+    637.6,
+    3
+   ],
+   [
+    4,
+    641.5,
+    4
+   ],
+   [
+    5,
+    642.9,
+    5
+   ],
+   [
+    6,
+    644.3,
+    6
+   ],
+   [
+    7,
+    648.2,
+    7
+   ],
+   [
+    8,
+    649.6,
+    8
+   ],
+   [
+    9,
+    653.5,
+    9
+   ],
+   [
+    10,
+    657.4,
+    10
+   ],
+   [
+    11,
+    658.8,
+    11
+   ],
+   [
+    12,
+    660.2,
+    12
+   ],
+   [
+    13,
+    661.5,
+    13
+   ],
+   [
+    14,
+    662.9,
+    14
+   ],
+   [
+    15,
+    664.3,
+    17
+   ],
+   [
+    16,
+    668.2,
+    20
+   ],
+   [
+    17,
+    672.1,
+    23
+   ],
+   [
+    18,
+    676.0,
+    26
+   ],
+   [
+    19,
+    680.0,
+    29
+   ],
+   [
+    20,
+    683.9,
+    32
+   ],
+   [
+    21,
+    687.8,
+    33
+   ],
+   [
+    22,
+    689.1,
+    36
+   ],
+   [
+    23,
+    693.1,
+    39
+   ],
+   [
+    24,
+    697.0,
+    40
+   ],
+   [
+    25,
+    698.3,
+    41
+   ],
+   [
+    26,
+    702.3,
+    42
+   ],
+   [
+    27,
+    706.2,
+    43
+   ],
+   [
+    28,
+    707.5,
+    44
+   ],
+   [
+    29,
+    711.5,
+    47
+   ],
+   [
+    30,
+    715.4,
+    48
+   ],
+   [
+    31,
+    716.7,
+    51
+   ],
+   [
+    32,
+    720.7,
+    52
+   ],
+   [
+    33,
+    722.0,
+    53
+   ],
+   [
+    34,
+    723.4,
+    54
+   ],
+   [
+    35,
+    724.8,
+    55
+   ],
+   [
+    36,
+    726.2,
+    56
+   ],
+   [
+    37,
+    730.1,
+    57
+   ],
+   [
+    38,
+    734.0,
+    58
+   ],
+   [
+    39,
+    735.4,
+    59
+   ],
+   [
+    40,
+    736.8,
+    60
+   ]
+  ],
+  "limit": 675.0,
+  "max_actions": 40,
+  "group_ends": [
+   7,
+   8,
+   9,
+   14,
+   17,
+   20,
+   23,
+   26,
+   33,
+   40,
+   52,
+   60
+  ]
+ },
+ "later_cuts": [
+  {
+   "ops": [
+    18,
+    40
+   ],
+   "actions": [
+    24,
+    60
+   ],
+   "groups": [
+    "F3",
+    "G",
+    "H",
+    "I",
+    "J"
+   ],
+   "x10": "start = the measured load of the previous step's adopted file (not known offline); MAIN <= 675 re-checked then"
+  }
+ ],
+ "saved_files": [
+  "claudeDev\\D1_ring_p5s02a_<ts>.vi",
+  "claudeDev\\D1_ring_p5_<ts>.vi"
+ ],
+ "kinds": {
+  "add_sr": 1,
+  "connect": 4,
+  "create": 4,
+  "wire_sr": 2,
+  "move_in": 3,
+  "tunnel": 3
+ },
+ "start_mb": 603.4,
+ "start_cite": "597.5 + op-0 read 5.9 (tools/bench/diag_c155_a3_2_graph.log:24 (MEM after load: 597.5 MB private); tools/bench/stage_d1_ring_p3b1.log:42-43 (METER start k 0 561.8 MB -> METER read k 0 567.7 MB, d +5.9); pin4 :59-60 +6.0 (result_133-2.json); card 133-3, PD283(b))",
+ "exec_peak_mb": 667.0,
+ "main_peak_mb": 672.1,
+ "main_src_reads": 2,
+ "checkpoints": [
+  0,
+  1,
+  3,
+  6,
+  8,
+  9,
+  15,
+  16,
+  17
+ ],
+ "open_rows": 27,
+ "end_rows": 29,
+ "ties": {
+  "10068|ParameterTerminal|x|0": {
+   "n": 0,
+   "id": "p5s01-open",
+   "op": "base",
+   "class": "step0-declared",
+   "pair": [
+    10068,
+    "x"
+   ]
+  },
+  "10150|ParameterTerminal|x|0": {
+   "n": 0,
+   "id": "p5s01-open",
+   "op": "base",
+   "class": "step0-declared",
+   "pair": [
+    10150,
+    "x"
+   ]
+  },
+  "10382|ParameterTerminal|x|0": {
+   "n": 0,
+   "id": "p5s01-open",
+   "op": "base",
+   "class": "step0-declared",
+   "pair": [
+    10382,
+    "x"
+   ]
+  },
+  "10757|Terminal|array|0": {
+   "n": 0,
+   "id": "p5s01-open",
+   "op": "base",
+   "class": "step0-declared",
+   "pair": [
+    10757,
+    "array"
+   ]
+  },
+  "11261|Terminal|array|0": {
+   "n": 0,
+   "id": "p5s01-open",
+   "op": "base",
+   "class": "step0-declared",
+   "pair": [
+    11261,
+    "array"
+   ]
+  },
+  "11261|Terminal|element|0": {
+   "n": 0,
+   "id": "p5s01-open",
+   "op": "base",
+   "class": "step0-declared",
+   "pair": [
+    11261,
+    "element"
+   ]
+  },
+  "11529|ParameterTerminal|x|0": {
+   "n": 0,
+   "id": "p5s01-open",
+   "op": "base",
+   "class": "step0-declared",
+   "pair": [
+    11529,
+    "x"
+   ]
+  },
+  "2048|Terminal|array|0": {
+   "n": 10,
+   "id": "mv_376",
+   "op": "move_in",
+   "class": "move_in",
+   "pair": [
+    2048,
+    "array"
+   ]
+  },
+  "2048|Terminal|length|0": {
+   "n": 10,
+   "id": "mv_376",
+   "op": "move_in",
+   "class": "move_in",
+   "pair": [
+    2048,
+    "length"
+   ]
+  },
+  "2626|Terminal|array|0": {
+   "n": 0,
+   "id": "p5s01-open",
+   "op": "base",
+   "class": "step0-declared",
+   "pair": [
+    2626,
+    "array"
+   ]
+  },
+  "2626|Terminal|element|0": {
+   "n": 0,
+   "id": "p5s01-open",
+   "op": "base",
+   "class": "step0-declared",
+   "pair": [
+    2626,
+    "element"
+   ]
+  },
+  "2626|Terminal|element|1": {
+   "n": 0,
+   "id": "p5s01-open",
+   "op": "base",
+   "class": "step0-declared",
+   "pair": [
+    2626,
+    "element"
+   ]
+  },
+  "2626|Terminal|element|2": {
+   "n": 0,
+   "id": "p5s01-open",
+   "op": "base",
+   "class": "step0-declared",
+   "pair": [
+    2626,
+    "element"
+   ]
+  },
+  "28083|Terminal|Magnet position|0": {
+   "n": 0,
+   "id": "p5s01-open",
+   "op": "base",
+   "class": "step0-declared",
+   "pair": [
+    28083,
+    "Magnet position"
+   ]
+  },
+  "29240|ParameterTerminal|x|0": {
+   "n": 0,
+   "id": "p5s01-open",
+   "op": "base",
+   "class": "step0-declared",
+   "pair": [
+    29240,
+    "x"
+   ]
+  },
+  "29625|Terminal|array|0": {
+   "n": 0,
+   "id": "p5s01-open",
+   "op": "base",
+   "class": "step0-declared",
+   "pair": [
+    29625,
+    "array"
+   ]
+  },
+  "376|Terminal|current frame data array in|0": {
+   "n": 0,
+   "id": "p5s01-open",
+   "op": "base",
+   "class": "step0-declared",
+   "pair": [
+    376,
+    "current frame data array in"
+   ]
+  },
+  "376|Terminal|error in|0": {
+   "n": 10,
+   "id": "mv_376",
+   "op": "move_in",
+   "class": "move_in",
+   "pair": [
+    376,
+    "error in"
+   ]
+  },
+  "376|Terminal|frame index|0": {
+   "n": 0,
+   "id": "p5s01-open",
+   "op": "base",
+   "class": "step0-declared",
+   "pair": [
+    376,
+    "frame index"
+   ]
+  },
+  "376|Terminal|selected path|0": {
+   "n": 10,
+   "id": "mv_376",
+   "op": "move_in",
+   "class": "move_in",
+   "pair": [
+    376,
+    "selected path"
+   ]
+  },
+  "376|Terminal|total data array in|0": {
+   "n": 10,
+   "id": "mv_376",
+   "op": "move_in",
+   "class": "move_in",
+   "pair": [
+    376,
+    "total data array in"
+   ]
+  },
+  "5058|Terminal|Bead is good? array in|0": {
+   "n": 0,
+   "id": "p5s01-open",
+   "op": "base",
+   "class": "step0-declared",
+   "pair": [
+    5058,
+    "Bead is good? array in"
+   ]
+  },
+  "5058|Terminal|Image In|0": {
+   "n": 0,
+   "id": "p5s01-open",
+   "op": "base",
+   "class": "step0-declared",
+   "pair": [
+    5058,
+    "Image In"
+   ]
+  },
+  "5058|Terminal|pos in cal image in|0": {
+   "n": 0,
+   "id": "p5s01-open",
+   "op": "base",
+   "class": "step0-declared",
+   "pair": [
+    5058,
+    "pos in cal image in"
+   ]
+  },
+  "5058|Terminal|x,y,z array|0": {
+   "n": 0,
+   "id": "p5s01-open",
+   "op": "base",
+   "class": "step0-declared",
+   "pair": [
+    5058,
+    "x,y,z array"
+   ]
+  },
+  "6384|Terminal|actual # data points|0": {
+   "n": 10,
+   "id": "mv_376",
+   "op": "move_in",
+   "class": "move_in",
+   "pair": [
+    6384,
+    "actual # data points"
+   ]
+  },
+  "6384|Terminal|error in|0": {
+   "n": 10,
+   "id": "mv_376",
+   "op": "move_in",
+   "class": "move_in",
+   "pair": [
+    6384,
+    "error in"
+   ]
+  },
+  "6384|Terminal|file # to append|0": {
+   "n": 10,
+   "id": "mv_376",
+   "op": "move_in",
+   "class": "move_in",
+   "pair": [
+    6384,
+    "file # to append"
+   ]
+  },
+  "8634|Terminal|array|0": {
+   "n": 0,
+   "id": "p5s01-open",
+   "op": "base",
+   "class": "step0-declared",
+   "pair": [
+    8634,
+    "array"
+   ]
+  }
+ },
+ "sink_gate_census": [
+  {
+   "n": 14,
+   "id": "w_prog",
+   "sink": [
+    23405,
+    "file progress"
+   ],
+   "dst_term_uid": 3453,
+   "src_term_uid": 5704,
+   "route": "ctlsink",
+   "needs_sink_gate": false
+  }
+ ],
+ "passA_states": {
+  "0": "cb43de96a768c64ae708bc63f60ff42c",
+  "1": "32f21c34d8874cae8f9c47dfd451027b",
+  "2": "92de5c43e1d64d8e1ebd086307ada18b",
+  "3": "03b84eeb948fd4a4127238aefa52027d",
+  "4": "dc3e805c3c5da3c98d2920dd4adb990e",
+  "5": "6373d90c05781adb5a7b37c558f95587",
+  "6": "fb95ee8fe382a793d0cc3a0c9a1829da",
+  "7": "ab4a109af90556d0fd1d344e5bd76dd6",
+  "8": "05c5c19b0a9bc7c3628077012829adff",
+  "9": "5bbc591f66eac342d2064ca5cb55bc9c",
+  "10": "3117dac1b07bdbe6e23ab7edb6a74418",
+  "11": "26c954304739c754cbd11136e629cf0b",
+  "12": "0c9d01540d1bc048831c6c696c1015ec",
+  "13": "595f8793c6f4d71d108dfb8c42a38072",
+  "14": "762e69a3eecd31aed74596b71799a5e2",
+  "15": "d01ee7a017199d1030a92016e6041c50",
+  "16": "1cd74880702997f419fc4b2396d53c7a",
+  "17": "abc4e9689b0ba4d5cf2989f33b69c41c",
+  "18": "dc004dee01be8b15868ded274146def0",
+  "19": "78b7e2887c035b47ca5587914f443f37",
+  "20": "8d4fed6f74fa8899e7e44fe8b9b96432",
+  "21": "2207ccec2e3d49d4d2de0e72480148fd",
+  "22": "51cfb9c9be405eec344b566dfd8b46bd",
+  "23": "93466d9c058446b93b32751713db3869"
+ },
+ "realsim_states": {
+  "0": "cb43de96a768c64ae708bc63f60ff42c",
+  "1": "32f21c34d8874cae8f9c47dfd451027b",
+  "2": "92de5c43e1d64d8e1ebd086307ada18b",
+  "3": "03b84eeb948fd4a4127238aefa52027d",
+  "4": "dc3e805c3c5da3c98d2920dd4adb990e",
+  "5": "6373d90c05781adb5a7b37c558f95587",
+  "6": "fb95ee8fe382a793d0cc3a0c9a1829da",
+  "7": "ab4a109af90556d0fd1d344e5bd76dd6",
+  "8": "05c5c19b0a9bc7c3628077012829adff",
+  "9": "5bbc591f66eac342d2064ca5cb55bc9c",
+  "10": "3117dac1b07bdbe6e23ab7edb6a74418",
+  "11": "26c954304739c754cbd11136e629cf0b",
+  "12": "0c9d01540d1bc048831c6c696c1015ec",
+  "13": "595f8793c6f4d71d108dfb8c42a38072",
+  "14": "762e69a3eecd31aed74596b71799a5e2",
+  "15": "d01ee7a017199d1030a92016e6041c50",
+  "16": "1cd74880702997f419fc4b2396d53c7a",
+  "17": "abc4e9689b0ba4d5cf2989f33b69c41c",
+  "18": "dc004dee01be8b15868ded274146def0",
+  "19": "78b7e2887c035b47ca5587914f443f37",
+  "20": "8d4fed6f74fa8899e7e44fe8b9b96432",
+  "21": "2207ccec2e3d49d4d2de0e72480148fd",
+  "22": "51cfb9c9be405eec344b566dfd8b46bd",
+  "23": "93466d9c058446b93b32751713db3869"
+ },
+ "steps": [
+  {
+   "n": 0,
+   "op": "base",
+   "id": null,
+   "model_source": null,
+   "file": "tools/bench/sim/ring_p5s02a/step_00_base.json",
+   "md5": "7852a22ce7affdcf2eef56c7cfc99412"
+  },
+  {
+   "n": 1,
+   "op": "add_shift_reg",
+   "id": "sr_q7",
+   "model_source": "measured:tools/bench/opmodels/add_shift_reg.json@c184ce030aea6aaee181fc7b97eeca83",
+   "file": "tools/bench/sim/ring_p5s02a/step_01_add_shift_reg.json",
+   "md5": "ecc01f57c1e60f0fb7829bbe3d000190"
+  },
+  {
+   "n": 2,
+   "op": "wire",
+   "id": "w_obt_q7",
+   "model_source": "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+   "file": "tools/bench/sim/ring_p5s02a/step_02_wire.json",
+   "md5": "0a8e446c5d0963e6f69bf1943c6eafc3"
+  },
+  {
+   "n": 3,
+   "op": "create",
+   "id": "c_deq",
+   "model_source": "measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)",
+   "file": "tools/bench/sim/ring_p5s02a/step_03_create.json",
+   "md5": "028aecfd2b856db3c1573c74d884c452"
+  },
+  {
+   "n": 4,
+   "op": "wire",
+   "id": "w_q7_deq",
+   "model_source": "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+   "file": "tools/bench/sim/ring_p5s02a/step_04_wire.json",
+   "md5": "0be6e16e645c6d0bca6f936617109b6d"
+  },
+  {
+   "n": 5,
+   "op": "wire",
+   "id": "w_deq_q7",
+   "model_source": "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+   "file": "tools/bench/sim/ring_p5s02a/step_05_wire.json",
+   "md5": "3b5dadde257d3e6b9be4400ee23608db"
+  },
+  {
+   "n": 6,
+   "op": "create",
+   "id": "c_rel",
+   "model_source": "measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)",
+   "file": "tools/bench/sim/ring_p5s02a/step_06_create.json",
+   "md5": "323e5b2f18195f194891618deaedec43"
+  },
+  {
+   "n": 7,
+   "op": "wire",
+   "id": "w_q7_rel",
+   "model_source": "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+   "file": "tools/bench/sim/ring_p5s02a/step_07_wire.json",
+   "md5": "0488b008e48a6f33a8b0c7ad36d327ad"
+  },
+  {
+   "n": 8,
+   "op": "create",
+   "id": "c_tmo",
+   "model_source": "measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)",
+   "file": "tools/bench/sim/ring_p5s02a/step_08_create.json",
+   "md5": "4d6cc8942616531202970169e1600109"
+  },
+  {
+   "n": 9,
+   "op": "create",
+   "id": "c_case7",
+   "model_source": "measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)",
+   "file": "tools/bench/sim/ring_p5s02a/step_09_create.json",
+   "md5": "47017e560465d41564a45d2e49e70a7f"
+  },
+  {
+   "n": 10,
+   "op": "move_in",
+   "id": "mv_376",
+   "model_source": "measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2",
+   "file": "tools/bench/sim/ring_p5s02a/step_10_move_in.json",
+   "md5": "9b820f15b508bdc56c8c58e291cd9ae4"
+  },
+  {
+   "n": 11,
+   "op": "move_in",
+   "id": "mv_3052",
+   "model_source": "measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2",
+   "file": "tools/bench/sim/ring_p5s02a/step_11_move_in.json",
+   "md5": "b290d35fbfbee409144f7253ed29238e"
+  },
+  {
+   "n": 12,
+   "op": "move_in",
+   "id": "mv_3453",
+   "model_source": "measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2",
+   "file": "tools/bench/sim/ring_p5s02a/step_12_move_in.json",
+   "md5": "24d481f450f86fd5ded875af57921217"
+  },
+  {
+   "n": 13,
+   "op": "wire",
+   "id": "w_ref",
+   "model_source": "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+   "file": "tools/bench/sim/ring_p5s02a/step_13_wire.json",
+   "md5": "d397fd0855ce0e018f88869b31073547"
+  },
+  {
+   "n": 14,
+   "op": "wire",
+   "id": "w_prog",
+   "model_source": "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+   "file": "tools/bench/sim/ring_p5s02a/step_14_wire.json",
+   "md5": "1953c24712e097f5a395a7ed444f7781"
+  },
+  {
+   "n": 15,
+   "op": "tunnel",
+   "id": "t_el7",
+   "model_source": "measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4",
+   "file": "tools/bench/sim/ring_p5s02a/step_15_tunnel.json",
+   "md5": "b7da7fa71e7643f848ec5ff85fef4f5d"
+  },
+  {
+   "n": 16,
+   "op": "wire",
+   "id": "w_el7_in",
+   "model_source": "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+   "file": "tools/bench/sim/ring_p5s02a/step_16_wire.json",
+   "md5": "989684a32c19154878d8b5a79f9d10ec"
+  },
+  {
+   "n": 17,
+   "op": "wire",
+   "id": "w_el7_376",
+   "model_source": "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+   "file": "tools/bench/sim/ring_p5s02a/step_17_wire.json",
+   "md5": "2f7d5a4fcd9645f2800b2871e1c73fc7"
+  },
+  {
+   "n": 18,
+   "op": "tunnel",
+   "id": "t_in1",
+   "model_source": "measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4",
+   "file": "tools/bench/sim/ring_p5s02a/step_18_tunnel.json",
+   "md5": "ba8ec1b7b7a95770e758b630a015324c"
+  },
+  {
+   "n": 19,
+   "op": "wire",
+   "id": "w_in1_t",
+   "model_source": "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+   "file": "tools/bench/sim/ring_p5s02a/step_19_wire.json",
+   "md5": "627e4c851a0656e60bb3967cc2572f49"
+  },
+  {
+   "n": 20,
+   "op": "wire",
+   "id": "w_in1_376",
+   "model_source": "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+   "file": "tools/bench/sim/ring_p5s02a/step_20_wire.json",
+   "md5": "485cc383fb9b4ef197e448e2167c8c0f"
+  },
+  {
+   "n": 21,
+   "op": "tunnel",
+   "id": "t_in2",
+   "model_source": "measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4",
+   "file": "tools/bench/sim/ring_p5s02a/step_21_tunnel.json",
+   "md5": "f9192fda0899204d2629541b027f65b7"
+  },
+  {
+   "n": 22,
+   "op": "wire",
+   "id": "w_in2_t",
+   "model_source": "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+   "file": "tools/bench/sim/ring_p5s02a/step_22_wire.json",
+   "md5": "f5136be1d0ee7139499b415b27c4d873"
+  },
+  {
+   "n": 23,
+   "op": "wire",
+   "id": "w_in2_376",
+   "model_source": "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+   "file": "tools/bench/sim/ring_p5s02a/step_23_wire.json",
+   "md5": "b1892ad9833ea9d05d5e49e0aab30d99"
+  }
+ ]
+}

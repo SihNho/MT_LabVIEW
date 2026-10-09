@@ -1,0 +1,1042 @@
+{
+ "schema": "stageplan/1",
+ "context": {
+  "s1_key": "D1_s1_copy"
+ },
+ "stage": "ring_p5s01a",
+ "goal": "card 154-a3-2 PASS A: P5-1 form S (32 actions) on the real s09 graph, no open_rows",
+ "base": {
+  "path": "tools/bench/graph_ring_p4s09_20261009_062044.json",
+  "md5": "22f967b513726a01c9d8f63269f689e6"
+ },
+ "actions": [
+  {
+   "op": "create",
+   "id": "c_qk",
+   "class": "ArrayConstant",
+   "diagram": 686,
+   "as": "QK1",
+   "prim": "const_donor",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorQueue_v0.vi",
+    "uid": 52
+   },
+   "terminals": [
+    {
+     "name": "x,y,z array",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py OBT(686), p5_route_census.md row S1"
+  },
+  {
+   "op": "create",
+   "id": "c_obt",
+   "class": "Function",
+   "diagram": 686,
+   "as": "QO1",
+   "prim": "Obtain Queue",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorQueue_v0.vi",
+    "uid": 108
+   },
+   "terminals": [
+    {
+     "name": "name (unnamed)",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "element data type",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "create if not found? (T)",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "error in (no error)",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "max queue size (-1, unlimited)",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "queue out",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "created new?",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "error out",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    }
+   ],
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py OBT(686), p5_route_census.md row S2; DATA stream 1.2 -> 1.7 results FIFO (PD374(a), CLAUDE.md 1c'': queues for lossless data only)",
+   "data_stream": true
+  },
+  {
+   "op": "wire",
+   "id": "w_qk_obt",
+   "src": "new:QK1.value",
+   "dst": "new:QO1.element data type",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py OBT(686), p5_route_census.md row S3"
+  },
+  {
+   "op": "create",
+   "id": "c_km1",
+   "class": "DigitalNumericConstant",
+   "diagram": 4866,
+   "as": "KM1",
+   "prim": "const_donor",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorRingConst_v0.vi",
+    "uid": 249
+   },
+   "terminals": [
+    {
+     "name": "",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py A0, p5_route_census.md row 4"
+  },
+  {
+   "op": "create",
+   "id": "i_rec",
+   "class": "ControlTerminal",
+   "diagram": 4866,
+   "as": "IR1",
+   "label": "records final (1.2 to 1.7)",
+   "indicator": true,
+   "born_on": {
+    "uid": "new:KM1"
+   },
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py A0, p5_route_census.md row 5"
+  },
+  {
+   "op": "create",
+   "id": "c_case",
+   "class": "CaseStructure",
+   "diagram": 23166,
+   "as": "CQ1",
+   "selector_as": "SQ1",
+   "frames": [
+    "False",
+    "True"
+   ],
+   "src": {
+    "uid": 29724,
+    "term": "valid"
+   },
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py A0, p5_route_census.md row 6"
+  },
+  {
+   "op": "create",
+   "id": "c_enq",
+   "class": "Function",
+   "diagram": "new:CQ1.f1",
+   "as": "EQ1",
+   "prim": "Enqueue Element",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorQueue_v0.vi",
+    "uid": 44
+   },
+   "terminals": [
+    {
+     "name": "queue",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "element",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "timeout in ms (-1)",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "error in (no error)",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "queue out",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "timed out?",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "error out",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    }
+   ],
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py A0, p5_route_census.md row 7; DATA stream 1.2 -> 1.7 results FIFO (PD374(a), CLAUDE.md 1c'': queues for lossless data only)",
+   "data_stream": true
+  },
+  {
+   "op": "tunnel",
+   "id": "t_el",
+   "loop": "new:CQ1",
+   "body": "new:CQ1.f1",
+   "parent": 23166,
+   "dir": "in",
+   "as": "TE1",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py A0, p5_route_census.md row 8"
+  },
+  {
+   "op": "wire",
+   "id": "w_el_in",
+   "src": {
+    "uid": 2626,
+    "term": "appended array"
+   },
+   "dst": "new:TE1.outer",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py A0, p5_route_census.md row 8"
+  },
+  {
+   "op": "wire",
+   "id": "w_el_enq",
+   "src": "new:TE1.inner",
+   "dst": "new:EQ1.element",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py A0, p5_route_census.md row 8"
+  },
+  {
+   "op": "add_shift_reg",
+   "id": "sr_n",
+   "loop": 10170,
+   "body": 23166,
+   "parent": 686,
+   "as": "SN1",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py A0, p5_route_census.md row 11"
+  },
+  {
+   "op": "create",
+   "id": "c_k0",
+   "class": "DigitalNumericConstant",
+   "diagram": 686,
+   "as": "K01",
+   "prim": "const_donor",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorSRInit_v0.vi",
+    "uid": 248
+   },
+   "terminals": [
+    {
+     "name": "",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py A0, p5_route_census.md row 12"
+  },
+  {
+   "op": "wire",
+   "id": "w_k0",
+   "src": "new:K01.value",
+   "dst": "new:SN1L.outer",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py A0, p5_route_census.md row 12"
+  },
+  {
+   "op": "create",
+   "id": "c_inc",
+   "class": "Function",
+   "diagram": "new:CQ1.f1",
+   "as": "IN1",
+   "prim": "Increment",
+   "donor": {
+    "donor": "$work",
+    "uid": 1978
+   },
+   "terminals": [
+    {
+     "name": "x+1",
+     "is_source": true,
+     "term_class": "OverridableParameterTerminal"
+    },
+    {
+     "name": "x",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    }
+   ],
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py A0, p5_route_census.md row 13"
+  },
+  {
+   "op": "tunnel",
+   "id": "t_ci",
+   "loop": "new:CQ1",
+   "body": "new:CQ1.f1",
+   "parent": 23166,
+   "dir": "in",
+   "as": "TC1",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py A0, p5_route_census.md row 14"
+  },
+  {
+   "op": "wire",
+   "id": "w_ci_in",
+   "src": "new:SN1L.inner",
+   "dst": "new:TC1.outer",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py A0, p5_route_census.md row 14"
+  },
+  {
+   "op": "wire",
+   "id": "w_ci_inc",
+   "src": "new:TC1.inner",
+   "dst": "new:IN1.x",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py A0, p5_route_census.md row 14"
+  },
+  {
+   "op": "tunnel",
+   "id": "t_co",
+   "loop": "new:CQ1",
+   "body": "new:CQ1.f1",
+   "parent": 23166,
+   "dir": "out",
+   "as": "TC2",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py A0, p5_route_census.md row 15"
+  },
+  {
+   "op": "wire",
+   "id": "w_inc_co",
+   "src": "new:IN1.x+1",
+   "dst": "new:TC2.inner",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py A0, p5_route_census.md row 15"
+  },
+  {
+   "op": "wire",
+   "id": "w_co_r",
+   "src": "new:TC2.outer",
+   "dst": "new:SN1R.inner",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py A0, p5_route_census.md row 15"
+  },
+  {
+   "op": "wire",
+   "id": "w_false_pass",
+   "src": {
+    "uid": "new:TC1",
+    "side": "inner",
+    "frame": "False"
+   },
+   "dst": {
+    "uid": "new:TC2",
+    "side": "inner",
+    "frame": "False"
+   },
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py A0, p5_route_census.md row 16"
+  },
+  {
+   "op": "create",
+   "id": "c_lw",
+   "class": "Local",
+   "diagram": 686,
+   "as": "LW1",
+   "label": "records final (1.2 to 1.7)",
+   "mode": "write",
+   "terminals": [
+    {
+     "name": "records final (1.2 to 1.7)",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py A0, p5_route_census.md row 17"
+  },
+  {
+   "op": "wire",
+   "id": "w_final",
+   "src": "new:SN1R.outer",
+   "dst": "new:LW1.value",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py A0, p5_route_census.md row 18"
+  },
+  {
+   "op": "add_shift_reg",
+   "id": "sr_q",
+   "loop": 10170,
+   "body": 23166,
+   "parent": 686,
+   "as": "QS1",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py S_REF, p5_route_census.md row S4"
+  },
+  {
+   "op": "wire",
+   "id": "w_obt_srq",
+   "src": "new:QO1.queue out",
+   "dst": "new:QS1L.outer",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py S_REF, p5_route_census.md row S5"
+  },
+  {
+   "op": "tunnel",
+   "id": "t_qi",
+   "loop": "new:CQ1",
+   "body": "new:CQ1.f1",
+   "parent": 23166,
+   "dir": "in",
+   "as": "TQ1",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py S_REF, p5_route_census.md row S6"
+  },
+  {
+   "op": "wire",
+   "id": "w_srq_qi",
+   "src": "new:QS1L.inner",
+   "dst": "new:TQ1.outer",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py S_REF, p5_route_census.md row S6"
+  },
+  {
+   "op": "wire",
+   "id": "w_qi_enq",
+   "src": "new:TQ1.inner",
+   "dst": "new:EQ1.queue",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py S_REF, p5_route_census.md row S6"
+  },
+  {
+   "op": "tunnel",
+   "id": "t_qo",
+   "loop": "new:CQ1",
+   "body": "new:CQ1.f1",
+   "parent": 23166,
+   "dir": "out",
+   "as": "TQ2",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py S_REF, p5_route_census.md row S7"
+  },
+  {
+   "op": "wire",
+   "id": "w_enq_qo",
+   "src": "new:EQ1.queue out",
+   "dst": "new:TQ2.inner",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py S_REF, p5_route_census.md row S7"
+  },
+  {
+   "op": "wire",
+   "id": "w_qo_srq",
+   "src": "new:TQ2.outer",
+   "dst": "new:QS1R.inner",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py S_REF, p5_route_census.md row S7"
+  },
+  {
+   "op": "wire",
+   "id": "w_q_false",
+   "src": {
+    "uid": "new:TQ1",
+    "side": "inner",
+    "frame": "False"
+   },
+   "dst": {
+    "uid": "new:TQ2",
+    "side": "inner",
+    "frame": "False"
+   },
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py S_REF, p5_route_census.md row S8"
+  }
+ ],
+ "final": false,
+ "finalized": {
+  "base": {
+   "path": "tools/bench/graph_ring_p4s09_20261009_062044.json",
+   "md5": "22f967b513726a01c9d8f63269f689e6"
+  },
+  "plan_in": {
+   "path": "tools/bench/sim/ring_p5s01/_passA/plan_ring_p5s01a_in.json",
+   "md5": "66314ec81edd42b15a38df179fbff0db"
+  },
+  "last_step": {
+   "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_32_wire.json",
+   "md5": "7c12656812b13058ff73dd65b1cf0e69"
+  },
+  "summary": {
+   "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/summary.json",
+   "md5": "69cd10a3438663e31581df707330cf8a"
+  },
+  "end_cdiff_rows": [
+   "10068|ParameterTerminal|x|0",
+   "10150|ParameterTerminal|x|0",
+   "10382|ParameterTerminal|x|0",
+   "10757|Terminal|array|0",
+   "11261|Terminal|array|0",
+   "11261|Terminal|element|0",
+   "11529|ParameterTerminal|x|0",
+   "2626|Terminal|array|0",
+   "2626|Terminal|element|0",
+   "2626|Terminal|element|1",
+   "2626|Terminal|element|2",
+   "28083|Terminal|Magnet position|0",
+   "29240|ParameterTerminal|x|0",
+   "29625|Terminal|array|0",
+   "376|Terminal|current frame data array in|0",
+   "376|Terminal|frame index|0",
+   "5058|Terminal|Bead is good? array in|0",
+   "5058|Terminal|Image In|0",
+   "5058|Terminal|pos in cal image in|0",
+   "5058|Terminal|x,y,z array|0",
+   "8634|Terminal|array|0"
+  ],
+  "failed": null,
+  "first_divergent": {
+   "n": 0,
+   "op": "base",
+   "id": null,
+   "rows_from_here": 21
+  },
+  "open_rows": [],
+  "open_rows_match": false,
+  "open_rows_match_legacy": false,
+  "open_rows_classed": {
+   "ok": false,
+   "want": [],
+   "c4_n": 0,
+   "c4_keys": 0,
+   "c4_bad": [],
+   "unclassed": []
+  },
+  "cdiff_inputs": {
+   "labels": "node_labels_default",
+   "labels_n": 626,
+   "fs_pairs": "state",
+   "fs_pairs_n": 576
+  },
+  "step_files": [
+   {
+    "n": 0,
+    "op": "base",
+    "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_00_base.json",
+    "md5": "822961436a4f2d48b834381f36a95637"
+   },
+   {
+    "n": 1,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_01_create.json",
+    "md5": "2732a544eac024b86d92c642c655cef0"
+   },
+   {
+    "n": 2,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_02_create.json",
+    "md5": "d6495f6c144c00a5bde8c1770e3fae79"
+   },
+   {
+    "n": 3,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_03_wire.json",
+    "md5": "235361b6de6c9fb85bb281467805ec21"
+   },
+   {
+    "n": 4,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_04_create.json",
+    "md5": "32f8f442942ae5c58af8f9108c1d6941"
+   },
+   {
+    "n": 5,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_05_create.json",
+    "md5": "92c33edfe6d625b06bfbe5aedc6e6e94"
+   },
+   {
+    "n": 6,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_06_create.json",
+    "md5": "868742af8efdd98bc76abd1fc69ed3f4"
+   },
+   {
+    "n": 7,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_07_create.json",
+    "md5": "48950393d9989abd5c0e820ba72d57e6"
+   },
+   {
+    "n": 8,
+    "op": "tunnel",
+    "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_08_tunnel.json",
+    "md5": "a2e8b459d54e70e9f1edce0f2d541148"
+   },
+   {
+    "n": 9,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_09_wire.json",
+    "md5": "70b28583aa435b91740eb805ec5fd4b5"
+   },
+   {
+    "n": 10,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_10_wire.json",
+    "md5": "dc2cc229d8a33cbd6924b4e48356b6b5"
+   },
+   {
+    "n": 11,
+    "op": "add_shift_reg",
+    "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_11_add_shift_reg.json",
+    "md5": "4df7a55e683ee938efde603a2623c103"
+   },
+   {
+    "n": 12,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_12_create.json",
+    "md5": "ed880a3f5c2ef2dae36e1646b0a638c8"
+   },
+   {
+    "n": 13,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_13_wire.json",
+    "md5": "e91b5c2a37955237e0f84693ac7a34fc"
+   },
+   {
+    "n": 14,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_14_create.json",
+    "md5": "7db3882c292f1535ffc09fcd1266527a"
+   },
+   {
+    "n": 15,
+    "op": "tunnel",
+    "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_15_tunnel.json",
+    "md5": "f6a13a169ea16f259197fa81df1b7022"
+   },
+   {
+    "n": 16,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_16_wire.json",
+    "md5": "fcad25989001675f1d06edf6b368e222"
+   },
+   {
+    "n": 17,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_17_wire.json",
+    "md5": "1747d85eac62449839af4fc4d70542bf"
+   },
+   {
+    "n": 18,
+    "op": "tunnel",
+    "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_18_tunnel.json",
+    "md5": "d97f9e3d34aa5f004c1a392bb7b58df8"
+   },
+   {
+    "n": 19,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_19_wire.json",
+    "md5": "45307421ab64b75ce12698eeccd4724e"
+   },
+   {
+    "n": 20,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_20_wire.json",
+    "md5": "e18575cf96e200e1f8f4bb21a75921c3"
+   },
+   {
+    "n": 21,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_21_wire.json",
+    "md5": "5ab7b2e2fe668f931c811a41c6ca8c09"
+   },
+   {
+    "n": 22,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_22_create.json",
+    "md5": "02f4f895ac75a9184725804db003572b"
+   },
+   {
+    "n": 23,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_23_wire.json",
+    "md5": "569260fc67cc2ded5f4202520e20fe8f"
+   },
+   {
+    "n": 24,
+    "op": "add_shift_reg",
+    "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_24_add_shift_reg.json",
+    "md5": "3b98c46d31f30d140b2c1f7627bc6e61"
+   },
+   {
+    "n": 25,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_25_wire.json",
+    "md5": "48265b22e861ef9462bd6c26f6409f2c"
+   },
+   {
+    "n": 26,
+    "op": "tunnel",
+    "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_26_tunnel.json",
+    "md5": "55f3e4cb19c74122eac7fdd2b5db3309"
+   },
+   {
+    "n": 27,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_27_wire.json",
+    "md5": "8d3ee19d01529bf80517686256f4e087"
+   },
+   {
+    "n": 28,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_28_wire.json",
+    "md5": "a4ed490b5f6212501d7a1df15f1efd73"
+   },
+   {
+    "n": 29,
+    "op": "tunnel",
+    "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_29_tunnel.json",
+    "md5": "ac58e51ef79b754ddb58fa4db5595339"
+   },
+   {
+    "n": 30,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_30_wire.json",
+    "md5": "0947e061ceb1a5a362f59d8e85b83d9e"
+   },
+   {
+    "n": 31,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_31_wire.json",
+    "md5": "d0e957ada5251b77d765e68aa70a5003"
+   },
+   {
+    "n": 32,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s01/_passA/ring_p5s01a/step_32_wire.json",
+    "md5": "7c12656812b13058ff73dd65b1cf0e69"
+   }
+  ],
+  "undecided": 0,
+  "at": "2026-10-09 09:37:52",
+  "fs_routes": {},
+  "addr_pos": [
+   {
+    "n": 3,
+    "addr": "new:QK1.value",
+    "source": true,
+    "owner": -1,
+    "index": 0,
+    "class": "Terminal",
+    "name": "x,y,z array"
+   },
+   {
+    "n": 3,
+    "addr": "new:QO1.element data type",
+    "source": false,
+    "owner": -3,
+    "index": 1,
+    "class": "ParameterTerminal",
+    "name": "element data type"
+   },
+   {
+    "n": 5,
+    "addr": "{\"uid\":\"new:KM1\"}",
+    "source": true,
+    "owner": -13,
+    "index": 0,
+    "class": "Terminal",
+    "name": ""
+   },
+   {
+    "n": 6,
+    "addr": "{\"term\":\"valid\",\"uid\":29724}",
+    "source": true,
+    "owner": 29724,
+    "index": 1,
+    "class": "Terminal",
+    "name": "valid"
+   },
+   {
+    "n": 9,
+    "addr": "{\"term\":\"appended array\",\"uid\":2626}",
+    "source": true,
+    "owner": 2626,
+    "index": 0,
+    "class": "Terminal",
+    "name": "appended array"
+   },
+   {
+    "n": 9,
+    "addr": "new:TE1.outer",
+    "source": false,
+    "owner": -32,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 10,
+    "addr": "new:TE1.inner",
+    "source": true,
+    "owner": -32,
+    "index": 2,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 10,
+    "addr": "new:EQ1.element",
+    "source": false,
+    "owner": -24,
+    "index": 1,
+    "class": "ParameterTerminal",
+    "name": "element"
+   },
+   {
+    "n": 13,
+    "addr": "new:K01.value",
+    "source": true,
+    "owner": -44,
+    "index": 0,
+    "class": "Terminal",
+    "name": ""
+   },
+   {
+    "n": 13,
+    "addr": "new:SN1L.outer",
+    "source": false,
+    "owner": -39,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 16,
+    "addr": "new:SN1L.inner",
+    "source": true,
+    "owner": -39,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 16,
+    "addr": "new:TC1.outer",
+    "source": false,
+    "owner": -50,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 17,
+    "addr": "new:TC1.inner",
+    "source": true,
+    "owner": -50,
+    "index": 2,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 17,
+    "addr": "new:IN1.x",
+    "source": false,
+    "owner": -47,
+    "index": 1,
+    "class": "ParameterTerminal",
+    "name": "x"
+   },
+   {
+    "n": 19,
+    "addr": "new:IN1.x+1",
+    "source": true,
+    "owner": -47,
+    "index": 0,
+    "class": "OverridableParameterTerminal",
+    "name": "x+1"
+   },
+   {
+    "n": 19,
+    "addr": "new:TC2.inner",
+    "source": false,
+    "owner": -56,
+    "index": 2,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 20,
+    "addr": "new:TC2.outer",
+    "source": true,
+    "owner": -56,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 20,
+    "addr": "new:SN1R.inner",
+    "source": false,
+    "owner": -38,
+    "index": 0,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 21,
+    "addr": "{\"frame\":\"False\",\"side\":\"inner\",\"uid\":\"new:TC1\"}",
+    "source": true,
+    "owner": -50,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 21,
+    "addr": "{\"frame\":\"False\",\"side\":\"inner\",\"uid\":\"new:TC2\"}",
+    "source": false,
+    "owner": -56,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 23,
+    "addr": "new:SN1R.outer",
+    "source": true,
+    "owner": -38,
+    "index": 1,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 23,
+    "addr": "new:LW1.value",
+    "source": false,
+    "owner": -63,
+    "index": 0,
+    "class": "Terminal",
+    "name": "records final (1.2 to 1.7)"
+   },
+   {
+    "n": 25,
+    "addr": "new:QO1.queue out",
+    "source": true,
+    "owner": -3,
+    "index": 5,
+    "class": "ParameterTerminal",
+    "name": "queue out"
+   },
+   {
+    "n": 25,
+    "addr": "new:QS1L.outer",
+    "source": false,
+    "owner": -67,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 27,
+    "addr": "new:QS1L.inner",
+    "source": true,
+    "owner": -67,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 27,
+    "addr": "new:TQ1.outer",
+    "source": false,
+    "owner": -73,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 28,
+    "addr": "new:TQ1.inner",
+    "source": true,
+    "owner": -73,
+    "index": 2,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 28,
+    "addr": "new:EQ1.queue",
+    "source": false,
+    "owner": -24,
+    "index": 0,
+    "class": "ParameterTerminal",
+    "name": "queue"
+   },
+   {
+    "n": 30,
+    "addr": "new:EQ1.queue out",
+    "source": true,
+    "owner": -24,
+    "index": 4,
+    "class": "ParameterTerminal",
+    "name": "queue out"
+   },
+   {
+    "n": 30,
+    "addr": "new:TQ2.inner",
+    "source": false,
+    "owner": -79,
+    "index": 2,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 31,
+    "addr": "new:TQ2.outer",
+    "source": true,
+    "owner": -79,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 31,
+    "addr": "new:QS1R.inner",
+    "source": false,
+    "owner": -66,
+    "index": 0,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 32,
+    "addr": "{\"frame\":\"False\",\"side\":\"inner\",\"uid\":\"new:TQ1\"}",
+    "source": true,
+    "owner": -73,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 32,
+    "addr": "{\"frame\":\"False\",\"side\":\"inner\",\"uid\":\"new:TQ2\"}",
+    "source": false,
+    "owner": -79,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   }
+  ],
+  "fs_border_gate": {
+   "status": "PASS",
+   "unmeasured": [
+    14430,
+    31050,
+    34409,
+    34489,
+    43605,
+    44160,
+    44164
+   ],
+   "used": {}
+  }
+ }
+}

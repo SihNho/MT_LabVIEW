@@ -1,0 +1,67 @@
+{
+ "schema": "task/1",
+ "id": "154-a3-1",
+ "kind": "build",
+ "goal": "Census refnum forms S (Obtain on 686, SR on 1.2) and L (indicator + local read); pick by PD376(b); register DonorQueue_v0 uids 108/44/45/46 in stage_prerun PRIM_DONORS (X17) + self-test",
+ "why": "Cycle 154 round 3, pass items 1-2 (PD376(a)(b)(c)). Round 2's census found rows 9-10 GAP for the refnum path; the form decides the P5-1 plan. X17 refuses the DonorQueue uids until registered.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_154-a3-1.md", "md5": "eea1df3292610ba23b3f4906de86ceea"},
+  {"path": "docs/d1/ring-p5.md", "md5": "9c5ba571c1309f0d22b34ef4ae6f57ca"},
+  {"path": "tools/bench/p5_route_census.md", "md5": "821690b7a8ddbc2a5ed0a7e99fc38637"},
+  {"path": "tools/bench/diag_c154_a2_3_facts.md", "md5": "05718bd2f3b1458850a4bf6c589ffba2"},
+  {"path": "tools/bench/diag_c154_a2_3_census.py", "md5": "ce81b548754dfa99242bbe344bed608f"},
+  {"path": "tools/bench/donor_queue_v0.json", "md5": "15269b6cea348c20567204cbbd604478"},
+  {"path": "tools/bench/graph_ring_p4s09_20261009_062044.json", "md5": "22f967b513726a01c9d8f63269f689e6"},
+  {"path": "tools/stagexec.py", "md5": "1bab9cf96502dfbe2d9a755e6d4a48b6"},
+  {"path": "tools/stagesim.py", "md5": "78b8d5a16dc98509311840cd2140917f"},
+  {"path": "tools/stage_prerun.py", "md5": "c739eb86e0aa3644a1008b8f3fa2af38"}
+ ],
+ "pass": [
+  "p5_route_census.md extended: each refnum row of form S and L -> stagexec route + stagesim support (file:line), OK/GAP; GAPs verbatim; line CHOSEN: S|L|NONE by PD376(b); P5-2 refnum rows report-only",
+  "no tool written; stagexec 1bab9cf9 and stagesim 78b8d5a1 unchanged",
+  "PRIM_DONORS has DonorQueue_v0 uids 108/44/45/46 (Function, md5 81dba822); X17 passes the CHOSEN form's creates, bad label/class/uid refuse; self-tests PASS, counts not lower; new md5 quoted",
+  "invariants md5 before = after (brief step 7); no LabVIEW process"
+ ],
+ "outputs": [
+  "tools/bench/p5_route_census.md",
+  "tools/bench/diag_c154_a3_1_census.py",
+  "tools/bench/diag_c154_a3_1_facts.md",
+  "tools/bench/selftest_c154_a3_1_x17.py",
+  "tools/stage_prerun.py"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/p5_route_census.md",
+   "tools/bench/diag_c154_a3_1*",
+   "tools/bench/selftest_c154_a3_1*",
+   "tools/stage_prerun.py",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/jev_*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 75
+ },
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/donor_queue_v0.json"},
+  {"kind": "file", "name": "tools/stagexec.py"},
+  {"kind": "file", "name": "tools/stagesim.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"}
+ ],
+ "rules": [
+  "Offline, no VI opened; only tool edit = X17 entries in stage_prerun.py; stagexec/stagesim/hooks not edited",
+  "A form with a GAP is reported, not fixed; both forms GAP = RETURN",
+  "Rule 1a: no per-bead computation is touched",
+  "Return on a second failure at the same place; no motor or camera"
+ ]
+}

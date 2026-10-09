@@ -1,0 +1,61 @@
+BGRUN START 2026-10-09 15:52:42 limit 5.0 min: py -u tools/bench/diag_c156_a3_1_route.py
+BGRUN PID 15288
+---------- [0] pins
+  PASS  P5 pins at start == card inputs  {'tools/stagexec.py': '25a1494c', 'tools/stagesim.py': 'eb99c6ba', 'tools/bench/plan_ring_p5s02a.json': '4284c22a', 'tools/bench/sim/ring_p5s02a/step_15_tunnel.json': 'b7da7fa7', 'tools/bench/sim/ring_p5s02a/summary.json': 'f0705439'}
+  FACT  compiled ops 17: [(1, 'add_sr', [1]), (2, 'connect', [2]), (3, 'create', [3]), (4, 'wire_sr', [4]), (5, 'wire_sr', [5]), (6, 'create', [6]), (7, 'connect', [7]), (8, 'create', [8]), (9, 'create', [9]), (10, 'move_in', [10]), (11, 'move_in', [11]), (12, 'move_in', [12]), (13, 'connect', [13]), (14, 'connect', [14]), (15, 'tunnel', [15, 16, 17]), (16, 'tunnel', [18, 19, 20]), (17, 'tunnel', [21, 22, 23])]
+---------- [1] op 16 / op 17 route, wire present vs wire 0
+  FACT  op16 kind tunnel acts [18, 19, 20] in_act 19 src {'uid': 24357, 'term': '', 'term_uid': 24360} out_act 20 dst {'uid': 376, 'term': 'cal cluster path', 'term_uid': 5760}
+  PASS  op16 plan ends == (24360 -> 5760)  
+  FACT  op16 step_15 src row [(24357, 'LoopTunnel', 'InnerTerminal', '', True, 24330, 23405)]
+  FACT  op16 step_15 dst row [(376, 'SubVI', 'Terminal', 'cal cluster path', False, 0, -29)]
+  FACT  op16 step_15 AS STORED -> cfw {'src_how': None, 'dst_how': 'order-proof', 'dst': (1, 1, 6)}
+  FACT  op16 step_15 WIRE 0    -> STOP ADDRESS: #24360 is an INNER face of LoopTunnel #24357: only the outer face's owner route is measured (l2a1_faces_81.log)
+  PASS  P1 op16 step_15 as stored: route 'cfw'  cfw
+  PASS  P2 op16 step_15 src wire 0: the INNER-face stop  ADDRESS: #24360 is an INNER face of LoopTunnel #24357: only the outer face's owner route is measured (l2a1_faces_81.log)
+  FACT  op16 step_17 src row [(24357, 'LoopTunnel', 'InnerTerminal', '', True, 24330, 23405)]
+  FACT  op16 step_17 dst row [(376, 'SubVI', 'Terminal', 'cal cluster path', False, 0, -29)]
+  FACT  op16 step_17 AS STORED -> cfw {'src_how': None, 'dst_how': 'order-proof', 'dst': (1, 1, 6)}
+  FACT  op16 step_17 WIRE 0    -> STOP ADDRESS: #24360 is an INNER face of LoopTunnel #24357: only the outer face's owner route is measured (l2a1_faces_81.log)
+  PASS  P1 op16 step_17 as stored: route 'cfw'  cfw
+  PASS  P2 op16 step_17 src wire 0: the INNER-face stop  ADDRESS: #24360 is an INNER face of LoopTunnel #24357: only the outer face's owner route is measured (l2a1_faces_81.log)
+  FACT  op17 kind tunnel acts [21, 22, 23] in_act 22 src {'uid': 24361, 'term': '', 'term_uid': 24367} out_act 23 dst {'uid': 376, 'term': 'file size', 'term_uid': 5778}
+  PASS  op17 plan ends == (24367 -> 5778)  
+  FACT  op17 step_15 src row [(24361, 'LoopTunnel', 'InnerTerminal', '', True, 24153, 23405)]
+  FACT  op17 step_15 dst row [(376, 'SubVI', 'Terminal', 'file size', False, 0, -29)]
+  FACT  op17 step_15 AS STORED -> cfw {'src_how': None, 'dst_how': 'order-proof', 'dst': (1, 1, 9)}
+  FACT  op17 step_15 WIRE 0    -> STOP ADDRESS: #24367 is an INNER face of LoopTunnel #24361: only the outer face's owner route is measured (l2a1_faces_81.log)
+  PASS  P3 op17 step_15 as stored: route 'cfw'  cfw
+  PASS  P4 op17 step_15 src wire 0: the INNER-face stop  ADDRESS: #24367 is an INNER face of LoopTunnel #24361: only the outer face's owner route is measured (l2a1_faces_81.log)
+  FACT  op17 step_20 src row [(24361, 'LoopTunnel', 'InnerTerminal', '', True, 24153, 23405)]
+  FACT  op17 step_20 dst row [(376, 'SubVI', 'Terminal', 'file size', False, 0, -29)]
+  FACT  op17 step_20 AS STORED -> cfw {'src_how': None, 'dst_how': 'order-proof', 'dst': (1, 1, 9)}
+  FACT  op17 step_20 WIRE 0    -> STOP ADDRESS: #24367 is an INNER face of LoopTunnel #24361: only the outer face's owner route is measured (l2a1_faces_81.log)
+  PASS  P3 op17 step_20 as stored: route 'cfw'  cfw
+  PASS  P4 op17 step_20 src wire 0: the INNER-face stop  ADDRESS: #24367 is an INNER face of LoopTunnel #24361: only the outer face's owner route is measured (l2a1_faces_81.log)
+---------- [3] the ambiguous fate and every op after a move_in whose source is in allow_either
+  FACT  step_09 rows on wire 24330: [(5760, 376, 'SubVI', 'Terminal', False), (24360, 24357, 'LoopTunnel', 'InnerTerminal', True)]
+  FACT  step_10 rows on wire 24330: [(24360, 24357, 'LoopTunnel', 'InnerTerminal', True)]
+  FACT  step_10 (mv_376) only_sink [{'wire': 10394, 'src_term_uid': 3060, 'src_uid': 3052, 'src_class': 'ControlReferenceConstant', 'fate': 'ambiguous'}, {'wire': 24091, 'src_term_uid': 25235, 'src_uid': 25223, 'src_class': 'LoopTunnel', 'fate': 'ambiguous'}, {'wire': 24153, 'src_term_uid': 24367, 'src_uid': 24361, 'src_class': 'LoopTunnel', 'fate': 'ambiguous'}, {'wire': 24285, 'src_term_uid': 24190, 'src_uid': 24133, 'src_class': 'LeftShiftRegister', 'fate': 'ambiguous'}, {'wire': 24312, 'src_term_uid': 24288, 'src_uid': 24187, 'src_class': 'LeftShiftRegister', 'fate': 'ambiguous'}, {'wire': 24330, 'src_term_uid': 24360, 'src_uid': 24357, 'src_class': 'LoopTunnel', 'fate': 'ambiguous'}]
+  FACT  step_10 (mv_376) only_source [] allow_either [3060, 24190, 24288, 24360, 24367, 25235]
+  FACT  step_11 (mv_3052) only_sink []
+  FACT  step_11 (mv_3052) only_source [] allow_either []
+  FACT  step_12 (mv_3453) only_sink []
+  FACT  step_12 (mv_3453) only_source [] allow_either []
+  FACT  op 11 move_in acts [11] src None dst None src in allow_either-so-far False
+  FACT  op 12 move_in acts [12] src None dst None src in allow_either-so-far False
+  FACT  op 13 connect acts [13] src {'uid': 3052, 'term': 'File # Saved', 'term_uid': 3060} dst {'uid': 376, 'term': 'saved file refnum', 'term_uid': 5772} src in allow_either-so-far True
+  FACT  ROW3 op 13 src #3060 -> dst 5772 (state step_12; src row [(3052, 'ControlReferenceConstant', 'Terminal', 'File # Saved', True, 0, -29)]): WIRED -> nested {'src_how': 'order-proof', 'dst_how': 'order-proof', 'dst': (1, 1, 8)} | WIRE 0 -> nested {'src_how': 'order-proof', 'dst_how': 'order-proof', 'dst': (1, 1, 8)}
+  FACT  op 14 connect acts [14] src {'uid': 376, 'term': 'file progress', 'term_uid': 5704} dst {'uid': 3453, 'term_uid': 3453} src in allow_either-so-far False
+  FACT  op 15 tunnel acts [15, 16, 17] src new:DQ1.element dst {'uid': 376, 'term': 'current frame data array in', 'term_uid': 5754} src in allow_either-so-far False
+  FACT  op 16 tunnel acts [18, 19, 20] src {'uid': 24357, 'term': '', 'term_uid': 24360} dst {'uid': 376, 'term': 'cal cluster path', 'term_uid': 5760} src in allow_either-so-far True
+  FACT  ROW3 op 16 src #24360 -> dst 5760 (state step_17; src row [(24357, 'LoopTunnel', 'InnerTerminal', '', True, 24330, 23405)]): WIRED -> cfw {'src_how': None, 'dst_how': 'order-proof', 'dst': (1, 1, 6)} | WIRE 0 -> STOP ADDRESS: #24360 is an INNER face of LoopTunnel #24357: only the outer face's owner route is measured (l2a1_faces_81.log)
+  FACT  op 17 tunnel acts [21, 22, 23] src {'uid': 24361, 'term': '', 'term_uid': 24367} dst {'uid': 376, 'term': 'file size', 'term_uid': 5778} src in allow_either-so-far True
+  FACT  ROW3 op 17 src #24367 -> dst 5778 (state step_20; src row [(24361, 'LoopTunnel', 'InnerTerminal', '', True, 24153, 23405)]): WIRED -> cfw {'src_how': None, 'dst_how': 'order-proof', 'dst': (1, 1, 9)} | WIRE 0 -> STOP ADDRESS: #24367 is an INNER face of LoopTunnel #24361: only the outer face's owner route is measured (l2a1_faces_81.log)
+  FACT  allow_either accumulated over all steps [3060, 24190, 24288, 24360, 24367, 25235]; summary.json top-level keys ['candidates', 'cdiff_inputs', 'end_cdiff_rows', 'failed', 'final', 'first_divergent', 'graph', 'models_loaded', 'n_candidates', 'new_classes', 'open_rows', 'open_rows_classed']
+  PASS  ROW3 at least one op after a move_in has an allow_either source  [(13, 3060, 5772, 'nested', 'nested'), (16, 24360, 5760, 'cfw', 'STOP'), (17, 24367, 5778, 'cfw', 'STOP')]
+---------- [4] checkpoint inputs
+  FACT  BIND_KINDS ('add_sr', 'tunnel', 'create', 'connect_term_uid'); move_in ops [10, 11, 12]; ops whose kind is in BIND_KINDS [1, 3, 6, 8, 9, 15, 16, 17]
+  FACT  plan actions carrying a 'checkpoint' key: []
+  PASS  P5b pins unchanged during the run  []
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":13,"fail":0},"first_fail":null,"artefacts":[],"card":"156-a3-1","labview":"none"}
+BGRUN END rc=0 after 5s

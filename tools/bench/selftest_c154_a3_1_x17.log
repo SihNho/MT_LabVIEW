@@ -1,0 +1,16 @@
+BGRUN START 2026-10-09 09:24:15 limit 2.0 min: py -u tools/bench/selftest_c154_a3_1_x17.py
+BGRUN PID 24372
+FACT stage_prerun md5 9decb20f6d67793abad967347e2a37ab mode=full
+GATE PASS | O0 main_vi_node_labels.json: #29157 = 'Insert Into Array' | Insert Into Array
+GATE PASS | O1 create 'Replace Array Subset' from $work #29157 refused | [{'action': 'p4_ras_bufdiff', 'why': "$work donor #29157 label 'Insert Into Array' != plan prim 'Replace Array Subset'"}]
+GATE PASS | O2 from DonorRAS1D_v0.vi uid 175 passes (registry label + md5 e8a9417c on disk) | ([], True)
+GATE PASS | O3 a $work donor deleted by an earlier action is refused | [{'action': 'eq', 'why': '$work donor #10171 is deleted by an EARLIER action of this plan'}]
+GATE PASS | O4 an unlisted external donor is refused (UNMEASURED) | [{'action': 'p4_ras_bufdiff', 'why': 'external donor Unknown_v0.vi uid 5: label UNMEASURED (not in PRIM_DONORS)'}]
+GATE PASS | O5 x17_gate over v15 refuses p4_ras_bufdiff ($work #29157) | [{'action': 'p4_ras_bufdiff', 'why': "$work donor #29157 label 'Insert Into Array' != plan prim 'Replace Array Subset'", 'stage': 'ring_p4_v3'}, {'action': 'p4_eq_seq', 'why': '$work donor #10171 is deleted by an EARLIER action of this plan', 'stage': 'ring_p4_v3'}]
+GATE PASS | N1 uids 108/44/45/46 with the json label + class 'Function' pass (md5 81dba822 on disk) | []
+GATE PASS | N2 uid 108 declared 'Enqueue Element' (wrong label) refuses | [{'action': 'q108', 'why': "external donor DonorQueue_v0.vi uid 108 label 'Obtain Queue' class 'Function' != plan prim 'Enqueue Element' class 'Function'"}]
+GATE PASS | N3 uid 44 declared class GrowableFunction (wrong class) refuses | [{'action': 'q44', 'why': "external donor DonorQueue_v0.vi uid 44 label 'Enqueue Element' class 'Function' != plan prim 'Enqueue Element' class 'GrowableFunction'"}]
+GATE PASS | N4 unknown uid 999 still refuses UNMEASURED | [{'action': 'q999', 'why': 'external donor DonorQueue_v0.vi uid 999: label UNMEASURED (not in PRIM_DONORS)'}]
+GATE PASS | N5 PRIM_DONORS label/class/md5 == donor_queue_v0.json for all four | [('Obtain Queue', 'Function', '81dba822efec5226123b3b88ee4383bc', 'tools/bench/donor_queue_v0.json (role obtain)'), ('Enqueue Element', 'Function', '81dba822efec5226123b3b88ee4383bc', 'tools/bench/donor_queue_v0.json (role enqueue)'), ('Dequeue Element', 'Function', '81dba822efec5226123b3b88ee4383bc', 'tools/bench/donor_queue_v0.json (role dequeue)'), ('Release Queue', 'Function', '81dba822efec5226123b3b88ee4383bc', 'tools/bench/donor_queue_v0.json (role release)')]
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":11,"fail":0},"first_fail":null,"artefacts":[],"card":"154-a3-1","labview":"none"}
+BGRUN END rc=0 after 1s

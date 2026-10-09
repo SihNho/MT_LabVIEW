@@ -1,0 +1,45 @@
+BGRUN START 2026-10-09 10:33:09 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c154-a3-3b-el47 -TaskFile tools/bench/diag_c154_a3_3b_review_task.md
+BGRUN PID 3256
+OUTCOME: ANSWERED (145s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-09-c154-a3-3b-el47.md
+COST: $1.4429  in 22 / out 12175 / cache-create 115059 / cache-read 1099767  (141s, 17 turn(s))
+--- ANSWER ---
+The claim is right about the numbers but wrong to say "only because" — it hides a second, real failed prediction. The read count of 47 does follow from comparing against the s09 file plus two new items, and both new items do map to TC2 and #-24. But the prediction of 48 failed too. The cause is a defect in the predictor rule, not a one-off mistake in the prediction, and the claim waves it away as "the pred's error".
+
+## 1. Strongest reason the claim is wrong
+**The missing Obtain item comes from the predictor rule, and the rule will be wrong again.** In `tools/elrule.py:153-158`, rule A counts a created primitive as an error item if it has *any* unwired sink. Only SubVIs are filtered by required terminals (`elrule.py:136-152`, from `subvi_requiredness.json`). Primitives have no such filter.
+
+The prediction's own detail (`plan_ring_p5s01a_pred.json:222-230`) shows why #-3 was counted. Its four unwired sinks are all optional: `name (unnamed)`, `create if not found? (T)`, `error in (no error)` and `max queue size (-1, unlimited)`. In LabVIEW naming, a default shown in brackets marks an optional input. NI's material describes `element data type` as the input that sets the queue's type, and `max queue size` as defaulting to unlimited ([NI KB, queues](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000P7OfSAK), [labviewwiki Queue Operations](https://labviewwiki.org/wiki/Functions_Palette/Programming/Synchronization/Queue_Operations)). I could not fetch NI's own Obtain Queue reference page, so the required/optional status of each input is **not confirmed from the primary source**.
+
+Rule A got #-24 (Enqueue) right only because `queue` (required) happens to be unwired alongside its optional inputs. It got #-56 right only by luck: TC2's empty False-frame inner row was counted as an "input" item, but the real item is in a class the rule does not know, "Tunnel: Missing assignment" ([NI docs](https://www.ni.com/docs/en-US/bundle/labview/page/failing-to-wire-a-tunnel-in-all-cases-of-a-structure.html)). So the 48 vs 47 gap is one over-count, and one class error that happened to give the right count. The docstring even says "an optional input gives no item" (`elrule.py:30-31`), but that is applied only to base nodes. Any later P5 session that creates a Dequeue, Release Queue or similar primitive with optional inputs left unwired will over-predict in the same way.
+
+## 2. Alternative explanations of the same evidence
+- **(a) Hidden swaps among wire items.** "missing 0" matches items by text. The 22 "not connected" and 21 "loose ends" items all have identical text (log lines 34-76), so a base wire item closing while a new one opens cannot be seen. Class counts that equal the base's do not show those 43 items are the same ones.
+  - The scratch's "lost 1 == sim 1" (wire `30457`, `diag_c154_p5s01a_scratch.log:233`) is predicted. So this alternative is weak, but the Error List cannot rule it out.
+- **(b) Obtain's wire not landing.** I rejected this. If `w_qk_obt` had not landed, Obtain's required input would be unwired and an item would appear. Its absence supports the claim, and E1 (real graph == simulated graph at every checkpoint, `scratch.log:230`) agrees.
+- **(c) The Tunnel item being some other tunnel.** I rejected this as well. The census adds 3 SelectorTunnel + 1 Tunnel with 6 outer and 10 inner terminals (`scratch.log:235`). That fits exactly 3 case tunnels, the case selector and one shift-register pair, so TC2 is the only new case *output* tunnel. TD PASS (`:238`) rules out a base tunnel losing its wire.
+
+## 3. What would falsify the claim
+In the P5-1a graph, any of these would falsify it:
+- Obtain's `element data type` row has no wire.
+- Enqueue's `element` is unwired.
+- TC2's False-frame inner row is wired.
+- A second case output tunnel exists with an unwired frame.
+
+Separately, the predictor diagnosis is falsified if `elrule.predict` still gives 48 after rule A is limited to required primitive terminals.
+
+## 4. Cheapest test that separates the claim from the alternatives
+This is offline, on the graph json that step 6 of brief 154-a3-3 produces:
+1. Check `wire_uid` on the rows of Obtain (5 sinks), Enqueue (`queue`, `element`) and TC2 (both inner rows). The claim predicts that only Obtain's `element data type`, Enqueue's `element` and TC2's True-frame row are wired.
+2. Re-run `elrule.predict` on the P5-1a step files with a list of required terminals for primitives (Obtain: `element data type`; Enqueue: `queue`, `element`). It should give 47, with TC2 classed separately as "tunnel".
+
+If both hold, the claim stands on its facts, and only the predictor needs fixing. One caveat for whoever acts on this: the fix is in `tools/elrule.py`, which brief 154-a3-3 pins as unchanged during the card (step 8 invariants), so it belongs to a later card.
+
+The by-design check (`elrule.py:238-239`) only accepts Local / While-condition / shift-register items. It will therefore report STOP on every session that adds an input or tunnel item. This MISMATCH is structural and will repeat; it is not a one-off.
+
+Sources:
+- [NI: Failing to Wire a Tunnel in All Cases of a Structure](https://www.ni.com/docs/en-US/bundle/labview/page/failing-to-wire-a-tunnel-in-all-cases-of-a-structure.html)
+- [NI forum: missing assignment to tunnel](https://forums.ni.com/t5/LabVIEW/missing-assignment-to-tunnel/td-p/112957)
+- [labviewwiki: Queue Operations](https://labviewwiki.org/wiki/Functions_Palette/Programming/Synchronization/Queue_Operations)
+- [NI KB: What Is a Queue in LabVIEW?](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000P7OfSAK)
+- [NI forum: max queue size in Obtain Queue](https://forums.ni.com/t5/LabVIEW/Doubt-about-Max-queue-size-in-Obtain-Queue/td-p/3349520)
+BGRUN END rc=0 after 146s

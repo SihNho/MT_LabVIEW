@@ -1,0 +1,44 @@
+BGRUN START 2026-10-09 14:33:42 limit 12.0 min: py -u tools/prior_art_review.py --plan-file tools/bench/prep_c156_a1_1_priorart_plan.md --slug priorart-c156-a1-1-p5s02a --trigger new-op --recipe tools/recipes/stage_d1_ring_p5s02a.py
+BGRUN PID 25516
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-c156-a1-1-p5s02a.txt (61869 chars)
+   review card tools\bench\cards\review_priorart-priorart-c156-a1-1-p5s02a.json
+OUTCOME: ANSWERED (47s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-10-09-priorart-priorart-c156-a1-1-p5s02a.md
+COST: $1.3617  in 12 / out 4071 / cache-create 143011 / cache-read 680741  (43s, 8 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-priorart-c156-a1-1-p5s02a verdict=novel -> tools\bench\cards\verdict_priorart-priorart-c156-a1-1-p5s02a.json
+--- ANSWER ---
+**Verdict: novel.** Step 1 (`plan_ring_p5s02a.json`, actions 1..23, groups A–F2) has not been built, measured as failing, or covered by an existing helper, and it breaks none of the user's rules. The overlaps below are already cited or answered, so none of them blocks the build.
+
+## Part A — the direction
+- **A1 (settled already): this plan carries out decisions, it does not reopen them.**
+  - Step 1's contents are the PD374(d) / PD376(d) rows.
+  - The cut follows PD379(c): groups are never split across steps, MAIN ≤ 675, ≤ 40 actions (`docs/d1/ring-p5.md:193-196`).
+  - Dropping G from step 1 is exactly what (c) ordered, after cycle 155's step 1 split G.
+- **A2 (refuted already):** nothing found.
+- **A3 (contradicted):** nothing new. The cycle-155 review raised one wording clash: census row 10 says "no loop-tunnel → case-tunnel route", while F1/F2 do that from tunnels that already exist in the base file (`archive/peer/2026-10-09-priorart-priorart-c155-a4-1-p5s02.md:294-297`). PD379(e) already disposed of it: "A3 … needs no action" (`ring-p5.md:199-201`).
+- **A4 (unread evidence):** the earlier gap is now covered. Cycles 97/98 moved nodes into case frames with `move_into_frame`, and those moves left wires with no terminals and loose wire ends (`docs/d1-loop12-17-split-plan.md:1504-1509,1531-1534`). The plan cites that result and turns it into per-op checks: E1 checkpoints on `move_in` ops 10–12, as PD379(e) requires (`ring-p5.md:199-201`).
+
+## Part B — the artifact
+- **B1 (already built):** none. Two near matches don't fit:
+  - `gscript.move_into_frame` (`tools/gscript.py:3846`) refuses to run unless ExecState is 1 before the move (`d1-loop12-17-split-plan.md:1538`). The base file is ExecState 0 by design.
+  - Step 1 uses the existing pieces rather than rebuilding them: the `primitive` route with the DonorQueue_v0 X17 entries, `wire_sr`, `case_wired`, `stagekit.move_in` and the RingSession recipe template.
+- **B2 (already failed):** no earlier attempt at this exact build exists. Cycle 155's P5-2 plan (285cb59a) was never launched (`ring-p5.md:175`), so it is not a failure record.
+- **B3 (helper exists):** nothing is being rebuilt by hand. Addressing frames of a case that already exists in the base file uses the cycle-155 tool fix (stagexec 53e17623 / stagesim eb99c6ba, `ring-p5.md:170-171`). In step 1, though, the Case is made by this same plan, so even that fix isn't needed.
+- **B4 (already measured), answering the two questions on the card:**
+  - **(a) Moving a SubVI into a frame of a new Case inside a While body.** The only earlier measurement is cycles 97/98, which used a different tool (`move_into_frame`) and ended with ExecState going from 1 to 0, 8 + 1 wires with no terminals and 7 loose-end items, cleared only by Remove Bad Wires (`d1-loop12-17-split-plan.md:1504-1509,1531-1534`). No `stagekit.move_in` into a case frame has ever been measured. The scratch run's E1 checks at ops 10–12 are therefore the first such measurement, not a repeat.
+  - **(b) A case in-tunnel whose only use is a pass wire to an out-tunnel in another frame.** Never built. The nearest precedents:
+    - P3a's counter passes through the True frame, but its in-tunnel also feeds the +1 in the False frame (STATUS bed line for P3a).
+    - P5-1b's False-frame wires to Case #30726 (`ring-p5.md:137-141`).
+    - The tool currently refuses this shape. Its one-wire-in / one-wire-out rule at `tools/stagexec.py:857-859` is the refusal PD379(b) cites (`ring-p5.md:190`).
+
+    This is the K3/K4 GAP, and it is **outside step 1**, so it does not affect this card.
+
+## Part C — the user's rules
+No contradiction found. The 1.2 → 1.7 queue carries a lossless data stream, which U4 allows. The 100 ms Dequeue timeout sits in the file-writer loop, not on the acquisition path (U6, U13). There is no serial anywhere in the change (U3). `#376` is re-fed from the same base sources (LSR #24133 and the in-tunnels), so its maths are unchanged (U1).
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-priorart-c156-a1-1-p5s02a","verdict":"novel","alternative":"stagekit.move_in into a frame of a plan-made Case could leave termless/loose-end wires as move_into_frame did in cycles 97/98, which the loop-body move_in model would not predict, so E1 would fail at ops 10-12.","discriminating_test":"In the one scratch run on the 7f2582ae byte copy, after each of ops 10-12 list old wire uids with 0 terminals or loose ends and compare them with sim step files 10..12; any extra means the case-frame move differs from the model.","violations":[],"sources":["docs/d1/ring-p5.md:181-201","docs/d1-loop12-17-split-plan.md:1504-1509,1531-1538","tools/stagexec.py:857-859","archive/peer/2026-10-09-priorart-priorart-c155-a4-1-p5s02.md:294-303","docs/d1/ring-p5.md:137-141"],"note":"Step 1 is the same rows as cycle 155's unlaunched actions 1..23. K3/K4 (in-tunnel used only by a pass wire) has never been built, but it is outside step 1. The cycle 97/98 case-frame move result is already turned into E1 checks."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-c156-a1-1-p5s02a.md
+   STOP RECORD: none - 2026-10-09-priorart-priorart-c156-a1-1-p5s02a.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_ring_p5s02a.py sha 3f1d3dda7e84 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 50s

@@ -1,0 +1,41 @@
+{
+ "schema": "result/1",
+ "id": "156-a2-1",
+ "status": "BLOCKED",
+ "gates": {
+  "pass": 0,
+  "fail": 1
+ },
+ "first_fail": "pass[0] launch: guard_bash LAUNCH GATE card 134-1 PD287(a) refused the ONE scratch (dry PASS-UNVERIFIED PB; card names no DRY-UNVERIFIED-OK)",
+ "blocked_by": {
+  "device": "gate-fp:fp-76",
+  "message": "LAUNCH GATE (card 134-1, PD287(a)): stage_d1_ring_p5s02a_scratch.py's newest dry is PASS-UNVERIFIED; PB never evaluated on non-stub data; card needs a rules/pass string 'DRY-UNVERIFIED-OK: <label prefix>' and --unverified-card <card> on the command (tools/stage_prerun.py:4888-4895)"
+ },
+ "artefacts": [
+  {"path": "tools/bench/diag_c156_a2_1_facts.md", "md5": "26ca648593e85b8f45eb3267901344cc"},
+  {"path": "tools/bench/diag_c156_a2_1_inv.py", "md5": "ab4ff13cd8e25e7df02e0b3d4ccccd37"},
+  {"path": "tools/bench/gate_fp_queue.jsonl", "md5": "d72430a297deec10cdd8791d0c27e271"}
+ ],
+ "facts": [
+  "Pre-checks == prediction: dry MAIN 1/0 PASS-UNVERIFIED PB (diag_c156_a2_1_dry.log:73-74), scratch dry 1/0 (_scr_dry.log:88-89)",
+  "prerun MAIN 16/0 X10 672.1 Executor 667.0 X17 PASS X14 WARN 23 (diag_c156_a2_1_prerun.log:85-101); scratch prerun 16/0 X10 667.0 (_scr_prerun.log:111,116)",
+  "--scratch-required rc 3 (_scrreq.log:4); CLI --check-launch ALLOW rc 0 (_checklaunch.log:3) is vacuous: bare path gives no units (tools/stage_prerun.py:4821-4824)",
+  "Scratch launch refused by guard_bash: newest dry PASS-UNVERIFIED on PB, task_156-a2-1.json has no DRY-UNVERIFIED-OK string (tools/stage_prerun.py:3343-3360,4888-4895)",
+  "Brief expected the PASS-UNVERIFIED PB (brief_156-a2-1.md:16) but the card does not name it; 155-a3-1's dry was plain PASS (diag_c155_a3_1_scr_dry.log:75)",
+  "Logged fp-76 in tools/bench/gate_fp_queue.jsonl; not routed around (no other card, no env bypass, no card edit)",
+  "No LabVIEW started, no byte copy, no adopt / EL / graph / load_by_vi (diag_c156_a2_1_facts.md:27)",
+  "Invariants before 60/0, after 59/0: all pins, 153 P4+hooks files, memory_model c87d170a, adopted_scratch dd0aa787 unchanged (diag_c156_a2_1_inv_after.log)",
+  "tasklist LabVIEW.exe: no task at end; no _elc_* / scratch_c156_* in claudeDev (diag_c156_a2_1_inv_after.log)"
+ ],
+ "open": [
+  "Re-issue with rules += 'DRY-UNVERIFIED-OK: PB frame-keyed cdiff' and launch command += --unverified-card tools/bench/cards/task_<id>.json?",
+  "CLI --check-launch <path> ALLOW is vacuous (no units); should pre-checks pass the full launch command text?",
+  "diag_c156_a2_1_inv.py is the 4th per-card copy of the inv helper (diag_c155_a3_1/_a3_2/diag_c154_a3_3b_inv.py); extract to a shared module?"
+ ],
+ "cost": {
+  "usd": null,
+  "minutes": 12,
+  "labview_runs": 0
+ },
+ "note": "Failure budget unused (0 runs). Step stopped at the first unexpected result: the launch refusal."
+}

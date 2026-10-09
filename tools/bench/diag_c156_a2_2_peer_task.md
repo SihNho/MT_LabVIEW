@@ -1,0 +1,10 @@
+ATTACK this claim about the failed scratch run tools/bench/diag_c156_p5s02a_scratch.log (recipe tools/recipes/stage_d1_ring_p5s02a_scratch.py, plan tools/bench/plan_ring_p5s02a.json, card 156-a2-2).
+
+FACTS (read them in the files):
+- The run executed ops 1..15 of 17 (actions 1..17) on a byte copy of the adopted P5-1 VI; whole-VI checkpoints at ops 1,3,6,8,9,15 all read `diff 0` vs the offline simulation (log lines 52-243). Op 16 = plan actions 18-20 (`t_in1` tunnel, `w_in1_t`, `w_in1_376`, plan_ring_p5s02a.json:408-439) stopped: `ADDRESS: #24360 is an INNER face of LoopTunnel #24357: only the outer face's owner route is measured (l2a1_faces_81.log)` (log:254-255), raised at tools/stagexec.py:1784-1787 (`_triple`, FACE_ROUTED owners accept only an OuterTerminal).
+- Action 19 `w_in1_t` wires src {uid 24357, term_uid 24360} (the INNER face of in-tunnel #24357 of loop 1.7 #23041, a source on body #23405) to the new tunnel TF1's outer face on Case new:CQ7 (#31308). The plan's address table lists that endpoint as class InnerTerminal, source true (plan_ring_p5s02a.json:1077-1084).
+- Before launch: dry PASS (PASS-UNVERIFIED PB only), prerun PASS 16/0 incl. X17 and the stagesim REALSIM pass (tools/bench/diag_c156_a1_1_facts.md:24,31-32); the launch gate allowed it (tools/bench/diag_c156_a2_2_checklaunch.log).
+
+CLAIM: the failure is a coverage gap between the offline checks and the executor, not a LabVIEW fault: stagesim / prerun accept a wire whose endpoint is the INNER face of an existing LoopTunnel, while stagexec's address resolver (`_triple`) has no measured route for an inner LoopTunnel face and refuses it at execution. Nothing about the VI's state caused it; any plan wiring from an existing LoopTunnel's inner face will stop at the same line.
+
+Give the strongest reason this claim is wrong, an alternative explanation (e.g. the plan should have named a different terminal, or stagexec has another route for this case that the compile step should have chosen), what would falsify the claim, and the cheapest discriminating test that runs offline (no LabVIEW).

@@ -1,0 +1,32 @@
+BGRUN START 2026-10-09 10:01:22 limit 16.0 min: py -u tools/prior_art_review.py --plan-file tools/bench/diag_c154_a3_3_priorart_plan.md --slug priorart-c154-a3-3-p5s01a-strings --trigger new-op --recipe tools/recipes/stage_d1_ring_p5s01a.py
+BGRUN PID 18020
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-c154-a3-3-p5s01a-strings.txt (57772 chars)
+   review card tools\bench\cards\review_priorart-priorart-c154-a3-3-p5s01a-string.json
+OUTCOME: ANSWERED (21s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-10-09-priorart-priorart-c154-a3-3-p5s01a-strings.md
+COST: $0.7933  in 4 / out 1438 / cache-create 92746 / cache-read 112920  (17s, 3 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-priorart-c154-a3-3-p5s01a-string verdict=novel -> tools\bench\cards\verdict_priorart-priorart-c154-a3-3-p5s01a-string.json
+--- ANSWER ---
+**Verdict: novel.** Nothing in the two changed lines already exists, was refuted, or breaks a user rule.
+
+**Part A (direction)**
+- **A1 (settled already):** Yes, but only in support. The previous review of this recipe asked for exactly this fix in its Note 2, and the disposition left it OPEN (`archive/peer/2026-10-09-priorart-priorart-c154-a3-2b-p5s01a.md:310-311`). That review's verdict was `novel` (`:298`). This change closes that open point; it does not redo settled work.
+- **A2 (refuted already):** None found. Nothing archived argues against renaming a log label or result label.
+- **A3 (contradicted):** None. Both new strings match the file on disk:
+  - `tools/recipes/stage_d1_ring_p5s01a.py:173` reads "P5-1a's in-between file is broken by design".
+  - `tools/recipes/stage_d1_ring_p5s01a.py:191` reads "STRUCTURAL, in-between file of P5 (P5-1a), broken by design, never run".
+  - The P5-1 naming also matches STATUS NEXT, round 3 (`D1_ring_p5s01_*.vi`, `docs/d1/ring-p5.md` PD376).
+- **A4 (unread evidence):** None. The brief cites the one relevant document, the earlier review.
+
+**Part B (artifact)**
+- **B1–B4:** None apply. These are label strings in `s.es(...)` and in the result-record dict. They are not an op, a helper or a measurement, and no gate, route or computation reads them.
+
+**Part C (user rules)**
+- **C1:** No contradiction. Changing a label touches no queue, control signal, serial path, camera pacing or per-bead number, so rules U1–U13 do not come into play.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-priorart-c154-a3-3-p5s01a-string","verdict":"novel","alternative":"none: the two changed lines are log/result labels, no computation, gate or LabVIEW effect","discriminating_test":"grep stage_d1_ring_p5s01a.py:173,191 for 'session 8'/'v18' - absent (verified); labels match P5-1a naming in STATUS NEXT round 3","violations":[],"sources":["tools/recipes/stage_d1_ring_p5s01a.py:173","tools/recipes/stage_d1_ring_p5s01a.py:191","archive/peer/2026-10-09-priorart-priorart-c154-a3-2b-p5s01a.md:298","archive/peer/2026-10-09-priorart-priorart-c154-a3-2b-p5s01a.md:310"],"note":"This change closes Note 2 of the prior review, left OPEN at :310-311; no other diff under review."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-c154-a3-3-p5s01a-strings.md
+   STOP RECORD: none - 2026-10-09-priorart-priorart-c154-a3-3-p5s01a-strings.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_ring_p5s01a.py sha e95b32c0e743 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 24s

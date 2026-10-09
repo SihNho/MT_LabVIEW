@@ -1,0 +1,37 @@
+BGRUN START 2026-10-09 08:41:10 limit 40.0 min: py -u tools/bench/diag_c154_a2_1_donor.py
+BGRUN PID 18940
+  FACT  md5 BEFORE {'D1_ring_p4s09_20261009_060515.vi': 'eb1d0f31', 'memory_model.json': '6f2b5687', 'stagekit.py': '604529e8', 'stagexec.py': '1bab9cf9', 'stagesim.py': '78b8d5a1', 'gscript.py': '1a80236e', 'stage_prerun.py': 'c739eb86', 'vigraph.py': 'a7eb58c7', 'addrcheck.py': '207beb0d', 'OpQueueObtain_v0.vi': '095afd7e', 'OpQueueEnqueue_v0.vi': '88bfad7c', 'OpQueueDequeue_v0.vi': 'a3571dec', 'OpQueueRelease_v0.vi': '9ac89912', 'DONOR_Ex1_GetControlsWireIndicators.vi': 'c0f4cac0', 'DONOR_Ex3_PrimitiveFunctions.vi': '7d312a87', 'DONOR_arrayops.vi': '9d366b62', 'DONOR_clfn.vi': '40454157', 'DonorBoolF_v0.vi': '2346e9d8', 'DonorCase_v0.vi': 'df825c18', 'DonorErrSel_ErrToWarning.vi': '5019b629', 'DonorErrSel_MergeErrors.vi': '2369e859', 'DonorFs_v0.vi': 'd785a181', 'DonorI32Max_v0.vi': 'c0c8db65', 'DonorPool_v0.vi': 'fac6e4ab', 'DonorRAS1D_v0.vi': 'e8a9417c', 'DonorRingConst_v0.vi': 'd8dc3013', 'DonorSRInit_v0.vi': '8b1a5afe'}
+  PASS  P pins == brief md5 prefixes  []
+  PASS  S DonorQueue_v0.vi does not exist yet (never saved over anything)  
+  FACT  handles BEFORE (ops preloaded, warm read done) {'handles': 34470, 'private': 554930176, 'gdi': 357, 'user': 86}
+  OBSERVED uid 73 -> owner 'ArrayConstant' uid 52 | self 'DigitalNumericConstant'#73 | 482 says 'ArrayConstant' cast 'ArrayConstant' |  
+  OBSERVED uid 52 -> owner 'TopLevelDiagram' uid 3 | self 'ArrayConstant'#52 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  PASS  C1 const #52 is an ArrayConstant  [52, 73]
+  OBSERVED uid 85 -> owner 'TopLevelDiagram' uid 3 | self 'GrowableFunction'#85 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  FACT  T1 temp RAS 85
+  PASS  O1 obtain: one new Function  [108]
+  PASS  X temp RAS #85 deleted, Obtain #108 kept  ({85}, (0, 0))
+  PASS  T one terminal #108 src=False name='element data type'  [(117, 'element data type')]
+  PASS  T one terminal #52 src=True name=None  [(51, 'x,y,z array')]
+  PASS  W1 const -> Obtain 'element data type' err '' not broken  {'wire_uid': 82, 'broken': False, 'sink_echo': 117, 'src_echo': 51, 'err': '', 'purged': 0, 'invoke_left': []}
+  PASS  Q enqueue: one new Function  [44]
+  PASS  Q dequeue: one new Function  [45]
+  PASS  Q release: one new Function  [46]
+  PASS  T one terminal #44 src=False name='element'  [(89, 'element')]
+  PASS  T one terminal #52 src=True name=None  [(51, 'x,y,z array')]
+  PASS  W2 const -> Enqueue 'element' (branch) err '' not broken  {'wire_uid': 82, 'broken': False, 'sink_echo': 89, 'src_echo': 51, 'err': '', 'purged': 0, 'invoke_left': []}
+  FACT  ExecState 1
+  PASS  ES DonorQueue_v0 ExecState 1  1
+  PASS  SV saved by COM SaveInstrument  81dba822efec5226123b3b88ee4383bc
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c154_a2_1_donor.py", line 82, in <module>
+    R, L = rows(), dict((int(x["uid"]), x["label"]) for x in g.node_labels(DON, 0, strict=False))   # noqa: E702
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c154_a2_1_donor.py", line 82, in <genexpr>
+    R, L = rows(), dict((int(x["uid"]), x["label"]) for x in g.node_labels(DON, 0, strict=False))   # noqa: E702
+TypeError: list indices must be integers or slices, not str
+  FACT  STOP TypeError('list indices must be integers or slices, not str')
+  FACT  ref_counts {'opened': 9, 'closed': 9, 'live': 0, 'cached_op_vis': 0}
+  FACT  pins changed [] donor md5 81dba822efec5226123b3b88ee4383bc
+=== GATES: 18 pass / 1 fail; failing: ['the run completed without an unexpected result']
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":18,"fail":1},"first_fail":"the run completed without an unexpected result","artefacts":[{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorQueue_v0.vi","md5":"81dba822efec5226123b3b88ee4383bc"}],"card":"154-a2-1","labview":"build"}
+BGRUN END rc=1 after 68s

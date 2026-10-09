@@ -1,0 +1,22 @@
+{"schema":"result/1","id":"155-a5-1","status":"FAIL","gates":{"pass":5,"fail":1},
+"first_fail":"selftest_guard_bash_jev C11 12/0 -> 11/1: diag_c88_brokenwires.py (discard-only) launch no longer refused (code 0)",
+"blocked_by":null,
+"artefacts":[
+{"path":"tools/stage_prerun.py","md5":"9decb20f6d67793abad967347e2a37ab"},
+{"path":"tools/bench/selftest_c155_gatefp73.py","md5":"39a1f4bbe80ea08375b1a106498f72a9"},
+{"path":"tools/bench/diag_c155_a5_1_facts.md","md5":"a8b34101431216ef9c8cbb5c96dca746"},
+{"path":"tools/bench/prep_c155_a5_1_classify.py","md5":"505c12f357e19a9dceda9a20f5ae1cd5"},
+{"path":"tools/bench/prep_c155_a5_1_before.json","md5":"a641ce52aa531fe5babd724e0b3e627f"},
+{"path":"tools/bench/prep_c155_a5_1_after.json","md5":"a92521c246dcce49caa3ecd6bfef94f7"}],
+"facts":[
+"Preferred form unsafe: 67 discard-only files incl. stage_d1_ring_p5s01b/p5s02/stage_template_ring (prep_c155_a5_1_census_before.log)",
+"Candidate: MODIFY_VERBS+='executor' (stagekit.py:1968) + discard_work-alone -> []; 192->128 modifying, only 64 discard-only declassified",
+"New selftest_c155_gatefp73.py 10/0 on the candidate (selftest_c155_gatefp73.log)",
+"Before->after: c103d 17/0=17/0, c121 30/0=30/0, prerun_diag 9/0=9/0, fn_f2 35/1(P7b pre-existing)->36/0, guard_bash_jev 12/0->11/1",
+"C11 fixture tools/bench/diag_c88_brokenwires.py edits a scratch via g.remove_bad_wires_scripted (:92) - discard-only by verbs",
+"Candidate REVERTED: stage_prerun.py md5 9decb20f unchanged, no new stale pins; other pins verified unchanged",
+"fp-73 not drained; s02/s01b prerun not re-run (stage_prerun bytes unchanged); fp-73 diag no longer imports stagekit",
+"Pre-existing stale stage_prerun pins: open cards 149-a3-4 (dcd45aba), 150-a2-6 (c739eb86) per guard_write"],
+"open":["Should a discard-only script that edits a scratch copy via gscript directly (diag_c88_brokenwires.py:92) stay gated? No -> re-point selftest_guard_bash_jev C11 and re-apply the candidate; yes -> close fp-73 as moot or find a narrower rule"],
+"cost":{"usd":null,"minutes":9,"labview_runs":0},
+"note":"Returned at the first worse self-test count per the brief; candidate diff is described in diag_c155_a5_1_facts.md item 2."}

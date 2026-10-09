@@ -1,0 +1,26 @@
+{"schema":"result/1","id":"155-a2-1","status":"PASS","gates":{"pass":4,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+{"path":"tools/bench/plan_ring_p5s01b.json","md5":"75a77a000e111591b93565def74869cf"},
+{"path":"tools/bench/plan_ring_p5s01b_pred.json","md5":"2f2cbcc3fab158b00a2d7ff58e593f06"},
+{"path":"tools/bench/plan_ring_p5s01b_licence.json","md5":"e592cf7a0e6638afe5e814d418837acd"},
+{"path":"tools/recipes/stage_d1_ring_p5s01b.py","md5":"6de2378d6c055ca39f04077bda469473"},
+{"path":"tools/recipes/stage_d1_ring_p5s01b_scratch.py","md5":"9233749f70c7b3c7275caa92e288bbd2"},
+{"path":"tools/bench/diag_c155_a2_1_facts.md","md5":"e97f757a0129248ecc4a4d2d88bd87d0"},
+{"path":"tools/bench/prep_c155_a2_1_session.json","md5":"79447fab6aa53e5dcc80da47ec93f51a"}],
+"facts":[
+"Maker 21/0: 12 actions -> 8 ops, the same kinds and act groups as P5-1 ops 15..22; both case_frame_wire on case 30726 '#30914' idx 0 (prep_c155_a2_1_mk.log, gate OPS)",
+"FRM: 'False' -> index 0 -> CQ1.f0 -> sim -18 -> #30914 == base_case_frames(30726)[0] of [30914,30922], 4 ends (prep_c155_a2_1_mk.log FACT FRM)",
+"X10 start 608.5 (602.6 load + 5.9), MAIN 657.2 <= 680, Executor 652.1; all 12 actions fit, no remainder (prep_c155_a2_1_prerun.log:78-80)",
+"Pass A 13 steps and REALSIM FINAL: 0 PROVISIONAL, route PASS, states equal; 21 end rows, all P5-1a declared open rows (prep_c155_a2_1_mk.log gates SA/SB/TIE)",
+"Pred 11/0: EL by elrule 47 -> 47 for both carry and no-carry, 0 new and 0 closed. The brief's hand count of 45 is stored, not gated (prep_c155_a2_1_pred.log EL lines)",
+"Licence: 0 renames, X11 CLEAN. The base sinks #31186 inner and #30756 'queue' are wired by name/side, not by term_uid (prep_c155_a2_1_licence.log FACT NON-UID)",
+"Dry 1/0, prerun 16/0 for main and for scratch. X17 PASS, X14 rows 12/15 not proven, --scratch-required rc 3, --check-launch ALLOW (prep_c155_a2_1_prerun.log:69-81)",
+"Prior-art: novel, no waiver (archive/peer/2026-10-09-priorart-priorart-c155-a2-1-p5s01b.md); alternative = base-case R1/R2 never measured in LabVIEW",
+"Recipes use the stage_template_ring shape (stagekit.RingSession etc.), not a copy of the P5-1a pair; PB is by position (tools/recipes/stage_d1_ring_p5s01b.py:20-55)",
+"Invariants: 177 files equal before and after. 0 LabVIEW processes. Not launched (prep_c155_a2_1_inv_after.log)"],
+"open":[
+"Duplicate blocks across the prep_c154_* makers (gate, step_facts, TIE, SG census, main_of, symbol map) were not extracted, and my makers copy them too. Should a tooling card move them into a shared module? List in diag_c155_a2_1_facts.md:37-41",
+"EL: elrule predicts 47, the brief's hand count is 45. elrule misses the tunnel item and the Enqueue 'queue' item because both are on base nodes. Accept the scratch EL read as the judge?",
+"Base sinks #31186 (False inner) and #30756 'queue' are wired by name, so the licence rule (term_uid dst only) does not cover them. Is that acceptable for TD/PB, or should these rows be re-addressed by term_uid?"],
+"cost":{"usd":null,"minutes":12,"labview_runs":0},
+"note":"offline only; NOT launched"}

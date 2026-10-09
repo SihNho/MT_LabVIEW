@@ -590,11 +590,76 @@ def check_symbols(A):
     return defined
 
 
-def case_frame_op(A, i, fr):
+def _uid_int(x):
+    """card 155-a1-1: a REAL (base-graph) uid as int - an int, or a digit string; None for 'new:' aliases and anything else."""
+    if isinstance(x, bool):
+        return None
+    if isinstance(x, int):
+        return x
+    return int(x) if isinstance(x, str) and x.isdigit() else None
+
+
+def base_case_named(owners, case):
+    """card 155-a1-1 (PD378(a)): (case uid, ['#<frame diagram uid>', ...]) of a BASE-graph CaseStructure #case from the base
+    graph's owner map, in frame-index order (stagesim.case_frame_names / base_case_frames, measured == LabVIEW Frames[k]);
+    None when `case` is not a real uid or owns no frame there. Self-test: tools/bench/selftest_c155_basecase_frame.py."""
+    c = _uid_int(case)
+    if c is None or not owners:
+        return None
+    fl = SS.case_frame_names({"owners": owners}, c)
+    return (c, [n for n, _f in fl]) if fl else None
+
+
+def base_case_of_frame(owners, frame):
+    """card 155-a1-1 (PD378(a)): (case uid, frame names) when `frame` is '#<diagram uid>' (FS_FACE_RE, the form a Flat
+    Sequence face uses) and that diagram is a frame of a BASE-graph CaseStructure in `owners`; else None (a Flat Sequence
+    frame, an unknown uid, a plan frame name). Self-test: tools/bench/selftest_c155_basecase_frame.py."""
+    m = FS_FACE_RE.match(str(frame)) if isinstance(frame, str) and frame.startswith("#") else None
+    own = (owners or {}).get(str(frame)[1:]) if m else None
+    if not own or own[0] != "CaseStructure":
+        return None
+    return base_case_named(owners, own[1])
+
+
+def plan_base_owners(plan):
+    """card 155-a1-1 (PD378(a)): the owner map {uid: [owner class, owner uid]} of the plan's BASE graph - plan['base'] or
+    plan['finalized']['base'] ({path, md5}); a graph JSON's 'owners', or a step file's state['owners']. Returns {} when the
+    plan names no base, the file is missing, or its md5 differs from the pin (then a base case is not seen: the old
+    behaviour). compile_plan reads it ONLY to recognise a BASE-graph case. Self-test: selftest_c155_basecase_frame.py."""
+    for ref in (plan.get("base"), (plan.get("finalized") or {}).get("base")):
+        p = _abs(ref["path"]) if isinstance(ref, dict) and ref.get("path") else None
+        if not p or not os.path.isfile(p) or (ref.get("md5") and md5(p) != ref["md5"]):
+            continue
+        d = _j(p)
+        own = d.get("owners") if isinstance(d, dict) else None
+        if own is None and isinstance(d, dict) and isinstance(d.get("state"), dict):
+            own = d["state"].get("owners")
+        if isinstance(own, dict):
+            return own
+    return {}
+
+
+def _base_case_wire(A, i, fr, owners):
+    """card 155-a1-1: True when wire action i's `frame` is '#<diagram uid>' naming a frame of a BASE case, or an end is a
+    tunnel this plan made on a BASE case - i.e. the wire is a case_frame_wire, not a Flat Sequence face (fs_wire_ops)."""
+    if not owners:
+        return False
+    if base_case_of_frame(owners, fr[0]) is not None:
+        return True
+    heads = set(_sym_of(e)[0] for e in (A[i - 1]["src"], A[i - 1]["dst"]) if isinstance(e, dict) and e.get("frame") is not None)
+    return any(b["op"] == "tunnel" and b.get("as") and "new:" + b["as"] in heads and base_case_named(owners, b.get("loop"))
+               for b in A[:i - 1])
+
+
+def case_frame_op(A, i, fr, owners=None):
     """card 124-2 (PD249(d)): {frame, frame_index, case} of wire action i whose end(s) carry `frame` - read from the PLAN:
     each such end names a case tunnel (`tunnel` action, loop = the case alias) or a case selector (`selector_as`) of a case
     an EARLIER `create CaseStructure` made; the index is that create's `frames` order (default False, True = 0, 1). The
-    executor checks the same index against the simulated case (Executor.execute). Anything else -> ExecStop."""
+    executor checks the same index against the simulated case (Executor.execute). Anything else -> ExecStop.
+    card 155-a1-1 (PD378(a)): + a BASE-graph case (`owners` = the base graph's owner map): `frame` '#<frame diagram uid>' on
+    a tunnel this plan made on it (`tunnel` loop = the case uid) or on a real tunnel / selector uid; the index is that
+    diagram's position in the case's frame list (base_case_named). That a real uid owns a face on that frame is checked
+    from the graph by stagesim.resolve_addr. A plan-made case is compiled exactly as before."""
     if len(set(fr)) != 1:
         raise ExecStop("action {0}: the wire's ends name different frames {1}".format(i, fr))
     cases, owner = {}, {}                                 # case alias -> (alias, frames); tunnel/selector alias -> same
@@ -605,11 +670,16 @@ def case_frame_op(A, i, fr):
                 owner["new:" + b["selector_as"]] = cases["new:" + b["as"]]
         elif b["op"] == "tunnel" and b.get("as") and b.get("loop") in cases:
             owner["new:" + b["as"]] = cases[b["loop"]]
+        elif owners and b["op"] == "tunnel" and b.get("as") and base_case_named(owners, b.get("loop")):
+            owner["new:" + b["as"]] = base_case_named(owners, b.get("loop"))           # card 155-a1-1: on a BASE case
+    bf = base_case_of_frame(owners, fr[0]) if owners else None
     a, got = A[i - 1], set()
     for e in (a["src"], a["dst"]):
         if not (isinstance(e, dict) and e.get("frame") is not None):
             continue
         hit = owner.get(e.get("uid"))
+        if hit is None and bf is not None and _uid_int(e.get("uid")) is not None:
+            hit = bf                                      # card 155-a1-1: a real tunnel/selector uid of a BASE case
         if hit is None:
             raise ExecStop("action {0} ({1}): `frame` on {2!r} - only a tunnel or selector of a case an EARLIER create of this "
                            "plan made has frame names".format(i, a.get("id"), e.get("uid")))
@@ -620,7 +690,8 @@ def case_frame_op(A, i, fr):
     if len(got) != 1:
         raise ExecStop("action {0} ({1}): the `frame` ends name {2} cases".format(i, a.get("id"), len(got)))
     case = got.pop()
-    return {"frame": fr[0], "frame_index": k, "case": case, "variant": _cfw_variant(A, i, case, k)}
+    fdiag = _uid_int(str(fr[0])[1:]) if _uid_int(case) is not None else None    # card 155-a1-1: a BASE case's frame diagram
+    return {"frame": fr[0], "frame_index": k, "case": case, "variant": _cfw_variant(A, i, case, k, fdiag)}
 
 
 def _same_end(e1, e2):
@@ -633,17 +704,20 @@ def _same_end(e1, e2):
     return json.dumps(e1, sort_keys=True) == json.dumps(e2, sort_keys=True)
 
 
-def _cfw_variant(A, i, case, k):
+def _cfw_variant(A, i, case, k, frame_diag=None):
     """card 124-6 (PD250(c), R4): 'branch' when the source of frame wire i is ALREADY wired by an earlier action - a case
     tunnel's inner face in frame k taken by its own tunnel group (dir in, body = '<case>.f<k>') or an earlier wire from the
     same end - else 'new_wire'. Measured: a second sink on a used inner face = LabVIEW branches the existing wire, census {}
-    (diag_c124_p3a_scratch.log:77,80); the first wire on an unwired face = Wire +1 (:71)."""
+    (diag_c124_p3a_scratch.log:77,80); the first wire on an unwired face = Wire +1 (:71).
+    card 155-a1-1: on a BASE case the tunnel group's `body` is the frame's diagram uid (`frame_diag`), not '<case>.f<k>'."""
     src = A[i - 1]["src"]
     head, side = _sym_of(src)
     sf = src.get("frame") if isinstance(src, dict) else None
     for b in A[:i - 1]:
+        body_k = b.get("body") == "{0}.f{1}".format(case, k) or (
+            frame_diag is not None and _uid_int(b.get("body")) == frame_diag)
         if (b["op"] == "tunnel" and head and sf is not None and "new:" + str(b.get("as")) == head and b.get("dir", "in") == "in"
-                and b.get("loop") == case and b.get("body") == "{0}.f{1}".format(case, k) and side == "inner"):
+                and b.get("loop") == case and body_k and side == "inner"):
             return "branch"
         if b["op"] == "wire" and _same_end(b["src"], src):
             return "branch"
@@ -726,10 +800,20 @@ def fs_wire_ops(A):
     return out
 
 
-def compile_plan(plan):
+def compile_plan(plan, owners=None):
     """[{kind, acts:[action indices 1-based], ...}] - one entry per REAL op, in order. Raises ExecStop on a shape the
-    executor has no real op for (the pre-run gate)."""
+    executor has no real op for (the pre-run gate).
+    card 155-a1-1 (PD378(a)): a BASE-graph CaseStructure is routed like a plan-made one - its tunnel groups with a register
+    end (R1/R2 connect_term_uid) and its `frame` '#<diagram uid>' wires (case_frame_wire). Whether a uid is a base case is
+    read from `owners` (the base graph's owner map) or, when None, lazily from the plan's pinned base (plan_base_owners) -
+    only when such a shape occurs. Self-test: tools/bench/selftest_c155_basecase_frame.py."""
     A = plan["actions"]
+    _own = [owners]
+
+    def base_owners():
+        if _own[0] is None:
+            _own[0] = plan_base_owners(plan)
+        return _own[0]
     check_symbols(A)
     fsw = fs_wire_ops(A)                                 # card 126-3: Flat Sequence wires (pure, from the plan)
     # card 133-1 (PD280(c)): a wire into a frame of a Flat Sequence the plan did NOT create (carried / base FS) cannot be
@@ -769,7 +853,8 @@ def compile_plan(plan):
             grp = lambda b: b["op"] == "wire" and not any(                 # noqa: E731 - card 124-2: a `frame` wire is
                 isinstance(e, dict) and e.get("frame") is not None for e in (b["src"], b["dst"]))   # never a group wire
             ins = [k for k, b in enumerate(nxt, i + 1) if grp(b) and _sym_of(b["dst"])[0] == t]
-            outs = [k for k, b in enumerate(nxt, i + 1) if grp(b) and _sym_of(b["src"])[0] == t]
+            outs = [k for k, b in enumerate(nxt, i + 1) if (grp(b) or case_pass_wire(A, i, k, created, base_owners))
+                    and _sym_of(b["src"])[0] == t]                 # card 156-a1-2: + the case in-tunnel's pass wire
             if len(ins) != 1 or len(outs) != 1:
                 raise ExecStop("action {0}: tunnel {1} must be followed by exactly one wire into it and one out of it "
                                "(LabVIEW makes a tunnel only by wiring across the border)".format(i, t))
@@ -778,7 +863,8 @@ def compile_plan(plan):
             outside = A[ins[0] - 1]["src"] if _sym_of(A[ins[0] - 1]["dst"])[1] == "outer" else A[outs[0] - 1]["dst"]
             oh, oside = _sym_of(outside)
             reg = created.get(oh, ("",))[0] if oh else ""
-            if created.get(a.get("loop"), ("",))[0] == "case" and oside == "inner" and reg in ("srL", "srR"):
+            if oside == "inner" and reg in ("srL", "srR") and (created.get(a.get("loop"), ("",))[0] == "case" or (
+                    a.get("loop") not in created and base_case_named(base_owners(), a.get("loop")))):   # card 155-a1-1
                 if (reg == "srL") != (a.get("dir", "in") == "in"):
                     raise ExecStop("action {0}: tunnel {1} dir {2!r} with the register end {3} (srL feeds an INPUT tunnel, an "
                                    "OUTPUT tunnel feeds srR)".format(i, t, a.get("dir", "in"), oh))
@@ -795,6 +881,9 @@ def compile_plan(plan):
             fr = [e.get("frame") for e in (a["src"], a["dst"]) if isinstance(e, dict) and e.get("frame") is not None]
             if base_cond(a["dst"]) is not None:            # card 139-5 (PD316): a BASE While's cond, addressed by the loop
                 ops.append({"kind": "stop", "loop": base_cond(a["dst"]), "acts": [i]})      # OpStopFromNode_v0
+            elif fr and any(isinstance(f, str) and f.startswith("#") for f in fr) and _base_case_wire(A, i, fr, base_owners()):
+                # card 155-a1-1 (PD378(a)): '#<diagram uid>' on a BASE case's tunnel = case_frame_wire (an FS face keeps fsw)
+                ops.append(dict(case_frame_op(A, i, fr, base_owners()), kind="case_frame_wire", acts=[i]))
             elif i in fsw:                                 # card 126-3: a Flat Sequence wire = ONE gscript.connect_term_uid
                 ops.append(dict(fsw[i], kind="connect_term_uid", acts=[i]))
             elif fr:                                       # card 124-2 (PD249(d)): a wire inside one frame of a case
@@ -3720,7 +3809,7 @@ class SimBackend(object):
             miss = verbs_missing("case_frame_wire")
             if miss:
                 raise ExecStop("CREATE-NO-VERB case_frame_wire: not defined: {0}".format(miss))
-            fr = (self.st.get("case_frames") or {}).get(str(int(case)))
+            fr = SS.case_frame_names(self.st, case)        # card 155-a1-1: + a BASE case ('#<diagram uid>' names)
             if not fr or not 0 <= int(k) < len(fr):
                 raise ExecStop("case_frame_wire: case #{0} has no frame {1} ({2})".format(case, k, fr))
             fd = int(fr[int(k)][1])
@@ -3838,6 +3927,9 @@ class SimBackend(object):
                 raise ExecStop("connect_term_uid: the node end #{0} is on #{1}, not a case frame ({2})".format(
                     other["term_uid"], other["frame_diagram"], fo))
             case_d = (self.st.get("diagrams") or {}).get(str(int(other["frame_diagram"] or 0)))     # frame -> parent diagram
+            co = own.get(str(int(fo[1] or 0))) if case_d is None else None
+            if co and co[0] == "Diagram":
+                case_d = co[1]          # card 155-a1-1: a BASE case - its parent diagram from the graph's owners row
             if case_d is None or int(case_d) != int(reg["frame_diagram"] or 0):
                 raise ExecStop("connect_term_uid: case #{0} sits on #{1}, the register face on #{2} (one border only)".format(
                     fo[1], case_d, reg["frame_diagram"]))
@@ -5900,6 +5992,45 @@ def main(argv):
         return lv_run(plan, ref, mm)
     print(__doc__)
     return 2
+
+
+def case_pass_wire(A, i, k, created, base_owners):
+    """card 156-a1-2 (PD379(b)): True when wire action k is the PASS WIRE of the case in-tunnel group that starts at tunnel
+    action i - src = the in-tunnel's inner face (frameless: its group frame, the `tunnel` action's `body`), dst = the inner
+    face of an EARLIER plan tunnel of the SAME case, carrying `frame` = the name of that same body frame (a plan-made case:
+    its create's `frames` entry; a base case: '#<diagram uid>'). Such a wire stays the group's one out-wire (compile_plan:
+    kind connect_term_uid R1 / tunnel, unchanged) although it carries `frame`: without the dst `frame`, the out-tunnel's
+    face resolves to ITS group frame (stagesim.resolve_addr case_tunnel_frame) and the wire crosses frames (measured,
+    tools/bench/prep_c156_a1_2_measure.log R3/R4). False when wire k is not such a candidate (no dst `frame`, or src not this
+    tunnel's inner face); a candidate in any other shape raises a specific ExecStop. compile_plan helper (pure, plan only).
+    Self-test: tools/bench/selftest_c156_passwire.py."""
+    a, b = A[i - 1], A[k - 1]
+    t = "new:" + str(a.get("as"))
+    src, dst = b.get("src"), b.get("dst")
+    if b.get("op") != "wire" or not (isinstance(dst, dict) and dst.get("frame") is not None) or _sym_of(src) != (t, "inner") \
+            or (isinstance(src, dict) and src.get("frame") is not None):
+        return False
+    why = "action {0} ({1}): the pass wire of case in-tunnel {2}".format(k, b.get("id"), t)
+    loop, body = a.get("loop"), a.get("body")
+    if a.get("dir", "in") != "in":
+        raise ExecStop("{0}: only an INPUT tunnel's group may end in a `frame` pass wire (dir {1!r})".format(why, a.get("dir")))
+    if created.get(loop, ("",))[0] == "case":
+        cr = A[created[loop][1] - 1]
+        fl = list(cr.get("frames") or SS.CASE_FRAMES_DEFAULT)
+        m = re.match(r"^{0}\.f([0-9]+)$".format(re.escape(str(loop))), str(body))
+        name = fl[int(m.group(1))] if m and int(m.group(1)) < len(fl) else None
+    elif loop not in created and base_case_named(base_owners(), loop):
+        name = "#{0}".format(body) if _uid_int(body) is not None else None
+    else:
+        raise ExecStop("{0}: tunnel loop {1!r} is not a Case structure".format(why, loop))
+    if name is None or dst.get("frame") != name:
+        raise ExecStop("{0}: dst `frame` {1!r} must name the in-tunnel's own body frame {2!r} (body {3!r})".format(
+            why, dst.get("frame"), name, body))
+    dh, dside = _sym_of(dst)
+    tun = next((x for x in A[:i - 1] if x.get("op") == "tunnel" and dh and "new:" + str(x.get("as")) == dh), None)
+    if tun is None or tun.get("loop") != loop or dside != "inner":
+        raise ExecStop("{0}: dst {1!r} must be the INNER face of an earlier tunnel of the same case {2!r}".format(why, dst, loop))
+    return True
 
 
 if __name__ == "__main__":

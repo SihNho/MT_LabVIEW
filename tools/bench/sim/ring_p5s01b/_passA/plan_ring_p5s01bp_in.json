@@ -1,0 +1,144 @@
+{
+ "schema": "stageplan/1",
+ "context": {
+  "s1_key": "D1_s1_copy"
+ },
+ "stage": "ring_p5s01bp",
+ "goal": "card 155-a2-1 PASS A: P5-1b = actions 21..32 of P5-1 form S on the real P5-1a graph, no open_rows",
+ "base": {
+  "path": "tools/bench/graph_ring_p5s01a_20261009_103621.json",
+  "md5": "bd67a51131d6205d170200e098a9bd99"
+ },
+ "actions": [
+  {
+   "op": "wire",
+   "id": "w_false_pass",
+   "src": {
+    "uid": 31175,
+    "side": "inner",
+    "frame": "#30914"
+   },
+   "dst": {
+    "uid": 31186,
+    "side": "inner",
+    "frame": "#30914"
+   },
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py A0, p5_route_census.md row 16"
+  },
+  {
+   "op": "create",
+   "id": "c_lw",
+   "class": "Local",
+   "diagram": 686,
+   "as": "LW1",
+   "label": "records final (1.2 to 1.7)",
+   "mode": "write",
+   "terminals": [
+    {
+     "name": "records final (1.2 to 1.7)",
+     "is_source": false,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py A0, p5_route_census.md row 17"
+  },
+  {
+   "op": "wire",
+   "id": "w_final",
+   "src": {
+    "uid": 30996,
+    "term": "outer"
+   },
+   "dst": "new:LW1.value",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py A0, p5_route_census.md row 18"
+  },
+  {
+   "op": "add_shift_reg",
+   "id": "sr_q",
+   "loop": 10170,
+   "body": 23166,
+   "parent": 686,
+   "as": "QS1",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py S_REF, p5_route_census.md row S4"
+  },
+  {
+   "op": "wire",
+   "id": "w_obt_srq",
+   "src": {
+    "uid": 31258,
+    "term": "queue out"
+   },
+   "dst": "new:QS1L.outer",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py S_REF, p5_route_census.md row S5"
+  },
+  {
+   "op": "tunnel",
+   "id": "t_qi",
+   "loop": 30726,
+   "body": 30922,
+   "parent": 23166,
+   "dir": "in",
+   "as": "TQ1",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py S_REF, p5_route_census.md row S6"
+  },
+  {
+   "op": "wire",
+   "id": "w_srq_qi",
+   "src": "new:QS1L.inner",
+   "dst": "new:TQ1.outer",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py S_REF, p5_route_census.md row S6"
+  },
+  {
+   "op": "wire",
+   "id": "w_qi_enq",
+   "src": "new:TQ1.inner",
+   "dst": {
+    "uid": 30756,
+    "term": "queue"
+   },
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py S_REF, p5_route_census.md row S6"
+  },
+  {
+   "op": "tunnel",
+   "id": "t_qo",
+   "loop": 30726,
+   "body": 30922,
+   "parent": 23166,
+   "dir": "out",
+   "as": "TQ2",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py S_REF, p5_route_census.md row S7"
+  },
+  {
+   "op": "wire",
+   "id": "w_enq_qo",
+   "src": {
+    "uid": 30756,
+    "term": "queue out"
+   },
+   "dst": "new:TQ2.inner",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py S_REF, p5_route_census.md row S7"
+  },
+  {
+   "op": "wire",
+   "id": "w_qo_srq",
+   "src": "new:TQ2.outer",
+   "dst": "new:QS1R.inner",
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py S_REF, p5_route_census.md row S7"
+  },
+  {
+   "op": "wire",
+   "id": "w_q_false",
+   "src": {
+    "uid": "new:TQ1",
+    "side": "inner",
+    "frame": "#30914"
+   },
+   "dst": {
+    "uid": "new:TQ2",
+    "side": "inner",
+    "frame": "#30914"
+   },
+   "why": "c154-a3-2 P5-1 form S (PD374(a)(c), PD376(a)): census diag_c154_a3_1_census.py S_REF, p5_route_census.md row S8"
+  }
+ ]
+}

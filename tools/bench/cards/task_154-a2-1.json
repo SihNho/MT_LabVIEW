@@ -1,0 +1,57 @@
+{
+ "schema": "task/1",
+ "id": "154-a2-1",
+ "kind": "build",
+ "goal": "Build claudeDev DonorQueue_v0.vi by script (Obtain/Enqueue/Dequeue/Release + 1-D DBL const); record uids in donor_queue_v0.json; cold re-read; handles flat; LabVIEW gone",
+ "why": "Cycle 154 round 2 pass item 0 (docs/d1/ring-p5.md PD375(a)). The existing primitive route copies queue nodes into the P5 beds from this donor; round 1 found no queue donor.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_154-a2-1.md", "md5": "3b7b18cf6f6b6c0640911776f2a294b2"},
+  {"path": "docs/d1/ring-p5.md", "md5": "81df09ca12a046990ad1194bb5cd41c6"},
+  {"path": "tools/bench/diag_c154_a1_1_facts.md", "md5": "5dcd8d0ddb938842e9527e58f7f4419e"},
+  {"path": "tools/bench/diag_c153_a2_8_queue_hygiene.py", "md5": "ce36637f5ff413bbc2c111a18c078279"},
+  {"path": "tools/bench/prep_c141_1_mkv16.py", "md5": "c3fe3fdba6adabe1abfccaa3a14f4ee9"},
+  {"path": "tools/gscript.py", "md5": "1a80236ed35c1876c67f964c72fe820a"},
+  {"path": "tools/stagekit.py", "md5": "604529e8e9b68b9c4b370b8f3d5c5ee5"}
+ ],
+ "pass": [
+  "claudeDev DonorQueue_v0.vi built by script: Obtain/Enqueue/Dequeue/Release + 1-D DBL const on Obtain 'element data type'; saved by COM; md5 quoted",
+  "tools/bench/donor_queue_v0.json: for each of the 5 objects role, uid, Traverse class, label and every terminal name/index/is_source, read back by script",
+  "Cold re-read of the saved DonorQueue_v0.vi in a fresh LabVIEW instance returns the same uids as the json",
+  "LabVIEW handle count before/after within +-100; every opened reference closed; no LabVIEW process at the end (tasklist)",
+  "Invariants md5 unchanged (brief step 7): s09 eb1d0f31, stage tools, memory_model, 4 OpQueue*_v0.vi, existing Donor*_v0.vi"
+ ],
+ "outputs": [
+  "tools/bench/donor_queue_v0.json",
+  "tools/bench/diag_c154_a2_1_donor.py",
+  "tools/bench/diag_c154_a2_1_donor.log",
+  "tools/bench/diag_c154_a2_1_facts.md",
+  "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/DonorQueue_v0.vi"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c154_a2_1*",
+   "tools/bench/donor_queue_v0*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/DonorQueue_v0.vi",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/scratch_c154_a2_1*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/gscript.py"},
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/bench/diag_c153_a2_8_queue_hygiene.py"}
+ ],
+ "rules": [
+  "Fresh scratch VI only: no bed, no original opened; OpQueue*_v0 / Donor*_v0 VIs not edited",
+  "No stage-tool or tools/hooks edit; one script, one bgrun (--max-min 40)",
+  "Hung save: STOP with facts, no GUI save; return on 2nd failure at same place; no motor or camera"
+ ]
+}

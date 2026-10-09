@@ -1,0 +1,52 @@
+{
+ "schema": "task/1",
+ "id": "154-a2-2",
+ "kind": "build",
+ "retry_of_card": "154-a2-1",
+ "goal": "RETRY of 154-a2-1: read back the saved DonorQueue_v0.vi, write donor_queue_v0.json, handles, cold re-read; no rebuild, no re-save",
+ "why": "Cycle 154 round 2 pass item 0 (PD375(a)). 154-a2-1 built and saved the donor, then failed on its own read-back script (list rows indexed as dicts).",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_154-a2-2.md", "md5": "7ec6d5d3e713e749995d8b20546a2adc"},
+  {"path": "tools/bench/diag_c154_a2_1_facts.md", "md5": "1d6230e5766e3d503c451a3e05132e09"},
+  {"path": "tools/bench/diag_c154_a2_1_donor.py", "md5": "19062c735ad0c65dfb484f21d31df7f4"},
+  {"path": "tools/bench/diag_c154_a2_1_donor.log", "md5": "ccdc2d415f0ca1279b57c92b29381304"},
+  {"path": "tools/gscript.py", "md5": "1a80236ed35c1876c67f964c72fe820a"},
+  {"path": "tools/stagekit.py", "md5": "604529e8e9b68b9c4b370b8f3d5c5ee5"}
+ ],
+ "pass": [
+  "DonorQueue_v0.vi md5 81dba822 unchanged; read-back of the 5 objects (#52/#73 const, Obtain #108, Enqueue #44, Dequeue #45, Release #46): uid, class, label, terminals",
+  "tools/bench/donor_queue_v0.json written (file, md5, objects with role/uid/class/label/terminals index+name+is_source)",
+  "Cold re-read in a fresh LabVIEW instance returns the json's uids; handle count before/after within +-100",
+  "No LabVIEW process at the end (tasklist); invariants md5 unchanged (brief step 6)"
+ ],
+ "outputs": [
+  "tools/bench/donor_queue_v0.json",
+  "tools/bench/diag_c154_a2_2_readback.py",
+  "tools/bench/diag_c154_a2_2_readback.log",
+  "tools/bench/diag_c154_a2_2_facts.md"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c154_a2_2*",
+   "tools/bench/donor_queue_v0*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 45},
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c154_a2_1_donor.py"},
+  {"kind": "file", "name": "tools/gscript.py"}
+ ],
+ "rules": [
+  "Read-only on DonorQueue_v0.vi: no SaveInstrument, no rebuild; no bed or original opened",
+  "No stage-tool or tools/hooks edit; one script, one bgrun (--max-min 30)",
+  "Return on a second failure at the same place; no motor or camera"
+ ]
+}

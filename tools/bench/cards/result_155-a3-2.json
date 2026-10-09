@@ -1,0 +1,25 @@
+{"schema":"result/1","id":"155-a3-2","status":"PASS","gates":{"pass":4,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+ {"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p5s01_20261009_124542.vi","md5":"7f2582ae54dc5bc42c3df0bdf3c72d2e"},
+ {"path":"tools/bench/graph_ring_p5s01_20261009_125622.json","md5":"6716c49948f097b8ac0e1780930bfab1"},
+ {"path":"tools/bench/errorlist_expected_D1_ring_p5s01_20261009_124542.json","md5":"ffc4cf666d84bbd30e167dcfe21c5569"},
+ {"path":"tools/bench/errorlist_D1_ring_p5s01_20261009_124542_20261009_124554.json","md5":"2e49ed9f0931ba03c3050e8c5c510edd"},
+ {"path":"tools/bench/diag_c155_a3_2_facts.md","md5":"e5496944835b3daa1ce8e1f0a737cf53"},
+ {"path":"tools/bench/adopted_scratch.jsonl","md5":"dd0aa787d0bbfc6b9d102f97cf4c1801"},
+ {"path":"tools/bench/memory_model.json","md5":"c87d170a8370c4b5dcf77d1aa6738aed"}],
+"facts":[
+ "Byte copy D1_ring_p5s01_20261009_124542.vi md5 7f2582ae == source p5s01b 7f2582ae (unchanged); adopt_scratch 5/0, adopt/1 iso 12:45:42 (diag_c155_a3_2_adopt.log)",
+ "EL 45 items == window 45, extra 0 missing 2 vs P5-1a expected, rc 1 MISMATCH non-gating (diag_c155_a3_2_el.log:81-84); RULE-SAME-ROW discharged (jev_gate.log:6046)",
+ "EL per class: Enqueue unwired 0 (P5-1a 1), tunnel missing assignment 0 (1); total 45 vs P5-1a 47 / pred 47 (-2) / hand 45 (+0) (diag_c155_a3_2_elexp.log)",
+ "Graph 15/0: graph_ring_p5s01_20261009_125622.json 6716c499, 6145 rows; MEM after load 597.5 MB (diag_c155_a3_2_graph.log:24,304); LabVIEW gone (:334)",
+ "Case #30726 frames [30914,30922]; t_qi #31257 / t_qo #31293 SelectorTunnels, 3 rows each, all wired (diag_c155_a3_2_nodes.log)",
+ "sr_q on #10170: L #31225 outer <- Obtain queue out, inner w31340; R #31222 inner w31254, outer t31246 UNWIRED (diag_c155_a3_2_nodes.log)",
+ "Enqueue 'queue' t30935 w31247 <- t_qi inner t31281 frame 30922 (gate Q); frame #30914 wired 4 of 6, open selector t30906 + t_el t31002",
+ "memory_model 386a4cf4 -> c87d170a: only /load_by_vi/7f2582ae.../{value 597.5, vi, cite} added (diag_c155_a3_2_memload.log)",
+ "Invariants before/after 43/0 each; 153 P4 + hooks files unchanged; no _elc_/scratch_c155_ left; tasklist LabVIEW none (diag_c155_a3_2_inv_after.log)"],
+"open":[
+ "Adopted file is a renamed byte copy of the p5s01b scratch (assignment-session assumption, brief_155-a3-2.md:9) - accepted?",
+ "sr_q R outer t31246 'queue out' unwired after P5-1 - owed by P5-2?",
+ "7 per-card diag helpers are copies of diag_c154_a3_3_* (gate/flat/elcls); extract to a shared module in a tooling card?"],
+"cost":{"usd":null,"minutes":22,"labview_runs":2},
+"note":"No scratch or recipe launched; no recipe/plan/tool/hook edit. EL rc 1 is the non-gating MISMATCH vs the P5-1a expected (count matched hand prediction 45)."}

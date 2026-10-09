@@ -2806,6 +2806,11 @@ PRIM_DONORS = {   # (donor file basename, donor uid): (label, class, md5 of the 
                                           "tools/bench/stage_d1_ring_p3b1.log:212 (created #10579 read back label 'Select')"),
     ("OpWaitDonor_v0.vi", 163): ("Wait (ms)", "Function", None,
                                  "tools/bench/stage_d1_ring_p3a.log:54 (created #26747 read back label 'Wait (ms)')"),
+    # card 154-a3-1 (PD376(c)): the four queue nodes of claudeDev\DonorQueue_v0.vi, label + class read back by card 154-a2-2
+    ("DonorQueue_v0.vi", 108): ("Obtain Queue", "Function", "81dba822efec5226123b3b88ee4383bc", "tools/bench/donor_queue_v0.json (role obtain)"),
+    ("DonorQueue_v0.vi", 44): ("Enqueue Element", "Function", "81dba822efec5226123b3b88ee4383bc", "tools/bench/donor_queue_v0.json (role enqueue)"),
+    ("DonorQueue_v0.vi", 45): ("Dequeue Element", "Function", "81dba822efec5226123b3b88ee4383bc", "tools/bench/donor_queue_v0.json (role dequeue)"),
+    ("DonorQueue_v0.vi", 46): ("Release Queue", "Function", "81dba822efec5226123b3b88ee4383bc", "tools/bench/donor_queue_v0.json (role release)"),
 }
 
 

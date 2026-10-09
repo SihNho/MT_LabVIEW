@@ -1,0 +1,47 @@
+BGRUN START 2026-10-09 13:22:34 limit 12.0 min: py -u tools/prior_art_review.py --plan-file tools/bench/prep_c155_a4_1_priorart_plan.md --slug priorart-c155-a4-1-p5s02 --trigger new-op --recipe tools/recipes/stage_d1_ring_p5s02.py
+BGRUN PID 8196
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-c155-a4-1-p5s02.txt (61566 chars)
+   review card tools\bench\cards\review_priorart-priorart-c155-a4-1-p5s02.json
+OUTCOME: ANSWERED (150s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-10-09-priorart-priorart-c155-a4-1-p5s02.md
+COST: $1.6626  in 22 / out 11812 / cache-create 145526 / cache-read 1310144  (146s, 16 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-priorart-c155-a4-1-p5s02 verdict=novel -> tools\bench\cards\verdict_priorart-priorart-c155-a4-1-p5s02.json
+--- ANSWER ---
+**Verdict: novel.** Nothing found already does this, was already measured to fail, or contradicts the user's rules. Below are three citations the plan's "NEW here" paragraph should name. None of them blocks the work.
+
+## Part A — the direction
+
+- **A1 (settled already): this plan follows decisions already made; it does not repeat them.** P5-2's content is the PD374(d) table row (`docs/d1/ring-p5.md:61`). The refnum form matches PD376(d) (`ring-p5.md:123-125`). The order "P5-2 plan, not launched" is PD378(c) (`ring-p5.md:161-162`). Card 154-a3-1's report-only census already found the P5-2 refnum rows OK: 29 ops, no GAP (`tools/bench/p5_route_census.md:88-93`). Release from the donor replaces the Release tool that PD374(e) asked for, and PD375(b) dropped that tool (`ring-p5.md:64-66` vs `:88`).
+- **A2 (refuted already):** nothing found.
+- **A3 (contradicted): one wording clash, not a real conflict.**
+  - **The clash.** PD376 says "no route goes loop-tunnel inner face → case tunnel … The only proven tunnel → case-tunnel route starts at a plan-made SHIFT-REGISTER inner face (R1/R2)" (`ring-p5.md:106-108`, census row 10 at `p5_route_census.md:22,42-44`). This plan routes F1–F3 and G as a loop-tunnel or LSR inner face → case tunnel by `cfw`, and the route check passes (`tools/bench/prep_c155_a4_1_mk.log:220-223,271-274`).
+  - **Why it is not a real conflict.** Row 10's GAP was about ordering a tunnel the plan itself creates ("tunnel group out-wire must be in the next 2 actions"). Here the sources are tunnels that already exist in the base file, so that refusal does not apply.
+  - **What the plan should do.** Cite row 10 and say why it does not apply. Otherwise the next reader will see the in-force sentence at `ring-p5.md:106-108` as a contradiction.
+- **A4 (unread evidence): case-frame moves were already done and measured, in cycles 97–98.** The plan says "earlier move_in rows only targeted loop bodies". But `gscript.move_into_frame` moved nodes into case frames in cycles 97–98 (`docs/d1-loop12-17-split-plan.md:1468-1470`). The measured result:
+  - ExecState went 1 → 0 after the moves.
+  - 8 + 1 wires were left with no terminals, plus 7 "loose ends" items.
+  - Only Remove Bad Wires cleared them (`d1-loop12-17-split-plan.md:1504-1509,1531-1534`).
+
+  The plan uses a different tool (`stagekit.move_in`, `tools/stagekit.py:698`). Its simulator model was measured on loop-body moves of these same objects (#376's cut terminals, `tools/stagesim.py:88`, `:1038-1039`). So the cycle-98 result is a risk for the scratch run's D/E1 gates, not a prior failure of this build. The plan should cite it. It should also say whether the three separate `move_in` ops (#376, #3052, #3453) are predicted to leave old wires with no terminals.
+
+## Part B — the artifact
+
+- **B1 (already built):** no P5-2 file or recipe existed before this card. `gscript.move_into_frame` (`tools/gscript.py:3846`) is not a usable substitute. It refuses unless ExecState is 1 before the move (`d1-loop12-17-split-plan.md:1538`), and the base file is ExecState 0 by design.
+- **B2 (already failed):** nothing found for this exact build.
+- **B3 (helper exists):** the plan already uses the existing pieces:
+  - `primitive` route with the DonorQueue_v0 entries (X17 at `tools/stage_prerun.py:2809-2813`)
+  - `wire_sr`
+  - `case_wired`
+  - `stagekit.RingSession` (the recipe has the template shape, `tools/recipes/stage_d1_ring_p5s02.py:36-56`)
+- **B4 (already measured):** only the case-frame move effect in A4. The rest is new measurement.
+
+## Part C — the user's rules
+
+No contradiction found. The queue carries the lossless 1.2 → 1.7 data stream that PD374 and U4 allow. Dequeue's 100 ms timeout is in the file-writer loop 1.7, not on the camera or acquisition path (U6, U13). No serial is involved (U3). #376 is moved and re-wired to the same sources it reads today: LSR #24133 at `prep_c155_a4_1_mk.log:40`, and tunnels #24357/#24361/#25223 at `ring-p5.md:54`. So its maths is unchanged (U1).
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-priorart-c155-a4-1-p5s02","verdict":"novel","alternative":"The cycle-97/98 case-frame moves (move_into_frame) left termless and loose-end wires; if stagekit.move_in into a case frame does the same and the loop-body move_in model does not predict it, D/E1 fail in the scratch run.","discriminating_test":"In the ONE scratch run on the P5-1 byte copy, read after ops 10-12 every old wire uid that has 0 terminals or loose ends and compare it with step_10..12 sim files; any extra = the case-frame move differs from the loop-body model.","violations":[],"sources":["docs/d1/ring-p5.md:61","docs/d1/ring-p5.md:106-108","tools/bench/p5_route_census.md:22,42-44,88-93","docs/d1-loop12-17-split-plan.md:1504-1509,1531-1538","tools/stagesim.py:1038-1039","tools/bench/prep_c155_a4_1_mk.log:220-223,271-274"],"note":"Not blocking: cite census row 10 (it covers plan-made loop tunnels, not base ones) and the cycle-98 case-frame move measurement in the plan's NEW paragraph."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-c155-a4-1-p5s02.md
+   STOP RECORD: none - 2026-10-09-priorart-priorart-c155-a4-1-p5s02.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_ring_p5s02.py sha cdfe40a5778d -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 153s

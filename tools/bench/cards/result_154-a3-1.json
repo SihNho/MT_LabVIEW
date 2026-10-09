@@ -1,0 +1,22 @@
+{"schema":"result/1","id":"154-a3-1","status":"PASS","gates":{"pass":4,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+{"path":"tools/bench/p5_route_census.md","md5":"dba7e3f0e00700fa184d16901a3b7074"},
+{"path":"tools/bench/diag_c154_a3_1_census.py","md5":"3904fb9d2b015ed83054bbad524b09ef"},
+{"path":"tools/bench/diag_c154_a3_1_facts.md","md5":"59cd58923d0c241b820c9327094000f3"},
+{"path":"tools/bench/selftest_c154_a3_1_x17.py","md5":"e9b69090270a5e5a385dddd13f5d8fbf"},
+{"path":"tools/stage_prerun.py","md5":"9decb20f6d67793abad967347e2a37ab"},
+{"path":"tools/bench/diag_c154_a3_1_inv.py","md5":"b1b4e2c347be47ec151dd60bcce7d0f4"}],
+"facts":[
+"Form S 10 rows OK / 0 GAP, compile 22 ops; form L 7 rows OK / 0 GAP, 20 ops (diag_c154_a3_1_census.log:47-48,86-87)",
+"CHOSEN: S by PD376(b) (diag_c154_a3_1_census.log:90; p5_route_census.md section 'Card 154-a3-1')",
+"OK but never launched: S5 Obtain 'queue out' -> SR L.outer (only consts feed L.outer in plans); L5 local_read in a case frame (p5_route_census.md S5/L5)",
+"P5-2 refnum rows report-only: S-mirror 29 ops OK, L-mirror 26 ops OK, no GAP (diag_c154_a3_1_census.log:141-143,191-193)",
+"X17: 4 DonorQueue_v0 entries 108/44/45/46 Function md5 81dba822 at stage_prerun.py:2809-2813; json labels/class match (donor_queue_v0.json:36,101,159,217)",
+"stage_prerun.py md5 c739eb86e0aa3644a1008b8f3fa2af38 -> 9decb20f6d67793abad967347e2a37ab; stagexec 1bab9cf9 / stagesim 78b8d5a1 unchanged (diag_c154_a3_1_inv.log:3)",
+"selftest_c154_a3_1_x17: baseline 7/0 -> after 11/0, O0-O5 6/6 both (selftest_c154_a3_1_x17_baseline.log, selftest_c154_a3_1_x17.log); _baseline_after.log 6/1 = deliberate negative control (N0)",
+"selftest_prim_gate_c141_1 not run: guard_bash refuses it under labview:none (header says read, script is offline) - gate-fp fp-74 (tools/bench/gate_fp_queue.jsonl); its O0-O5 copied into section O",
+"Step 6: X17 on chosen-form queue creates c_obt/c_enq (+c_deq/c_rel): no refusal (diag_c154_a3_1_census_registered.log:195)",
+"Invariants held, hooks/recipes/P4 plans unmodified, 0 LabVIEW processes (diag_c154_a3_1_inv.log:3-5); guard_write: open cards 149-a3-4, 150-a2-6 pin old stage_prerun md5"],
+"open":["Open cards 149-a3-4 (pin dcd45aba) and 150-a2-6 (pin c739eb86) still pin stage_prerun.py: re-pin or close them?","fp-74: selftest_prim_gate_c141_1.py's labview:read header blocks it on labview:none cards - correct the header (chat, hooks/tooling queue)?"],
+"cost":{"usd":null,"minutes":10,"labview_runs":0},
+"note":"Offline only; no VI opened. Pass items 1-4 met; prim-gate self-test re-run replaced by its copied O-half because of fp-74."}

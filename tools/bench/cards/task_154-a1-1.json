@@ -1,0 +1,71 @@
+{
+ "schema": "task/1",
+ "id": "154-a1-1",
+ "kind": "build",
+ "goal": "Make the P5-1 plan (loop 1.2 side, PD374(a)(c)) on the real s09 graph 22f967b5: replay, X10, pred, recipes, licence, dry + prerun PASS; not launched",
+ "why": "Cycle 154 pass items 0-1 (docs/d1/ring-p5.md PD374(a)(c)(e)(f)). The scratch card launches exactly these bytes.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_154-a1-1.md", "md5": "b9ff9f2e76032841783bfd514053f9e1"},
+  {"path": "docs/d1/ring-p5.md", "md5": "58f168cb38ff033273b699e8f68303c6"},
+  {"path": "tools/bench/p5_facts.md", "md5": "1df5c37d7e214af604bcd079df218912"},
+  {"path": "tools/bench/graph_ring_p4s09_20261009_062044.json", "md5": "22f967b513726a01c9d8f63269f689e6"},
+  {"path": "tools/bench/cards/brief_150-a3-5.md", "md5": "e2a3ed3648ab738961c7d3d486b8d96d"},
+  {"path": "tools/stagekit.py", "md5": "604529e8e9b68b9c4b370b8f3d5c5ee5"},
+  {"path": "tools/stagexec.py", "md5": "1bab9cf96502dfbe2d9a755e6d4a48b6"},
+  {"path": "tools/stagesim.py", "md5": "78b8d5a16dc98509311840cd2140917f"},
+  {"path": "tools/vigraph.py", "md5": "a7eb58c7e35a134f93df168ea4cdea80"},
+  {"path": "tools/stage_prerun.py", "md5": "c739eb86e0aa3644a1008b8f3fa2af38"},
+  {"path": "tools/gscript.py", "md5": "1a80236ed35c1876c67f964c72fe820a"},
+  {"path": "tools/bench/memory_model.json", "md5": "6f2b56872fd593ecaafe63221bf4f1fc"}
+ ],
+ "pass": [
+  "Targets read from the real s09 graph and quoted with uid/class/index: #4866, #2626 t2813, #29724 t29900 + sinks, Diagram #23166, 686; a differing target => RETURN",
+  "plan_ring_p5s01.json made per brief step 2 (PD374(a)(c), 1.2 side only, no 1.7-side action); <= 40 actions, no `of` pair split",
+  "Rebase on graph 22f967b5 rc quoted; stagesim replay 0 PROVISIONAL steps; X10 <= 680 with margins to 680/695 quoted",
+  "Pred made under vigraph a7eb58c7 (no conversion), recipes stage_d1_ring_p5s01.py + _scratch.py, licence, sink-gate rows and X11 quoted; dry + prerun PASS and --scratch-required rc quoted",
+  "Invariants md5 unchanged (brief step 7); stored P4 recipes/plans/preds unchanged; no LabVIEW process at the end"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p5s01.json",
+  "tools/bench/plan_ring_p5s01_pred.json",
+  "tools/bench/plan_ring_p5s01_licence.json",
+  "tools/recipes/stage_d1_ring_p5s01.py",
+  "tools/recipes/stage_d1_ring_p5s01_scratch.py",
+  "tools/bench/diag_c154_a1_1_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/plan_ring_p5s01*",
+   "tools/bench/sim/ring_p5s01/**",
+   "tools/recipes/stage_d1_ring_p5s01*",
+   "tools/bench/prep_c154_a1_1*",
+   "tools/bench/diag_c154_a1_1*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/jev_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 90
+ },
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/graph_ring_p4s09_20261009_062044.json"},
+  {"kind": "file", "name": "tools/recipes/stage_d1_ring_p4_s09v18.py"},
+  {"kind": "file", "name": "tools/stage_prerun.py"}
+ ],
+ "rules": [
+  "Offline: no LabVIEW, no stage-tool, hook or elrule edit, no --launch; the s09 VI is never opened",
+  "A missing route / op kind / refusal is a RETURN with the facts, not a tool edit",
+  "No motor or camera; RETURN on a second failure at the same place"
+ ]
+}

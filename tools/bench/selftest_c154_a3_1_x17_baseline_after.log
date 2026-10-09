@@ -1,0 +1,12 @@
+BGRUN START 2026-10-09 09:24:16 limit 2.0 min: py -u tools/bench/selftest_c154_a3_1_x17.py --baseline
+BGRUN PID 25468
+FACT stage_prerun md5 9decb20f6d67793abad967347e2a37ab mode=baseline
+GATE PASS | O0 main_vi_node_labels.json: #29157 = 'Insert Into Array' | Insert Into Array
+GATE PASS | O1 create 'Replace Array Subset' from $work #29157 refused | [{'action': 'p4_ras_bufdiff', 'why': "$work donor #29157 label 'Insert Into Array' != plan prim 'Replace Array Subset'"}]
+GATE PASS | O2 from DonorRAS1D_v0.vi uid 175 passes (registry label + md5 e8a9417c on disk) | ([], True)
+GATE PASS | O3 a $work donor deleted by an earlier action is refused | [{'action': 'eq', 'why': '$work donor #10171 is deleted by an EARLIER action of this plan'}]
+GATE PASS | O4 an unlisted external donor is refused (UNMEASURED) | [{'action': 'p4_ras_bufdiff', 'why': 'external donor Unknown_v0.vi uid 5: label UNMEASURED (not in PRIM_DONORS)'}]
+GATE PASS | O5 x17_gate over v15 refuses p4_ras_bufdiff ($work #29157) | [{'action': 'p4_ras_bufdiff', 'why': "$work donor #29157 label 'Insert Into Array' != plan prim 'Replace Array Subset'", 'stage': 'ring_p4_v3'}, {'action': 'p4_eq_seq', 'why': '$work donor #10171 is deleted by an EARLIER action of this plan', 'stage': 'ring_p4_v3'}]
+GATE FAIL | N0 the four DonorQueue_v0 keys are ABSENT from PRIM_DONORS (before the edit) | [('DonorQueue_v0.vi', 108), ('DonorQueue_v0.vi', 44), ('DonorQueue_v0.vi', 45), ('DonorQueue_v0.vi', 46)]
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":6,"fail":1},"first_fail":"N0 the four DonorQueue_v0 keys are ABSENT from PRIM_DONORS (before the edit)","artefacts":[],"card":"154-a3-1","labview":"none"}
+BGRUN END rc=1 after 1s

@@ -225,3 +225,30 @@ How to add: see the 5-line note at the top of `docs/d1/INDEX.md`.
        changes; if a second tool would have to change, the card hands back.
      - **(e) Order.** a2-7 (docs, offline) → a2-2 (OpQueue*_v0 hygiene, LabVIEW, alone) → a2-4 (vigraph + (d), offline,
        never beside a2-2) → drain fp-70.
+
+373. **(cycle 154 judgement, 2026-10-09 — after `tools/bench/cards/assign_result_153_3.json` HANDBACK (round 3, cycle 153
+     closed at its hand-back cap), `result_153-a2-4.json`, `result_153-a2-7.json`, `result_153-a2-8.json`)**
+     USER-RULES: U1 (relied on: only how a gate REPORTS differences changes; no bed byte, plan action or computation
+     changes); none contradicted.
+     - **(a) Accepted: a2-7 (NAMES.md:112 / fixture-recording.md:18 / p5_facts F4 corrected, dated, cited) and a2-8
+       (OpQueue*_v0 4 ops × 20 calls flat, records in `tools/bench/op_hygiene/`, scratch removed, LabVIEW gone).** a2-2's
+       FAIL was its own donor lookup and was retried once as a2-8; no review owed.
+     - **(b) `vigraph.py` STAYS a7eb58c7 (adopted by a2-4).** a2-4's re-score equals 153-b2-1's (json byte-identical,
+       2eb3f1ba): s06 18 → 14, the 4 removed rows are #2626 'array'|0..3 keyed by the OLD name; s07/s08/s09/S1-vs-s09
+       unchanged; nothing added. That is PD371(b)'s outcome (same flagged positions, rename halves gone). Its own
+       "all rename-only: False" line is consistent with PD371(b) (slots with real source changes stay flagged).
+     - **(c) The stored P4 recipes `tools/recipes/stage_d1_ring_p4_s0[1-9]*.py` are SUPERSEDED HISTORY: never launched
+       again.** P4 ended at s09 (PD370(a)); every one of them starts from a base that is no longer the bed. Their inline PB
+       (`stage_d1_ring_p4_s06v18.py:142-149`) against stored name-keyed preds now fails by design, and is NOT converted. This
+       replaces PD372(d)'s "converter in ONE caller": the real PB path has no single caller, so the conversion is not put in
+       the stored recipes at all.
+     - **(d) The name → position converter (a2-5's `CV.convert` + `convert_open_rows`) lives in ONE library file** (a new
+       poskey-convert module under tools/, or inside `vigraph.py` — the card picks one and says which). `selftest_t6_poskey.py` and
+       `selftest_c147_b1_2.py` call it EXPLICITLY on the stored preds/plans (the stored files stay byte-unchanged) and give
+       43/0 and 19/1 (P0 pin only) when run DIRECTLY, not through `diag_c153_a2_5_run.py`; `selftest_c153_compdiff_poskey`
+       8/0. Then fp-70 is drained citing those three lines. New md5s authorised: the two self-tests, the converter file
+       (and `vigraph.py` only if the converter goes there).
+     - **(e) New stage recipes (P5 on) generate their preds under `vigraph.py` a7eb58c7, so pred and end read share the
+       position key and no conversion is applied.** P5-1's dry + prerun + scratch PB are the check; a PB failure there that
+       comes from keying is a tool defect and hands back.
+     - **(f) Rule-1a status unchanged:** no bed byte and no plan action changed in cycle 153.
