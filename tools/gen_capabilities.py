@@ -250,6 +250,76 @@ def module_functions(path):
     return out
 
 
+# ---- descriptions of EXISTING functions in a side file (card chat-T8, user 2026-10-09 "권장안대로 처리"): writing a docstring into an
+# existing function would shift every file:line citation below it, so its one-line description lives in docs/fn_descriptions.json under
+# '<module>.<function>' (module = file name without .py, function = name or Class.method). A docstring always wins over the side file.
+FN_DESC_REL = "docs/fn_descriptions.json"
+DESC_SCHEMA = "fn-descriptions/1"
+UNDOC = "(undocumented)"
+
+
+def _read_descs(root=None, path=None):
+    """({key: description}, error or '') from the side file; ({}, '') when it is absent."""
+    p = path or os.path.join(root or ROOT, *FN_DESC_REL.split("/"))
+    if not os.path.exists(p):
+        return {}, ""
+    try:
+        with open(p, encoding="utf-8") as f:
+            d = json.load(f)
+    except (OSError, ValueError) as e:
+        return {}, "side file unreadable: %s" % str(e)[:120]
+    if not isinstance(d, dict) or d.get("schema") != DESC_SCHEMA or not isinstance(d.get("items"), dict):
+        return {}, "side file is not schema %s with an items map" % DESC_SCHEMA
+    return dict((str(k), str(v).strip()) for k, v in d["items"].items() if str(v).strip()), ""
+
+
+def load_descriptions(root=None, path=None):
+    """{'<module>.<function>': one-line description} from docs/fn_descriptions.json ({} when absent or malformed - stale_descriptions
+    reports a malformed file). Self-test: selftest_t7_capabilities.py."""
+    return _read_descs(root, path)[0]
+
+
+def describe_row(module, name, doc, descs):
+    """(text, source) of one fn-list row: the docstring's first line -> 'docstring'; else the side file's '<module>.<name>' entry ->
+    'side file'; else ('(undocumented)', '-'). Self-test: selftest_t7_capabilities.py."""
+    if doc:
+        return doc, "docstring"
+    t = descs.get("%s.%s" % (module, name))
+    return (t, "side file") if t else (UNDOC, "-")
+
+
+def stale_descriptions(root=None, path=None):
+    """Sorted side-file keys whose function no longer exists (no tools .py of that module name, or no public function / Class.method
+    of that name in it), plus one '(side file unreadable ...)' entry for a malformed file. drift() carries them; doc_lint L12 prints
+    them as a WARN. Self-test: selftest_t7_capabilities.py."""
+    root = root or ROOT
+    descs, err = _read_descs(root, path)
+    out = ["(%s)" % err] if err else []
+    mods, names = _modules(root), {}
+    for k in sorted(descs):
+        mod, _dot, fn = k.partition(".")
+        p = mods.get(mod)
+        if p is None or not fn:
+            out.append(k)
+            continue
+        if mod not in names:
+            names[mod] = set(x[0] for x in module_functions(os.path.join(root, p.replace("/", os.sep))))
+        if fn not in names[mod]:
+            out.append(k)
+    return out
+
+
+def described_rows(root=None, path=None):
+    """[(rel path, location note, importers, [(name, args, text, source, self-test, line)])] - list_rows with each row's description
+    resolved by describe_row (docstring, else side file, else undocumented). Self-test: selftest_t7_capabilities.py."""
+    descs = load_descriptions(root, path)
+    out = []
+    for p, note, users, r in list_rows(root):
+        mod = p.rsplit("/", 1)[-1][:-3]
+        out.append((p, note, users, [(n, a) + describe_row(mod, n, d, descs) + (st, ln) for n, a, d, st, ln in r]))
+    return out
+
+
 def list_rows(root=None):
     """[(rel path, location note, importers, [module_functions rows])] for every shared file, tools/ first then bench / recipes /
     hooks, each group by name. Writes the shared-set cache (SHARED_CACHE) as a side effect when root is the project root."""
@@ -280,28 +350,31 @@ def write_shared_cache(paths, cache=None):
 
 def render_list(root=None):
     """The fn-list block text (markers included): a module table of contents, then one section per shared file."""
-    rows = list_rows(root)
+    rows = described_rows(root)
     nf = sum(len(r) for _p, _n, _u, r in rows)
-    nd = sum(1 for _p, _n, _u, r in rows for x in r if not x[2])
+    ns = sum(1 for _p, _n, _u, r in rows for x in r if x[3] == "side file")
+    nd = sum(1 for _p, _n, _u, r in rows for x in r if x[3] == "-")
     lines = [LIST_BEGIN, "", "## Every public function of the shared tools files - generated from code (card chat-T7)", "",
              "A file is SHARED when at least one OTHER file under tools/ imports it (import graph, measured at generation; cache "
              "tools/bench/capabilities_shared.json). Look here before writing any logic (docs/script-writing.md rule 8). "
-             "%d files, %d functions, %d without a docstring. Regenerated at every cycle end and when a shared file is written." % (len(rows), nf, nd), "",
-             "| file | kind | imported by | functions | no docstring |", "|---|---|---|---|---|"]
+             "%d files, %d functions: %d described by a docstring, %d by %s (existing functions, card chat-T8), %d undocumented "
+             "(per file in the table below). Regenerated at every cycle end and when a shared file is written." % (
+                 len(rows), nf, nf - ns - nd, ns, FN_DESC_REL, nd), "",
+             "| file | kind | imported by | functions | side file | undocumented |", "|---|---|---|---|---|---|"]
     for p, note, users, r in rows:
-        lines.append("| [`%s`](#%s) | %s | %d | %d | %d |" % (p, re.sub(r"[^a-z0-9]+", "-", p.lower()).strip("-"), note, len(users), len(r),
-                                                            sum(1 for x in r if not x[2])))
+        lines.append("| [`%s`](#%s) | %s | %d | %d | %d | %d |" % (p, re.sub(r"[^a-z0-9]+", "-", p.lower()).strip("-"), note, len(users), len(r),
+                                                                 sum(1 for x in r if x[3] == "side file"), sum(1 for x in r if x[3] == "-")))
     for p, note, users, r in rows:
         lines += ["", "### %s" % p, "", "%s; imported by %d file(s): %s%s" % (note, len(users), ", ".join("`%s`" % u for u in users[:6]),
                                                                             " ..." if len(users) > 6 else ""), ""]
         if not r:
             lines.append("(no public function)")
             continue
-        lines += ["| function | arguments | what it does | self-test | line |", "|---|---|---|---|---|"]
-        for name, args, doc, st, ln in r:
+        lines += ["| function | arguments | what it does | from | self-test | line |", "|---|---|---|---|---|---|"]
+        for name, args, text, src, st, ln in r:
             # docstring text loses its backticks: doc_lint L2 checks every backticked path, and a docstring's EXAMPLE path
             # (audit_cycle.a9_named_files: tools/x/y.py) is not a citation
-            lines.append("| `%s` | %s | %s | %s | %d |" % (name, _cell(args, 120), _cell((doc or "(no docstring)").replace("`", "'"), 200), st or "-", ln))
+            lines.append("| `%s` | %s | %s | %s | %s | %d |" % (name, _cell(args, 120), _cell(text.replace("`", "'"), 200), src, st or "-", ln))
     lines += ["", LIST_END]
     return "\n".join(lines) + "\n"
 
@@ -373,10 +446,12 @@ def hook_run(doc=DOC, state_dir=None, root=None):
 
 
 def summary_line(root=None):
-    """'fn-table N rows; fn-list F files, M functions, U undocumented' - the counts cycle_runner's CAPABILITIES line logs."""
-    lr = list_rows(root)
-    return "fn-table %d rows; fn-list %d files, %d functions, %d undocumented" % (
-        len(rows()), len(lr), sum(len(r) for _p, _n, _u, r in lr), sum(1 for _p, _n, _u, r in lr for x in r if not x[2]))
+    """'fn-table N rows; fn-list F files, M functions, S from the side file, U undocumented' - the counts cycle_runner's CAPABILITIES
+    line logs."""
+    lr = described_rows(root)
+    return "fn-table %d rows; fn-list %d files, %d functions, %d from the side file, %d undocumented" % (
+        len(rows()), len(lr), sum(len(r) for _p, _n, _u, r in lr), sum(1 for _p, _n, _u, r in lr for x in r if x[3] == "side file"),
+        sum(1 for _p, _n, _u, r in lr for x in r if x[3] == "-"))
 
 
 def _parse_block(block):
@@ -407,6 +482,7 @@ def drift(doc=DOC, reg_dir=None, with_list=True):
         _b2, lblock, _a2 = split_list(text)
         out["list_block"] = lblock is not None
         out["list_stale"] = lblock is not None and lblock != render_list()
+        out["stale_descriptions"] = stale_descriptions()                           # card chat-T8: side-file key of a gone function
     return out
 
 
@@ -422,6 +498,9 @@ def drift_line(d):
         parts.append("fn-list block ABSENT")
     elif d.get("list_stale"):
         parts.append("fn-list block differs from the code")
+    sd = d.get("stale_descriptions") or []
+    if sd:
+        parts.append("stale description %d in %s (%s%s)" % (len(sd), FN_DESC_REL, ", ".join(sd[:5]), " ..." if len(sd) > 5 else ""))
     return "; ".join(parts)
 
 

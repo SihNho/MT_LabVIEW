@@ -15,7 +15,11 @@ H1 a write to a SHARED file -> 'started', the detached run regenerates the temp 
 H2 a write to a NON-shared file -> 'not-shared', no lock, no new log line; H3 two writes in a row -> 'started' + 'rerun-flagged',
 then exactly one run + one re-run in the log, lock released, flag cleared;
 C1 cycle_runner.capabilities_hook logs ONE 'CAPABILITIES | ... | regenerated ... | drift ...' line on the temp doc; C2 a broken generator
--> a FAILED line, no exception."""
+-> a FAILED line, no exception.
+Card chat-T8 (docs/fn_descriptions.json side file): D1 docstring wins over the side file; D2 no docstring -> side-file text marked
+'side file', else '(undocumented)'; D3 per-module side-file / undocumented counts in the TOC and header; D4 stale keys (gone method,
+unknown module) listed and named by drift_line; D5 malformed side file -> one stale entry, no crash; D6 the real side file's 3 examples
+are used and none stale; D7 doc_lint L12 prints ONE WARN for a stale key."""
 import importlib.util, json, os, shutil, subprocess, sys, tempfile, time       # noqa: E401
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 TOOLS = os.path.join(ROOT, "tools")
@@ -40,7 +44,7 @@ def tree_cases(GC, tmp):
     put(r, "tools/a.py", 'import os\nimport a\n\n\ndef f(x, y=2):\n    """Adds. Self-test: selftest_a.py."""\n    return x\n\n\n'
                          'def _hidden():\n    return 1\n\n\nclass Box(object):\n    """A box."""\n    def put(self, v):\n        """Put v."""\n\n    def _p(self):\n        pass\n')
     put(r, "tools/b.py", "import os, a as AA  # uses a\n")
-    put(r, "tools/bench/c.py", '"""c"""\n\n\ndef g():\n    pass\n')
+    put(r, "tools/bench/c.py", '"""c"""\n\n\ndef g():\n    pass\n\n\ndef h():\n    pass\n')
     put(r, "tools/recipes/d.py", "import stagekit as K\nC = K.mod(\"c\")\n")
     put(r, "tools/e.py", "def lonely():\n    pass\n")
     sh = GC.shared_files(r)
@@ -53,7 +57,37 @@ def tree_cases(GC, tmp):
     txt = GC.render_list(r)
     gate("G2b render_list: TOC row per shared file, a section per file, bench file marked, 'no docstring' counted",
          txt.startswith(GC.LIST_BEGIN) and txt.rstrip().endswith(GC.LIST_END) and "### tools/a.py" in txt and "### tools/bench/c.py" in txt
-         and "move to tools/ later" in txt and "| `g` |  | (no docstring) |" in txt, txt[:400])
+         and "move to tools/ later" in txt and "| `g` |  | (undocumented) | - |" in txt, txt[:400])
+    t8_cases(GC, r)
+
+
+def t8_cases(GC, r):
+    """card chat-T8: descriptions of existing functions from docs/fn_descriptions.json (docstring wins; side file next; else undocumented)."""
+    put(r, "docs/fn_descriptions.json", json.dumps({"schema": "fn-descriptions/1", "about": "t", "items": {
+        "a.f": "SIDE TEXT that must lose to the docstring", "c.g": "Does g.", "a.Box.gone": "x", "zz.nothing": "y"}}))
+    txt = GC.render_list(r)
+    rows = dict((x[0], x) for p, _n, _u, rr in GC.described_rows(r) for x in rr if p == "tools/bench/c.py" or p == "tools/a.py")
+    gate("D1 docstring wins over the side file: f -> 'Adds. ...' from docstring, the side text absent",
+         rows["f"][2:4] == ("Adds. Self-test: selftest_a.py.", "docstring") and "SIDE TEXT" not in txt, rows["f"])
+    gate("D2 no docstring -> side file used: g -> 'Does g.' marked 'side file'; h -> (undocumented) '-'",
+         rows["g"][2:4] == ("Does g.", "side file") and rows["h"][2:4] == ("(undocumented)", "-")
+         and "| `g` |  | Does g. | side file | - |" in txt, (rows["g"], rows["h"]))
+    toc = [ln for ln in txt.splitlines() if ln.startswith("| [`tools/")]
+    gate("D3 per-module counts: c.py 2 functions, 1 side file, 1 undocumented; a.py 3 / 0 / 0; header '1 by docs/fn_descriptions.json, 1 undocumented'",
+         any(ln.startswith("| [`tools/bench/c.py`]") and ln.endswith("| 1 | 2 | 1 | 1 |") for ln in toc)
+         and any(ln.startswith("| [`tools/a.py`]") and ln.endswith("| 1 | 3 | 0 | 0 |") for ln in toc)
+         and "4 described by a docstring" not in txt and "3 described by a docstring, 1 by docs/fn_descriptions.json" in txt
+         and ", 1 undocumented" in txt, toc)
+    st = GC.stale_descriptions(r)
+    dl = GC.drift_line({"block": True, "missing": [], "gone": [], "stale": [], "record_changed": [], "contract_changed": [], "moved": [],
+                        "list_block": True, "list_stale": False, "stale_descriptions": st})
+    gate("D4 stale keys = [a.Box.gone, zz.nothing] (gone method, unknown module); live keys a.f / c.g not stale; drift line names them",
+         st == ["a.Box.gone", "zz.nothing"] and "stale description 2" in dl and "a.Box.gone" in dl, (st, dl))
+    put(r, "docs/fn_descriptions.json", "{not json")
+    st2 = GC.stale_descriptions(r)
+    gate("D5 malformed side file -> one '(side file unreadable ...)' stale entry, render still works (all rows docstring or undocumented)",
+         len(st2) == 1 and st2[0].startswith("(side file unreadable")
+         and not [ln for ln in GC.render_list(r).splitlines() if ln.startswith("| `") and "| side file |" in ln], st2)
 
 
 def real_cases(GC, tmp):
@@ -75,7 +109,30 @@ def real_cases(GC, tmp):
         cache = json.load(f)
     gate("G4 write() twice: second is a no-op ({0}); one fn-table + one fn-list block; cache lists stagekit ({1} files)".format(not w2, len(cache["files"])),
          not w2 and a == b and b.count(GC.BEGIN) == 1 and b.count(GC.LIST_BEGIN) == 1 and "tools/stagekit.py" in cache["files"])
+    real_desc_cases(GC, doc, b)
     return doc
+
+
+def real_desc_cases(GC, doc, text):
+    """card chat-T8 on the real tree: the 3 verified examples are used, none stale; doc_lint L12 WARNs on a stale key."""
+    want = ["stage_prerun.sha256", "stagesim.parse_addr", "stagexec.edges"]
+    descs = GC.load_descriptions()
+    rows = [ln for ln in text.splitlines() if ln.startswith("| `") and "| side file |" in ln]          # function rows, not the TOC header
+    gate("D6 real side file: keys {0} loaded, none stale, {1} 'side file' rows in the regenerated block".format(sorted(descs), len(rows)),
+         sorted(descs) == want and GC.stale_descriptions() == [] and len(rows) == 3
+         and any(ln.startswith("| `edges` |") for ln in rows), rows)
+    import doc_lint as DL
+    keep = GC.stale_descriptions
+    GC.stale_descriptions = lambda *a, **k: ["stagexec.no_such_fn"]
+    try:
+        del DL.RESULT[:]
+        DL.check_fn_drift(doc)
+        got = list(DL.RESULT)
+    finally:
+        GC.stale_descriptions = keep
+        del DL.RESULT[:]
+    gate("D7 doc_lint L12 on an up-to-date doc with one stale key -> ONE WARN line naming it",
+         len(got) == 1 and got[0][0] == "WARN" and "stale description 1" in got[0][2] and "stagexec.no_such_fn" in got[0][2], got)
 
 
 def wait_unlocked(state, t=120):

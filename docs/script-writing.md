@@ -55,7 +55,9 @@ review; a diff-only review never re-reads copied lines) and nobody's job was to 
    a function that already exists is called, not re-written.
 9. **A new or changed shared function carries a docstring** whose first line says what it does and what it returns,
    and names its self-test. The list is regenerated from those docstrings at every cycle end (user 2026-10-09: "전부
-   적용"), so a function without a docstring shows up undocumented to every later session.
+   적용"), so a function without a docstring shows up undocumented to every later session. An EXISTING function without
+   a docstring gets its one-line description in `docs/fn_descriptions.json` (key `<module>.<function>`), not a docstring,
+   so no `file:line` citation shifts; a NEW function gets a docstring (user 2026-10-09 "권장안대로 처리", card chat-T8).
 
 The other script rules still hold: scope header (`CLAUDE.md` "ERRORS ARE CAUGHT AT THE START"), `RESULT {...}` line,
 runs only under `bgrun --material`, names from `docs/NAMES.md`, Edit/Write tools only.

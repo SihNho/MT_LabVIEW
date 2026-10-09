@@ -1,0 +1,27 @@
+BGRUN START 2026-10-09 12:09:19 limit 10.0 min: py -u tools/bench/selftest_t7_capabilities.py
+BGRUN PID 6784
+  PASS  G1 temp tree: shared = {tools/a.py: [tools/b.py], tools/bench/c.py: [tools/recipes/d.py]} (self-import and un-imported e.py excluded)  {'tools/a.py': ['tools/b.py'], 'tools/bench/c.py': ['tools/recipes/d.py']}
+  PASS  G2 module_functions: f(x, y=2) 'Adds. Self-test: selftest_a.py.' selftest_a.py; Box (class); Box.put; no _hidden / Box._p  [('f', 'x, y=2', 'Adds. Self-test: selftest_a.py.', 'selftest_a.py', 5), ('Box', '(class)', 'A box.', '', 14), ('Box.put', 'v', 'Put v.', '', 16)]
+  PASS  G2b render_list: TOC row per shared file, a section per file, bench file marked, 'no docstring' counted  <!-- GENERATED fn-list BEGIN (tools/gen_capabilities.py - every public function of every SHARED tools file, by import graph; do not edit by hand) -->
+
+## Every public function of the shared tools files - generated from code (card chat-T7)
+
+A file is SHARED when at least one OTHER file under tools/ imports it (import graph, measured at generation; cache tools/bench/capabilities_shared.json). Look h
+  PASS  D1 docstring wins over the side file: f -> 'Adds. ...' from docstring, the side text absent  ('f', 'x, y=2', 'Adds. Self-test: selftest_a.py.', 'docstring', 'selftest_a.py', 5)
+  PASS  D2 no docstring -> side file used: g -> 'Does g.' marked 'side file'; h -> (undocumented) '-'  (('g', '', 'Does g.', 'side file', '', 4), ('h', '', '(undocumented)', '-', '', 8))
+  PASS  D3 per-module counts: c.py 2 functions, 1 side file, 1 undocumented; a.py 3 / 0 / 0; header '1 by docs/fn_descriptions.json, 1 undocumented'  ['| [`tools/a.py`](#tools-a-py) | shared module | 1 | 3 | 0 | 0 |', '| [`tools/bench/c.py`](#tools-bench-c-py) | shared file in the bench folder (move to tools/ later) | 1 | 2 | 1 | 1 |']
+  PASS  D4 stale keys = [a.Box.gone, zz.nothing] (gone method, unknown module); live keys a.f / c.g not stale; drift line names them  (['a.Box.gone', 'zz.nothing'], 'stale description 2 in docs/fn_descriptions.json (a.Box.gone, zz.nothing)')
+  PASS  D5 malformed side file -> one '(side file unreadable ...)' stale entry, render still works (all rows docstring or undocumented)  ['(side file unreadable: Expecting property name enclosed in double quotes: line 1 column 2 (char 1))']
+  PASS  G3 real tree: 185 shared files (50 tools/, 72 bench), scan 1.3 s; stagekit/gscript/protocol/stage_prerun shared  []
+  PASS  G4 write() twice: second is a no-op (True); one fn-table + one fn-list block; cache lists stagekit (185 files)  
+  PASS  D6 real side file: keys ['stage_prerun.sha256', 'stagesim.parse_addr', 'stagexec.edges'] loaded, none stale, 3 'side file' rows in the regenerated block  ['| `sha256` | path | SHA-256 hex digest of a file; a .py/.ps1 is hashed WITHOUT its scope header block (scope_header.canonical_bytes) so records written before the header migration still match. Returns the hex string. | side file | - | 138 |', "| `parse_addr` | a | Terminal address -> {'uid': head, 'term': terminal}: a dict is copied, a '<uid>.<terminal>' / 'new:<kind><n>.<terminal>' string is split at its first '.'; anything else raises SimError. | side file | - | 669 |", '| `edges` | terms | Groups terminal rows by wire_uid; returns (E, dang): E = set of (source term_uid, sink term_uid) pai
+  PASS  D7 doc_lint L12 on an up-to-date doc with one stale key -> ONE WARN line naming it  [('WARN', 'L12 function table matches the code', 'stale description 1 in docs/fn_descriptions.json (stagexec.no_such_fn) - run py tools/gen_capabilities.py')]
+  PASS  H1 write to a SHARED file -> started; the detached run regenerated the temp doc (fn-list back: True); lock released True; log ['CAPREGEN | 2026-10-09 12:10:06 | run 1 | rewrote hookdoc.md | 11.0 s']  
+  PASS  H2 write to a NON-shared file -> not-shared; no lock, no new run  
+  PASS  H3 two writes in a row -> started + rerun-flagged; then exactly 1 run + 1 re-run ['run 1', 'run 2 (re-run)']; lock released True; flag cleared  ['CAPREGEN | 2026-10-09 12:10:20 | run 1 | unchanged hookdoc.md | 10.9 s', 'CAPREGEN | 2026-10-09 12:10:30 | run 2 (re-run) | unchanged hookdoc.md | 10.7 s']
+CAPABILITIES | 2026-10-09 12:11:05 | cycle 999 | regenerated unchanged fn-table 152 rows; fn-list 185 files, 2441 functions, 3 from the side file, 1152 undocumented | drift none
+  PASS  C1 capabilities_hook logs ONE line 'CAPABILITIES | ... | cycle 999 | regenerated (rewrote|unchanged) fn-table ... | drift ...'  CAPABILITIES | 2026-10-09 12:11:05 | cycle 999 | regenerated unchanged fn-table 152 rows; fn-list 185 files, 2441 functions, 3 from the side file, 1152 undocumented | drift none
+CAPABILITIES | 2026-10-09 12:11:05 | cycle 998 | regenerated FAILED rc=2 C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe: can't open file 'C:\\Users\\KimLab\\AppData\\Local\\Temp\\t7caps_x2d0d9a9\\no_such_generator | drift unread rc=2
+  PASS  C2 a broken generator -> a FAILED line, no exception  CAPABILITIES | 2026-10-09 12:11:05 | cycle 998 | regenerated FAILED rc=2 C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe: can't open file 'C:\\Users\\KimLab\\AppData\\Local\\Temp\\t7caps_x2d0d9a9\\no_such_generator | drift unread rc=2
+RESULT {"status":"PASS","gates":{"pass":17,"fail":0},"first_fail":null,"artefacts":[],"schema":"result-line/1","card":"chat-T8","labview":"none"}
+BGRUN END rc=0 after 106s
