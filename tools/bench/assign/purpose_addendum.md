@@ -28,6 +28,10 @@ deliverable only when the deliverable's own launch is refused by that very gate,
 `tools/hooks/**` in a runner purpose:** hook edits are not made inside runner cycles (guard_assign refuses them even when
 named); a hook false positive is queued with `tools/gate_fp.py` and the chat drains it between runs, with the user told.
 
+**SCRIPTS CALL SHARED FUNCTIONS — user 2026-10-09 (`docs/script-writing.md`):** never write "recipes copied from the
+X pair" into a purpose; write "the X recipe's inputs on the shared stagekit gates". A repeated block is extracted into
+the shared module first (a tooling card), then used.
+
 **Lines at the end of this prompt:**
 - `ASSIGN-RESULT <path>` — the previous assignment's `assign-result/1` (PURPOSE_MET with evidence, or HANDBACK). Judge it
   first: accept the evidence or not, then set the next purpose.

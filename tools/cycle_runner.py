@@ -561,6 +561,14 @@ def git_commit_cycle(n, runner_log):
     """Commit everything the cycle left in the tree (2026-09-24: cycles 68/69 ended with 129 uncommitted files;
     neither the runner nor the session prompt ever committed, so the chat had to). Never fails the cycle."""
     try:
+        # chat 2026-10-09: a stale .git/index.lock (left by a killed git, seen 10-08 18:34 and 10-09 10:08) made the
+        # cycle 149/150 commits fail silently (rc 128). Remove it only when it is older than 10 min and no git runs.
+        lock = os.path.join(ROOT, ".git", "index.lock")
+        if os.path.exists(lock) and time.time() - os.path.getmtime(lock) > 600:
+            tl = subprocess.run(["tasklist", "/FI", "IMAGENAME eq git.exe"], capture_output=True, text=True, timeout=30)
+            if "git.exe" not in (tl.stdout or ""):
+                os.remove(lock)
+                log_line(runner_log, "GIT | %s | cycle %d | removed stale .git/index.lock" % (time.strftime("%Y-%m-%d %H:%M:%S"), n))
         subprocess.run(["git", "add", "-A"], cwd=ROOT, timeout=120, capture_output=True)
         msg = "Cycle %d: session outputs (runner auto-commit)\n\nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>" % n
         r = subprocess.run(["git", "commit", "-q", "-m", msg], cwd=ROOT, timeout=120, capture_output=True, text=True)

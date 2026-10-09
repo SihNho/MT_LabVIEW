@@ -590,6 +590,11 @@ a repeated session script owes prior-art review only on its non-parameter change
 cycles 142–143: 9 failure records caught at write/launch time (≈49 card-minutes upper bound); LabVIEW-side faults
 (≈62 min) stay catchable only by a scratch run.
 
+**SCRIPTS CALL SHARED FUNCTIONS, NEVER COPY THEM (user 2026-10-09: "보통 같은 함수가 계속 반복되면 복사 붙여넣기 대신
+공통 함수로 만들고 호출하지 않아?" · "재료 세션 및 배정 세션에 .md파일로 지침을 전달해야겠는데?"):** the rules are in
+`docs/script-writing.md`, read by every material and assignment session. Not enforced by length or by a hook (user:
+"코드가 길어질수도 있지 그걸 기계적으로 막기는 어렵겠고") — by the written rule and by briefs that ask for calls.
+
 **Patch files with the Edit/Write tools, never with a `py - <<'EOF'` heredoc** (2026-09-09: three heredoc patches
 in one session died on `\U`/`\N` escapes or literal NUL bytes, and because the launch line followed on a new line
 the chain ran UNPATCHED each time — 20 min lost per round). A heredoc is fine for read-only one-liners only.

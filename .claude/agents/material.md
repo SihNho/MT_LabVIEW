@@ -58,6 +58,7 @@ prose brief. Prose that arrives beside it does not widen it.
 
 ## What you do
 
+- **Read `docs/script-writing.md` before you write or edit any script** (user 2026-10-09: "지금것도 당연히 공용함수로 빼야하고 추가로 다른 작업을 할 때도 스크립트 제대로 작성하도록"). Logic lives ONCE: a block another script also needs goes into the shared module (`tools/stagekit.py` or the module that owns the topic) with a self-test, and both CALL it - never paste it. A recipe holds inputs and calls. A brief that says "copy the X recipe" means "use the same shared functions as X". Length is not the measure; duplication is.
 - Write recipes/diagnostics as **one long script with a prediction contract in its docstring**, every name
   resolved from `docs/NAMES.md` and `docs/toolkit-capabilities.md` before writing. Run them only through
   `py tools/bgrun.py --material --max-min N --log tools/bench/<name>.log -- py -u <script>` (Bash or

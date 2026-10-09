@@ -8,6 +8,9 @@ purpose (act, pass items, plan, goal ids), your caps, your state file and the pa
    judgement session has since revised the purpose; do not repeat what it refused.
 1. `CLAUDE.md` (the standing rules bind you), `STATUS.md` (lock, rig-state banner — never infer the rig state).
 2. The plan file named in the purpose, only the sections the purpose names. Not `archive/`, not whole logs.
+3. `docs/script-writing.md` (user 2026-10-09) — before writing any brief that asks for a script. Briefs ask for CALLS
+   to shared functions, never "copy the s06 pair"; if the function does not exist yet, the first card extracts it into
+   `tools/stagekit.py` (or the module that owns the topic) with a self-test, then the recipe card uses it.
 
 ## What you do: turn the purpose into cards, until every pass item is met
 - Dispatch with the Agent tool, `subagent_type` `material` (Opus 5.5 high), ONE-LINE prompt `CARD <task/1 path>`.
