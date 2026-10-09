@@ -1519,6 +1519,23 @@ def current_cycle(cards_dir=CARDS_DIR):
     return n
 
 
+def goalmap_ids(goalmap_path=GOALMAP):
+    """(active milestone ids, open/moving requirement ids, not-done milestone ids, all known ids | None) of
+    docs/goalmap.json; an unreadable map -> empty lists and None. Shared by steer_for and steer_from_debate (card
+    chat-D2). Self-test: tools/debate_loop.py selftest (L3)."""
+    try:
+        with open(goalmap_path, encoding="utf-8") as f:
+            gm = json.load(f)
+    except (OSError, ValueError):
+        gm = {}
+    active = [m["id"] for m in gm.get("milestones", []) if m.get("status") == "active"]
+    open_r = [r["id"] for r in gm.get("requirements", []) if r.get("status") in ("open", "moving")]
+    not_done = [m["id"] for m in gm.get("milestones", []) if m.get("status") != "done"]
+    known = ({r.get("id") for r in gm.get("requirements", [])} | {m.get("id") for m in gm.get("milestones", [])}
+             if gm else None)
+    return active, open_r, not_done, known
+
+
 def steer_for(latest, previous, cycle, goalmap_path=GOALMAP):
     """(steer/1 card | None, why). A card only when a slug appears in BOTH reviews (a REPEATED verdict)."""
     def rd(p):
@@ -1528,23 +1545,48 @@ def steer_for(latest, previous, cycle, goalmap_path=GOALMAP):
     rep = sorted(set(a) & set(b))
     if not rep:
         return None, "no repeated verdict (latest %s, previous %s)" % (a or ["none"], b or ["none"])
-    try:
-        with open(goalmap_path, encoding="utf-8") as f:
-            gm = json.load(f)
-    except (OSError, ValueError):
-        gm = {}
-    active = [m["id"] for m in gm.get("milestones", []) if m.get("status") == "active"]
-    open_r = [r["id"] for r in gm.get("requirements", []) if r.get("status") in ("open", "moving")]
+    active, open_r, not_done, known = goalmap_ids(goalmap_path)
     ids = list(active) + ([r for r in open_r] if "goal-requirement-not-advanced" in rep else [])
-    ids = ids or [m["id"] for m in gm.get("milestones", []) if m.get("status") != "done"][:1]
+    ids = ids or not_done[:1]
     act = " ".join(STEER_ACTS[s].format(active=", ".join(active) or "-", open=", ".join(open_r) or "-") for s in rep)
     card = {"schema": "steer/1", "cycle": int(cycle), "item": "outcome:" + "+".join(rep), "verdicts": rep,
             "required_act": act[:600], "goal_ids": ids,
             "evidence": [{"path": _rel(latest), "md5": _md5(latest)}, {"path": _rel(previous), "md5": _md5(previous)}],
             "note": "repeated outcome verdict; follow it in next.json `steer`, or refuse it there with evidence"}
-    ok, why = validate_obj(card, {r.get("id") for r in gm.get("requirements", [])} |
-                           {m.get("id") for m in gm.get("milestones", [])} if gm else None)
+    ok, why = validate_obj(card, known)
     return (card, "repeated: %s" % rep) if ok else (None, "steer card invalid: " + why)
+
+
+DEBATE_KINDS = ("outcome", "stuck")
+
+
+def steer_from_debate(summary, cycle, kind, slug, evidence, goalmap_path=GOALMAP):
+    """(steer/1 card | None, why) from a Claude-GPT discussion's summary (card chat-D2, user 2026-10-09 "둘 다 넣자"):
+    REQUIRED ACT = the items both speakers' final STATE lines list as `agreed`; item `debate:<slug>`; verdict
+    `debate-<kind>`; goal ids = the active milestones (else the first not-done one); evidence = >= 2 existing files (the
+    summary and the topic). No agreed item -> (None, why). Self-test: tools/debate_loop.py selftest (L3)."""
+    if kind not in DEBATE_KINDS:
+        return None, "unknown discussion kind %r" % kind
+    agreed = [str(x).strip() for x in (summary or {}).get("agreed") or [] if str(x).strip()]
+    if not agreed:
+        return None, "the discussion agreed on nothing (rounds %s, ended %s)" % (
+            (summary or {}).get("rounds"), (summary or {}).get("ended"))
+    active, _open_r, not_done, known = goalmap_ids(goalmap_path)
+    ids = list(active) or not_done[:1]
+    if not ids:
+        return None, "no active or open milestone in the goal map"
+    ev = [p for p in evidence if p and os.path.exists(p)]
+    if len(ev) < 2:
+        return None, "fewer than two evidence files exist (%s)" % evidence
+    act = "Claude-GPT discussion %s agreed: %s" % (slug, " | ".join("%d) %s" % (i + 1, x) for i, x in enumerate(agreed)))
+    card = {"schema": "steer/1", "cycle": int(cycle), "item": "debate:" + re.sub(r"[^a-z0-9+-]", "-", slug.lower())[:200],
+            "verdicts": ["debate-" + kind], "required_act": act[:600], "goal_ids": ids,
+            "evidence": [{"path": _rel(p), "md5": _md5(p)} for p in ev],
+            "note": ("discussion (%s) - %d round(s), %s; follow it in next.json `steer`, or refuse it with evidence"
+                     % (kind, int((summary or {}).get("rounds") or 0),
+                        "converged" if (summary or {}).get("converged") else "not converged"))[:300]}
+    ok, why = validate_obj(card, known)
+    return (card, "agreed %d item(s)" % len(agreed)) if ok else (None, "steer card invalid: " + why)
 
 
 def write_steer(card, cards_dir=CARDS_DIR):
@@ -1625,25 +1667,38 @@ def steer_after_cycle(steer_path, steer_card, next_card, n, state_path=STEER_STA
     return action, "cycle %d: %s (%d/%d)" % (n, why, len(rec["refusals"]), STEER_REFUSALS_STOP)
 
 
-def add_steer_decision(steer_card, n, refusals, path=DECISIONS):
-    """Append ONE open decisions-pending/1 item for a steer refused twice; validate the whole file before writing.
-    Returns (id, None) or (None, reason)."""
+def add_decision(question, options, by, blocks=(), recommendation=None, path=DECISIONS, skip_if_open=False):
+    """Append ONE open decisions-pending/1 item (id D-<today>-NN), validate the whole file, then write it. Returns
+    (id, None) or (None, reason). skip_if_open: an OPEN item with the same question already there -> (its id, None),
+    nothing written. Shared by add_steer_decision and tools/debate_loop.py (card chat-D2; self-test debate_loop L3)."""
     d = _json_load(path, {"schema": "decisions-pending/1", "items": []})
     items = d.setdefault("items", [])
+    q = str(question)[:300]
+    if skip_if_open:
+        same = next((it for it in items if it.get("status") == "open" and it.get("question") == q), None)
+        if same:
+            return same.get("id"), None
     day = time.strftime("%Y-%m-%d")
     seq = 1 + sum(1 for it in items if str(it.get("id", "")).startswith("D-%s-" % day))
     did = "D-%s-%02d" % (day, seq)
-    q = ("Steering card %s (%s) was refused twice by the judgement sessions (%s). Follow it, or withdraw it?"
-         % (steer_card["item"], steer_card["required_act"][:90], "; ".join(r.get("why", "")[:40] for r in refusals)))
-    items.append({"id": did, "asked": time.strftime("%Y-%m-%dT%H:%M"), "by": "cycle %d" % n, "question": q[:300],
-                  "options": ["follow the steer", "withdraw the steer", "discuss"], "recommendation": None,
-                  "blocks": [g for g in steer_card.get("goal_ids", []) if g.startswith("M")], "status": "open",
+    items.append({"id": did, "asked": time.strftime("%Y-%m-%dT%H:%M"), "by": by, "question": q,
+                  "options": [str(o)[:80] for o in options][:4], "recommendation": recommendation,
+                  "blocks": [g for g in blocks if re.match(r"^M[0-9]+[a-z]?$", str(g))], "status": "open",
                   "answer": None, "answered_at": None})
     ok, why = validate_obj(d)
     if not ok:
         return None, why
     _json_save(path, d)
     return did, None
+
+
+def add_steer_decision(steer_card, n, refusals, path=DECISIONS):
+    """Append ONE open decisions-pending/1 item for a steer refused twice; validate the whole file before writing.
+    Returns (id, None) or (None, reason)."""
+    q = ("Steering card %s (%s) was refused twice by the judgement sessions (%s). Follow it, or withdraw it?"
+         % (steer_card["item"], steer_card["required_act"][:90], "; ".join(r.get("why", "")[:40] for r in refusals)))
+    return add_decision(q, ["follow the steer", "withdraw the steer", "discuss"], "cycle %d" % n,
+                        steer_card.get("goal_ids", []), path=path)
 
 
 # ------------------------------------------------------------------------------------------------- skeletons + CLI

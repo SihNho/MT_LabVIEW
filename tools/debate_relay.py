@@ -150,8 +150,12 @@ def say_stub(st, a, prompt, stop, name):
     done = n >= 3
     heard = "사용자 지시 반영" if "사용자:" in prompt else "사용자 지시 없음"
     heard += ", 외부 검토 반영" if "외부 검토(Gemini)" in prompt else ""
+    # card chat-D2: a finished stub agrees on one item (both sides, same text) and Claude names one user question, so the
+    # runner's discussion path (steer card + decisions_pending) is testable without a model call
     return "%s 가짜 발언 %d (%s)\nSTATE %s" % (name, n, heard, json.dumps(
-        {"agreed": [], "open": [] if done else ["x"], "questions": [] if done else ["q1"], "experiment": "", "user_needed": "",
+        {"agreed": ["가짜 합의: 다음 사이클은 산출물을 만든다"] if done else [], "open": [] if done else ["x"],
+         "questions": [] if done else ["q1"], "experiment": "가짜 판별 실험" if done else "",
+         "user_needed": "가짜: 사용자 판단이 필요한 질문" if done and name == "Claude" else "",
          "check": "가짜 확인 질문" if n == 2 else "", "done": done}, ensure_ascii=False)), 0.0, False
 
 
@@ -161,6 +165,53 @@ def state_of(msg):
         return json.loads(m[-1]) if m else {}
     except ValueError:
         return {}
+
+
+def _flat(v):
+    """A STATE field that should be a string but may arrive as a list -> list of strings."""
+    return [str(x) for x in v] if isinstance(v, list) else ([str(v)] if v else [])
+
+
+def _uniq(xs):
+    out = []
+    for x in xs:
+        x = str(x).strip()
+        if x and x not in out:
+            out.append(x)
+    return out
+
+
+def summary(d):
+    """The discussion's end state from <d>/state.json (rounds or turns mode): {rounds, converged, agreed (both sides'
+    final STATE `agreed`, de-duplicated), agreed_by, open, experiment, user_needed, claude_usd}. Card chat-D2 (the
+    runner turns `agreed` into a steer/1 card and each `user_needed` into a decisions_pending item). An absent state ->
+    rounds 0, everything empty. Self-test: R7 in selftest_rounds()."""
+    try:
+        with open(os.path.join(d, "state.json"), encoding="utf-8") as f:
+            st = json.load(f)
+    except (OSError, ValueError):
+        st = {}
+    names = ("Claude", "GPT")
+    if st.get("mode") == "rounds":
+        finals = {n: state_of(st.get("last_msg", {}).get(n)) for n in names}
+        h = (st.get("history") or [{}])[-1]
+        converged = bool(st.get("history")) and all(
+            (h.get(n) or {}).get("done") and not (h.get(n) or {}).get("questions") for n in names)
+        rounds = int(st.get("round") or 0)
+    else:                                   # turns mode: the last message of each speaker
+        finals = {n: {} for n in names}
+        if st.get("last_by"):
+            finals[st["last_by"]] = state_of(st.get("last"))
+        last2 = (st.get("states") or [])[-2:]
+        converged = len(last2) == 2 and all(x.get("done") for x in last2)
+        rounds = (int(st.get("turn") or 0) + 1) // 2
+    return {"rounds": rounds, "converged": converged,
+            "agreed": _uniq(x for n in names for x in _flat(finals[n].get("agreed"))),
+            "agreed_by": {n: _uniq(_flat(finals[n].get("agreed"))) for n in names},
+            "open": _uniq(x for n in names for x in _flat(finals[n].get("open"))),
+            "experiment": _uniq(x for n in names for x in _flat(finals[n].get("experiment"))),
+            "user_needed": _uniq(x for n in names for x in _flat(finals[n].get("user_needed"))),
+            "claude_usd": round(float(st.get("usd") or 0.0), 4)}
 
 
 def step(a):
@@ -352,6 +403,10 @@ def selftest_rounds():
     r4 = go()
     ok.append(("R5 resumes at round 3", r4["round"] == 3))
     ok.append(("R6 convergence when both done and no questions", r4["converged"] is True))
+    s = summary(d)
+    ok.append(("R7 summary(): 3 rounds, converged, one agreed item (both sides), one user question, experiment",
+               s["rounds"] == 3 and s["converged"] is True and len(s["agreed"]) == 1 and len(s["user_needed"]) == 1
+               and s["experiment"] == ["가짜 판별 실험"] and summary(os.path.join(d, "none"))["rounds"] == 0))
     for name, good in ok:
         print("%s  %s" % ("PASS" if good else "FAIL", name))
     return all(g for _, g in ok), ok

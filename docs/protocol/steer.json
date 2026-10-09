@@ -1,16 +1,16 @@
 {
   "$id": "steer/1",
-  "description": "Outcome-review STEERING card (user 2026-09-24: '아웃컴 리뷰에 조향카드 부여하는 것 동의'). Written by outcome_review.py when a verdict REPEATS (a slug in this review and the previous one). The runner carries it in cycle/1 `steer`; the judgement session answers it in next/1 `steer` (follow, or refuse with evidence). Two refusals of the same `item` stop the runner and add a decisions_pending item.",
+  "description": "Outcome-review STEERING card (user 2026-09-24: '아웃컴 리뷰에 조향카드 부여하는 것 동의'). Written by outcome_review.py when a verdict REPEATS (a slug in this review and the previous one). The runner carries it in cycle/1 `steer`; the judgement session answers it in next/1 `steer` (follow, or refuse with evidence). Two refusals of the same `item` stop the runner and add a decisions_pending item. From 2026-10-09 (card chat-D2, user '둘 다 넣자') the runner also writes one from a Claude-GPT DISCUSSION (outcome every 5 cycles, or a stuck cycle): item `debate:<slug>`, verdict `debate-outcome` / `debate-stuck`, required_act = the items both speakers agreed (protocol.steer_from_debate).",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema", "cycle", "item", "verdicts", "required_act", "goal_ids", "evidence"],
   "properties": {
     "schema": {"const": "steer/1"},
     "cycle": {"type": "integer", "minimum": 0},
-    "item": {"type": "string", "pattern": "^outcome:[a-z+-]{1,200}$"},
+    "item": {"type": "string", "pattern": "^(outcome:[a-z+-]{1,200}|debate:[a-z0-9+-]{1,200})$"},
     "verdicts": {"type": "array", "minItems": 1, "items": {"enum": [
       "goal-requirement-not-advanced", "tooling-over-delivery", "product-not-runnable", "ordering-stale",
-      "decision-starved", "scope-inflation", "measurement-without-product"]}},
+      "decision-starved", "scope-inflation", "measurement-without-product", "debate-outcome", "debate-stuck"]}},
     "required_act": {"type": "string", "minLength": 1, "maxLength": 600},
     "goal_ids": {"type": "array", "minItems": 1, "items": {"$ref": "#/definitions/goalid"}},
     "evidence": {"type": "array", "minItems": 2, "items": {"$ref": "#/definitions/fileref"}},

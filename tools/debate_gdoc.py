@@ -35,7 +35,13 @@ SCOPES = ["https://www.googleapis.com/auth/documents", "https://www.googleapis.c
 TOKEN = os.path.join(os.path.expanduser("~"), ".config", "debate", "token.json")
 
 
-def creds():
+class AuthError(RuntimeError):
+    """Google sign-in needs the user (token missing / expired consent) and the caller may not open a browser."""
+
+
+def creds(interactive=True):
+    """OAuth credentials. interactive=False (the runner, card chat-D2): never open a browser - raise AuthError when the
+    cached token is missing or cannot be refreshed, so the caller falls back to a local doc instead of waiting."""
     from google.auth.transport.requests import Request
     from google.oauth2.credentials import Credentials
     c = Credentials.from_authorized_user_file(TOKEN, SCOPES) if os.path.exists(TOKEN) else None
@@ -48,6 +54,9 @@ def creds():
             return c
         except Exception:                          # noqa - expired consent (7 days in Testing): log in again
             pass
+    if not interactive:
+        raise AuthError("Google login needed (token %s; run `py tools/debate_gdoc.py login`)"
+                        % ("expired" if c else "missing"))
     client = os.environ.get("GOOGLE_OAUTH_CLIENT_FILE")
     if not client or not os.path.exists(client):
         raise SystemExit("GOOGLE_OAUTH_CLIENT_FILE is not set or the file is missing - set the user env var first")
@@ -66,9 +75,9 @@ def _save(c):
 class GoogleDoc:
     """The real doc, through the Docs and Drive APIs."""
 
-    def __init__(self):
+    def __init__(self, interactive=True):
         from googleapiclient.discovery import build
-        c = creds()
+        c = creds(interactive)
         self.docs = build("docs", "v1", credentials=c, cache_discovery=False)
         self.drive = build("drive", "v3", credentials=c, cache_discovery=False)
         self.id = None
@@ -117,7 +126,8 @@ def _u16(s):
 
 
 class FakeDoc:
-    """Self-test stand-in: a local markdown file + a local comments.json the test writes into."""
+    """A local markdown file + a local comments.json: the self-test stand-in, `--doc local`, and the no-Google fallback
+    (card chat-D2: an expired login never blocks the runner's discussion - it is written here instead)."""
 
     def __init__(self, d):
         self.d, self.id = d, "fake"
@@ -203,19 +213,85 @@ def relay_step(a, user, first_topic, note=""):
     for k in ("claude_effort", "gpt_effort", "gpt_model", "gpt_sandbox"):
         if getattr(a, k, None):
             cmd += ["--" + k.replace("_", "-"), str(getattr(a, k))]
-    r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    # the child prints Korean STATE JSON: make its stdout UTF-8, or a cp949 pipe turns it into U+FFFD (card chat-D2,
+    # tools/bench/selftest_chatd2_debate_gdoc.log first run: the GEMINI print then died on cp949)
+    r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                       env=dict(os.environ, PYTHONIOENCODING="utf-8"))
     lines = [x for x in r.stdout.splitlines() if x.startswith("{")]
     if not lines:
         return {"error": (r.stderr or r.stdout)[-400:]}
     return json.loads(lines[-1])
 
 
+def make_doc(a, info):
+    """The doc for this run (card chat-D2): `--doc google` (default) / `local` (FakeDoc beside the relay dir) /
+    `authfail` (self-test: behave as if sign-in failed). With --fallback-local a failed Google sign-in or Docs/Drive
+    client start prints `DEBATE-NO-DOC <why>` and returns the local doc; info gets doc_kind / doc_error."""
+    local_dir = os.path.dirname(os.path.abspath(a.dir))
+    kind = getattr(a, "doc", "google")
+    if kind == "local":
+        info["doc_kind"] = "local"
+        return FakeDoc(local_dir)
+    try:
+        if kind == "authfail":
+            raise AuthError("Google login needed (self-test: --doc authfail)")
+        info["doc_kind"] = "google"
+        return GoogleDoc(interactive=not getattr(a, "no_login", False))
+    except (Exception, SystemExit) as e:       # noqa - creds() exits when the client file is missing
+        if not getattr(a, "fallback_local", False):
+            raise
+        info["doc_kind"], info["doc_error"] = "local-fallback", ("%s: %s" % (type(e).__name__, e))[:300]
+        print("DEBATE-NO-DOC %s - writing the discussion to %s" % (info["doc_error"], os.path.join(local_dir, "doc.md")),
+              flush=True)
+        return FakeDoc(local_dir)
+
+
+def write_summary(a, info):
+    """--summary <json> (card chat-D2): the relay's end state (debate_relay.summary) + doc link + how the run ended."""
+    sys.path.insert(0, os.path.join(ROOT, "tools"))
+    import debate_relay
+    s = debate_relay.summary(a.dir)
+    s.update({"schema": "debate-summary/1", "ended": info.get("ended"), "doc_url": info.get("doc_url"),
+              "doc_kind": info.get("doc_kind"), "doc_error": info.get("doc_error"), "error": info.get("error"),
+              "relay_dir": os.path.abspath(a.dir)})
+    os.makedirs(os.path.dirname(os.path.abspath(a.summary)), exist_ok=True)
+    with open(a.summary, "w", encoding="utf-8") as f:
+        json.dump(s, f, ensure_ascii=False, indent=1)
+    return s
+
+
 def run(a, doc=None):
+    """Drive the discussion; with --summary always write the summary file on the way out (every exit path, card
+    chat-D2) and print a RESULT line (PASS unless the run ended in an error). -> exit code."""
     os.makedirs(a.dir, exist_ok=True)
-    doc = doc or GoogleDoc()
+    info = {"ended": "error", "doc_url": None, "doc_kind": "given" if doc else None, "doc_error": None, "error": None}
+    rc = 1
+    try:
+        rc, info["ended"] = _run(a, doc, info)
+    except Exception as e:                     # noqa - recorded in the summary, re-raised without one
+        info["error"] = ("%s: %s" % (type(e).__name__, e))[:300]
+        print("ERROR %s" % info["error"], flush=True)
+        if not getattr(a, "summary", None):
+            raise
+    finally:
+        if getattr(a, "summary", None):
+            s = write_summary(a, info)
+            print("SUMMARY %s | ended %s | rounds %d | converged %s" % (a.summary, s["ended"], s["rounds"],
+                                                                     s["converged"]), flush=True)
+            import protocol
+            bad = s["ended"] == "error"
+            print(protocol.result_line(protocol.make_result(0 if bad else 1, 1 if bad else 0,
+                                                            ("ended error: %s" % (s.get("error") or "-"))[:120]
+                                                            if bad else None)), flush=True)
+    return rc
+
+
+def _run(a, doc, info):
+    doc = doc or make_doc(a, info)
     resuming = bool(getattr(a, "doc_id", None))
     if resuming:                               # same doc, same relay state: continue where the last run stopped
         doc.id = a.doc_id
+        info["doc_url"] = "https://docs.google.com/document/d/%s/edit" % a.doc_id
         note_text = a.resume_note
         if note_text.startswith("@") and os.path.exists(note_text[1:]):      # @file: keeps launch scripts ASCII
             note_text = open(note_text[1:], encoding="utf-8-sig").read().strip()
@@ -227,6 +303,7 @@ def run(a, doc=None):
             first_line = next((x.strip("# ").strip() for x in open(a.topic, encoding="utf-8-sig") if x.strip()), "")
             title = "토론: %s (%s)" % (first_line[:60], time.strftime("%Y-%m-%d %H:%M"))
         url = doc.create(title, a.folder)
+        info["doc_url"] = url
         print("DOC %s" % url, flush=True)
         doc.append("주제", open(a.topic, encoding="utf-8-sig").read())
     seen, stop_file, first, paused = set(), os.path.join(a.dir, "STOP"), not resuming, False
@@ -254,7 +331,7 @@ def run(a, doc=None):
             open(stop_file, "w").close()
             doc.append("중계 종료 (%s)" % time.strftime("%H:%M"), "사용자 요청 %s" % " ".join(sorted(cmds)))
             print("END by user %s" % sorted(cmds), flush=True)
-            return 0
+            return 0, ("user-stop" if "/stop" in cmds else "user-end")
         if checks and not os.path.exists(stop_file):
             q = "\n".join("- " + c for c in checks)
             checks = []
@@ -273,11 +350,12 @@ def run(a, doc=None):
         if r.get("error"):
             doc.append("중계 오류 (%s)" % time.strftime("%H:%M"), r["error"])
             print("ERROR %s" % r["error"][:200], flush=True)
-            return 1
+            info["error"] = r["error"][:300]
+            return 1, "error"
         if r.get("stopped"):
             doc.append("중단됨 (%s)" % time.strftime("%H:%M"), "발언 도중 멈춤 요청으로 끊었습니다.")
             print("STOPPED", flush=True)
-            return 0
+            return 0, "stopped"
         turns = ([(n, r["files"][n], r["states"].get(n) or {}) for n in ("Claude", "GPT")] if "files" in r
                  else [(r["speaker"], r["file"], r.get("state") or {})])
         for who, path, s in turns:
@@ -288,9 +366,18 @@ def run(a, doc=None):
             if s.get("check"):
                 checks.append("%s의 요청: %s" % (who, s["check"]))
         print("ROUND %s" % r["round"] if "round" in r else "TURN %s %s" % (r["turn"], r["speaker"]), flush=True)
-        if r.get("converged") or r.get("repeating"):
-            why = ("두 토론자가 모두 끝났다고 했고 서로에게 남은 질문이 없습니다" if r.get("converged")
-                   else "같은 쟁점이 세 번 되풀이됐습니다")
+        # card chat-D2: --max-rounds N pauses every N rounds (interactive) or, with --auto-end, finishes the run
+        n_round = r["round"] if "round" in r else (r["turn"] + 1) // 2
+        hit_max = bool(a.max_rounds) and n_round >= a.max_rounds and (a.auto_end or n_round % a.max_rounds == 0)
+        if r.get("converged") or r.get("repeating") or hit_max:
+            key = "converged" if r.get("converged") else "repeating" if r.get("repeating") else "max-rounds"
+            why = {"converged": "두 토론자가 모두 끝났다고 했고 서로에게 남은 질문이 없습니다",
+                   "repeating": "같은 쟁점이 세 번 되풀이됐습니다",
+                   "max-rounds": "%d라운드 상한에 닿았습니다" % a.max_rounds}[key]
+            if a.auto_end:
+                doc.append("토론 종료 (%s)" % time.strftime("%H:%M"), "%s. 자동 종료(러너 실행)." % why)
+                print("END auto %s" % key, flush=True)
+                return 0, key
             doc.append("일시 정지 (%s)" % time.strftime("%H:%M"),
                        "%s. 계속하려면 댓글에 /continue 또는 지시를, 끝내려면 /end 를 남겨 주세요." % why)
             paused = True
@@ -328,11 +415,43 @@ def selftest():
           ("G8 the next speaker got the review as evidence", "외부 검토 반영" in doc),
           ("G9 a /gemini comment started a review", "로컬 변수 읽기 순서" in doc and "[외부 검토] Gemini" in doc),
           ("G10 a chat message reached the discussion", "채팅에서 온 지시" in doc)]
+    ok += selftest_runner_mode(d, topic)
     for n, g in ok:
         print("%s  %s" % ("PASS" if g else "FAIL", n))
     print("RESULT %s" % json.dumps({"schema": "result-line/1", "status": "PASS" if all(g for _, g in ok) else "FAIL",
                                      "gates": {"pass": sum(g for _, g in ok), "fail": sum(not g for _, g in ok)}}))
     return 0 if all(g for _, g in ok) else 1
+
+
+def selftest_runner_mode(d, topic):
+    """Card chat-D2 gates G11-G13: the runner's options (--auto-end, --max-rounds, --summary, --doc, --fallback-local),
+    stub speakers, no model call, no Google. The inner runs' RESULT lines are captured, not printed (bgrun would read
+    G13's deliberate error RESULT as this self-test's own verdict)."""
+    import io
+    from contextlib import redirect_stdout
+
+    def go(name, *extra):
+        rd = os.path.join(d, name, "relay")
+        sp = os.path.join(d, name, "summary.json")
+        a = parser().parse_args(["run", "--topic", topic, "--dir", rd, "--stub", "--stub-secs", "0", "--poll", "0.2",
+                                 "--auto-end", "--summary", sp] + list(extra))
+        with redirect_stdout(io.StringIO()):
+            rc = run(a)
+        s = json.load(open(sp, encoding="utf-8")) if os.path.exists(sp) else {}
+        return rc, s, os.path.join(d, name)
+    rc1, s1, d1 = go("fallback", "--doc", "authfail", "--fallback-local", "--max-rounds", "2")
+    rc2, s2, _ = go("local", "--doc", "local")
+    rc3, s3, _ = go("noauth", "--doc", "authfail")
+    return [("G11 auth failure -> local doc, auto-end at --max-rounds 2, summary says so",
+             rc1 == 0 and s1.get("ended") == "max-rounds" and s1.get("rounds") == 2 and s1.get("converged") is False
+             and s1.get("doc_kind") == "local-fallback" and "login" in (s1.get("doc_error") or "")
+             and os.path.exists(os.path.join(d1, "doc.md")) and "토론 종료" in open(os.path.join(d1, "doc.md"),
+                                                                                 encoding="utf-8").read()),
+            ("G12 converged auto-end: summary rounds 3, one agreed item, one user question, a doc link",
+             rc2 == 0 and s2.get("ended") == "converged" and s2.get("rounds") == 3 and len(s2.get("agreed") or []) == 1
+             and len(s2.get("user_needed") or []) == 1 and str(s2.get("doc_url") or "").startswith("file://")),
+            ("G13 auth failure without --fallback-local -> summary ended error, exit 1",
+             rc3 == 1 and s3.get("ended") == "error" and "AuthError" in (s3.get("error") or ""))]
 
 
 def parser():
@@ -358,10 +477,22 @@ def parser():
     ap.add_argument("--resume-note", default="")
     ap.add_argument("--gemini-model", default="gemini-3.1-pro-high")   # the fact-chain model of tools/peer.ps1
     ap.add_argument("--gemini-timeout", type=int, default=600)
+    # card chat-D2 (user 2026-10-09 "둘 다 넣자"): the runner runs a discussion unattended, between cycles
+    ap.add_argument("--max-rounds", type=int, default=6, help="pause every N rounds; with --auto-end finish at N (0 = none)")
+    ap.add_argument("--auto-end", action="store_true", help="on converged / repeating / max-rounds finish, do not wait")
+    ap.add_argument("--summary", help="write the end state (debate-summary/1 JSON) here on every exit, + a RESULT line")
+    ap.add_argument("--doc", choices=("google", "local", "authfail"), default="google",
+                    help="local = markdown file beside the relay dir; authfail = self-test of the no-Google path")
+    ap.add_argument("--no-login", action="store_true", help="never open a browser to sign in (AuthError instead)")
+    ap.add_argument("--fallback-local", action="store_true", help="Google sign-in fails -> DEBATE-NO-DOC + local doc")
     return ap
 
 
 def main(argv=None):
+    try:
+        sys.stdout.reconfigure(errors="replace")   # a cp949 console must never kill a run on a print
+    except Exception:                               # noqa
+        pass
     a = parser().parse_intermixed_args(argv)    # `say --dir D "text"`: the text comes after the options
     if a.cmd == "selftest":
         return selftest()

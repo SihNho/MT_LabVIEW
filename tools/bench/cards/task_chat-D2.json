@@ -1,0 +1,16 @@
+{
+ "schema": "task/1", "id": "chat-D2", "kind": "build",
+ "goal": "Runner: outcome review becomes a Claude-GPT discussion every 5 cycles; a stuck cycle triggers a discussion before the next; results become steer cards",
+ "why": "User 2026-10-09 'both'. Detail: brief_chat-D2.md",
+ "inputs": [{"path": "tools/bench/cards/brief_chat-D2.md", "md5": "3873e31c323dbbc1b62111f3b7e0ce29"}],
+ "pass": [
+  "outcome due -> discussion (stub) -> steer/1 + decisions_pending; outcome_review.py kept as fallback",
+  "HANDBACK-LIMIT or firefighter trigger -> discussion before next cycle -> steer/1; auth failure -> local-only, runner continues",
+  "debate_gdoc --max-rounds --auto-end --summary; DEBATE log line with doc link; deadline kill; old self-tests green; docs + PD; committed"
+ ],
+ "outputs": ["tools/cycle_runner.py", "tools/debate_gdoc.py"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/**", "docs/**", "CLAUDE.md"], "status_edit": false, "git_commit": true, "peers": []},
+ "budget": {"failures": 2, "minutes": 180}, "unblocks": "M3",
+ "rules": ["OFFLINE, runner stopped", "Edit tool only", "docs/script-writing.md binds", "no model calls in tests (stubs)"]
+}

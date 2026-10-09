@@ -47,6 +47,12 @@ ASSIGNMENT session (claude-sonnet-5-5 high, CYCLE_ROLE=assign, tools/bench/assig
 tools/hooks/guard_assign.py: triggers a-d, 3 h / 60 USD caps, backstop) -> judgement on the hand-back -> next round or
 close. Runner log lines ASSIGN | HANDBACK | HANDBACK-JUDGED | HANDBACK-LIMIT. Self-test tools/bench/selftest_assign_flow.py.
 
+CLAUDE-GPT DISCUSSIONS (card chat-D2, user 2026-10-09 "둘 다 넣자"; tools/debate_loop.py): the due OUTCOME review is a
+discussion (outcome_review.py = fallback when it errors; --outcome-by review = the old way), and a STUCK cycle
+(HANDBACK-LIMIT, or the firefighter trigger) gets a discussion before the next cycle. Synchronous, deadline
+--debate-max-min (40); result = a steer/1 card + decisions_pending items. Lines DEBATE-START | DEBATE | DEBATE-NO-DOC |
+DEBATE-STEER | DEBATE-DECISION | DEBATE-DEADLINE | DEBATE-ERROR. Self-test tools/bench/selftest_runner_debate.py.
+
 SAFETY: this script starts no LabVIEW and touches no instrument. What the spawned session may touch is decided
 by STATUS.md's rig-state banner, which `tools/cycle_prompt.md` forbids it to infer.
 """
@@ -401,21 +407,10 @@ def judge_state_save(bench, level, reason, n):
 
 def add_judge_decision(n, reason, blocks, path):
     """One open decisions-pending/1 item for a judgement ladder exhausted at its top rung. (id, None) | (None, why)."""
-    d = protocol._json_load(path, {"schema": "decisions-pending/1", "items": []})
-    items = d.setdefault("items", [])
-    day = time.strftime("%Y-%m-%d")
-    did = "D-%s-%02d" % (day, 1 + sum(1 for it in items if str(it.get("id", "")).startswith("D-%s-" % day)))
     q = ("Judgement ladder exhausted in cycle %d (opus high -> opus max -> fable low): %s. "
          "How should the work continue?" % (n, reason))
-    items.append({"id": did, "asked": time.strftime("%Y-%m-%dT%H:%M"), "by": "cycle %d" % n, "question": q[:300],
-                  "options": ["re-plan the current item", "restart the ladder at level 0", "discuss"],
-                  "recommendation": None, "blocks": [b for b in blocks if re.match(r"^M[0-9]+[a-z]?$", b)],
-                  "status": "open", "answer": None, "answered_at": None})
-    ok, why = protocol.validate_obj(d)
-    if not ok:
-        return None, why
-    protocol._json_save(path, d)
-    return did, None
+    return protocol.add_decision(q, ["re-plan the current item", "restart the ladder at level 0", "discuss"],
+                                 "cycle %d" % n, blocks, path=path)       # card chat-D2: one writer of decision items
 
 
 LAST_FAIL_LOGS = {}     # key -> log path of the run that produced it, for the most recent failed_recipes() call
@@ -1076,15 +1071,75 @@ def retro_undisposed_item(n, peer_dir, runner_log):
         return None
 
 
-def gates_due_hook(n, a, bench, runner_log):
-    """Cycle start: gates_due(), then a DUE outcome review is RUN before the session spawns (not in dry runs unless the
-    self-test names a stand-in with --outcome-cmd), then the outcome check is re-read. Returns the list for the card.
-    Never stops the runner: a failed review is recorded in the item and the log."""
+# CLAUDE-GPT DISCUSSIONS IN THE LOOP (card chat-D2, user 2026-10-09 "둘 다 넣자"): (1) the due OUTCOME review is a
+# discussion (outcome_review.py is the fallback when it errors); (2) a STUCK cycle (HANDBACK-LIMIT, or the firefighter
+# trigger) gets a discussion before the next cycle. Both write a steer/1 card from the agreed items and one
+# decisions_pending item per user question (tools/debate_loop.py apply). Synchronous, deadline --debate-max-min.
+def first_fail_line(path):
+    """`<log name>: <first failing line>` of a failed bgrun log (GATE_FAIL_RE, else the BGRUN END/TIMEOUT line)."""
+    txt = read(path)
+    m = GATE_FAIL_RE.search(txt) or BGRUN_FAIL_RE.search(txt)
+    line = (m.group(0) if m else "(no failing line found)").strip()
+    return "%s: %s" % (os.path.basename(path), line[:200])
+
+
+def debate_hook(kind, n, a, bench, runner_log, why="", fail_lines=()):
+    """Run ONE discussion of `kind` ('outcome' | 'stuck') before cycle n and apply its result. Dry runs dispatch it
+    only with --debate-stub (self-tests). -> the debate_loop result dict (+ 'applied'), or None when not dispatched.
+    Never raises."""
+    stamp = time.strftime("%Y-%m-%d %H:%M:%S")
+    stub = getattr(a, "debate_stub", False)        # getattr: self-tests build `a` by hand (selftest_cycle_runner_retro)
+    if (getattr(a, "dry_run", False) or getattr(a, "dry_cmd", "")) and not stub:
+        log_line(runner_log, "DEBATE | %s | cycle %d | %s | not dispatched (dry run) | %s" % (stamp, n, kind, why[:160]))
+        return None
+    try:
+        import debate_loop as DL
+        if kind == "outcome":
+            topic = DL.outcome_topic(n, bench, runner_log, a.peer_dir, a.goalmap, a.status)
+        else:
+            topic = DL.stuck_topic(n, why, bench, runner_log, a.status, fail_lines)
+        res = DL.run_discussion(kind, n, topic, bench, lambda s: log_line(runner_log, s),
+                                max_min=getattr(a, "debate_max_min", DL.DEADLINE_MIN),
+                                max_rounds=getattr(a, "debate_max_rounds", DL.MAX_ROUNDS), stub=stub,
+                                stub_secs=getattr(a, "debate_stub_secs", 0.0), doc=getattr(a, "debate_doc", "google"))
+        res["applied"] = DL.apply(res, kind, n, bench, a.goalmap, a.peer_dir, lambda s: log_line(runner_log, s))
+        return res
+    except Exception as e:  # noqa: BLE001 - a discussion must never stop the runner
+        log_line(runner_log, "DEBATE-ERROR | %s | cycle %d | %s | %s: %s" % (stamp, n, kind, type(e).__name__,
+                                                                           str(e)[:200]))
+        return {"ok": False, "why": "%s: %s" % (type(e).__name__, e), "line": None}
+
+
+def gates_due_hook(n, a, bench, runner_log, defer=None, out=None):
+    """Cycle start: gates_due(), then a DUE outcome review is RUN before the session spawns - as a Claude-GPT
+    discussion (card chat-D2; --outcome-by review = the old single-model review), falling back to outcome_review.py
+    when the discussion errors (not in dry runs unless the self-test names a stand-in with --outcome-cmd), then the
+    outcome check is re-read. `defer`: a reason the due review waits one cycle (a stuck discussion already ran in this
+    gap). Returns the items for the card; `out` (a dict, optional) receives out['debate'] = the discussion result or
+    None. Never stops the runner."""
     stamp = time.strftime("%Y-%m-%d %H:%M:%S")
     _m, card, _w = next_json_reading(bench)
     items = gates_due(bench, a.peer_dir, card)
     oc = next((x for x in items if x["gate"] == "outcome"), None)
-    if oc and oc["due"]:
+    dres = None
+    if oc and oc["due"] and defer:
+        oc["detail"] = ("DUE, deferred one cycle (%s): %s" % (defer, oc["detail"]))[:300]
+        log_line(runner_log, "OUTCOME-REVIEW | %s | cycle %d | DUE, deferred one cycle: %s" % (stamp, n, defer))
+    elif oc and oc["due"] and getattr(a, "outcome_by", "debate") == "debate":
+        dres = debate_hook("outcome", n, a, bench, runner_log, oc["detail"])
+        if dres and dres.get("ok"):
+            try:
+                still, why = _outcome_due(a.peer_dir)
+            except Exception as e:  # noqa: BLE001
+                still, why = None, "re-check error %s" % type(e).__name__
+            oc["due"] = still
+            oc["detail"] = ("DISCUSSED before the session (%s); now: %s" % (dres.get("slug"), why))[:300]
+            log_line(runner_log, "OUTCOME-REVIEW | %s | cycle %d | discussion %s | still due: %s | %s"
+                     % (time.strftime("%Y-%m-%d %H:%M:%S"), n, dres.get("slug"), still, why[:160]))
+        elif dres is not None:
+            log_line(runner_log, "OUTCOME-REVIEW | %s | cycle %d | the discussion did not complete (%s) - fallback "
+                                 "outcome_review.py" % (time.strftime("%Y-%m-%d %H:%M:%S"), n, dres.get("why")))
+    if oc and oc["due"] and not defer and not (dres and dres.get("ok")):
         stand_in = getattr(a, "outcome_cmd", "")
         if (a.dry_run or a.dry_cmd) and not stand_in:
             oc["detail"] = ("DUE, not dispatched (dry run): " + oc["detail"])[:300]
@@ -1116,6 +1171,8 @@ def gates_due_hook(n, a, bench, runner_log):
     log_line(runner_log, "GATES-DUE | %s | cycle %d | %s" % (
         time.strftime("%Y-%m-%d %H:%M:%S"), n,
         "; ".join("%s=%s" % (x["gate"], {True: "DUE", False: "ok", None: "ERROR"}[x["due"]]) for x in items)))
+    if out is not None:
+        out["debate"] = dres
     return items
 
 
@@ -1200,6 +1257,7 @@ class Heartbeat:
         self.cycle, self.cycle_t0, self.phase = None, None, "starting"
         self.cycles_done, self.cost = 0, 0.0
         self.final_done = False
+        self.debate = None      # card chat-D2: the last DEBATE line of this run (doc link) - reaches the 30-min report
 
     # -- state the main loop updates
     def begin(self, n):
@@ -1306,6 +1364,8 @@ class Heartbeat:
                 ("Error List 훅", hooks["errorlist"]), ("모터 리밋 훅", hooks["motor"]),
                 ("LabVIEW 종료 훅", hooks["close"]), ("결정 대기", str(dec)),
                 ("누적 사이클 / 비용", "%d / $%.2f" % (self.cycles_done, self.cost))]
+        if self.debate:         # card chat-D2: the discussion's doc link reaches the user through this report
+            rows.append(("Claude-GPT 토론 (문서 링크)", self.debate))
         body = "# 러너 하트비트\n\n%s\n\n| 항목 | 값 |\n|---|---|\n%s\n" % (
             para, "\n".join("| %s | %s |" % (k, str(v).replace("|", "/")) for k, v in rows))
         tmp = os.path.join(self.bench, "heartbeat_latest.md.tmp")
@@ -1621,6 +1681,15 @@ def main():
     ap.add_argument("--no-labview-close", action="store_true", help="self-test only: skip the cycle-end LabVIEW close (never for a real run)")
     ap.add_argument("--outcome-cmd", default="", help="self-test only (card 108-5): whitespace-split stand-in run under "
                                                         "bgrun instead of outcome_review.py when the outcome review is due")
+    # card chat-D2 (user 2026-10-09 "둘 다 넣자"): Claude-GPT discussions in the loop (tools/debate_loop.py)
+    ap.add_argument("--outcome-by", default="debate", choices=("debate", "review"),
+                    help="the due outcome review: a Claude-GPT discussion (outcome_review.py = fallback), or review only")
+    ap.add_argument("--debate-max-min", type=float, default=40.0, help="discussion deadline (STOP file, then a kill)")
+    ap.add_argument("--debate-max-rounds", type=int, default=6)
+    ap.add_argument("--debate-stub", action="store_true", help="self-test only: stub speakers (no model call)")
+    ap.add_argument("--debate-stub-secs", type=float, default=0.0, help="self-test only: seconds per stub message")
+    ap.add_argument("--debate-doc", default="google", choices=("google", "local", "authfail"),
+                    help="google (real runs); local / authfail = self-test only")
     ap.add_argument("--flow", default="purpose", choices=("purpose", "legacy"),
                     help="purpose (card chat-A1, user 2026-10-04): judgement sets next.json as the cycle's purpose, an "
                          "assignment session (tools/bench/assign/assign_config.json) dispatches the cards, hand-back is "
@@ -1656,6 +1725,7 @@ def _loop(a, status_path, bench, runner_log, prompt, run_t0, hb):
     fail_hist = []          # per cycle: the set of recipe basenames whose bgrun log failed inside that cycle
     fail_logs_hist = []     # per cycle: key -> log path (for the Jev same-failure check)
     ff_active, ff_pending, ff_rung = False, None, 0
+    stuck_next = None       # card chat-D2: "HANDBACK-LIMIT in cycle N" -> a stuck discussion before the next cycle
     while True:
         status_text = read(status_path)
         mark = stop_marker(status_text)
@@ -1686,6 +1756,7 @@ def _loop(a, status_path, bench, runner_log, prompt, run_t0, hb):
         # user 2026-09-18: "Low로 첫번, 그 다음 middle로. 그래도 안되면 나한테 판단 요청" - a ladder of at most two
         # firefighter cycles (low, then medium) on the same recipe; the third failure goes to the user.
         ff_recipe = None
+        ff_triggered = False                    # card chat-D2: set when the RUNNER's trigger (not the user) fires
         if a.firefighter and done == 0:         # user-ordered firefighter for the first cycle
             ff_recipe, ff_rung = (a.firefighter if ":" in a.firefighter else "recipe:" + a.firefighter).lower(), 0
             log_line(runner_log, "FIREFIGHTER | %s | USER-ORDERED on `%s`" % (time.strftime("%Y-%m-%d %H:%M:%S"),
@@ -1723,8 +1794,25 @@ def _loop(a, status_path, bench, runner_log, prompt, run_t0, hb):
                     log_line(runner_log, "JEV-SKIP | %s | `%s`: no reading (%s) - old rule applies"
                              % (time.strftime("%Y-%m-%d %H:%M:%S"), key, jev_err))
                 ff_recipe, ff_rung = key, 0
+                ff_triggered = True
                 break
         ff_pending = None
+        # STUCK -> DISCUSSION BEFORE THIS CYCLE (card chat-D2): the previous cycle hit HANDBACK-LIMIT, or the firefighter
+        # trigger just fired. The discussion writes a steer card for this cycle; the firefighter rung still runs after it.
+        stuck_why = [w for w in (stuck_next, ("firefighter trigger: `%s` failed in cycles %d and %d" % (
+            ff_recipe, n - 2, n - 1)) if ff_triggered else None) if w]
+        stuck_next = None
+        debate_res = None
+        if stuck_why:
+            fl = [first_fail_line(p) for p in (fail_logs_hist[-1].values() if fail_logs_hist else [])][:8]
+            debate_res = debate_hook("stuck", n, a, bench, runner_log, "; ".join(stuck_why), fl)
+            if debate_res and debate_res.get("line"):
+                hb.debate = debate_res["line"]
+            mark = stop_marker(read(status_path))
+            if mark:                            # a STOP written while the discussion ran
+                log_line(runner_log, "RUNNER STOP | %s | STATUS.md carries a STOP marker: %s"
+                         % (time.strftime("%Y-%m-%d %H:%M:%S"), mark))
+                return 0
         # JUDGEMENT LADDER + A/B (card chat-M1): level from <bench>/judge_ladder.json; rank = max(level, ff rung).
         j_level, j_reason = judge_state_load(bench)
         ab_eff, ab_why = judge_ab_effort(n, a.judge_ab)
@@ -1786,7 +1874,21 @@ def _loop(a, status_path, bench, runner_log, prompt, run_t0, hb):
             return 3
         # GATES DUE (card 108-5): every guard_cycle due-check measured now; a due outcome review RUNS now, before the
         # session and before the STEER read below (so a steer card the review writes rides in this cycle's card).
-        g_due = gates_due_hook(n, a, bench, runner_log)
+        g_out = {}
+        g_due = gates_due_hook(n, a, bench, runner_log,
+                               defer=("stuck discussion %s ran before this cycle" % debate_res.get("slug"))
+                               if debate_res and debate_res.get("ok") else None, out=g_out)
+        out_res = g_out.get("debate")
+        if out_res and out_res.get("line"):
+            hb.debate = out_res["line"]
+        for dr in (debate_res, out_res):        # card chat-D2: the session sees where the discussion is
+            if dr and dr.get("slug"):
+                ap_ = dr.get("applied") or {}
+                this_prompt += ("\n\nDISCUSSION before this cycle (Claude-GPT, card chat-D2): %s - %s; summary %s; doc %s; "
+                                "steer card %s; decisions %s. Read the summary, not only the steer line.\n"
+                                % (dr["slug"], dr.get("why"), protocol._rel(dr.get("summary_path") or "-"),
+                                   dr.get("doc") or "-", protocol._rel(ap_["steer"]) if ap_.get("steer") else "none",
+                                   ", ".join(ap_.get("decisions") or []) or "none"))
         due_now = [x for x in g_due if x["due"] is not False]
         if due_now:
             this_prompt += ("\n\nGATES DUE at cycle start (card 108-5; cycle card `gates_due`): %s - answer these BEFORE "
@@ -1798,7 +1900,8 @@ def _loop(a, status_path, bench, runner_log, prompt, run_t0, hb):
         if steer_card:
             log_line(runner_log, "STEER | %s | cycle %d carries %s (%s)" % (time.strftime("%Y-%m-%d %H:%M:%S"), n,
                                                                           protocol._rel(steer_path), steer_card["item"]))
-            this_prompt += ("\n\nSTEER (outcome-review steering card, user 2026-09-24): %s - item `%s`.\nREQUIRED ACT: %s\n"
+            this_prompt += ("\n\nSTEER (steering card, user 2026-09-24; `debate:` items come from a Claude-GPT "
+                            "discussion, card chat-D2): %s - item `%s`.\nREQUIRED ACT: %s\n"
                             "Goal ids: %s. Follow it (next.json `steer`: {\"item\": \"%s\", \"response\": \"follow\"}) or "
                             "refuse it with evidence ({\"item\": ..., \"response\": \"refuse\", \"evidence\": [\"file:line\", "
                             "...]}). No answer counts as a refusal; two refusals stop the runner and go to the user.\n"
@@ -1832,6 +1935,8 @@ def _loop(a, status_path, bench, runner_log, prompt, run_t0, hb):
         if purpose:
             ar = assignment_rounds(a, n, bench, runner_log, status_path, this_prompt, model, effort, rc, next_md5_before)
             assign_cost = ar["cost"]
+            if ar["outcome"] == "handback-limit":   # card chat-D2: a stuck discussion before the next cycle
+                stuck_next = "HANDBACK-LIMIT in cycle %d (%d assignment round(s))" % (n, ar["rounds"])
         land_retrospective(bench, runner_log)
         retro_fallback(n, cyc_t0, a, bench, runner_log)       # card chat-P1 2b: due + none archived -> run it here
         # A DRY RUN NEVER COMMITS (2026-09-24, card chat-B3): the self-tests run this runner with --dry-run/--dry-cmd on

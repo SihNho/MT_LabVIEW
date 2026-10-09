@@ -1,0 +1,32 @@
+{"schema": "result/1", "id": "chat-D2", "status": "BLOCKED",
+ "gates": {"pass": 3, "fail": 0},
+ "first_fail": null,
+ "blocked_by": {"device": "guard_card:status_edit", "message": "Card flags.status_edit=false refuses CLAUDE.md edits (docs/session-protocol.md:83), although write globs list CLAUDE.md. The 2 CLAUDE.md sentences the brief asks for were NOT written; text in open[0]. All other pass items done and committed."},
+ "artefacts": [
+  {"path": "tools/cycle_runner.py", "md5": "17056f835b712afc42f3830fe27ba5ca"},
+  {"path": "tools/debate_gdoc.py", "md5": "73ef8d59c5336946aa77ee751a40889f"},
+  {"path": "tools/debate_loop.py", "md5": "259a5fcfdbedd1266cc37575c203dd2a"},
+  {"path": "tools/debate_relay.py", "md5": "b42637cddac29e7bc1f7912153b5dfad"},
+  {"path": "tools/protocol.py", "md5": "c3df3a687b564192cf904a7eb916bf03"},
+  {"path": "tools/bench/selftest_runner_debate.py", "md5": "56a215d6a67d9c07ae639dde2cdfc1f5"},
+  {"path": "docs/d1/runner.md", "md5": "5323d7157de9710e6f0439ffee48300d"}
+ ],
+ "facts": [
+  "Outcome due -> discussion c<N>-outcome before the session; outcome_review.py only on error (no summary/error/0 rounds); --outcome-by review = old path: tools/cycle_runner.py:1113",
+  "Stuck: HANDBACK-LIMIT (cycle_runner.py:1938) or runner firefighter trigger -> discussion before next cycle (cycle_runner.py:1802); ff rung still runs; due outcome then waits 1 cycle",
+  "tools/debate_loop.py: outcome_topic:171 / stuck_topic:218 (sources+raw log lines), run_discussion:262 (bgrun, STOP at 40 min, kill after 90 s grace), apply:381, archive_outcome:348",
+  "agreed -> steer/1 item debate:<slug> (protocol.py:1563); user_needed -> decisions item (protocol.add_decision:1670, dedup while open); schema widened docs/protocol/steer.json:10",
+  "debate_gdoc: --max-rounds 6 --auto-end --summary --doc --no-login --fallback-local (debate_gdoc.py:481); auth fail -> local doc.md + DEBATE-NO-DOC + 'log in' decision; never opens a browser",
+  "Self-tests: relay 13/0, gdoc 13/0, debate_loop 6/0, selftest_runner_debate 6/0 (D1-D6) - tools/bench/selftest_chatd2_*.log; no model/Google call",
+  "Regressions green on final code: assign_flow 16/0, ff 5/5, protocol 48/0, wiring 66/0, cycle_runner 10/0, c108e 13/0, ladder 13/0, retro 9/0, stoprerun 4/0 (selftest_chatd2_reg*.log)",
+  "Found+fixed: rounds-mode gdoc died on cp949 printing relay JSON (U+FFFD); relay child now PYTHONIOENCODING=utf-8 (debate_gdoc.py relay_step). First run: selftest_chatd2_debate_gdoc.log",
+  "Measured: a debate steer the judgement never answers is refused twice -> RUNNER STOP (existing steer rule) - seen in D5's first run; the session must answer next.json `steer`",
+  "DEBATE line + heartbeat row 'Claude-GPT 토론 (문서 링크)' (cycle_runner.py:1368) carry the doc link to the 30-min report; PD382 docs/d1/runner.md:17; guide docs/debate.md '러너 안에서'"
+ ],
+ "open": [
+  "CLAUDE.md not edited (status_edit false). Apply? §3 before 'The six-dispatch cap': HANDBACK-LIMIT / ff trigger -> Claude-GPT discussion before next cycle -> steer/1 + decisions; §5 outcome para: outcome review = discussion from 2026-10-09, outcome_review.py = fallback",
+  "Duplicate kept: the env list (PYTHONPATH/GOOGLE_OAUTH_CLIENT_FILE/UTF-8 + V6_debate worktree refresh) exists in tools/debate_start.ps1:15-17,29-30 and debate_loop.runner_env/refresh_gpt_worktree - make the .ps1 call Python?",
+  "First real (non-stub) discussion in the loop not yet run: real Claude/GPT cost per discussion vs the 40-min deadline and 6-round cap is unmeasured"
+ ],
+ "cost": {"usd": null, "minutes": 32, "labview_runs": 0},
+ "note": "Offline only, runner stopped, no LabVIEW. Also: add_judge_decision and add_steer_decision now call protocol.add_decision (one writer); selftest_assign_flow's runner case extracted to runner_stubs/runner_case for reuse."}

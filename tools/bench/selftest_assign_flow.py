@@ -302,44 +302,55 @@ elif mode == "cost": met(); print(json.dumps({"type": "result", "total_cost_usd"
 '''
 
 
-def runner_tests(tmp, cfg):
-    judge = os.path.join(tmp, "judge.py")
-    assign = os.path.join(tmp, "assign.py")
-    open(judge, "w", encoding="utf-8").write(JUDGE)
-    open(assign, "w", encoding="utf-8").write(ASSIGN)
-    gs_copy = os.path.join(tmp, "gs_path.txt")
-    ctr = os.path.join(tmp, "assign_sids.txt")
+def runner_stubs(tmp):
+    """Write the judge / assign stand-ins and the space-free hook launcher into `tmp`. -> dict of their paths. Shared
+    with tools/bench/selftest_runner_debate.py (card chat-D2) through runner_case()."""
+    st = {"judge": os.path.join(tmp, "judge.py"), "assign": os.path.join(tmp, "assign.py"),
+          "ctr": os.path.join(tmp, "assign_sids.txt"), "launcher": os.path.join(tmp, "gs.py")}
+    open(st["judge"], "w", encoding="utf-8").write(JUDGE)
+    open(st["assign"], "w", encoding="utf-8").write(ASSIGN)
     # the assign stub takes the hook path as argv[1]; --assign-dry-cmd is whitespace-split, and ROOT has spaces, so the
     # stub reaches the hook through a space-free launcher in the temp dir
-    launcher = os.path.join(tmp, "gs.py")
-    open(launcher, "w", encoding="utf-8").write(
+    open(st["launcher"], "w", encoding="utf-8").write(
         "import runpy, sys\nsys.argv = [%r]\nrunpy.run_path(%r, run_name='__main__')\n" % (GS, GS))
-    open(gs_copy, "w").write(GS)
+    open(os.path.join(tmp, "gs_path.txt"), "w").write(GS)
+    return st
+
+
+def runner_case(tmp, st, name, jmode, amode, cfg_path, extra=(), seed_next=False, cycles=1):
+    """Run tools/cycle_runner.py --dry-cmd <judge stub> [--assign-dry-cmd <assign stub>] on a fresh bench under
+    tmp/run_<name>. -> (exit code, runner log text, bench dir)."""
+    d = os.path.join(tmp, "run_" + name)
+    bench = os.path.join(d, "bench")
+    os.makedirs(bench, exist_ok=True)
+    if seed_next:
+        json.dump({"schema": "next/1", "cycle": 0, "act": "seeded", "task_kind": "build", "plan": None, "pass": [],
+                   "blocked_by": None, "stop_requested": False, "advances": ["M3"]},
+                  open(os.path.join(bench, "next.json"), "w", encoding="utf-8"))
+    sp = os.path.join(d, "STATUS.md")
+    open(sp, "w", encoding="utf-8").write("# STATUS (self-test)\n\n## NEXT\nx\n")
+    args = [sys.executable, RUNNER, "--dry-cmd", "%s %s %s %s" % (sys.executable, st["judge"], bench, jmode),
+            "--cycles", str(cycles), "--status", sp, "--bench-dir", bench, "--max-min", "3", "--assign-config", cfg_path,
+            "--peer-dir", os.path.join(d, "peer"), "--goalmap", os.path.join(d, "goalmap.json")] + list(extra)
+    if amode:
+        args += ["--assign-dry-cmd", "%s %s %s %s %s" % (sys.executable, st["assign"], st["launcher"], amode, st["ctr"])]
+    env = dict(os.environ)
+    for k in ("CYCLE_SESSION", "CYCLE_ROLE", "ASSIGN_STATE", "ASSIGN_CONFIG", "BENCH_CELL"):
+        env.pop(k, None)
+    env["ASSIGN_CARDS_DIR"] = os.path.join(bench, "cards")     # card 148-a2-1: the stub writes its cards there
+    p = subprocess.run(args, cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                       timeout=900, env=env)
+    log = open(os.path.join(bench, "cycle_runner.log"), encoding="utf-8").read() \
+        if os.path.exists(os.path.join(bench, "cycle_runner.log")) else ""
+    return p.returncode, log, bench
+
+
+def runner_tests(tmp, cfg):
+    st = runner_stubs(tmp)
+    ctr = st["ctr"]
 
     def case(name, jmode, amode, cfg_path=cfg, extra=(), seed_next=False):
-        d = os.path.join(tmp, "run_" + name)
-        bench = os.path.join(d, "bench")
-        os.makedirs(bench, exist_ok=True)
-        if seed_next:
-            json.dump({"schema": "next/1", "cycle": 0, "act": "seeded", "task_kind": "build", "plan": None, "pass": [],
-                       "blocked_by": None, "stop_requested": False, "advances": ["M3"]},
-                      open(os.path.join(bench, "next.json"), "w", encoding="utf-8"))
-        sp = os.path.join(d, "STATUS.md")
-        open(sp, "w", encoding="utf-8").write("# STATUS (self-test)\n\n## NEXT\nx\n")
-        args = [sys.executable, RUNNER, "--dry-cmd", "%s %s %s %s" % (sys.executable, judge, bench, jmode),
-                "--cycles", "1", "--status", sp, "--bench-dir", bench, "--max-min", "3", "--assign-config", cfg_path,
-                "--peer-dir", os.path.join(d, "peer"), "--goalmap", os.path.join(d, "goalmap.json")] + list(extra)
-        if amode:
-            args += ["--assign-dry-cmd", "%s %s %s %s %s" % (sys.executable, assign, launcher, amode, ctr)]
-        env = dict(os.environ)
-        for k in ("CYCLE_SESSION", "CYCLE_ROLE", "ASSIGN_STATE", "ASSIGN_CONFIG", "BENCH_CELL"):
-            env.pop(k, None)
-        env["ASSIGN_CARDS_DIR"] = os.path.join(bench, "cards")     # card 148-a2-1: the stub writes its cards there
-        p = subprocess.run(args, cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace",
-                           timeout=900, env=env)
-        log = open(os.path.join(bench, "cycle_runner.log"), encoding="utf-8").read() \
-            if os.path.exists(os.path.join(bench, "cycle_runner.log")) else ""
-        return p.returncode, log, bench
+        return runner_case(tmp, st, name, jmode, amode, cfg_path, extra, seed_next)
 
     rc, log, bench = case("met", "write", "met")
     ac = os.path.join(bench, "cards", "assign_1_1.json")

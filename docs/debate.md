@@ -30,11 +30,27 @@ tags: [debate, gpt, gemini, google-docs]
    - 문서 댓글로도 같은 명령이 된다(프로그램이 답글로 확인).
 4. **끝나면**: 마지막 두 STATE(합의·남은 쟁점·실험·사용자 판단 필요)를 짧게 보고. 규칙/계획 반영은 사용자가 정한다.
 
+## 러너 안에서 (사이클 사이, 2026-10-09 사용자 "둘 다 넣자", card chat-D2, PD382)
+한 모델의 판단을 토론으로 **바꾸는** 두 자리 (층을 새로 더하지 않음):
+| 언제 | 무엇 | 대신하는 것 |
+|---|---|---|
+| 결과 점검 시점 (5사이클 또는 7일, `outcome_review.is_due`) | 결과 점검 토론 `c<N>-outcome` | `outcome_review.py` (토론이 오류로 끝나면 그대로 대신 실행) |
+| 한 사이클이 HANDBACK-LIMIT, 또는 firefighter 조건 발동 | 막힘 토론 `c<N>-stuck`, 다음 사이클 시작 전 | (없음 - firefighter 사다리는 그 뒤에 그대로) |
+- **실행**: 러너가 `tools/debate_loop.py`로 주제를 코드로 만들고(목표, 지난 사이클 러너 로그 줄, 카드 경로, STATUS NEXT, 이전 조향 카드, 결정 대기, 핸드백 기록, 실패 로그 첫 줄 - 요약이 아니라 원문 경로와 줄), `debate_gdoc.py run --mode rounds --auto-end --max-rounds 6 --summary … --no-login --fallback-local`를 bgrun 아래에서 **동기로** 돌린다. 수렴 / 반복 / 6라운드면 기다리지 않고 끝난다.
+- **마감**: 40분(`--debate-max-min`). 넘으면 relay 의 STOP 파일 → 발언 중인 모델까지 1초 안에 끊기고 요약이 써진다 → 90초 뒤에도 살아 있으면 프로세스 트리 강제 종료. 러너는 계속 간다.
+- **폴더**: `tools/bench/debate/c<N>-outcome|stuck/` - `topic_in.md`, `relay/`, `run.log`, `summary.json`(합의·남은 쟁점·실험·사용자 판단·라운드·수렴·Claude 비용·문서 링크), 로컬 문서면 `doc.md`.
+- **결과 → 기존 통로**: 두 쪽 마지막 STATE 의 `agreed` → 조향 카드 `steer/1`(item `debate:<slug>`, 판단 세션은 따르거나 근거를 들어 거절, 두 번 거절이면 기존대로 정지 + 결정 대기), `user_needed` 하나마다 `decisions_pending` 항목 하나. 결과 점검 토론은 `archive/peer/<날짜>-outcome-review-debate-c<N>.md`도 남겨 다음 점검 주기를 센다.
+- **보고**: 러너 로그 `DEBATE | <시각> | cycle N | outcome|stuck | doc <링크> | rounds r | converged y/n | $x | ended …` 한 줄, 하트비트 표의 "Claude-GPT 토론 (문서 링크)" 행 → 30분 보고로 사용자에게 간다. 판단 세션 프롬프트에도 `DISCUSSION before this cycle …` 줄이 붙는다.
+- **사용자 개입**(채팅): `py tools/debate_gdoc.py say --dir tools/bench/debate/c160-outcome/relay "<그대로>"` - 다음 라운드에 두 쪽에 전달. `/end`·`/stop`은 토론만 일찍 끝내고 러너는 계속 간다. `/continue`는 필요 없다(자동 종료).
+- **로그인 만료**: 러너는 브라우저를 열지 않는다. Google 문서를 못 쓰면 `DEBATE-NO-DOC` 줄, 토론은 `doc.md`에 그대로, `decisions_pending`에 "`py tools/debate_gdoc.py login` 하세요" 항목. 러너는 멈추지 않는다.
+- **환경**: 러너가 자식에 `PYTHONPATH`(Claude 앱 전용 공간 site-packages), `GOOGLE_OAUTH_CLIENT_FILE`(없으면 `~/.config/debate/client_secret.json`), UTF-8 을 넣고 GPT worktree `..\V6_debate`를 master 로 맞춘다(`debate_start.ps1`과 같은 목록).
+- **끄기**: `cycle_runner.py --outcome-by review` = 예전 단일 모델 결과 점검. 막힘 토론은 dry run 에서는 `--debate-stub` 없이는 열리지 않는다.
+
 ## 이어서 하기 / 문제 해결
 - 같은 문서에 이어 쓰기: `debate_gdoc.py run … --doc-id <id> --resume-note @<note.md>` (relay/state.json 이 남아 있어야 함).
 - **로그인 만료(앱이 '테스트' 상태라 7일마다)**: `py tools/debate_gdoc.py login` → 브라우저에서 허용. 토큰 `~/.config/debate/token.json`, 클라이언트 파일 = 사용자 환경변수 `GOOGLE_OAUTH_CLIENT_FILE`. 연결 끊기 = myaccount.google.com/connections 에서 LLM_LabVIEW_Discuss 삭제 + 토큰 삭제.
 - **GPT 모델 거부**("not supported when using Codex with a ChatGPT account"): Codex CLI가 낡은 것. 0.162.0 이상이 필요하고, 최신본은 Claude 앱 전용 공간(`…\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\npm\…\codex.js`)에 있다. relay 가 가장 높은 버전을 고른다.
 - **Google 라이브러리**(google-api-python-client, google-auth-oauthlib)도 같은 전용 공간에 있어서, 앱 밖 실행에는 `PYTHONPATH`가 필요하다(`debate_start.ps1`이 넣는다).
 - Codex 앱이 켜져 있으면 GPT를 읽기 전용 샌드박스로는 못 띄운다(`node_repl.exe` 잠금으로 샌드박스 준비 실패). 그래서 전체 접근 + 별도 worktree + 지시문상 읽기 전용(사용자 동의 2026-10-09).
-- 자체 시험(모델 호출 없음): `py tools/debate_relay.py selftest` (12개), `py tools/debate_gdoc.py selftest` (10개) - 둘 다 `bgrun --max-min 5`로.
+- 자체 시험(모델 호출 없음): `py tools/debate_relay.py selftest` (13개), `py tools/debate_gdoc.py selftest` (13개), `py tools/debate_loop.py selftest` (6개), `py tools/bench/selftest_runner_debate.py` (6개, 러너 연결) - 모두 `bgrun --material`로.
 - 지난 토론: `tools/bench/debate/plan-overall-02/` (라운드 방식 첫 실제 토론, 5라운드 수렴, Claude 쪽 $7.70).

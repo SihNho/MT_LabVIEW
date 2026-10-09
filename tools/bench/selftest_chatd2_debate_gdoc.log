@@ -1,0 +1,48 @@
+BGRUN START 2026-10-09 21:58:33 limit 5.0 min: py -u tools/debate_gdoc.py selftest
+BGRUN PID 13292
+DOC file://C:\Users\KimLab\AppData\Local\Temp\gdoc_selftest_ybor1r4j\doc.md
+ROUND 1
+ROUND 2
+ERROR UnicodeEncodeError: 'cp949' codec can't encode character '\ufffd' in position 21: illegal multibyte sequence
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\debate_gdoc.py", line 508, in <module>
+    sys.exit(main())
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\debate_gdoc.py", line 491, in main
+    return selftest()
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\debate_gdoc.py", line 402, in selftest
+    rc = run(a, fd)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\debate_gdoc.py", line 267, in run
+    rc, info["ended"] = _run(a, doc, info)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\debate_gdoc.py", line 335, in _run
+    print("GEMINI %s" % q[:120].replace("\n", " "), flush=True)
+UnicodeEncodeError: 'cp949' codec can't encode character '\ufffd' in position 21: illegal multibyte sequence
+BGRUN END rc=1 after 12s
+BGRUN START 2026-10-09 21:59:14 limit 5.0 min: py -u tools/debate_gdoc.py selftest
+BGRUN PID 25172
+DOC file://C:\Users\KimLab\AppData\Local\Temp\gdoc_selftest_v4ca9bno\doc.md
+ROUND 1
+ROUND 2
+GEMINI - Claude�� ��û: ��¥ Ȯ�� ���� - GPT�� ��û: ��¥ Ȯ�� ����
+ROUND 3
+PAUSED �� ����ڰ� ��� �����ٰ� �߰� ���ο��� ���� ������ �����ϴ�
+ROUND 4
+PAUSED �� ����ڰ� ��� �����ٰ� �߰� ���ο��� ���� ������ �����ϴ�
+GEMINI - ���� ���� �б� ����
+ROUND 5
+PAUSED �� ����ڰ� ��� �����ٰ� �߰� ���ο��� ���� ������ �����ϴ�
+END by user ['/end']
+PASS  G1 doc has the topic and at least two turns
+PASS  G2 the comment became an intervention note in the doc
+PASS  G3 a speaker heard it
+PASS  G4 the comment got a reply
+PASS  G5 convergence paused the run
+PASS  G6 /end finished it
+PASS  G7 a speaker's STATE check started a Gemini review
+PASS  G8 the next speaker got the review as evidence
+PASS  G9 a /gemini comment started a review
+PASS  G10 a chat message reached the discussion
+PASS  G11 auth failure -> local doc, auto-end at --max-rounds 2, summary says so
+PASS  G12 converged auto-end: summary rounds 3, one agreed item, one user question, a doc link
+PASS  G13 auth failure without --fallback-local -> summary ended error, exit 1
+RESULT {"schema": "result-line/1", "status": "PASS", "gates": {"pass": 13, "fail": 0}}
+BGRUN END rc=0 after 13s
