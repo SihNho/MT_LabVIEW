@@ -310,6 +310,11 @@ background notification is a full turn over the whole conversation. Standing rul
    `tools/hooks/**` is never changed by a runner card, even when the purpose names it (`guard_assign`
    `never_in_runner_globs`) — hook false positives are queued and the chat drains them between runs and tells the user
    ("훅 수정 권한이면 조금 위험하지는 않을지?").
+   **STUCK → CLAUDE–GPT DISCUSSION (user 2026-10-09: "둘 다 넣자"; card chat-D2, PD382):** when a cycle hits
+   `HANDBACK-LIMIT` or the firefighter trigger fires, the runner holds a Claude–GPT discussion BEFORE the next cycle
+   (`tools/debate_loop.py`, ≤ 6 rounds, ≤ 40 min, Google Doc link in the 30-min report); its agreed items become a
+   `steer/1` card the judgement session follows or refuses with evidence, its `user_needed` items go to
+   `decisions_pending.json`. The firefighter rung still runs after it. Guide: `docs/debate.md`.
    The six-dispatch cap below applies only to `--flow legacy`.
    Runner stop conditions: a `STOP` marker in STATUS.md (written by the user), the same failure two cycles running,
    the usage-limit rule (renewal + 2 min). `tools/hooks/guard_session.py` (PreToolUse Agent) refuses material
@@ -679,7 +684,11 @@ user re-planned to DELIVERY-FIRST on 2026-09-16 ("A로 진행하자") — `docs/
 still the goal.** **An `OUTCOME-VIOLATION` is NOT answered by building a device** (that is the
 process rule, and answering goal drift with another tool is how the drift happened): the next cycle
 becomes a **delivery** cycle, and on repetition the work stops for a re-plan with the user. **AMENDED by the user 2026-09-23 ("83번으로 가자", resolving Pre-decided 44 vs 83): once the user has ANSWERED a repeated outcome verdict (as on 2026-09-20, "계속"), a further repetition of the SAME verdict does NOT stop the runner — the session marks the escalation in STATUS and the interactive chat reports it; the work stops only when the verdict's CONTENT changes (a new violation line, or a requirement moving backwards).** Keep the
-layer to one script, one dispatch and one gate line — the user's explicit budget for it. **STEERING CARD (user, 2026-09-24: "아웃컴 리뷰에 조향카드 부여하는 것 동의"):** a repeated outcome verdict now also emits a `steer/1` card (the next cycle's required act, tied to `docs/goalmap.json` ids); the judgement session FOLLOWS it or REFUSES it with cited evidence in `next.json`; two refusals of the same item stop the runner and put it on `tools/bench/decisions_pending.json`. **RETRY CAP (user, same day: "재시도 상한도 동의함. 다만 숫자 … 데이터를 쌓아가면서 조정"):** one stage's LabVIEW runs per cycle are capped (`tools/stage_prerun.py` `RETRY_CAP`, start 2); a further run needs a judgement card; per-stage run counts are recorded so the number is tuned from data.
+layer to one script, one dispatch and one gate line — the user's explicit budget for it. **From 2026-10-09 (user: "둘
+다 넣자", card chat-D2) the outcome review IS a Claude–GPT discussion** (two models with different priors, the reason
+this layer once went to codex): the runner holds it every 5 cycles before the session, its agreed items become the
+`steer/1` card, `user_needed` items go to `decisions_pending.json`; `outcome_review.py` runs only as the fallback when
+the discussion fails (`--outcome-by review` restores the old path). **STEERING CARD (user, 2026-09-24: "아웃컴 리뷰에 조향카드 부여하는 것 동의"):** a repeated outcome verdict now also emits a `steer/1` card (the next cycle's required act, tied to `docs/goalmap.json` ids); the judgement session FOLLOWS it or REFUSES it with cited evidence in `next.json`; two refusals of the same item stop the runner and put it on `tools/bench/decisions_pending.json`. **RETRY CAP (user, same day: "재시도 상한도 동의함. 다만 숫자 … 데이터를 쌓아가면서 조정"):** one stage's LabVIEW runs per cycle are capped (`tools/stage_prerun.py` `RETRY_CAP`, start 2); a further run needs a judgement card; per-stage run counts are recorded so the number is tuned from data.
 
 **The fourth layer — PRIOR ART ("has this already been done here?", `prior_art_review.py`, gated by the same
 `guard_cycle.py`; NOT required for a build step on a PROVEN pattern — ≥2 earlier passing launches of the same
