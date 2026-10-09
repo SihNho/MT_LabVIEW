@@ -190,7 +190,8 @@ def say(d, text):
 
 
 def relay_step(a, user, first_topic, note=""):
-    cmd = [sys.executable, os.path.join(ROOT, "tools", "debate_relay.py"), "step", "--dir", a.dir, "--first", a.first]
+    cmd = [sys.executable, os.path.join(ROOT, "tools", "debate_relay.py"), "round" if a.mode == "rounds" else "step",
+           "--dir", a.dir, "--first", a.first]
     if first_topic:
         cmd += ["--topic", a.topic]
     if user:
@@ -212,10 +213,21 @@ def relay_step(a, user, first_topic, note=""):
 def run(a, doc=None):
     os.makedirs(a.dir, exist_ok=True)
     doc = doc or GoogleDoc()
-    url = doc.create(a.title, a.folder)
-    print("DOC %s" % url, flush=True)
-    doc.append("주제", open(a.topic, encoding="utf-8-sig").read())
-    seen, stop_file, first, paused = set(), os.path.join(a.dir, "STOP"), True, False
+    resuming = bool(getattr(a, "doc_id", None))
+    if resuming:                               # same doc, same relay state: continue where the last run stopped
+        doc.id = a.doc_id
+        note_text = a.resume_note
+        if note_text.startswith("@") and os.path.exists(note_text[1:]):      # @file: keeps launch scripts ASCII
+            note_text = open(note_text[1:], encoding="utf-8-sig").read().strip()
+        doc.append("중계 재개 (%s)" % time.strftime("%H:%M"), note_text or "이어서 진행합니다.")
+        print("DOC resumed %s" % a.doc_id, flush=True)
+    else:
+        url = doc.create(a.title, a.folder)
+        print("DOC %s" % url, flush=True)
+        doc.append("주제", open(a.topic, encoding="utf-8-sig").read())
+    seen, stop_file, first, paused = set(), os.path.join(a.dir, "STOP"), not resuming, False
+    if resuming:                               # comments and chat lines handled by the earlier run stay handled
+        seen.update(cid for cid, _ in doc.comments() + chat_inbox(a.dir))
     recent, checks, note = [], [], ""          # recent turn texts; pending Gemini questions; Gemini result for next turn
     while True:
         user, cmds = [], set()
@@ -262,15 +274,19 @@ def run(a, doc=None):
             doc.append("중단됨 (%s)" % time.strftime("%H:%M"), "발언 도중 멈춤 요청으로 끊었습니다.")
             print("STOPPED", flush=True)
             return 0
-        text = open(r["file"], encoding="utf-8").read()
-        head, _, body = text.partition("\n")
-        doc.append(head.strip(), body.strip())
-        recent.append(body.strip())
-        print("TURN %s %s" % (r["turn"], r["speaker"]), flush=True)
-        if (r.get("state") or {}).get("check"):
-            checks.append("%s의 요청: %s" % (r["speaker"], r["state"]["check"]))
+        turns = ([(n, r["files"][n], r["states"].get(n) or {}) for n in ("Claude", "GPT")] if "files" in r
+                 else [(r["speaker"], r["file"], r.get("state") or {})])
+        for who, path, s in turns:
+            text = open(path, encoding="utf-8").read()
+            head, _, body = text.partition("\n")
+            doc.append(head.strip(), body.strip())
+            recent.append(body.strip())
+            if s.get("check"):
+                checks.append("%s의 요청: %s" % (who, s["check"]))
+        print("ROUND %s" % r["round"] if "round" in r else "TURN %s %s" % (r["turn"], r["speaker"]), flush=True)
         if r.get("converged") or r.get("repeating"):
-            why = "두 토론자가 모두 끝났다고 했습니다" if r.get("converged") else "같은 쟁점이 세 번 되풀이됐습니다"
+            why = ("두 토론자가 모두 끝났다고 했고 서로에게 남은 질문이 없습니다" if r.get("converged")
+                   else "같은 쟁점이 세 번 되풀이됐습니다")
             doc.append("일시 정지 (%s)" % time.strftime("%H:%M"),
                        "%s. 계속하려면 댓글에 /continue 또는 지시를, 끝내려면 /end 를 남겨 주세요." % why)
             paused = True
@@ -324,6 +340,8 @@ def parser():
     ap.add_argument("--folder", default=FOLDER)
     ap.add_argument("--dir")
     ap.add_argument("--first", choices=("claude", "gpt"), default="claude")
+    # user 2026-10-09: "클로드와 GPT가 같은 단계에서 서로에게 질문하고 피드백하며 수렴" -> both write each round at once
+    ap.add_argument("--mode", choices=("rounds", "turns"), default="rounds")
     ap.add_argument("--poll", type=float, default=15)
     ap.add_argument("--stub", action="store_true")
     ap.add_argument("--stub-secs", type=float, default=3)
@@ -332,6 +350,8 @@ def parser():
     ap.add_argument("--gpt-model")
     # user 2026-10-09: "전체접근으로 키고 (어차피 코드베이스 읽어야 하니)" - GPT runs in the V6_debate worktree, read-only by instruction
     ap.add_argument("--gpt-sandbox", default="danger-full-access")
+    ap.add_argument("--doc-id", help="resume: keep writing into this existing doc (relay state in --dir)")
+    ap.add_argument("--resume-note", default="")
     ap.add_argument("--gemini-model", default="gemini-3.1-pro-high")   # the fact-chain model of tools/peer.ps1
     ap.add_argument("--gemini-timeout", type=int, default=600)
     return ap
