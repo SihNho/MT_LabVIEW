@@ -235,7 +235,8 @@ def capabilities_regen(path):
             files = set(json.load(f).get("files") or [])
     except (OSError, ValueError):
         return "no-cache"
-    if _rel(os.path.abspath(path)) not in files:
+    # chat 2026-10-09 (card chat-T8 OPEN): the side file of descriptions feeds the same list, so it re-generates too
+    if _rel(os.path.abspath(path)) not in files and _rel(os.path.abspath(path)) != "docs/fn_descriptions.json":
         return "not-shared"
     lock, rerun = os.path.join(CAP_STATE, "capabilities_regen.lock"), os.path.join(CAP_STATE, "capabilities_regen.rerun")
     try:
