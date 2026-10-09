@@ -142,12 +142,13 @@ def main():
         rows, restored, unl = K.pb_rename_rows(B, SIM, RE, None, bind=bind)
         objs = [dict(o, uid=ob.get(int(o["uid"]), int(o["uid"]))) for o in L["objs"]]
         FSP = BASE.get("fs_tunnel_pairs", BASE.get("fs_pairs"))
-        cd = V.computation_diff_frame(S1f, V.build4(rows, objs, copy.deepcopy(L["loops"]), LAB, FSP, frame_keyed=True))
-        rk = sorted(str(y["sink"]) for y in cd["rows"])
-        want = set((int(y["node"]), y["term"]) for y in P["open_rows"])
-        gate("{0} N2 PB (names from the sim end at the same position): cdiff == pred's {1} rows and the plan's {2} open pairs; restored {3}".format(
-            tag, len(PRED["cdiff_rows"]), len(want), len(restored)), rk == PRED["cdiff_rows"] and set((int(y["node"]), str(y["sink"]).split("|")[2]) for y in cd["rows"]) == want and unl == [],
-            {"extra": sorted(set(rk) - set(PRED["cdiff_rows"])), "missing": sorted(set(PRED["cdiff_rows"]) - set(rk)), "restored": restored[:6]})
+        # card chat-T7 (PD373(d), fp-70): PB through the ONE library function stagekit.pb_check, which converts the STORED name-keyed pred
+        # (byte-unchanged) to position rows explicitly; the old `rk == PRED["cdiff_rows"]` compare stood here (git 18c241ec :144-149).
+        r = K.pb_check(S1f, V.build4(rows, objs, copy.deepcopy(L["loops"]), LAB, FSP, frame_keyed=True), K.pred_end_graph(L, LAB, FSP),
+                       PRED["cdiff_rows"], P["open_rows"], unl)
+        gate("{0} N2 PB by POSITION (stagekit.pb_check; names from the sim end at the same position): cdiff slots == pred's {1} rows ({2} slots) and the plan's {3} open pairs ({4} after conversion); restored {5}".format(
+            tag, len(PRED["cdiff_rows"]), r["slots_want"], len(P["open_rows"]), r["pairs_want"], len(restored)), r["ok"],
+            {"extra": r["extra_sinks"], "missing": r["missing_sinks"], "pairs_missing": r["pairs_missing"], "restored": restored[:6]})
         keep[tag] = (B, SIM, RE, bind, t)
     tag = "s06-a1-8"
     B, SIM, RE, bind, t = keep[tag]

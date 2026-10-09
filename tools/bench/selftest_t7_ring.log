@@ -1,0 +1,79 @@
+BGRUN START 2026-10-09 11:13:43 limit 8.0 min: py -u tools/bench/selftest_t7_ring.py
+BGRUN PID 16604
+  PASS  P s03 pb_check PASS, NO licence: pred 16 stored rows = 12 slots == cdiff 12 slots; open pairs 11 -> 10 == 10; inputs pinned True, unbound 0  {'extra': [], 'missing': [], 'pairs_missing': []}
+  PASS  P s04 pb_check PASS, NO licence: pred 16 stored rows = 12 slots == cdiff 12 slots; open pairs 11 -> 10 == 10; inputs pinned True, unbound 0  {'extra': [], 'missing': [], 'pairs_missing': []}
+  PASS  P s05 pb_check PASS, NO licence: pred 16 stored rows = 12 slots == cdiff 12 slots; open pairs 11 -> 10 == 10; inputs pinned True, unbound 0  {'extra': [], 'missing': [], 'pairs_missing': []}
+  PASS  P s06-a1-8 pb_check PASS, NO licence: pred 18 stored rows = 14 slots == cdiff 14 slots; open pairs 13 -> 12 == 12; inputs pinned True, unbound 0  {'extra': [], 'missing': [], 'pairs_missing': []}
+  PASS  P s06-c3 pb_check PASS, NO licence: pred 18 stored rows = 14 slots == cdiff 14 slots; open pairs 13 -> 12 == 12; inputs pinned True, unbound 0  {'extra': [], 'missing': [], 'pairs_missing': []}
+  PASS  P s07 pb_check PASS, NO licence: pred 19 stored rows = 19 slots == cdiff 19 slots; open pairs 17 -> 17 == 17; inputs pinned True, unbound 0  {'extra': [], 'missing': [], 'pairs_missing': []}
+  PASS  P s08 pb_check PASS, NO licence: pred 21 stored rows = 21 slots == cdiff 21 slots; open pairs 19 -> 19 == 19; inputs pinned True, unbound 0  {'extra': [], 'missing': [], 'pairs_missing': []}
+  PASS  P s09 pb_check PASS, NO licence: pred 21 stored rows = 21 slots == cdiff 21 slots; open pairs 19 -> 19 == 19; inputs pinned True, unbound 0  {'extra': [], 'missing': [], 'pairs_missing': []}
+  PASS  P p5s01a pb_check PASS, NO licence: pred 21 stored rows = 21 slots == cdiff 21 slots; open pairs 19 -> 19 == 19; inputs pinned True, unbound 0  {'extra': [], 'missing': [], 'pairs_missing': []}
+  PASS  P0 the OLD name compare (rk == pred rows) FAILS on s06-c3: 14 vs 18 rows (fp-70), so P is not vacuous  ['2626|Terminal|array|0', '2626|Terminal|array|1', '2626|Terminal|array|2', '2626|Terminal|array|3']
+  PASS  M1 pred row 10068|ParameterTerminal|x|0 dropped -> FAIL  
+  FAIL  M2 pred row 10068|ParameterTerminal|y|0 (an unchanged slot) added -> FAIL  
+  PASS  M3 kept computation sink #25489 on #13251 rewired to w27346 (source #27062) -> FAIL (extra ['13251|ParameterTerminal|y|0'])  6030
+  PASS  M4 an open pair dropped -> FAIL  
+  PASS  M5 an unlicensed rename listed -> FAIL  
+  PASS  C1 every real terminal renamed -> PB still PASSES (names are report columns)  {'extra': [], 'missing': []}
+  PASS  S1 sink_gate_spec on the s07 census reproduces the logged per-row tuple (diag_c150_p4s07v18_scratch.log:65)  [('p4_rbA_re2', [9519], ['p4_rbA_re2'], [{'uid': 5058, 'term_uid': 5171}], ['pos in cal image out']), ('p4_rbD_sel_t25573', [25573], ['p4_rbD_sel_t25573'], ['new:RB4.s? t:f'], ['s? t:f'])]
+  FACT  S2 SG-p4_rbA_re2-pos-diffraction-pattern: ok True; detail == log :358 -> True
+  FACT  S2 SG-p4_rbD_sel_t25573-autofocus-reset-count-1-2-to-1-1: ok True; detail == log :359 -> True
+  PASS  S2 sink_gate_read reproduces both recorded PASS details character for character (log :358-359)  
+  PASS  S3 the indicator terminal unwired -> sink_gate_read FAILS  
+  PASS  R1 RingSession(s07): SG label head + the 2 sink declarations == log :65; NC 5; DRY False  
+  PASS  R2 RingSession(P5-1a): L1 label (checkpoints) == diag_c154_p5s01a_scratch.log:67; SG rows 0; NC 8  L1 the 20 actions compile into 14 real ops == pred kinds, each action once; checkpoints (0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14)
+  PASS  X1 pred_x10 == the logged X10 (s07 673.7, P5-1a 672.2; diag_c150_p4s07v18_scratch.log:24, diag_c154_p5s01a_scratch.log:24)  
+  PASS  X2 pred_x10 with another plan (md5 differs) -> None  
+  PASS  E1 el_advisory on the stored s06 Error List read == diag_c149_a1_2_eladv.log:3 exactly, rc 1 (1 recorded)  EL-ADVISORY total read 51 pred 55 diff -4; per-class diff (read - pred) {"input": -2, "other:looptunnelwireconnectedtoanundirectedtunnel": -3, "other:thiswireconnectsoneormoredatasinksbuthasnosource":
+  PASS  E2 el_advisory_selftest on the s06 pred -> rc 0 and RESULT 5/0  ORDED rc 0
+EL-SELFTEST case D the prediction itself: rc 0 expected 0 -> PASS
+RESULT {"schema": "result-line/1", "status": "PASS", "gates": {"pass": 5, "fail": 0}, "first_fail": null, "artefacts": []}
+
+  PASS  A1 census_all_install: 3 CENSUS-ALL lines, net delta Function +1, new uids {Function 1, Wire 1}, lost 1; gate result passed through  ['  CENSUS-ALL net delta (every class) {"Function": 1}', '  CENSUS-ALL new uids by class (every class) {"Function": 1, "Wire": 1}', '  CENSUS-ALL lost uids 1']
+RESULT {"status":"FAIL","gates":{"pass":25,"fail":1},"first_fail":"M2 pred row 10068|ParameterTerminal|y|0 (an unchanged slot) added -> FAIL","artefacts":[],"schema":"result-line/1","card":"chat-T7","labview":"none"}
+BGRUN END rc=1 after 15s
+BGRUN START 2026-10-09 11:17:06 limit 8.0 min: py -u tools/bench/selftest_t7_ring.py
+BGRUN PID 16196
+  PASS  P s03 pb_check PASS, NO licence: pred 16 stored rows = 12 slots == cdiff 12 slots; open pairs 11 -> 10 == 10; inputs pinned True, unbound 0  {'extra': [], 'missing': [], 'pairs_missing': []}
+  PASS  Q s03 the converted pred == cdiff(S1, the plan's simulated end) under the adopted vigraph (12 vs 12 rows): the conversion reproduces vigraph a7eb58c7 on the pred's own graph  {'only_conv': [], 'only_cdiff': []}
+  PASS  P s04 pb_check PASS, NO licence: pred 16 stored rows = 12 slots == cdiff 12 slots; open pairs 11 -> 10 == 10; inputs pinned True, unbound 0  {'extra': [], 'missing': [], 'pairs_missing': []}
+  PASS  Q s04 the converted pred == cdiff(S1, the plan's simulated end) under the adopted vigraph (12 vs 12 rows): the conversion reproduces vigraph a7eb58c7 on the pred's own graph  {'only_conv': [], 'only_cdiff': []}
+  PASS  P s05 pb_check PASS, NO licence: pred 16 stored rows = 12 slots == cdiff 12 slots; open pairs 11 -> 10 == 10; inputs pinned True, unbound 0  {'extra': [], 'missing': [], 'pairs_missing': []}
+  PASS  Q s05 the converted pred == cdiff(S1, the plan's simulated end) under the adopted vigraph (12 vs 12 rows): the conversion reproduces vigraph a7eb58c7 on the pred's own graph  {'only_conv': [], 'only_cdiff': []}
+  PASS  P s06-a1-8 pb_check PASS, NO licence: pred 18 stored rows = 14 slots == cdiff 14 slots; open pairs 13 -> 12 == 12; inputs pinned True, unbound 0  {'extra': [], 'missing': [], 'pairs_missing': []}
+  PASS  Q s06-a1-8 the converted pred == cdiff(S1, the plan's simulated end) under the adopted vigraph (14 vs 14 rows): the conversion reproduces vigraph a7eb58c7 on the pred's own graph  {'only_conv': [], 'only_cdiff': []}
+  PASS  P s06-c3 pb_check PASS, NO licence: pred 18 stored rows = 14 slots == cdiff 14 slots; open pairs 13 -> 12 == 12; inputs pinned True, unbound 0  {'extra': [], 'missing': [], 'pairs_missing': []}
+  PASS  Q s06-c3 the converted pred == cdiff(S1, the plan's simulated end) under the adopted vigraph (14 vs 14 rows): the conversion reproduces vigraph a7eb58c7 on the pred's own graph  {'only_conv': [], 'only_cdiff': []}
+  PASS  P s07 pb_check PASS, NO licence: pred 19 stored rows = 19 slots == cdiff 19 slots; open pairs 17 -> 17 == 17; inputs pinned True, unbound 0  {'extra': [], 'missing': [], 'pairs_missing': []}
+  PASS  Q s07 the converted pred == cdiff(S1, the plan's simulated end) under the adopted vigraph (19 vs 19 rows): the conversion reproduces vigraph a7eb58c7 on the pred's own graph  {'only_conv': [], 'only_cdiff': []}
+  PASS  P s08 pb_check PASS, NO licence: pred 21 stored rows = 21 slots == cdiff 21 slots; open pairs 19 -> 19 == 19; inputs pinned True, unbound 0  {'extra': [], 'missing': [], 'pairs_missing': []}
+  PASS  Q s08 the converted pred == cdiff(S1, the plan's simulated end) under the adopted vigraph (21 vs 21 rows): the conversion reproduces vigraph a7eb58c7 on the pred's own graph  {'only_conv': [], 'only_cdiff': []}
+  PASS  P s09 pb_check PASS, NO licence: pred 21 stored rows = 21 slots == cdiff 21 slots; open pairs 19 -> 19 == 19; inputs pinned True, unbound 0  {'extra': [], 'missing': [], 'pairs_missing': []}
+  PASS  Q s09 the converted pred == cdiff(S1, the plan's simulated end) under the adopted vigraph (21 vs 21 rows): the conversion reproduces vigraph a7eb58c7 on the pred's own graph  {'only_conv': [], 'only_cdiff': []}
+  PASS  P p5s01a pb_check PASS, NO licence: pred 21 stored rows = 21 slots == cdiff 21 slots; open pairs 19 -> 19 == 19; inputs pinned True, unbound 0  {'extra': [], 'missing': [], 'pairs_missing': []}
+  PASS  Q p5s01a the converted pred == cdiff(S1, the plan's simulated end) under the adopted vigraph (21 vs 21 rows): the conversion reproduces vigraph a7eb58c7 on the pred's own graph  {'only_conv': [], 'only_cdiff': []}
+  PASS  P0 the OLD name compare (rk == pred rows) FAILS on s06-c3: 14 vs 18 rows (fp-70), so P is not vacuous  ['2626|Terminal|array|0', '2626|Terminal|array|1', '2626|Terminal|array|2', '2626|Terminal|array|3']
+  PASS  M1 pred row 10068|ParameterTerminal|x|0 dropped -> FAIL  
+  PASS  M2 the pred's graph rewires sim sink #25489 on #13251 (new pred row(s) ['13251|ParameterTerminal|y|0']), the real end does not -> FAIL (missing ['13251|ParameterTerminal|y|0']); converted on the REAL end instead it would PASS: True  
+  PASS  M3 kept computation sink #25489 on #13251 rewired to w27346 (source #27062) -> FAIL (extra ['13251|ParameterTerminal|y|0'])  6030
+  PASS  M4 an open pair dropped -> FAIL  
+  PASS  M5 an unlicensed rename listed -> FAIL  
+  PASS  C1 every real terminal renamed -> PB still PASSES (names are report columns)  {'extra': [], 'missing': []}
+  PASS  S1 sink_gate_spec on the s07 census reproduces the logged per-row tuple (diag_c150_p4s07v18_scratch.log:65)  [('p4_rbA_re2', [9519], ['p4_rbA_re2'], [{'uid': 5058, 'term_uid': 5171}], ['pos in cal image out']), ('p4_rbD_sel_t25573', [25573], ['p4_rbD_sel_t25573'], ['new:RB4.s? t:f'], ['s? t:f'])]
+  FACT  S2 SG-p4_rbA_re2-pos-diffraction-pattern: ok True; detail == log :358 -> True
+  FACT  S2 SG-p4_rbD_sel_t25573-autofocus-reset-count-1-2-to-1-1: ok True; detail == log :359 -> True
+  PASS  S2 sink_gate_read reproduces both recorded PASS details character for character (log :358-359)  
+  PASS  S3 the indicator terminal unwired -> sink_gate_read FAILS  
+  PASS  R1 RingSession(s07): SG label head + the 2 sink declarations == log :65; NC 5; DRY False  
+  PASS  R2 RingSession(P5-1a): L1 label (checkpoints) == diag_c154_p5s01a_scratch.log:67; SG rows 0; NC 8  L1 the 20 actions compile into 14 real ops == pred kinds, each action once; checkpoints (0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14)
+  PASS  X1 pred_x10 == the logged X10 (s07 673.7, P5-1a 672.2; diag_c150_p4s07v18_scratch.log:24, diag_c154_p5s01a_scratch.log:24)  
+  PASS  X2 pred_x10 with another plan (md5 differs) -> None  
+  PASS  E1 el_advisory on the stored s06 Error List read == diag_c149_a1_2_eladv.log:3 exactly, rc 1 (1 recorded)  EL-ADVISORY total read 51 pred 55 diff -4; per-class diff (read - pred) {"input": -2, "other:looptunnelwireconnectedtoanundirectedtunnel": -3, "other:thiswireconnectsoneormoredatasinksbuthasnosource":
+  PASS  E2 el_advisory_selftest on the s06 pred -> rc 0 and RESULT 5/0  ORDED rc 0
+EL-SELFTEST case D the prediction itself: rc 0 expected 0 -> PASS
+RESULT {"schema": "result-line/1", "status": "PASS", "gates": {"pass": 5, "fail": 0}, "first_fail": null, "artefacts": []}
+
+  PASS  A1 census_all_install: 3 CENSUS-ALL lines, net delta Function +1, new uids {Function 1, Wire 1}, lost 1; gate result passed through  ['  CENSUS-ALL net delta (every class) {"Function": 1}', '  CENSUS-ALL new uids by class (every class) {"Function": 1, "Wire": 1}', '  CENSUS-ALL lost uids 1']
+RESULT {"status":"PASS","gates":{"pass":35,"fail":0},"first_fail":null,"artefacts":[],"schema":"result-line/1","card":"chat-T7","labview":"none"}
+BGRUN END rc=0 after 33s

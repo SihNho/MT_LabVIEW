@@ -1692,6 +1692,555 @@ def run(fn, stage):
     except Exception as e:                                                         # noqa: BLE001
         stage.gate("H-HYGIENE the hygiene phase completed", False, str(e)[:150])
         return stage.summary()
+
+
+# ============================================================================================== RING RECIPES AS CALLS (card chat-T7)
+# User 2026-10-09: "보통 같은 함수가 계속 반복되면 복사 붙여넣기 대신 공통 함수로 만들고 호출하지 않아?" (docs/script-writing.md).
+# The ring stage recipes tools/recipes/stage_d1_ring_p4_s0[6-9]v18.py / stage_d1_ring_p5s01a.py (+ their _scratch pairs) were made by
+# copying the previous batch; their bodies are the same ~120 lines with only file names changed (census: docs/d1/result-gates.md PD377).
+# That logic lives HERE now, once; a recipe holds its inputs and calls (tools/recipes/stage_template_ring.py + _scratch.py).
+# Behaviour is the p5s01a recipe's, line for line, EXCEPT PB, which compares by POSITION (pb_check, gate-fp fp-70; PD371(b), PD373).
+# The recipes that already ran stay as they are: they are the record of what ran (docs/script-writing.md rule 4).
+# Offline test: tools/bench/selftest_t7_ring.py.
+def jload(*parts):
+    """json.load of os.path.join(*parts) (utf-8) - the recipes' `J` helper. Returns the parsed object."""
+    with open(os.path.join(*parts), encoding="utf-8") as f:
+        return json.load(f)
+
+
+def pure(name):
+    """A NO-LabVIEW module (stagexec, stagesim, vigraph, jev_candidates, elrule) imported DIRECTLY, as the recipes import it - not
+    through mod(), which stage_prerun's dry run replaces with a stubbing wrapper (stage_prerun.py:781). Returns the module."""
+    return importlib.import_module(name)
+
+
+# ---------------------------------------------------------------------------------------------- PB by POSITION (card chat-T7, fp-70)
+# vigraph.computation_diff (a7eb58c7, card 153-b2-1) already compares sinks and sources by position and drops a rename-only slot; a
+# pred written under the older name-keyed vigraph still lists such a slot as one lost + one new NAME row ('2626|Terminal|array|0..3'
+# vs S1's 'element|0..2', s06: 18 stored rows = 14 slots). PD371(b) / PD373(d): convert the stored rows to position rows - a lost +
+# new pair at one (owner, index, class) is ONE changed row, a pair with equal (name-free) sources is no row - and compare SLOTS. The
+# converter is the one card 153-a2-3 wrote (tools/bench/selftest_c153_poskey_convert.py:20-73, now a thin test of these functions).
+# It is idempotent, so a pred already written under a7eb58c7 (P5 on, PD373(e)) passes through unchanged.
+def pos_slot_table(G):
+    """{term key: (node, index in the node's READ order, term class, is_source)} of a vigraph graph - the same key as
+    vigraph.pos_keys / addrcheck.pos_table. Self-test: tools/bench/selftest_c153_poskey_convert.py."""
+    import collections
+    by = G.get("by_node")
+    if by is None:
+        by = collections.OrderedDict()
+        for r in G["rows"].values():
+            by.setdefault(r["node"], []).append(r)
+    return dict((r["key"], (node, i, r.get("term_class", ""), bool(r.get("is_source")))) for node, rs in by.items()
+                for i, r in enumerate(rs))
+
+
+def pos_name_free(P, s):
+    """One effective source ('<key>' or '<key>@<tunnel>/f<n>+...') -> (its position in table P, frame tag); an unknown key
+    -> ('?', key). Self-test: tools/bench/selftest_c153_poskey_convert.py."""
+    base, tag = s, ""
+    if "@" in s:
+        b, t = s.rsplit("@", 1)
+        if all("/f" in x and x.split("/f")[0].isdigit() and x.split("/f")[-1].isdigit() for x in t.split("+")):
+            base, tag = b, t
+    return (P.get(base, ("?", base)), tag)
+
+
+def pos_slots(G, nodes, V=None):
+    """{sink key: ((node, index, class), frozenset of name-free effective sources)} for the input terminals of `nodes` in
+    graph G (V = the vigraph module). Self-test: tools/bench/selftest_c153_poskey_convert.py."""
+    V = V or pure("vigraph")
+    P, memo, out = pos_slot_table(G), {}, {}
+    for k, p in P.items():
+        if not p[3] and p[0] in nodes:
+            out[k] = (p[:3], frozenset(pos_name_free(P, s) for s in V.effective_sources(G, k, memo)))
+    return out
+
+
+def pos_convert(rows, SA, SB):
+    """Name-keyed cdiff sink strings -> POSITION rows [{sink, slot, name_a, name_b, before, after[, passthrough]}], sorted by
+    sink: one row per (node, index, class) whose sources differ between SA and SB (pos_slots of graph A / B); a row with no
+    slot in either is passed through (slot None). Idempotent. Self-test: tools/bench/selftest_c153_poskey_convert.py S1-S7."""
+    order, out = [], []
+    for s in rows:
+        ps = [X[s][0] for X in (SA, SB) if s in X]
+        if not ps:
+            out.append({"sink": s, "slot": None, "name_a": s, "name_b": s, "before": None, "after": None, "passthrough": True})
+        for p in ps:
+            if p not in order:
+                order.append(p)
+    ia = dict((v[0], (k, v[1])) for k, v in SA.items())
+    ib = dict((v[0], (k, v[1])) for k, v in SB.items())
+    for p in order:
+        a, b = ia.get(p), ib.get(p)
+        va, vb = (a[1] if a else None), (b[1] if b else None)
+        if va == vb:
+            continue
+        out.append({"sink": a[0] if a else b[0], "slot": p, "name_a": a and a[0], "name_b": b and b[0], "before": va, "after": vb})
+    return sorted(out, key=lambda r: r["sink"])
+
+
+def pos_convert_open_rows(plan_open_rows, old_rows, new_rows):
+    """A plan's open_rows [{node, term}] with every row dropped whose (node, name) pair the old -> new row conversion removed
+    ENTIRELY (PD372(c)); the rest kept, in order. Self-test: tools/bench/selftest_c153_poskey_convert.py O1-O3."""
+    nm = lambda rs: set((int(s.split("|", 1)[0]), s.split("|", 2)[2].rsplit("|", 1)[0]) for s in rs)   # noqa: E731
+    gone = nm(old_rows) - nm(new_rows)
+    return [y for y in plan_open_rows if (int(y["node"]), y["term"]) not in gone]
+
+
+def s1_frame_graph(labels=None):
+    """S1's FRAME-KEYED vigraph graph (the wiki S1 terminals + the newest graph_objs_s1 / graph_loops_s1 reads), as every ring
+    recipe's PB built it (stage_d1_ring_p5s01a.py:174-175). Returns the build4 dict. Self-test: tools/bench/selftest_t7_ring.py."""
+    V, JC = pure("vigraph"), pure("jev_candidates")
+    s1p = jload(JC.WIKI, JC.S1_KEY + ".json")
+    return V.build4(s1p["terminals"], jload(JC._newest("graph_objs_s1_*.json"))["objects"], jload(JC._newest("graph_loops_s1_*.json"))["loops"],
+                    labels if labels is not None else JC.node_labels_default(), s1p["fs_tunnel_pairs"], frame_keyed=True)
+
+
+def pred_end_graph(L, labels, fs_pairs):
+    """The FRAME-KEYED vigraph graph of a plan's simulated end state L (its terminals, objs, loops) - the graph a pred's cdiff rows
+    describe; pb_check converts the pred on it. Returns the build4 dict. Self-test: tools/bench/selftest_t7_ring.py."""
+    import copy as _copy
+    return pure("vigraph").build4(L["terminals"], L.get("objs") or [], _copy.deepcopy(L["loops"]), labels, fs_pairs, frame_keyed=True)
+
+
+def pb_check(S1f, G1, Gpred, pred_rows, open_rows, unlicensed=(), V=None):
+    """PB by POSITION (card chat-T7, fp-70): cdiff(S1f, G1 = the REAL end) (vigraph.computation_diff_frame) against the pred's cdiff
+    rows and the plan's open (node, term) pairs. The pred rows are converted (pos_convert) on the slots of S1f and Gpred = the graph
+    the PRED was made on (the plan's simulated end) - never on the real end, which would erase a pred row the build failed to make
+    (selftest_t7_ring M2); the real rows on S1f / G1's slots. A stored NAME-keyed pred and a native position-keyed one compare the
+    same way: ok = the SLOT sets are equal (a passthrough row compares by its sink string), the converted open pairs == the cdiff rows'
+    (node, S1-side name) pairs, and no unlicensed rename. Sink names are report columns.
+    Returns {ok, rows (cdiff sinks), pred_rows, slots_got, slots_want, extra, missing, pairs_got, pairs_want, open_rows, cd}.
+    Self-test: tools/bench/selftest_t7_ring.py (stored P4 s03..s09 + P5-1a end reads, mutations)."""
+    V = V or pure("vigraph")
+    cd = V.computation_diff_frame(S1f, G1)
+    rk = sorted(str(y["sink"]) for y in cd["rows"])
+    nodes = set(int(s.split("|", 1)[0]) for s in list(pred_rows) + rk)
+    SA = pos_slots(S1f, nodes, V)
+    key = lambda r: tuple(r["slot"]) if r.get("slot") is not None else ("sink", r["sink"])   # noqa: E731
+    want_rows, got_rows = pos_convert(list(pred_rows), SA, pos_slots(Gpred, nodes, V)), pos_convert(rk, SA, pos_slots(G1, nodes, V))
+    want, got = set(key(r) for r in want_rows), set(key(r) for r in got_rows)
+    op = pos_convert_open_rows(list(open_rows), list(pred_rows), [r["sink"] for r in want_rows])
+    pw = set((int(y["node"]), y["term"]) for y in op)
+    pg = set((int(y["node"]), str(y["sink"]).split("|")[2]) for y in cd["rows"])
+    sk = lambda S: sorted(S, key=str)                                               # noqa: E731
+    return {"ok": want == got and pw == pg and list(unlicensed or []) == [], "rows": rk, "pred_rows": len(pred_rows),
+            "slots_got": len(got), "slots_want": len(want), "extra": sk(got - want), "missing": sk(want - got),
+            "extra_sinks": sorted(r["sink"] for r in got_rows if key(r) not in want),
+            "missing_sinks": sorted(r["sink"] for r in want_rows if key(r) not in got),
+            "pairs_got": len(pg), "pairs_want": len(pw), "pairs_extra": sk(pg - pw), "pairs_missing": sk(pw - pg),
+            "open_rows": op, "unlicensed": list(unlicensed or []), "cd": cd}
+
+
+# ---------------------------------------------------------------------------------------------- SINK GATES (PD355(b), PD366(e))
+def sink_gate_spec(e, actions, base, sim_end):
+    """One sink-gate census row (prep_*_session.json `sink_gate_census`, needs_sink_gate) -> its declared sink gate spec
+    {n, row, gate, acts, terms, sink, census_sink, src_name}: acts = the plan's wire row, terms = its base dst term(s), sink =
+    (owner, name) from the base graph, src_name = the source terminal's name (base for a numeric source, the simulated end for a
+    symbolic 'new:' source). As stage_d1_ring_p5s01a.py:56-75 (_sg_spec). Self-test: tools/bench/selftest_t7_ring.py."""
+    import re as _re
+    acts = [a for a in actions if a.get("id") == e["id"] and a["op"] == "wire" and isinstance(a.get("dst"), dict)]   # a symbolic dst is a str
+    terms = sorted(set(a["dst"]["term_uid"] for a in acts))
+    sinks = sorted(set((r["owner_uid"], r["term_name"]) for r in base["terminals"] if r["term_uid"] in terms))
+    src = acts[0]["src"] if acts else None
+    if isinstance(src, dict):
+        sname = sorted(set(r["term_name"] for r in base["terminals"] if r["term_uid"] == src["term_uid"]))
+    elif isinstance(src, str) and src.startswith("new:"):
+        try:
+            sname = [pure("stagesim").resolve_addr(sim_end, src, True)["term_name"]]
+        except Exception as ex:                                                    # noqa: BLE001 - the SG gate reports it
+            sname = ["UNRESOLVED: {0!r}".format(ex)]
+    else:
+        sname = []
+    sink = list(sinks[0]) if len(sinks) == 1 else None                             # the sink key exactly as the run reports it
+    slug = _re.sub(r"[^a-z0-9]+", "-", str(sink[1] if sink else "").lower()).strip("-")
+    return {"n": e["n"], "row": e["id"], "gate": "SG-{0}-{1}".format(e["id"], slug), "acts": acts, "terms": terms, "sink": sink,
+            "census_sink": list(e["sink"]), "src_name": sname}
+
+
+def sink_gate_read(e, d, x, rows, n_actions):
+    """(ok, detail) for the deferred op error on sink d['sink'] (stage_d1_ring_p5s01a.py:90-117 sg_read, unchanged): (a) the indicator
+    terminal exists with exactly ONE wire, (b) that wire is the net of the plan source (through x.bind; a symbolic source resolved
+    on the simulated end x.step(n_actions)), (c) that net has exactly ONE source = that terminal, (d) `rows` are the executor's
+    whole-VI read after its LAST op. x = the stagexec.Executor, rows = the backend's last read. Self-test: selftest_t7_ring.py."""
+    a = d["acts"][0]
+    tb, ob = (lambda t: x.bind["term"].get(t, t)), (lambda u: x.bind["obj"].get(u, u))
+    if isinstance(a["src"], dict):
+        ts, so = tb(a["src"]["term_uid"]), ob(a["src"]["uid"])
+    else:
+        sr = pure("stagesim").resolve_addr(x.step(n_actions)["state"], a["src"], True)
+        ts, so = tb(sr["term_uid"]), ob(sr["owner_uid"])
+    td = tb(a["dst"]["term_uid"])
+    rows = rows or []
+    d_ok = bool(rows) and bool(x.reads_real) and x.reads_real[-1] == len(x.ops)
+    ind = sorted(set((r["term_uid"], r["owner_uid"], r["term_name"], r["wire_uid"]) for r in rows if r["term_uid"] == td))
+    src = sorted(set((r["term_uid"], r["owner_uid"], r["term_name"], r["wire_uid"]) for r in rows if r["term_uid"] == ts))
+    w = ind[0][3] if len(ind) == 1 else None
+    a_ok = len(ind) == 1 and bool(w) and [ind[0][1], ind[0][2]] == list(e.get("sink") or [])
+    b_ok = (bool(w) and len(src) == 1 and src[0][3] == w and src[0][1] == so and [src[0][2]] == d["src_name"]
+            and list(e.get("source") or []) == [so, d["src_name"][0]])
+    srcs = sorted(set(r["term_uid"] for r in rows if w and r["wire_uid"] == w and r["is_source"]))
+    c_ok = srcs == [ts]
+    return a_ok and b_ok and c_ok and d_ok, ("(a) indicator t{0} rows {1} wire {2}: {3}; (b) source t{4} #{5} rows {6} wire(s) {7} entry source {8}: {9}; "
+                                             "(c) sources on wire {2} {10} == [t{4}]: {11}; (d) rows {12} = read after op {13} of {14}: {15}").format(
+        td, ind, w, a_ok, ts, so, src, sorted(set(y[3] for y in src)), e.get("source"), b_ok, srcs, c_ok,
+        len(rows), (x.reads_real or [None])[-1], len(x.ops), d_ok)
+
+
+_SGB = {}
+
+
+def sink_gate_backend_class():
+    """stagexec.LVBackend subclass that KEEPS its last whole-VI read in `last_terms` (no extra read; LVBackend.read is called exactly
+    as before) - the recipes' SGBackend (stage_d1_ring_p5s01a.py:82-87). Built once, lazily (stagexec is heavy). Returns the class."""
+    if "c" not in _SGB:
+        SX = pure("stagexec")
+
+        class SGBackend(SX.LVBackend):
+            def read(self):
+                self.last_terms = SX.LVBackend.read(self)
+                return self.last_terms
+        _SGB["c"] = SGBackend
+    return _SGB["c"]
+
+
+# ---------------------------------------------------------------------------------------------- ONE RING SESSION (the recipe body)
+class RingSession(object):
+    """The inputs of one ring stage session and the gates its body runs - stage_d1_ring_p5s01a.py:31-191 as calls. A recipe builds
+    ONE RingSession at module level from its four input files and calls, in body(s): gate_l0 -> start/discard_work -> handles ->
+    census_snapshot -> executor -> run -> gates_ng_fr_d -> gate_cen2 (with a second census_snapshot) -> gate_td -> s.es -> gate_pb
+    -> finish. The two census_snapshot CALL SITES stay in the recipe source on purpose: stage_prerun's X10 counts whole-VI reads from
+    the recipe source by call name (stage_prerun.py:2191 X10_SRC_READS). Self-test: tools/bench/selftest_t7_ring.py."""
+
+    def __init__(self, plan, pred, licence, census):
+        SX = pure("stagexec")
+        self.plan_path, self.pred_path, self.licence_path, self.census_path = plan, pred, licence, census
+        self.P = jload(plan)
+        self.BASE = jload(ROOT, self.P["finalized"]["base"]["path"])
+        self.A = self.P["actions"]
+        self.PRED = jload(pred)
+        self.REN = licence_renames(jload(licence))                                 # PD365(d): only echoed since PD366(f)
+        self.NC = sum(1 for a in self.A if a["op"] == "create" and a.get("as"))   # created objects, from the plan (FR gate)
+        self.DRY = bool(getattr(g.report_all, "_dry", False))
+        self.LAB = pure("jev_candidates").node_labels_default()
+        self.SRC = tuple(self.PRED["census"])
+        ops = SX.compile_plan(self.P)
+        self.BIND = set(k for k, o in enumerate(ops, 1) if o["kind"] in SX.BIND_KINDS)   # PD265(c): every op that creates/binds
+        self.CHECKPOINTS = tuple(sorted({0, len(ops)} | self.BIND))
+        self.FSPAIRS = self.BASE.get("fs_tunnel_pairs", self.BASE.get("fs_pairs"))
+        self.SG_CENSUS = [e for e in jload(census).get("sink_gate_census") or [] if e.get("needs_sink_gate")]   # PD366(e)
+        self.SIM_END = jload(ROOT, self.P["finalized"]["step_files"][-1]["path"])["state"]
+        self.SGS = [sink_gate_spec(e, self.A, self.BASE, self.SIM_END) for e in self.SG_CENSUS]
+        self.SINK_GATES = [{"gate": d["gate"], "sink": d["sink"]} for d in self.SGS]
+        self.SINK_FNS = dict((d["gate"], (lambda e, _d=d: self.sink_read(e, _d))) for d in self.SGS)
+        self.x = self.be = self.L = self.ti = None
+        self.made, self.on = [], []
+
+    def stem(self):
+        """The plan file's name without .json (gate labels name it). Returns a str."""
+        return os.path.splitext(os.path.basename(self.plan_path))[0]
+
+    def sink_read(self, e, d):
+        """(ok, detail) of sink_gate_read on this session's executor and last read; (True, 'dry') in a dry run."""
+        if self.DRY:
+            return True, "dry"
+        return sink_gate_read(e, d, self.x, getattr(self.be, "last_terms", None), len(self.A))
+
+    def census_snapshot(self, s):
+        """{uid: class} of s.census_snapshot() kept to the pred's census classes (the recipes' `snap`). ONE whole-VI read."""
+        return dict((u, c) for u, c in s.census_snapshot().items() if c in self.SRC)
+
+    def handles(self):
+        """LabVIEW's handle count now (bench_prep.labview_handles); None in a dry run is the caller's business."""
+        return mod("bench_prep").labview_handles()
+
+    def gate_l0(self, s):
+        """L0 (FATAL): plan final + open_rows_match + plan_in == <plan>_in; base graph md5 == pred == file; bed md5 == pred; plan end
+        cdiff == pred; pred keyed to this plan's md5."""
+        P, PRED, fz = self.P, self.PRED, self.P["finalized"]
+        st = self.stem()
+        s.gate("L0 plan FINAL, open_rows_match, plan_in = {0}_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan".format(st),
+               P.get("final") is True and fz.get("open_rows_match") is True and os.path.splitext(fz["plan_in"]["path"])[0].endswith(st + "_in")
+               and fz["base"]["md5"] == PRED["graph"]["md5"] == md5(os.path.join(ROOT, fz["base"]["path"])) and self.BASE["md5"] == PRED["bed_md5"]
+               and sorted(fz["end_cdiff_rows"]) == PRED["cdiff_rows"] and PRED["plan"]["md5"] == md5(self.plan_path),
+               (md5(self.plan_path), fz["base"], self.BASE["md5"]), fatal=True)
+
+    def executor(self, s):
+        """SG (FATAL: one declared sink gate per census row) -> the backend (stagexec.DryPlanBE in a dry run, else the SGBackend
+        with the sink gates) -> stagexec.Executor (checkpoints, name gate) -> L1 (FATAL: actions compile into the pred's op kinds,
+        each action once). Returns the Executor (also self.x; the backend is self.be)."""
+        SX = pure("stagexec")
+        sg = SX.check_sink_gates(self.SINK_GATES, self.SINK_FNS)                   # card 147-a2-1: the same check LVBackend makes
+        SGS = self.SGS
+        s.gate("SG one declared sink gate per census row ({0} rows of {1}): {2}; per row: sink term(s), plan action(s), source, source name {3}".format(
+            len(self.SG_CENSUS), os.path.basename(self.census_path), sg, [(d["row"], d["terms"], [a["id"] for a in d["acts"]], [a["src"] for a in d["acts"]], d["src_name"]) for d in SGS]),
+               len(sg) == len(self.SG_CENSUS) == len(SGS) and len(set(d["gate"] for d in SGS)) == len(SGS)
+               and all(sg[k]["sink"] == d["sink"] == d["census_sink"] and len(d["terms"]) == 1 and len(d["acts"]) == 1 and len(d["src_name"]) == 1
+                       and not str(d["src_name"][0]).startswith("UNRESOLVED") for k, d in enumerate(SGS)), sg, fatal=True)
+        self.be = SX.DryPlanBE(s, self.P, self.plan_path, self.BASE) if self.DRY else sink_gate_backend_class()(
+            s, self.FSPAIRS, sink_gates=self.SINK_GATES, gates=self.SINK_FNS, mem_stop_mb=SX.MEM_STOP_MB)
+        self.x = SX.Executor(self.plan_path, self.be, log=lambda m: print(m, flush=True), checkpoints=self.CHECKPOINTS, name_gate=True)
+        x, A = self.x, self.A
+        s.gate("L1 the {0} actions compile into {1} real ops == pred kinds, each action once; checkpoints {2}".format(len(A), len(x.ops), self.CHECKPOINTS),
+               [o["kind"] for o in x.ops] == self.PRED["ops"] and sorted(n for o in x.ops for n in o["acts"]) == list(range(1, len(A) + 1)),
+               [o["kind"] for o in x.ops], fatal=True)
+        return x
+
+    def run(self, s):
+        """Run the executor: E1 (every checkpoint's real graph == its simulated step). On stagexec.ExecStop: save ops 1..k-1 for a
+        same-cycle resume (PD329(b)), write the stop report, return None. Returns the real end rows otherwise."""
+        SX, x = pure("stagexec"), self.x
+        try:
+            real = x.run()
+            s.gate("E1 every checkpoint's real graph == its simulated step ({0} ops)".format(len(x.ops)), True)
+        except SX.ExecStop as e:
+            try:
+                SX.save_for_resume(s, x, e)
+            except Exception as ee:                                                # noqa: BLE001 - the stop report must still be written
+                s.fact("RESUME save failed: {0!r}".format(ee))
+            SX.report_stop(s, x, self.be, e)
+            return None
+        s.R["stagexec"] = x.report
+        return real
+
+    def gates_ng_fr_d(self, s, real):
+        """NG (crossing ops' new tunnel names == the simulator's), FR (FATAL: created objects on the sim end's frames; real frames ==
+        the sim end's), D (new / lost wires == the sim's, position keys via term_identity_gates). Returns the term_identity dict."""
+        x, A, L = self.x, self.A, None
+        frames = lambda rows: set(int(r["frame_diagram"] or 0) for r in rows)      # noqa: E731
+        s.gate("NG every crossing op's NEW tunnel names == the simulator's (stagexec.tunnel_name_check, per op, from the step files): {0} op(s) {1}".format(
+            len(x.name_checks), [c["k"] for c in x.name_checks]), all(c["ok"] for c in x.name_checks), x.name_checks[:6])
+        L = self.L = x.step(len(A))["state"]
+        rb = lambda sym: x.bind["obj"].get(L["sym"][sym], x.bind["diag"].get(L["sym"][sym], L["sym"][sym]))   # noqa: E731
+        made = self.made = [rb("new:" + a["as"]) for a in A if a["op"] == "create" and a.get("as")]
+        on = self.on = sorted(set(int(r["frame_diagram"] or 0) for r in real if r["owner_uid"] in made))
+        sf = set(int(x.bind["diag"].get(f, f)) for f in frames(L["terminals"]))   # the simulated end's frames, through the diagram binding
+        NC = self.NC
+        s.gate("FR the {0} created objects sit on {1} frame(s) of the simulated end; real frames == the sim end's".format(len(made), on),
+               len(made) == NC and (on or NC == 0) and set(on) <= sf and frames(real) == sf,
+               {"on": on, "nc": NC, "extra": sorted(frames(real) - sf), "missing": sorted(sf - frames(real))}, fatal=True)
+        ti = self.ti = term_identity_gates(self.BASE["terminals"], L["terminals"], real, renames=self.REN, bind={"term": x.bind["term"], "obj": x.bind["obj"]})
+        s.gate("D new wires {0} == sim's {1}; lost {2} == sim's {3} (wire uid + source identity, stagekit.wire_keys_356); deleted uids re-used: noted {4}, bad {5}".format(
+            ti["d_new"], len(ti["sim_new"]), ti["d_lost"], len(ti["sim_lost_w"]), [n["wire"] for n in ti["reuse_noted"]], [n["wire"] for n in ti["reuse_bad"]]), ti["d_ok"],
+            {"new": ti["new"], "lost": ti["lost_w"][:20], "reuse_noted": ti["reuse_noted"][:6], "reuse_bad": ti["reuse_bad"][:6]})
+        return ti
+
+    def gate_cen2(self, s, c0, c1):
+        """CEN2: the new-object census between snapshots c0 and c1 == the pred's census. Returns s.census_gate's delta."""
+        return s.census_gate("CEN2 new-object census (classes of the pred) == {0} census".format(os.path.basename(self.pred_path)), c0, c1, self.PRED["census"])
+
+    def gate_td(self, s, real):
+        """TD: every base terminal the sim keeps wired is still wired; identities lost == the plan's deletes (position key). Records
+        s.R['term_identity'] and s.R['real_end_rows']."""
+        ti = self.ti
+        s.gate("TD every base terminal the sim keeps wired is still wired; identities lost == the plan's deletes (key {0}, stagekit.term_identity_gates); renames {1}, unlicensed {2}".format(
+            ti.get("td_key", "uid/owner/name"), len(ti.get("renames") or []), ti.get("unlicensed_renames")),
+               ti["td_ok"], {"unwired": ti["unwired"][:20], "lost": ti["lost"][:20], "plan_deletes": ti["gone"][:20], "recycled_uids": ti["recycled"][:20],
+                             "raw_lost": ti["raw_lost"][:20], "renames": (ti.get("renames") or [])[:10], "unlicensed_renames": ti.get("unlicensed_renames")})
+        s.R["term_identity"] = ti
+        s.R["real_end_rows"] = [[r["term_uid"], r.get("owner_uid"), r.get("term_name"), r.get("wire_uid"), bool(r.get("is_source"))] for r in real]   # review c141-2 s4.2
+
+    def gate_pb(self, s, real):
+        """PB (FATAL, before save): pb_check(S1, real end) - by POSITION (fp-70). The real end's rows get the sim end's names on kept
+        base nodes first (pb_rename_rows, PD366(e)); objects = the backend's last read. Returns the cdiff sink list."""
+        import copy as _copy
+        L, be = self.L, self.be
+        V = pure("vigraph")
+        pbr, restored, unlic = pb_rename_rows(self.BASE["terminals"], L["terminals"], real, self.REN)
+        G1 = V.build4(pbr, getattr(be, "last_objs", None) or be.st["objs"], _copy.deepcopy(L["loops"]), self.LAB, self.FSPAIRS, frame_keyed=True)
+        r = pb_check(s1_frame_graph(self.LAB), G1, pred_end_graph(L, self.LAB, self.FSPAIRS), self.PRED["cdiff_rows"], self.P["open_rows"], unlic)
+        s.gate("PB frame-keyed cdiff(S1, real end) by POSITION (owner, index, class) == the pred's {0} rows ({1} slots) and the plan's {2} open (node, term) pairs; no unlicensed rename (FATAL, before save)".format(
+            r["pred_rows"], r["slots_want"], len(self.P["open_rows"])), r["ok"],
+               {"extra": r["extra_sinks"], "missing": r["missing_sinks"], "pairs_extra": r["pairs_extra"], "pairs_missing": r["pairs_missing"],
+                "restored": restored, "unlicensed": unlic}, fatal=True)
+        return r["rows"]
+
+    def finish(self, s, h0, rk, dc, key, level, save=True):
+        """PH / HB (handles open -> save <= +700, PD236(b)), the rule-6 GUI save (broken by design), PS (saved, md5 differs, input
+        unchanged), the work copy kept, and s.R[key] = {final, md5, cdiff_rows, handles, census_delta, frames, errorlist totals,
+        level}; s.dump(). Returns the saved md5 (None when not saved)."""
+        h1 = None if self.DRY else self.handles()
+        s.fact("PH handles: post-open {0} -> before-save {1}".format(h0, h1))
+        s.gate("HB open->save handle growth <= +700 (PD236(b) band; refs balance is H5)", self.DRY or (h1 is not None and h0 is not None and h1 - h0 <= 700), (h0, h1))
+        m = s.save(broken_ok=True) if save else None
+        if save:
+            s.gate("PS artefact saved, md5 differs from the input; input unchanged", m and m != s.input_md5 and md5(s.input_vi) == s.input_md5, m)
+        if m and m != s.input_md5 and s.work in s.scratches:
+            s.scratches.remove(s.work)
+        el = self.PRED["errorlist"]                                                 # in-between file: checked False, no EL file written
+        s.R[key] = {"final": s.work if m else None, "md5": m, "cdiff_rows": rk, "handles": [h0, h1], "census_delta": dc, "frames": self.on,
+                    "errorlist_predicted_total": el["predicted_total"], "errorlist_alternative_total": el["alternative_total"], "level": level}
+        s.dump()
+        return m
+
+
+# ---------------------------------------------------------------------------------------------- THE SCRATCH RUN (its _scratch.py pair)
+def pred_x10(pred_path, plan_path):
+    """The X10 prediction of a plan: its pred file's memory_pred.peak_mb, ONLY when pred.plan.md5 == md5(plan) (the scratch
+    recipes' x10()). Returns a float or None. Self-test: tools/bench/selftest_t7_ring.py."""
+    try:
+        pr = jload(pred_path)
+        if (pr.get("plan") or {}).get("md5") != md5(plan_path):
+            return None
+        v = (pr.get("memory_pred") or {}).get("peak_mb")
+        return float(v) if v is not None else None
+    except (OSError, ValueError):
+        return None
+
+
+_CENSUS_ALL = {"snaps": [], "on": False}
+
+
+def census_all_install(stage_cls=None):
+    """Wrap Stage.census_snapshot / census_gate (once) so every snapshot is kept and every census gate also prints the CENSUS-ALL
+    lines (net delta / new uids by class / lost uids, all classes) and stores s.R['census_all'] - the scratch recipes' snap_keep /
+    cg_print. Returns the dict of kept snapshots. Self-test: tools/bench/selftest_t7_ring.py."""
+    cls = stage_cls or Stage
+    if getattr(cls, "_census_all", False):
+        return _CENSUS_ALL
+    _snap, _cg = cls.census_snapshot, cls.census_gate
+
+    def snap_keep(self, target=None):
+        d = _snap(self, target)
+        _CENSUS_ALL["snaps"].append(dict(d))
+        return d
+
+    def cg_print(self, label, before, after, declared):
+        got = _cg(self, label, before, after, declared)
+        if isinstance(before, dict) and isinstance(after, dict) and len(_CENSUS_ALL["snaps"]) >= 2:
+            b, a = _CENSUS_ALL["snaps"][0], _CENSUS_ALL["snaps"][-1]
+            cnt = lambda d: dict((c, sum(1 for v in d.values() if v == c)) for c in set(d.values()))   # noqa: E731
+            cb, ca = cnt(b), cnt(a)
+            delta = dict((c, ca.get(c, 0) - cb.get(c, 0)) for c in sorted(set(cb) | set(ca)) if ca.get(c, 0) != cb.get(c, 0))
+            nb = {}
+            for u in set(a) - set(b):
+                nb[a[u]] = nb.get(a[u], 0) + 1
+            print("  CENSUS-ALL net delta (every class) {0}".format(json.dumps(delta, sort_keys=True)), flush=True)
+            print("  CENSUS-ALL new uids by class (every class) {0}".format(json.dumps(nb, sort_keys=True)), flush=True)
+            print("  CENSUS-ALL lost uids {0}".format(len(set(b) - set(a))), flush=True)
+            self.R["census_all"] = {"net_delta": delta, "new_by_class": nb, "lost": len(set(b) - set(a))}
+        return got
+    cls.census_snapshot, cls.census_gate, cls._census_all = snap_keep, cg_print, True
+    return _CENSUS_ALL
+
+
+EL_OCR_ALIASES = (("vl", "vi"), ("v", "y"))                                         # == errorlist_check.OCR_ALIASES
+EL_TOTAL_TOL = 3                                                                    # PD354(a): RETURN when |total diff| > 3
+
+
+def el_norm_ocr(s):
+    """An Error List text -> lower-case alphanumerics with the OCR aliases applied (== errorlist_check.norm). Returns a str."""
+    import re as _re
+    k = _re.sub(r"[^a-z0-9]", "", (s or "").lower())
+    for a, b in EL_OCR_ALIASES:
+        k = k.replace(a, b)
+    return k
+
+
+def el_class(it):
+    """One Error List item {raw, detail} -> its class: elrule.item_class's local / cond / sr, else input, else
+    'other:<el_norm_ocr(raw)>' (the scratch recipes' elcls). Self-test: tools/bench/selftest_t7_ring.py."""
+    c = pure("elrule").item_class("{0} {1}".format(it.get("raw", ""), it.get("detail", "")))
+    if c:
+        return c
+    k = el_norm_ocr(it.get("raw"))
+    if "unwiredorbadterminal" in k or ("requiredinput" in k and "notwired" in k):
+        return "input"
+    return "other:" + k
+
+
+def el_advisory(items, pred_path, plan_path, pred=None):
+    """(rc, report) for one Error List read (its items) against the pred's errorlist.per_class (PD354(a), ADVISORY): rc 1 only for
+    a class in neither the start read nor the prediction, or |total diff| > EL_TOTAL_TOL; rc 2 when the pred (read from pred_path
+    when `pred` is None) is not keyed to plan_path's md5 or has no per_class block; else 0 (the difference is recorded).
+    Self-test: el_advisory_selftest / tools/bench/selftest_t7_ring.py."""
+    import collections
+    pr = pred if pred is not None else jload(pred_path)
+    el = pr.get("errorlist") or {}
+    pc = el.get("per_class") or {}
+    if pred is None and (pr.get("plan") or {}).get("md5") != md5(plan_path):
+        return 2, {"why": "pred not keyed to plan md5"}
+    if not pc.get("predicted"):
+        return 2, {"why": "pred has no errorlist.per_class"}
+    start, want = pc["start_read"]["classes"], pc["predicted"]
+    got = collections.Counter(el_class(x) for x in items or [])
+    diff = dict((c, got.get(c, 0) - want.get(c, 0)) for c in sorted(set(got) | set(want)) if got.get(c, 0) != want.get(c, 0))
+    unseen = sorted(c for c in got if c not in start and c not in want)
+    td = len(items or []) - int(el["predicted_total"])
+    rc = 1 if (unseen or abs(td) > EL_TOTAL_TOL) else 0
+    return rc, {"read_total": len(items or []), "pred_total": el["predicted_total"], "total_diff": td, "per_class_diff": diff, "unseen": unseen,
+                "verdict": "RETURN" if rc else "RECORDED"}
+
+
+def el_advisory_print(rc, rep):
+    """Print the one EL-ADVISORY line of an el_advisory result."""
+    print("EL-ADVISORY total read {0} pred {1} diff {2:+}; per-class diff (read - pred) {3}; unseen classes {4}; verdict {5} rc {6}".format(
+        rep.get("read_total"), rep.get("pred_total"), rep.get("total_diff", 0), json.dumps(rep.get("per_class_diff"), sort_keys=True),
+        rep.get("unseen"), rep.get("verdict", rep.get("why")), rc), flush=True)
+
+
+def el_advisory_selftest(pred_path, plan_path):
+    """Four synthetic Error List reads built from the pred's predicted per-class counts (offline, the scratch recipes'
+    el_selftest): unseen class -> 1; total +4 -> 1; total +2 known -> 0; the prediction itself -> 0. Prints the RESULT line and
+    returns 0 / 1."""
+    pr = jload(pred_path)
+    want = pr["errorlist"]["per_class"]["predicted"]
+    txt = {"local": "Local Variable: This variable is not connected to anything.", "sr": "Shift Register: unwired from inside the loop",
+           "cond": "While Loop: Conditional terminal is not wired", "input": "Index Array 'Index Array': Contains unwired or bad terminal"}
+    mk = lambda c: {"raw": txt[c] if c in txt else c.split(":", 1)[1], "detail": ""}   # noqa: E731
+    base = [mk(c) for c, n in sorted(want.items()) for _ in range(n)]
+    rt = all(el_class(mk(c)) == c for c in want)
+    known = sorted(c for c in want if c.startswith("other:"))[0]
+    cases = [("A unseen class (+1 'Feedback Node: Initializer terminal is not wired')", base + [{"raw": "Feedback Node: Initializer terminal is not wired", "detail": ""}], 1),
+             ("B total +4 of a known class ({0})".format(known), base + [mk(known)] * 4, 1),
+             ("C total +2 of a known class ({0})".format(known), base + [mk(known)] * 2, 0),
+             ("D the prediction itself", base, 0)]
+    ok = rt
+    print("EL-SELFTEST synthetic classes round-trip through elcls: {0} ({1} classes, {2} items)".format(rt, len(want), len(base)), flush=True)
+    for name, items, exp in cases:
+        rc, rep = el_advisory(items, pred_path, plan_path, pr)
+        el_advisory_print(rc, rep)
+        print("EL-SELFTEST case {0}: rc {1} expected {2} -> {3}".format(name, rc, exp, "PASS" if rc == exp else "FAIL"), flush=True)
+        ok = ok and rc == exp
+    print("RESULT " + json.dumps({"schema": "result-line/1", "status": "PASS" if ok else "FAIL", "gates": {"pass": 5 if ok else 0, "fail": 0 if ok else 1},
+                                  "first_fail": None if ok else "EL-SELFTEST", "artefacts": []}), flush=True)
+    return 0 if ok else 1
+
+
+def scratch_offline_modes(argv, pred_path, plan_path):
+    """The scratch recipes' two OFFLINE modes, before any K.Stage: `--el-advisory-selftest` -> el_advisory_selftest's rc;
+    `--el-advisory <read json>` -> EL-ADVISORY of that read's items, its rc. Returns None when neither flag is given."""
+    if "--el-advisory-selftest" in argv:
+        return el_advisory_selftest(pred_path, plan_path)
+    if "--el-advisory" in argv:
+        rc, rep = el_advisory(jload(argv[argv.index("--el-advisory") + 1]).get("items") or [], pred_path, plan_path)
+        el_advisory_print(rc, rep)
+        return rc
+    return None
+
+
+def scratch_tail(st, rc, gone, key, tag, log, base_vi, base_md5, pred_path, plan_path, card, sum_json, fail_mb, launch_mb=680.0):
+    """After K.run of a scratch: peak private MB from the log's METER lines vs the pinned X10 (pred_x10), and the gates MEM (peak <=
+    fail_mb and <= X10 + 10, PD285(d)/PD328(a)), MEML (peak <= launch_mb, PD331(c)), IN (bed md5 unchanged), GONE (LabVIEW gone);
+    writes sum_json. Returns the process rc (rc, else 1 when MEM/IN/GONE fail). The scratch recipes' tail, as calls."""
+    import re as _re
+    mbs = [float(m) for m in _re.findall(r"METER \w+\s+k\s+\d+\s+private ([\d.]+) MB", open(log, encoding="utf-8", errors="replace").read())] \
+        if os.path.exists(log) else []
+    peak, X = (max(mbs) if mbs else None), pred_x10(pred_path, plan_path)
+    res = st.R.get(key) or {}
+    fin = res.get("final")
+    print("SCRATCH-{0} peak {1} MB (X10 {2}, d {3}); final {4} md5 {5}; bed md5 {6}".format(
+        tag, peak, X, None if peak is None or X is None else round(peak - X, 1), fin, res.get("md5"), md5(base_vi)), flush=True)
+    ok_mem = peak is not None and X is not None and peak <= fail_mb and peak <= X + 10.0
+    ok_in = md5(base_vi) == base_md5
+    print("GATE MEM peak <= {1} and peak <= X10 + 10 (PD285(d), PD328(a)): {0}".format("PASS" if ok_mem else "FAIL", fail_mb), flush=True)
+    print("GATE MEML peak <= {1:g} (launch condition, PD331(c)): {0}".format("PASS" if peak is not None and peak <= launch_mb else "FAIL", launch_mb), flush=True)
+    print("GATE IN bed md5 unchanged: {0}".format("PASS" if ok_in else "FAIL"), flush=True)
+    print("GATE GONE LabVIEW gone: {0}".format("PASS" if gone else "FAIL"), flush=True)
+    with open(sum_json, "w", encoding="utf-8") as f:
+        json.dump({"card": card, "rc": rc, "peak_mb": peak, "x10": X, "final": fin, "final_md5": res.get("md5"),
+                   "inputs_ok": ok_in, "gone": gone, "census_all": st.R.get("census_all")}, f, indent=1)
+    return rc or (0 if (ok_mem and ok_in and gone) else 1)
 # ---
 # labview: build
 # hardware: none

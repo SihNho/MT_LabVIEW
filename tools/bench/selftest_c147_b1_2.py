@@ -117,10 +117,12 @@ def main():
 
     def pb(ren):
         rows, restored, bad = K.pb_rename_rows(B, SIM, REAL, ren, bind=BIND)
-        cd = V.computation_diff_frame(S1f, V.build4(rows, objs, copy.deepcopy(L["loops"]), LAB, FSP, frame_keyed=True))
-        rk = sorted(str(y["sink"]) for y in cd["rows"])
-        ok = rk == PRED["cdiff_rows"] and set((int(y["node"]), str(y["sink"]).split("|")[2]) for y in cd["rows"]) == want and not bad
-        return ok, {"extra": sorted(set(rk) - set(PRED["cdiff_rows"])), "missing": sorted(set(PRED["cdiff_rows"]) - set(rk)), "restored": restored[:6]}
+        # card chat-T7 (PD373(d), fp-70): the ONE library PB, stagekit.pb_check - it converts the STORED name-keyed pred explicitly; the
+        # name compare `rk == PRED["cdiff_rows"]` and the `want` pair set stood here (git 18c241ec :120-123).
+        r = K.pb_check(S1f, V.build4(rows, objs, copy.deepcopy(L["loops"]), LAB, FSP, frame_keyed=True), K.pred_end_graph(L, LAB, FSP),
+                       PRED["cdiff_rows"], P["open_rows"], bad)
+        return r["ok"], {"extra": r["extra_sinks"], "missing": r["missing_sinks"], "pairs_missing": r["pairs_missing"], "slots": r["slots_want"],
+                         "restored": restored[:6]}
 
     for tag, lic in (("T1 L5 (5 renames)", L5), ("T1n NO licence", None)):
         ren = K.licence_renames(lic) if lic else None

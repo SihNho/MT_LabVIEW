@@ -13,67 +13,42 @@ A slot's value = vigraph.effective_sources mapped name-free (source position + f
 PREDICTION (self-test, run as a script): S1 pair -> 1 changed row; S2 equal-source pair -> 0; S3 real removal stays; S4 real new stays;
 S5 a row with no slot info passes through, a same-name same-slot change maps to itself; S6 idempotent; S7 the s06 #2626 replica
 (S1 element x3 + array, s06 array x4, slot 4 rename-only) -> element|0..2 only. card 153-a2-5: O1-O3 convert_open_rows (10/0 in all)."""
-import collections, os, sys                                                       # noqa: E401
+import os, sys                                                                     # noqa: E401
+# card chat-T7 (PD373(d), docs/script-writing.md rule 1): the converter now lives ONCE in tools/stagekit.py (pos_slot_table, pos_name_free,
+# pos_slots, pos_convert, pos_convert_open_rows); this file keeps its old names as thin aliases (diag_c153_a2_[345]_run.py call them) and
+# tests the LIBRARY functions. The definitions that stood here are git 18c241ec:tools/bench/selftest_c153_poskey_convert.py:19-76.
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import stagekit as K                                                              # noqa: E402  pure functions only (no LabVIEW call)
 
 
 def pos_table(G):
-    """{term key: (node, index in the node's read order, term class, is_source)}."""
-    by = G.get("by_node")
-    if by is None:
-        by = collections.OrderedDict()
-        for r in G["rows"].values():
-            by.setdefault(r["node"], []).append(r)
-    return dict((r["key"], (node, i, r.get("term_class", ""), bool(r.get("is_source")))) for node, rs in by.items() for i, r in enumerate(rs))
+    """Alias of stagekit.pos_slot_table."""
+    return K.pos_slot_table(G)
 
 
 def name_free(P, s):
-    """A source string '<key>' or '<key>@<tunnel>/f<n>+...' -> (its position, frame tag)."""
-    base, tag = s, ""
-    if "@" in s:
-        b, t = s.rsplit("@", 1)
-        if all("/f" in x and x.split("/f")[0].isdigit() and x.split("/f")[-1].isdigit() for x in t.split("+")):
-            base, tag = b, t
-    return (P.get(base, ("?", base)), tag)
+    """Alias of stagekit.pos_name_free."""
+    return K.pos_name_free(P, s)
 
 
 def slots(G, V, nodes):
-    """{sink key: ((node, index, class), frozenset of name-free sources)} for the sinks of `nodes`."""
-    P, memo, out = pos_table(G), {}, {}
-    for k, p in P.items():
-        if not p[3] and p[0] in nodes:
-            out[k] = (p[:3], frozenset(name_free(P, s) for s in V.effective_sources(G, k, memo)))
-    return out
+    """Alias of stagekit.pos_slots (argument order of the old copy)."""
+    return K.pos_slots(G, nodes, V)
 
 
 def convert(rows, SA, SB):
-    """rows: name-keyed sink strings; SA / SB: slots() of graph A / B. Returns position rows (dicts), sorted by sink."""
-    order, out = [], []
-    for s in rows:
-        ps = [X[s][0] for X in (SA, SB) if s in X]
-        if not ps:
-            out.append({"sink": s, "slot": None, "name_a": s, "name_b": s, "before": None, "after": None, "passthrough": True})
-        for p in ps:
-            if p not in order:
-                order.append(p)
-    ia = dict((v[0], (k, v[1])) for k, v in SA.items())
-    ib = dict((v[0], (k, v[1])) for k, v in SB.items())
-    for p in order:
-        a, b = ia.get(p), ib.get(p)
-        va, vb = (a[1] if a else None), (b[1] if b else None)
-        if va == vb:
-            continue
-        out.append({"sink": a[0] if a else b[0], "slot": p, "name_a": a and a[0], "name_b": b and b[0], "before": va, "after": vb})
-    return sorted(out, key=lambda r: r["sink"])
+    """Alias of stagekit.pos_convert."""
+    return K.pos_convert(rows, SA, SB)
 
 
 def sinks(conv):
+    """Sorted distinct sinks of converted rows."""
     return sorted(set(r["sink"] for r in conv))
 
 
 def convert_open_rows(plan_open_rows, old_rows, new_rows):
-    """card 153-a2-5 ASSUMPTION (brief_153-a2-5.md:14-17): drop an open row whose (node, name) pair old->new removed ENTIRELY; rest kept, in order."""
-    nm = lambda rs: set((int(s.split("|", 1)[0]), s.split("|", 2)[2].rsplit("|", 1)[0]) for s in rs)  # noqa: E731  name as vigraph.key_parts
-    return [y for y in plan_open_rows if (int(y["node"]), y["term"]) not in nm(old_rows) - nm(new_rows)]
+    """Alias of stagekit.pos_convert_open_rows."""
+    return K.pos_convert_open_rows(plan_open_rows, old_rows, new_rows)
 
 
 def _selftest():

@@ -215,6 +215,57 @@ def decide(path):
     return []
 
 
+# card chat-T7 item 6(c) (user 2026-10-09 "갱신은 훅으로", "함수가 바뀌면 목록 갱신 되어야하는거 아님?"): a write to a SHARED tools file
+# (tools/bench/capabilities_shared.json, written by tools/gen_capabilities.py from the import graph) re-generates the function list in
+# docs/toolkit-capabilities.md DETACHED - this hook never waits for it. One run at a time: the lock is taken HERE (O_EXCL), so a second
+# write while a run is going only sets the re-run flag and the running process regenerates once more. Env overrides: self-tests only.
+CAP_CACHE = os.environ.get("GUARD_WRITE_CAP_CACHE") or os.path.join(TOOLS, "bench", "capabilities_shared.json")
+CAP_STATE = os.environ.get("GUARD_WRITE_CAP_STATE") or os.path.join(TOOLS, "bench")
+CAP_DOC = os.environ.get("GUARD_WRITE_CAP_DOC")
+CAP_LOCK_STALE_S = 900
+
+
+def capabilities_regen(path):
+    """'started' | 'rerun-flagged' | 'not-shared' | 'no-cache' | 'spawn-failed: ...' for one written path (module comment above).
+    Self-test: tools/bench/selftest_t7_capabilities.py."""
+    import subprocess
+    import time
+    try:
+        with open(CAP_CACHE, encoding="utf-8") as f:
+            files = set(json.load(f).get("files") or [])
+    except (OSError, ValueError):
+        return "no-cache"
+    if _rel(os.path.abspath(path)) not in files:
+        return "not-shared"
+    lock, rerun = os.path.join(CAP_STATE, "capabilities_regen.lock"), os.path.join(CAP_STATE, "capabilities_regen.rerun")
+    try:
+        if time.time() - os.path.getmtime(lock) > CAP_LOCK_STALE_S:
+            os.remove(lock)                                            # a run that died without releasing it
+    except OSError:
+        pass
+    try:
+        os.close(os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY))
+    except OSError:
+        with open(rerun, "w", encoding="utf-8") as f:
+            f.write(_rel(path) + "\n")
+        return "rerun-flagged"
+    cmd = [sys.executable, os.path.join(TOOLS, "gen_capabilities.py"), "--hook-run", "--state-dir", CAP_STATE] + (
+        ["--doc", CAP_DOC] if CAP_DOC else [])
+    try:
+        # the child's stdout gets its OWN file: an inherited Windows handle has no append semantics and overwrote the run log's
+        # first line when both pointed at capabilities_regen.log (selftest_t7_capabilities H1, first run)
+        with open(os.path.join(CAP_STATE, "capabilities_regen.out"), "w", encoding="utf-8") as lf:
+            subprocess.Popen(cmd, cwd=ROOT, stdin=subprocess.DEVNULL, stdout=lf, stderr=lf, close_fds=True,
+                             creationflags=getattr(subprocess, "DETACHED_PROCESS", 0) | getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0))
+    except Exception as e:             # noqa: BLE001 - never wedge writing
+        try:
+            os.remove(lock)
+        except OSError:
+            pass
+        return "spawn-failed: %s" % e
+    return "started"
+
+
 def main():
     try:
         data = json.load(sys.stdin)
@@ -222,6 +273,11 @@ def main():
         return 0
     ti = data.get("tool_input") or {}
     path = ti.get("file_path") or ti.get("notebook_path") or ""
+    try:
+        if path:
+            capabilities_regen(path)
+    except Exception:                  # noqa: BLE001 - the list regeneration never blocks a write
+        pass
     try:
         probs = decide(path)
     except Exception:                  # noqa: BLE001 - a broken checker never wedges writing

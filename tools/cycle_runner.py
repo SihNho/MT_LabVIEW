@@ -570,6 +570,33 @@ def git_commit_cycle(n, runner_log):
         log_line(runner_log, "GIT | cycle %d | commit failed: %s" % (n, e))
 
 
+CAP_SUMMARY_RE = re.compile(r"^CAPABILITIES-SUMMARY (\w+) \| (.+)$", re.M)
+
+
+def capabilities_hook(n, runner_log, doc=None, timeout=300, gen=None):
+    """Card chat-T7 item 6(c) (user 2026-10-09 "전부 적용"): at every cycle end, BEFORE the git commit, regenerate the function table +
+    list of docs/toolkit-capabilities.md (`py tools/gen_capabilities.py --summary`) and its drift (`--check`), and log ONE line
+    `CAPABILITIES | <time> | cycle N | regenerated <counts> | drift <line or none>`. A failure is logged and never stops the runner.
+    `doc` / `gen` = another doc / generator (self-tests). Returns the logged line. Self-test: tools/bench/selftest_t7_capabilities.py."""
+    gen = gen or os.path.join(HERE, "gen_capabilities.py")
+    extra = ["--doc", doc] if doc else []
+    try:
+        p = subprocess.run([sys.executable, gen, "--summary"] + extra, cwd=ROOT, timeout=timeout, capture_output=True, text=True,
+                           encoding="utf-8", errors="replace")
+        m = CAP_SUMMARY_RE.search(p.stdout or "")
+        reg = ("%s %s" % (m.group(1), m.group(2))) if m and p.returncode == 0 else "FAILED rc=%d %s" % (
+            p.returncode, ((p.stderr or p.stdout or "").strip().splitlines() or [""])[-1][:160])
+        c = subprocess.run([sys.executable, gen, "--check"] + extra, cwd=ROOT, timeout=timeout, capture_output=True, text=True,
+                           encoding="utf-8", errors="replace")
+        dm = re.search(r"^DRIFT: (.*)$", c.stdout or "", re.M)
+        drift = dm.group(1)[:200] if dm else "unread rc=%d" % c.returncode
+    except Exception as e:  # noqa: BLE001 - logged, never raised
+        reg, drift = "FAILED %s: %s" % (type(e).__name__, str(e)[:160]), "not checked"
+    line = "CAPABILITIES | %s | cycle %s | regenerated %s | drift %s" % (time.strftime("%Y-%m-%d %H:%M:%S"), n, reg, drift)
+    log_line(runner_log, line)
+    return line
+
+
 RETRO_START_RE = re.compile(r"^BGRUN START .*?retrospective\.py --cycle (\S+)", re.M)
 
 
@@ -1805,6 +1832,7 @@ def _loop(a, status_path, bench, runner_log, prompt, run_t0, hb):
         if a.dry_run or a.dry_cmd:
             log_line(runner_log, "GIT | cycle %d | skipped (dry run)" % n)
         else:
+            capabilities_hook(n, runner_log)                  # card chat-T7: the function list, before the commit that carries it
             git_commit_cycle(n, runner_log)
         # MOTOR LIMITS OFF at cycle end, verified by readback (user 2026-09-23). Runs whatever the session's exit
         # was; a release that cannot be verified stops the runner and is written into STATUS, because limits left

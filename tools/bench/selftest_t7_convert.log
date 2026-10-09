@@ -1,0 +1,14 @@
+BGRUN START 2026-10-09 11:07:47 limit 3.0 min: py -u tools/bench/selftest_c153_poskey_convert.py
+BGRUN PID 26436
+  PASS  S1 lost+new pair at one slot -> 1 changed row carrying both names  [{'sink': '7|T|element|0', 'slot': (7, 1, 'T'), 'name_a': '7|T|element|0', 'name_b': '7|T|array|0', 'before': frozenset({('s1', '')}), 'after': frozenset({('s2', '')})}]
+  PASS  S2 equal-source pair -> 0 rows  
+  PASS  S3 real removal stays (after None)  [{'sink': '7|T|a|0', 'slot': (7, 2, 'T'), 'name_a': '7|T|a|0', 'name_b': None, 'before': frozenset({('s1', '')}), 'after': None}]
+  PASS  S4 real new stays (before None)  [{'sink': '7|T|b|0', 'slot': (7, 3, 'T'), 'name_a': None, 'name_b': '7|T|b|0', 'before': None, 'after': frozenset({('s2', '')})}]
+  PASS  S5 unrelated row passes through; same name same slot changed -> itself  [{'sink': '7|T|e|0', 'slot': (7, 1, 'T'), 'name_a': '7|T|e|0', 'name_b': '7|T|e|0', 'before': frozenset({('s1', '')}), 'after': frozenset({('s2', '')})}, {'sink': '9|T|q|0', 'slot': None, 'name_a': '9|T|q|0', 'name_b': '9|T|q|0', 'before': None, 'after': None, 'passthrough': True}]
+  PASS  S6 idempotent on already-converted rows  ['7|T|a|0', '7|T|b|0', '7|T|element|0', '9|T|q|0']
+  PASS  S7 s06 #2626 replica -> element|0..2 (slot 4 rename-only gives no row)  ['2626|Terminal|element|0', '2626|Terminal|element|1', '2626|Terminal|element|2']
+  PASS  O1 open pair removed entirely by the conversion is dropped (#2626 array)  [{'node': 2626, 'term': 'element'}, {'node': 9, 'term': 'q'}]
+  PASS  O2 unrelated / still-present pairs kept, order kept  [{'node': 2626, 'term': 'array'}, {'node': 2626, 'term': 'element'}, {'node': 9, 'term': 'q'}]
+  PASS  O3 idempotent  
+RESULT {"status":"PASS","gates":{"pass":10,"fail":0},"first_fail":null,"artefacts":[],"schema":"result-line/1","card":"chat-T7","labview":"none"}
+BGRUN END rc=0 after 1s
