@@ -1,0 +1,70 @@
+{
+ "schema": "task/1",
+ "id": "157-a1-2",
+ "kind": "build",
+ "goal": "Re-pin stagekit md5 in two self-tests (retry of 157-a1-1), then dry + prerun + X10 on plan_ring_p5s02a with the new tool bytes; report the launch-gate text.",
+ "why": "Card 157-a1-1 built PD381(b)(c)(d); its only suite change was two stagekit md5 pin gates, and PD381(e) needs dry + prerun PASS on the new bytes before the one scratch.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_157-a1-2.md", "md5": "0e3526efe99af86d73bfd8428a772fef"},
+  {"path": "tools/bench/diag_c157_a1_1_facts.md", "md5": "6e6377c98d18b5955cd37c7592466b54"},
+  {"path": "tools/bench/diag_c156_a2_1_facts.md", "md5": "26ca648593e85b8f45eb3267901344cc"},
+  {"path": "tools/bench/plan_ring_p5s02a.json", "md5": "4284c22a540f9e3f39c7092affe516af"},
+  {"path": "tools/bench/plan_ring_p5s02r_all.json", "md5": "15da9551b4e1ab8620f4fa815c224da3"},
+  {"path": "tools/bench/selftest_c156_passwire.py", "md5": "8335875bc5951d425c8fcaed7ff30d30"},
+  {"path": "tools/bench/selftest_c155_basecase_frame.py", "md5": "9ecb15b89e3553181c85bc8161e7d3e3"},
+  {"path": "tools/stagexec.py", "md5": "69b1a301ad6456d261cf150714e25da4"},
+  {"path": "tools/stagesim.py", "md5": "eb99c6bab81633f9bdd7c10dce6bfc0a"},
+  {"path": "tools/addrcheck.py", "md5": "207beb0d09102c78b1e06d1f076eec7e"},
+  {"path": "tools/stagekit.py", "md5": "0d8f6d252eac3d0c28fc3a2141f54a14"},
+  {"path": "tools/stage_prerun.py", "md5": "9decb20f6d67793abad967347e2a37ab"},
+  {"path": "tools/vigraph.py", "md5": "a7eb58c7e35a134f93df168ea4cdea80"},
+  {"path": "tools/gscript.py", "md5": "1a80236ed35c1876c67f964c72fe820a"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+  {"path": "docs/d1/ring-p5.md", "md5": "27bbd99f16a69acb403c7f1ca6318761"}
+ ],
+ "pass": [
+  "Only the stagekit md5 string changed in selftest_c156_passwire.py and selftest_c155_basecase_frame.py; they give 20/0 and 21/0",
+  "dry PASS on stage_d1_ring_p5s02a.py and _scratch.py with the new bytes; PB state quoted (PASS or PASS-UNVERIFIED)",
+  "prerun PASS on both; X10 planned MAIN peak vs 675 and Executor-only quoted; checkpoint list incl. 10,11,12 quoted",
+  "--scratch-required rc and the launch-gate text for the full scratch command quoted (function + line); label prefix named",
+  "diag_c157_a1_2_facts.md written (<= 40 lines, facts only, OPEN lines); no LabVIEW process; no tools/hooks edit; no recipe/plan/pred edit"
+ ],
+ "outputs": [
+  "tools/bench/selftest_c156_passwire.py",
+  "tools/bench/selftest_c155_basecase_frame.py",
+  "tools/bench/diag_c157_a1_2_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/selftest_c156_passwire.py",
+   "tools/bench/selftest_c155_basecase_frame.py",
+   "tools/bench/diag_c157_a1_2*",
+   "tools/bench/prep_c157_a1_2*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/jev_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 40
+ },
+ "rules": [
+  "Offline; no LabVIEW; no tools/hooks edit; no edit to any recipe, plan, pred, licence, stage tool or P5 file",
+  "Rule 1a: only a pin string changes; no tool or VI computation",
+  "A gate refusing your own command text is a false positive: py tools/gate_fp.py log, no env bypass",
+  "Return (do not re-cut) if planned MAIN is above 675"
+ ],
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c157_a1_1_facts.md"}
+ ]
+}

@@ -1926,7 +1926,7 @@ class RingSession(object):
         self.SRC = tuple(self.PRED["census"])
         ops = SX.compile_plan(self.P)
         self.BIND = set(k for k, o in enumerate(ops, 1) if o["kind"] in SX.BIND_KINDS)   # PD265(c): every op that creates/binds
-        self.CHECKPOINTS = tuple(sorted({0, len(ops)} | self.BIND))
+        self.CHECKPOINTS = SX.checkpoint_ops(ops)   # card 157-a1-1 (PD381(d)): {0, last} | BIND | every move_in op
         self.FSPAIRS = self.BASE.get("fs_tunnel_pairs", self.BASE.get("fs_pairs"))
         self.SG_CENSUS = [e for e in jload(census).get("sink_gate_census") or [] if e.get("needs_sink_gate")]   # PD366(e)
         self.SIM_END = jload(ROOT, self.P["finalized"]["step_files"][-1]["path"])["state"]

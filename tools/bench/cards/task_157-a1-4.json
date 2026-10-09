@@ -1,0 +1,57 @@
+{
+ "schema": "task/1",
+ "id": "157-a1-4",
+ "kind": "measure",
+ "goal": "Offline measure: planned X10 MAIN at group cuts 20 and 26 of the P5-2 all-plan with the new checkpoints; close fp-76 as gate-correct.",
+ "why": "Card 157-a1-2 found step 1 at MAIN 679.7 over the 675 rule; judgement needs the re-cut numbers. fp-76 was a card omission.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_157-a1-4.md", "md5": "5a4e919670ba98c3380bb437f1e28098"},
+  {"path": "tools/bench/diag_c157_a1_2_facts.md", "md5": "4ede428f881ade8301358cee5f8bfe93"},
+  {"path": "tools/bench/diag_c156_a1_1_facts.md", "md5": "b3721f78ff11328c6a0131cf8439a6c0"},
+  {"path": "tools/bench/plan_ring_p5s02r_all.json", "md5": "15da9551b4e1ab8620f4fa815c224da3"},
+  {"path": "tools/bench/memory_model.json", "md5": "c87d170a8370c4b5dcf77d1aa6738aed"},
+  {"path": "tools/gate_fp.py", "md5": "1f427fb5b1735584c19a699c2314b826"},
+  {"path": "tools/stagekit.py", "md5": "0d8f6d252eac3d0c28fc3a2141f54a14"},
+  {"path": "tools/stagexec.py", "md5": "69b1a301ad6456d261cf150714e25da4"},
+  {"path": "tools/stage_prerun.py", "md5": "9decb20f6d67793abad967347e2a37ab"}
+ ],
+ "pass": [
+  "For cuts at action 20 and 26: ops, checkpoints, planned MAIN and Executor-only peak, reads, ops in the last group, no group split",
+  "The function used (file:line) and cut-plan files under tools/bench/sim/ring_p5s02a_c157/ only; no stored plan/pred/licence/recipe edited",
+  "fp-76 closed via tools/gate_fp.py close with a reason citing two path:lines; closed record quoted",
+  "tools/bench/diag_c157_a1_4_facts.md written (<= 30 lines, facts only, OPEN lines); no LabVIEW; no tools/hooks edit"
+ ],
+ "outputs": [
+  "tools/bench/diag_c157_a1_4_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/sim/ring_p5s02a_c157/**",
+   "tools/bench/diag_c157_a1_4*",
+   "tools/bench/prep_c157_a1_4*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/jev_*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 40
+ },
+ "rules": [
+  "Offline; no LabVIEW; no tools/hooks edit; measure only, no recommendation",
+  "No edit of any stored plan, pred, licence, recipe or stage tool; cut plans only under tools/bench/sim/ring_p5s02a_c157/",
+  "A gate refusing your own command text is a false positive: py tools/gate_fp.py log"
+ ],
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c157_a1_2_facts.md"}
+ ]
+}

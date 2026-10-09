@@ -203,7 +203,7 @@ gate("D3 case_frame_of / case_frame_names on a plan-made case: names from case_f
      SS.case_frame_of(sp, 6) == (4, 1, "True") and SS.case_frame_names(sp, 4) == [["False", 5], ["True", 6]]
      and SS.case_frame_of(dict(sp, case_frames={}), 6) == (4, 1, "#6"))
 # ---- pins
-pins = {"stagekit.py": "aec03c6c", "stage_prerun.py": "9decb20f", "addrcheck.py": "207beb0d", "gscript.py": "1a80236e",
+pins = {"stagekit.py": "0d8f6d25", "stage_prerun.py": "9decb20f", "addrcheck.py": "207beb0d", "gscript.py": "1a80236e",
         "vigraph.py": "a7eb58c7"}
 got = dict((k, SK.md5(os.path.join(ROOT, "tools", k))[:8]) for k in pins)
 gate("P1 protected pins unchanged", got == pins, got)

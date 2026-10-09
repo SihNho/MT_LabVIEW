@@ -1,0 +1,368 @@
+{
+ "schema": "stageplan/1",
+ "context": {
+  "s1_key": "D1_s1_copy"
+ },
+ "stage": "ring_p5s02a_cut26",
+ "goal": "card 157-a1-4 MEASURE ONLY: plan_ring_p5s02r_all.json actions 1..26",
+ "base": {
+  "path": "tools/bench/graph_ring_p5s01_20261009_125622.json",
+  "md5": "6716c49948f097b8ac0e1780930bfab1"
+ },
+ "actions": [
+  {
+   "op": "add_shift_reg",
+   "id": "sr_q7",
+   "loop": 23041,
+   "body": 23405,
+   "parent": 686,
+   "as": "QS7",
+   "why": "PD376(d) refnum SR on 1.7"
+  },
+  {
+   "op": "wire",
+   "id": "w_obt_q7",
+   "src": {
+    "uid": 31258,
+    "term": "queue out",
+    "term_uid": 31335
+   },
+   "dst": "new:QS7L.outer",
+   "why": "PD376(d) 2nd branch of Obtain #31258 'queue out'"
+  },
+  {
+   "op": "create",
+   "id": "c_deq",
+   "class": "Function",
+   "diagram": 23405,
+   "as": "DQ1",
+   "prim": "Dequeue Element",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorQueue_v0.vi",
+    "uid": 45
+   },
+   "terminals": [
+    {
+     "name": "queue",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "timeout in ms (-1)",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "error in (no error)",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "queue out",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "element",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "timed out?",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "error out",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    }
+   ],
+   "data_stream": true,
+   "why": "PD376(d); DATA stream 1.2 -> 1.7 results FIFO (PD374(a), CLAUDE.md 1c'': queues for lossless data only)"
+  },
+  {
+   "op": "wire",
+   "id": "w_q7_deq",
+   "src": "new:QS7L.inner",
+   "dst": "new:DQ1.queue",
+   "why": "PD376(d) Dequeue on L.inner"
+  },
+  {
+   "op": "wire",
+   "id": "w_deq_q7",
+   "src": "new:DQ1.queue out",
+   "dst": "new:QS7R.inner",
+   "why": "PD376(d) refnum back to R.inner"
+  },
+  {
+   "op": "create",
+   "id": "c_rel",
+   "class": "Function",
+   "diagram": 686,
+   "as": "RQ1",
+   "prim": "Release Queue",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorQueue_v0.vi",
+    "uid": 46
+   },
+   "terminals": [
+    {
+     "name": "queue",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "force destroy? (F)",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "error in (no error)",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "queue name",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "remaining elements",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    },
+    {
+     "name": "error out",
+     "is_source": true,
+     "term_class": "ParameterTerminal"
+    }
+   ],
+   "data_stream": true,
+   "why": "PD376(d) Release on 686 after 1.7; DATA stream 1.2 -> 1.7 results FIFO (CLAUDE.md 1c'')"
+  },
+  {
+   "op": "wire",
+   "id": "w_q7_rel",
+   "src": "new:QS7R.outer",
+   "dst": "new:RQ1.queue",
+   "why": "PD376(d) + PD379(d) R.outer of 1.7's refnum SR -> Release (row-18 route)"
+  },
+  {
+   "op": "create",
+   "id": "c_tmo",
+   "class": "DigitalNumericConstant",
+   "diagram": 23405,
+   "as": "TM1",
+   "on": "new:DQ1.timeout in ms (-1)",
+   "value": 100,
+   "why": "PD374(a) Dequeue with timeout 100 ms (const_on_term)"
+  },
+  {
+   "op": "create",
+   "id": "c_case7",
+   "class": "CaseStructure",
+   "diagram": 23405,
+   "as": "CQ7",
+   "selector_as": "SL7",
+   "frames": [
+    "False",
+    "True"
+   ],
+   "src": "new:DQ1.timed out?",
+   "why": "PD374(d) NEW Case on Dequeue 'timed out?'; False = an element was dequeued"
+  },
+  {
+   "op": "move_in",
+   "id": "mv_376",
+   "nodes": [
+    376
+   ],
+   "dest_diagram": "new:CQ7.f0",
+   "pos": [
+    10194,
+    18599
+   ],
+   "why": "PD374(d) `#376` MOVED in (not changed)"
+  },
+  {
+   "op": "move_in",
+   "id": "mv_3052",
+   "nodes": [
+    3052
+   ],
+   "dest_diagram": "new:CQ7.f0",
+   "pos": [
+    10094,
+    18534
+   ],
+   "why": "PD374(d) `#3052` refnum constant"
+  },
+  {
+   "op": "move_in",
+   "id": "mv_3453",
+   "nodes": [
+    3453
+   ],
+   "dest_diagram": "new:CQ7.f0",
+   "pos": [
+    10334,
+    18534
+   ],
+   "why": "PD374(d) `#3453` 'file progress'"
+  },
+  {
+   "op": "wire",
+   "id": "w_ref",
+   "src": {
+    "uid": 3052,
+    "term": "File # Saved",
+    "term_uid": 3060
+   },
+   "dst": {
+    "uid": 376,
+    "term": "saved file refnum",
+    "term_uid": 5772
+   },
+   "why": "PD374(d) the wire #3052 -> #376 as in the P5-1 graph (w10394)"
+  },
+  {
+   "op": "wire",
+   "id": "w_prog",
+   "src": {
+    "uid": 376,
+    "term": "file progress",
+    "term_uid": 5704
+   },
+   "dst": {
+    "uid": 3453,
+    "term_uid": 3453
+   },
+   "why": "PD374(d) the wire #376 -> #3453 as in the P5-1 graph (w10362)"
+  },
+  {
+   "op": "tunnel",
+   "id": "t_el7",
+   "loop": "new:CQ7",
+   "body": "new:CQ7.f0",
+   "parent": 23405,
+   "dir": "in",
+   "as": "TE7",
+   "why": "PD374(d) t5 <- the dequeued element"
+  },
+  {
+   "op": "wire",
+   "id": "w_el7_in",
+   "src": "new:DQ1.element",
+   "dst": "new:TE7.outer",
+   "why": "PD374(d)"
+  },
+  {
+   "op": "wire",
+   "id": "w_el7_376",
+   "src": "new:TE7.inner",
+   "dst": {
+    "uid": 376,
+    "term": "current frame data array in",
+    "term_uid": 5754
+   },
+   "why": "PD374(d)"
+  },
+  {
+   "op": "tunnel",
+   "id": "t_in1",
+   "loop": "new:CQ7",
+   "body": "new:CQ7.f0",
+   "parent": 23405,
+   "dir": "in",
+   "as": "TF1",
+   "why": "PD374(d) in-tunnel #24357 keeps its source"
+  },
+  {
+   "op": "wire",
+   "id": "w_in1_t",
+   "src": {
+    "uid": 24357,
+    "term": "",
+    "term_uid": 24360
+   },
+   "dst": "new:TF1.outer",
+   "why": "PD374(d)"
+  },
+  {
+   "op": "wire",
+   "id": "w_in1_376",
+   "src": "new:TF1.inner",
+   "dst": {
+    "uid": 376,
+    "term": "cal cluster path",
+    "term_uid": 5760
+   },
+   "why": "PD374(d)"
+  },
+  {
+   "op": "tunnel",
+   "id": "t_in2",
+   "loop": "new:CQ7",
+   "body": "new:CQ7.f0",
+   "parent": 23405,
+   "dir": "in",
+   "as": "TF2",
+   "why": "PD374(d) in-tunnel #24361 keeps its source"
+  },
+  {
+   "op": "wire",
+   "id": "w_in2_t",
+   "src": {
+    "uid": 24361,
+    "term": "",
+    "term_uid": 24367
+   },
+   "dst": "new:TF2.outer",
+   "why": "PD374(d)"
+  },
+  {
+   "op": "wire",
+   "id": "w_in2_376",
+   "src": "new:TF2.inner",
+   "dst": {
+    "uid": 376,
+    "term": "file size",
+    "term_uid": 5778
+   },
+   "why": "PD374(d)"
+  },
+  {
+   "op": "tunnel",
+   "id": "t_in3",
+   "loop": "new:CQ7",
+   "body": "new:CQ7.f0",
+   "parent": 23405,
+   "dir": "in",
+   "as": "TF3",
+   "why": "PD374(d) in-tunnel #25223 keeps its source"
+  },
+  {
+   "op": "wire",
+   "id": "w_in3_t",
+   "src": {
+    "uid": 25223,
+    "term": "",
+    "term_uid": 25235
+   },
+   "dst": "new:TF3.outer",
+   "why": "PD374(d)"
+  },
+  {
+   "op": "wire",
+   "id": "w_in3_376",
+   "src": "new:TF3.inner",
+   "dst": {
+    "uid": 376,
+    "term": "selected path",
+    "term_uid": 5787
+   },
+   "why": "PD374(d)"
+  }
+ ]
+}

@@ -225,3 +225,33 @@ How to add: see the 5-line note at the top of `docs/d1/INDEX.md`.
      - **(e) The per-card invariant helper** (5th copy, `tools/bench/diag_c156_a2_1_inv.py`) is extracted into ONE shared module
        under `tools/` (not `tools/hooks/`, not stagekit) per `docs/script-writing.md`, self-tested by reproducing an existing
        inv log; offline, does not gate the deliverable.
+381. **(cycle 157 judgement, 2026-10-09 — after `assign_result_156_2.json` / card 156-a3-1: the op-16 fix chosen)**
+     USER-RULES: U1 (relied on: ops 16/17 still wire the same source face to the same `#376` input, only the route that finds the
+     face changes; the checkpoints and outcome lines read, they compute nothing), U4 (relied on, unchanged); none contradicted.
+     - **Accepted (cycle 156 round 2):** facts `tools/bench/diag_c156_a3_1_facts.md`; `tools/invcheck.py` (self-test 20/0); fp-73
+       closed; `violations.py` reads `HH:Mx` (7/0); `docs/fn_descriptions.json` 3 → 62.
+     - **(a) Working cause = E-B.** The op-16 stop text comes out of `connect_route` only when `#24360` has wire 0 (route.log:12), and
+       op 16 used op 15's fresh checkpoint read (facts M2). So after `mv_376` LabVIEW had no wire on `#24360`. Op 17 (`#24367`) is
+       the same case. No live read proves it (M2), so the fix in (b) must work whether the wire is there or not, and (c) measures it.
+     - **(b) Fix: route both outcomes (stagexec / stagesim / addrcheck only, narrow).** When a plan wire's source is the INNER face of
+       a LoopTunnel on a While or For loop and the face is unwired in the read, take its diagram from the graph (tunnel → owner
+       loop → that loop's one body diagram) and choose the route the wired case chooses (`cfw`, same dst). Loops only: an inner face
+       of a Case or FS tunnel still stops. Self-test: the M1 cases. With wire 0, op 16 and op 17 give `cfw` with the same dst as
+       wired. The existing self-tests pass. `plan_ring_p5s01a` / `p5s01b` / `p5s02a` compile to the same ops as before.
+     - **(c) Outcome record (measure, do not model).** After every `move_in` op the executor prints one `FATE` line per wire the sim
+       marked ambiguous at that step: wire uid or 0 on the source term AND on the moved sink term, taken from that op's checkpoint
+       read. This is the first record of a LoopTunnel-source only-sink move (facts M5: no precedent). Tightening `opmodels/move_in.json`
+       from it is a later card. If the moved sink term (e.g. 5760) still has a wire when its connect op runs, return at that op.
+     - **(d) Checkpoints (PD379(e), PD380(b)): a shared rule, not a recipe attribute.** `stagekit.RingSession` adds every op of kind
+       `move_in` to `CHECKPOINTS` (stagekit.py:1927-1929); recipes stay inputs only (PD377). Self-test: `p5s02a` checkpoints = the old
+       list plus 10, 11, 12. X10 is re-run with the extra reads. If planned MAIN goes over 675, the plan maker re-cuts per PD379(c).
+       A cut that would split a group is handed back.
+     - **(e) Then the deliverable:** dry + prerun of `plan_ring_p5s02a.json` (4284c22a unless (d) re-cuts it) on the new tool bytes.
+       If the dry again shows PB PASS-UNVERIFIED, the scratch card carries `DRY-UNVERIFIED-OK` naming PB (fp-76 was this card
+       omission, not a gate fault; close fp-76 as "gate correct"). Run ONE scratch on a NEW byte copy of P5-1 7f2582ae. It must show
+       E1 diff 0 at every checkpoint and FATE lines for ops 10-12. Then adopt `claudeDev\D1_ring_p5s02a_<ts>.vi` (in-between, not
+       counted) with a full Error List read, a graph read and `load_by_vi`. Then make the step-2 plan on that real graph (dry +
+       prerun + prior-art), not launched. After step 1 is adopted, delete `D1_ring_p5s02a_20261009_152721.vi` cac5236b and its resume
+       record (PD380(d)).
+     - **(f) A second stop at op 16/17 means PD380(c):** no retry in the card; hand back for a decomposition plan.
+     - **(g) gate-fp DUE:** every open entry (fp-62..69, 71, 74, 75) is a hook gate, so the chat drains them. No runner card does.

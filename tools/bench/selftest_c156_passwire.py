@@ -158,7 +158,7 @@ for p in ("plan_ring_p5s02r_all.json", "plan_ring_p5s02a.json", "plan_ring_p5s01
     gate("D {0} compiles EQUAL to the before-list ({1} ops)".format(p, len(now)), (before.get(k_) or {}).get("ops") == now,
          len((before.get(k_) or {}).get("ops") or []))
 # ---- pins
-pins = {"stagekit.py": "aec03c6c", "stage_prerun.py": "9decb20f", "addrcheck.py": "207beb0d", "gscript.py": "1a80236e",
+pins = {"stagekit.py": "0d8f6d25", "stage_prerun.py": "9decb20f", "addrcheck.py": "207beb0d", "gscript.py": "1a80236e",
         "vigraph.py": "a7eb58c7", "stagesim.py": "eb99c6ba"}
 got = dict((k_, L.md5(os.path.join(ROOT, "tools", k_))[:8]) for k_ in pins)
 gate("P protected pins unchanged (stagesim not edited)", got == pins, got)

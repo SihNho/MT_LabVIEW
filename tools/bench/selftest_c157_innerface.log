@@ -1,0 +1,69 @@
+BGRUN START 2026-10-09 19:07:11 limit 10.0 min: py -u tools/bench/selftest_c157_innerface.py
+BGRUN PID 1212
+---------- (i) wire-0 inner face of a While-loop tunnel routes as wired
+FACT I1 op16 step_15 WIRED cfw dst (1, 1, 6) | WIRE 0 cfw ((1, 1, 6), 'inner face #24360 of LoopTunnel #24357, wire 0: body #23405 of WhileLoop #23041 (graph owners) -> cfw as wired')
+  PASS  I1 op16 step_15: plan ends (24360 -> 5760); wired 'cfw'; wire 0 'cfw', same dst, src_diag 23405  ('cfw', 'cfw')
+FACT I1 op16 step_17 WIRED cfw dst (1, 1, 6) | WIRE 0 cfw ((1, 1, 6), 'inner face #24360 of LoopTunnel #24357, wire 0: body #23405 of WhileLoop #23041 (graph owners) -> cfw as wired')
+  PASS  I1 op16 step_17: plan ends (24360 -> 5760); wired 'cfw'; wire 0 'cfw', same dst, src_diag 23405  ('cfw', 'cfw')
+FACT I2 op17 step_15 WIRED cfw dst (1, 1, 9) | WIRE 0 cfw ((1, 1, 9), 'inner face #24367 of LoopTunnel #24361, wire 0: body #23405 of WhileLoop #23041 (graph owners) -> cfw as wired')
+  PASS  I2 op17 step_15: plan ends (24367 -> 5778); wired 'cfw'; wire 0 'cfw', same dst, src_diag 23405  ('cfw', 'cfw')
+FACT I2 op17 step_20 WIRED cfw dst (1, 1, 9) | WIRE 0 cfw ((1, 1, 9), 'inner face #24367 of LoopTunnel #24361, wire 0: body #23405 of WhileLoop #23041 (graph owners) -> cfw as wired')
+  PASS  I2 op17 step_20: plan ends (24367 -> 5778); wired 'cfw'; wire 0 'cfw', same dst, src_diag 23405  ('cfw', 'cfw')
+---------- (ii) Case / FS inner face with wire 0 still stops with the existing text
+  FAIL  C1 recorded SelectorTunnel inner face #1104 (owner #1034, frame #206, wire 817 -> 0) -> the existing stop verbatim  ADDRESS: terminal #1104 is_source False, wanted True
+FACT C2 no FlatSequenceInnerTunnel InnerTerminal row on step_15 (278 SelectorTunnel inner faces)
+  PASS  C3 #24360 wire 0 with body 23405's owner relabelled CaseStructure (synthetic) -> the existing LoopTunnel stop  ADDRESS: #24360 is an INNER face of LoopTunnel #24357: only the outer face's owner route is measured (l2a1_faces_81.log)
+---------- (iii) FATE lines: dry_run of p5s02a on a synthetic read
+FACT synthetic read: the SimBackend read with these source faces at wire 0 after ops (first, last): {24360: (10, 15), 24367: (10, 16), 3060: (10, 10)}
+STOP {"schema":"stop-line/1","kind":"traceback","message":"RecursionError: maximum recursion depth exceeded","t":"2026-10-09 19:07:24","exc":"RecursionError","card":"157-a1-1"}
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\selftest_c157_innerface.py", line 133, in <module>
+    st1, ff1, ex1 = SX.dry_run(PLAN, log=LOG1.append)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stagexec.py", line 4570, in dry_run
+    ex.run()                                       # raises UNROUTABLE at the end when any row was unroutable
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stagexec.py", line 2356, in run
+    real = be.read()
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\selftest_c157_innerface.py", line 120, in read
+    rows, n = SX.SimBackend.read(self), len(self.calls)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\selftest_c157_innerface.py", line 120, in read
+    rows, n = SX.SimBackend.read(self), len(self.calls)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\selftest_c157_innerface.py", line 120, in read
+    rows, n = SX.SimBackend.read(self), len(self.calls)
+  [Previous line repeated 994 more times]
+RecursionError: maximum recursion depth exceeded
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"RecursionError: maximum recursion depth exceeded","artefacts":[],"card":"157-a1-1","labview":"none"}
+BGRUN END rc=1 after 13s
+BGRUN START 2026-10-09 19:07:46 limit 10.0 min: py -u tools/bench/selftest_c157_innerface.py
+BGRUN PID 25408
+---------- (i) wire-0 inner face of a While-loop tunnel routes as wired
+FACT I1 op16 step_15 WIRED cfw dst (1, 1, 6) | WIRE 0 cfw ((1, 1, 6), 'inner face #24360 of LoopTunnel #24357, wire 0: body #23405 of WhileLoop #23041 (graph owners) -> cfw as wired')
+  PASS  I1 op16 step_15: plan ends (24360 -> 5760); wired 'cfw'; wire 0 'cfw', same dst, src_diag 23405  ('cfw', 'cfw')
+FACT I1 op16 step_17 WIRED cfw dst (1, 1, 6) | WIRE 0 cfw ((1, 1, 6), 'inner face #24360 of LoopTunnel #24357, wire 0: body #23405 of WhileLoop #23041 (graph owners) -> cfw as wired')
+  PASS  I1 op16 step_17: plan ends (24360 -> 5760); wired 'cfw'; wire 0 'cfw', same dst, src_diag 23405  ('cfw', 'cfw')
+FACT I2 op17 step_15 WIRED cfw dst (1, 1, 9) | WIRE 0 cfw ((1, 1, 9), 'inner face #24367 of LoopTunnel #24361, wire 0: body #23405 of WhileLoop #23041 (graph owners) -> cfw as wired')
+  PASS  I2 op17 step_15: plan ends (24367 -> 5778); wired 'cfw'; wire 0 'cfw', same dst, src_diag 23405  ('cfw', 'cfw')
+FACT I2 op17 step_20 WIRED cfw dst (1, 1, 9) | WIRE 0 cfw ((1, 1, 9), 'inner face #24367 of LoopTunnel #24361, wire 0: body #23405 of WhileLoop #23041 (graph owners) -> cfw as wired')
+  PASS  I2 op17 step_20: plan ends (24367 -> 5778); wired 'cfw'; wire 0 'cfw', same dst, src_diag 23405  ('cfw', 'cfw')
+---------- (ii) Case / FS inner face with wire 0 still stops with the existing text
+  PASS  C1 recorded SelectorTunnel inner face #1479 (owner #1445, frame #253, wire 1392 -> 0) -> the existing stop verbatim  ADDRESS: #1479 is an INNER face of SelectorTunnel #1445: only the outer face's owner route is measured (l2a1_faces_81.log)
+  PASS  C2 recorded FlatSequenceInnerTunnel face #151 wire 0 -> its existing stop  ADDRESS: #151 is a FlatSequenceInnerTunnel face (#123): not a Nodes[] triple - its route is Left/Right Terminal (docs/NAMES.md:1245-1255, OpFsInnerTunnelConnect_v1)
+  PASS  C3 #24360 wire 0 with body 23405's owner relabelled CaseStructure (synthetic) -> the existing LoopTunnel stop  ADDRESS: #24360 is an INNER face of LoopTunnel #24357: only the outer face's owner route is measured (l2a1_faces_81.log)
+---------- (iii) FATE lines: dry_run of p5s02a on a synthetic read
+FACT synthetic read: the SimBackend read with these source faces at wire 0 after ops (first, last): {24360: (10, 15), 24367: (10, 16), 3060: (10, 10)}
+  FATE step=10 wire=10394 src_term=3060 src_wire=0 sink_term=5772 sink_wire=0
+  FATE step=10 wire=24091 src_term=25235 src_wire=24091 sink_term=5787 sink_wire=0
+  FATE step=10 wire=24153 src_term=24367 src_wire=0 sink_term=5778 sink_wire=0
+  FATE step=10 wire=24285 src_term=24190 src_wire=24285 sink_term=5683 sink_wire=0
+  FATE step=10 wire=24312 src_term=24288 src_wire=24312 sink_term=5782 sink_wire=0
+  FATE step=10 wire=24330 src_term=24360 src_wire=0 sink_term=5760 sink_wire=0
+  PASS  F1 exactly six FATE lines, all step=10, == the stated synthetic read (sink_wire = step_10 sim value)  {'got': ['FATE step=10 wire=10394 src_term=3060 src_wire=0 sink_term=5772 sink_wire=0', 'FATE step=10 wire=24091 src_term=25235 src_wire=24091 sink_term=5787 sink_wire=0', 'FATE step=10 wire=24153 src_term=24367 src_wire=0 sink_term=5778 sink_wire=0', 'FATE step=10 wire=24285 src_term=24190 src_wire=24285 sink_term=5683 sink_wire=0', 'FATE step=10 wire=24312 src_term=24288 src_wire=24312 sink_term=5782 sink_wire=0', 'FATE step=10 wire=24330 src_term=24360 src_wire=0 sink_term=5760 sink_wire=0'], 'want': ['FATE step=10 wire=10394 src_term=3060 src_wire=0 sink_term=5772 sink_wire=0', 'FATE step=10 wire=24091 src_term=25235 src_wire=24091 sink_term=5787 sink_wire=0', 'FATE step=10 wire=24153 sr
+  PASS  F2 FATE lines in the unpatched dry run: six, step=10, src_wire = the sim's kept wire  ['FATE step=10 wire=10394 src_term=3060 src_wire=10394 sink_term=5772 sink_wire=0', 'FATE step=10 wire=24091 src_term=25235 src_wire=24091 sink_term=5787 sink_wire=0', 'FATE step=10 wire=24153 src_term=24367 src_wire=24153 sink_term=5778 sink_wire=0', 'FATE step=10 wire=24285 src_term=24190 src_wire=24285 sink_term=5683 sink_wire=0', 'FATE step=10 wire=24312 src_term=24288 src_wire=24312 sink_term=5782 sink_wire=0', 'FATE step=10 wire=24330 src_term=24360 src_wire=24330 sink_term=5760 sink_wire=0']
+  FAIL  F3 synthetic run status/first_fail == unpatched (PASS / None); ops 16/17 routed 'cfw' on the zeroed read  {'synthetic': ('PASS', 'None'), 'routes': [(None, 16), (None, 17)]}
+FACT op 10-12 acts [[10], [11], [12]]; unpatched PASS None
+---------- (iv) checkpoints
+  PASS  K1 RingSession(p5s02a).CHECKPOINTS == checkpoint_ops(ops) == (0, 1, 3, 6, 8, 9, 10, 11, 12, 15, 16, 17)  (0, 1, 3, 6, 8, 9, 10, 11, 12, 15, 16, 17)
+  PASS  K2 no recipe assigns .CHECKPOINTS (recipes stay inputs-only)  []
+  PASS  P pins unchanged  {'tools/stagesim.py': 'eb99c6ba', 'tools/addrcheck.py': '207beb0d', 'tools/bench/plan_ring_p5s02a.json': '4284c22a', 'tools/bench/sim/ring_p5s02a/step_15_tunnel.json': 'b7da7fa7'}
+FACT md5 stagexec 69b1a301ad6456d261cf150714e25da4 stagekit 0d8f6d252eac3d0c28fc3a2141f54a14
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":12,"fail":1},"first_fail":"F3 synthetic run status/first_fail == unpatched (PASS / None); ops 16/17 routed 'cfw' on the zeroed read","artefacts":[],"card":"157-a1-1","labview":"none"}
+BGRUN END rc=1 after 23s

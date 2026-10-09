@@ -1,0 +1,47 @@
+{
+ "schema": "task/1",
+ "id": "157-a1-3",
+ "kind": "build",
+ "goal": "Offline: add ~60 one-line descriptions of existing undocumented shared functions to docs/fn_descriptions.json, each read from the function's code.",
+ "why": "STATUS CARRY (user 2026-10-09 'chat-T8'): one batch per cycle; the side file avoids docstring edits that shift file:line citations.",
+ "inputs": [
+  {"path": "docs/fn_descriptions.json", "md5": "b7a678c87f07083a9e7eb3d1a570dcda"},
+  {"path": "tools/gen_capabilities.py", "md5": "78e9c328657bbd7165cce62c7f9369c4"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"}
+ ],
+ "pass": [
+  "docs/fn_descriptions.json gains 55-65 new items keyed <module>.<function> (module = file name without .py), existing keys unchanged, valid JSON",
+  "each new entry says what the function does and what it returns, written after reading its def in tools/<module>.py (no guessing from the name); no docstring or other line added to any tools/*.py",
+  "the 'undocumented' column of the generated block in docs/toolkit-capabilities.md falls by exactly the number added; doc_lint L12 reports no stale key",
+  "report lists the modules covered and count per module; pins stagexec 69b1a301, stagesim eb99c6ba, stagekit 0d8f6d25, addrcheck 207beb0d unchanged"
+ ],
+ "outputs": [
+  "docs/fn_descriptions.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "docs/fn_descriptions.json",
+   "docs/toolkit-capabilities.md",
+   "tools/bench/capabilities_shared.json",
+   "tools/bench/prep_c157_a1_3*",
+   "tools/bench/jev_*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 45
+ },
+ "rules": [
+  "Offline; no LabVIEW; edit only the side file (Edit tool, no heredoc); no edit to any tools/*.py",
+  "Table order of the generated block, whole modules, ~60; skip stagexec/stagesim/stagekit/addrcheck",
+  "Key format and entry style as the existing items; read each def before writing"
+ ],
+ "advances": ["M3", "R1"]
+}

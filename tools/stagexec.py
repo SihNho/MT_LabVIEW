@@ -1560,6 +1560,10 @@ def connect_route(addr, real, src, dst, loop_of):
         c, hc = addr.tun(real, src)
         info.update(tun=c, tun_how=hc, dst_term=dt[2])
         return "tunouter", rs, rd, info
+    inner = loop_inner_face_route(real, rs, addr.owners)  # card 157-a1-1 (PD381(b)): an UNWIRED While/For inner face
+    if inner is not None:
+        info.update(inner)
+        return "cfw", rs, rd, info
     st_, hs = addr.triple(real, src, True, loop_of)
     info.update(src=st_, src_how=hs)
     return "nested", rs, rd, info
@@ -1617,6 +1621,47 @@ def tunnel_owner(rows, tun, owners):
         raise ExecStop("ADDRESS: tunnel #{0}: owner structure not unique from its inner frames {1} ({2} owners known)".format(
             tun, sorted(fr), len(owners or {})))
     return own.pop()
+
+
+def loop_inner_face_route(rows, rs, owners):
+    """card 157-a1-1 (docs/d1/ring-p5.md PD381(b)): the info fields of the 'cfw' route for an UNWIRED inner face of a While /
+    For LoopTunnel used as a connect SOURCE - the route the WIRED face takes (connect_route, same dst), so the route does not
+    depend on whether LabVIEW kept the wire after a move_in. The diagram comes from the graph: tunnel -> its owner loop
+    (tunnel_owner, from its inner frame) -> that loop's ONE body diagram and class in `owners`; the face must sit on that body.
+    Returns None (the caller's existing stop stands) for a wired face, an outer face, any class other than LoopTunnel (so an
+    inner face of a Case or Flat Sequence tunnel still stops), or an owner that is not one While/For loop with one body.
+    Self-test: tools/bench/selftest_c157_innerface.py (i)/(ii)."""
+    if rs["owner_class"] not in LOOP_ROUTED or rs["term_class"] != "InnerTerminal" or int(rs["wire_uid"] or 0):
+        return None
+    try:
+        loop = tunnel_owner(rows, rs["owner_uid"], owners)
+    except ExecStop:
+        return None
+    ent = [(int(k), v[0]) for k, v in (owners or {}).items() if int(v[1] or 0) == loop]
+    if len(ent) != 1 or ent[0][1] not in ("WhileLoop", "ForLoop") or ent[0][0] != int(rs["frame_diagram"] or 0):
+        return None
+    return {"src_how": "inner face #{0} of LoopTunnel #{1}, wire 0: body #{2} of {3} #{4} (graph owners) -> cfw as wired".format(
+        rs["term_uid"], rs["owner_uid"], ent[0][0], ent[0][1], loop), "src_diag": ent[0][0], "src_loop": loop,
+        "src_loop_cls": ent[0][1], "src_wire0": True}
+
+
+def route_on_state(st, src, dst, zero_terms=()):
+    """card 157-a1-1: connect_route on a simulated / recorded STATE, addressed as the dry backend addresses it (Addr over
+    SimReader, the state's owners, base_registers as loop_of), after setting the wire uid of every terminal in `zero_terms`
+    to 0 (a read in which LabVIEW dropped those wires). The state is not modified. Returns (route kind, info) or
+    ('STOP', ExecStop text). Self-test: tools/bench/selftest_c157_innerface.py (i)/(ii)."""
+    s = copy.deepcopy(st)
+    z = set(int(t) for t in zero_terms)
+    for r in s["terminals"]:
+        if r["term_uid"] in z:
+            r["wire_uid"] = 0
+    addr = Addr(SimReader(_StateHolder(s)), s.get("owners"))
+    loop_of = dict((u, v["loop"]) for u, v in base_registers(s).items())
+    try:
+        kind, _rs, _rd, info = connect_route(addr, dedupe(s["terminals"]), src, dst, loop_of)
+        return kind, info
+    except ExecStop as e:
+        return "STOP", str(e)
 
 
 class Addr(object):
@@ -1977,6 +2022,39 @@ def bound_owners(owners, bind):
 # ============================================================================================ the executor
 BIND_KINDS = ("add_sr", "tunnel", "create", "connect_term_uid")   # ops that make objects: a fresh read is required after each
 # (card 124-6: connect_term_uid makes the case's SelectorTunnel, bound by bind_case_faces)
+READ_KINDS = ("move_in",)   # card 157-a1-1 (PD379(e)/PD381(d)): ops whose read is recorded (FATE lines), binding nothing
+
+
+def checkpoint_ops(ops):
+    """card 157-a1-1 (docs/d1/ring-p5.md PD379(e), PD381(d)): the E1 checkpoint set of a compiled op list - 0, the last op,
+    every op whose kind is in BIND_KINDS (a fresh read binds what it made) and every op whose kind is in READ_KINDS (a move_in:
+    its read is compared with the sim and gives the FATE lines). Returns a sorted tuple of op numbers.
+    Self-test: tools/bench/selftest_c157_innerface.py (iv)."""
+    return tuple(sorted({0, len(ops)} | set(k for k, o in enumerate(ops, 1) if o["kind"] in BIND_KINDS + READ_KINDS)))
+
+
+def fate_lines(n, eff, prev_terms, read_rows, bind_term=None):
+    """card 157-a1-1 (docs/d1/ring-p5.md PD381(c)): the FATE record of plan step n (a move_in) - one line per wire the sim
+    marked AMBIGUOUS there (effect['only_sink'] rows with fate 'ambiguous', stagesim._apply_only_sink -> allow_either):
+    'FATE step=<n> wire=<sim wire uid> src_term=<uid> src_wire=<uid|0> sink_term=<uid> sink_wire=<uid|0>'. The wire uids are
+    read from `read_rows` (the op's checkpoint read) on the source terminal and on the MOVED sink terminal(s) (the wire's
+    sink rows in `prev_terms`, the state before the move; several sinks are comma-joined, a terminal absent from the read
+    prints '?'). Sim uids go through bind_term (sim -> real). It reads and formats only: no verdict, no state change.
+    Returns a list of str. Self-test: tools/bench/selftest_c157_innerface.py (iii)."""
+    bt = bind_term or {}
+    wire_of = dict((int(r["term_uid"]), int(r["wire_uid"] or 0)) for r in read_rows)
+    rw = lambda t: "?" if wire_of.get(t) is None else str(wire_of[t])                # noqa: E731
+    out = []
+    for x in (eff or {}).get("only_sink") or []:
+        if x.get("fate") != "ambiguous":
+            continue
+        w, s = int(x["wire"]), int(x["src_term_uid"])
+        sinks = [bt.get(t, t) for t in sorted(set(int(r["term_uid"]) for r in prev_terms
+                                                   if int(r["wire_uid"] or 0) == w and not r["is_source"]))]
+        rs = bt.get(s, s)
+        out.append("FATE step={0} wire={1} src_term={2} src_wire={3} sink_term={4} sink_wire={5}".format(
+            n, w, rs, rw(rs), ",".join(str(t) for t in sinks) or "?", ",".join(rw(t) for t in sinks) or "?"))
+    return out
 
 
 class Executor(object):
@@ -2464,6 +2542,10 @@ class Executor(object):
                     res = dict(res or {}, lost_register_faces=lost)
                 for n in op["acts"]:
                     self.allow.update((self.step(n).get("effect") or {}).get("allow_either") or [])
+                    if op["kind"] in READ_KINDS and (self.step(n).get("effect") or {}).get("allow_either"):
+                        self.log("  FATE-UNREAD step={0} op {1} is not a checkpoint: ambiguous wires {2} not read (card 157-a1-1)".format(
+                            n, k, [x.get("wire") for x in (self.step(n).get("effect") or {}).get("only_sink") or []
+                                   if x.get("fate") == "ambiguous"]))
                 rec = {"k": k, "op": op["kind"], "acts": op["acts"], "ids": [A[n - 1].get("id") for n in op["acts"]],
                        "result": res, "bound": {}, "diff": {"n": 0, "skipped": True}, "secs": round(time.time() - t0, 1)}
                 self.report.append(rec)
@@ -2483,6 +2565,11 @@ class Executor(object):
                 self.reads_partial.append(k)
                 meter("read_part", k)
             stale = False
+            if op["kind"] in READ_KINDS:                   # card 157-a1-1 (PD381(c)): FATE lines from this checkpoint read
+                for n in op["acts"]:
+                    for ln in fate_lines(n, self.step(n).get("effect"), self.step(n - 1)["state"]["terminals"], real_new,
+                                         self.bind["term"]):
+                        self.log("  " + ln)
             made = {}
             cm_snap = self._cmap_snap()                    # card chat-T3: the creation map records what this op binds
             if op["kind"] == "create":                     # card 100-3: a loop owns no row - bound from the op's return

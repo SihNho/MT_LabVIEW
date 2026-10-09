@@ -1,0 +1,77 @@
+{
+ "schema": "task/1",
+ "id": "157-a1-1",
+ "kind": "build",
+ "goal": "PD381(b)(c)(d) tool fix: wire-0 loop inner-face route (cfw), FATE lines after each move_in, move_in ops become checkpoints; self-test; other op lists unchanged.",
+ "why": "Scratch 156-a2-2 stopped at op 16 (#24360 inner face, wire 0 after mv_376). PD381 chooses the fix that works whether LabVIEW kept or dropped the wire, and a FATE record to measure it; PD379(e) needs E1 at every move_in op.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_157-a1-1.md", "md5": "95b9071a23d555bb92ecdbad0f8ea3e9"},
+  {"path": "tools/bench/diag_c156_a3_1_facts.md", "md5": "17f703bde9a2b14b5e025780713d27be"},
+  {"path": "tools/bench/diag_c156_a3_1_route.py", "md5": "071c5fc28eb2c04d12f39f568baab64a"},
+  {"path": "tools/bench/selftest_c156_passwire.py", "md5": "8335875bc5951d425c8fcaed7ff30d30"},
+  {"path": "tools/bench/plan_ring_p5s02a.json", "md5": "4284c22a540f9e3f39c7092affe516af"},
+  {"path": "tools/bench/plan_ring_p5s01a.json", "md5": "ed62e8d66aa788c21525cee1ed38646d"},
+  {"path": "tools/bench/plan_ring_p5s01b.json", "md5": "75a77a000e111591b93565def74869cf"},
+  {"path": "tools/bench/sim/ring_p5s02a/summary.json", "md5": "f07054394b5d4f396c6fc9dcaf846e3a"},
+  {"path": "tools/bench/sim/ring_p5s02a/step_10_move_in.json", "md5": "9b820f15b508bdc56c8c58e291cd9ae4"},
+  {"path": "tools/stagexec.py", "md5": "25a1494c420685f9049264ceefc8604a"},
+  {"path": "tools/stagesim.py", "md5": "eb99c6bab81633f9bdd7c10dce6bfc0a"},
+  {"path": "tools/addrcheck.py", "md5": "207beb0d09102c78b1e06d1f076eec7e"},
+  {"path": "tools/stagekit.py", "md5": "aec03c6c4b319e1056b6a856c5a6bd2c"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+  {"path": "docs/d1/ring-p5.md", "md5": "27bbd99f16a69acb403c7f1ca6318761"}
+ ],
+ "pass": [
+  "Before-edit op lists of p5s01a, p5s01b, p5s02a and each recipe's CHECKPOINTS stored first; after the edit the op lists are identical (CHECKPOINTS differ only by added move_in ops)",
+  "Wire-0 inner face of a While/For LoopTunnel: ops 16 and 17 of plan_ring_p5s02a give cfw with the same dst as wired; Case/FS inner face with wire 0 still stops with the existing text",
+  "FATE line (format in brief) printed after each move_in op per sim-ambiguous wire; self-test replays ops 10-12 and gets the six M3 wires with the stated synthetic read",
+  "RingSession checkpoints for p5s02a == [1,3,6,8,9,15,16,17] + 10,11,12 (sorted), no recipe attribute",
+  "New tools/bench/selftest_c157_innerface.py PASS; existing stagexec/stagesim/addrcheck self-tests and selftest_c156_passwire.py (20/0) keep their counts",
+  "New md5s of stagexec/stagesim/addrcheck/stagekit reported; no LabVIEW process; no tools/hooks edit; tools/bench/diag_c157_a1_1_facts.md written (<= 45 lines, facts only, OPEN lines)"
+ ],
+ "outputs": [
+  "tools/stagexec.py",
+  "tools/stagesim.py",
+  "tools/addrcheck.py",
+  "tools/stagekit.py",
+  "tools/bench/selftest_c157_innerface.py",
+  "tools/bench/diag_c157_a1_1_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/addrcheck.py",
+   "tools/stagekit.py",
+   "tools/bench/selftest_c157_*",
+   "tools/bench/diag_c157_a1_1*",
+   "tools/bench/prep_c157_a1_1*",
+   "tools/bench/sim/ring_p5s02a_c157/**",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/jev_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 75
+ },
+ "rules": [
+  "Offline; no LabVIEW; no tools/hooks edit; no edit to any stored plan, pred, licence, recipe or P5 file",
+  "Rule 1a: only how stage tools ADDRESS a wire and what they PRINT changes; no VI content or computation",
+  "script-writing.md: one shared function called from every site, docstring on new functions, no pasted copies",
+  "Return if the change alters any other plan's op list, or a recorded graph row needed for the diagram lookup is missing"
+ ],
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c156_a3_1_facts.md"},
+  {"kind": "file", "name": "tools/bench/sim/ring_p5s02a/step_15_tunnel.json"}
+ ]
+}
