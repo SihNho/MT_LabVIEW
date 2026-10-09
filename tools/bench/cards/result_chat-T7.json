@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"chat-T7","status":"PASS","gates":{"pass":4,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+{"path":"tools/stagekit.py","md5":"aec03c6c4b319e1056b6a856c5a6bd2c"},
+{"path":"tools/gen_capabilities.py","md5":"6ec3dea5a3ef6075fa640a331127cf71"},
+{"path":"tools/cycle_runner.py","md5":"321e74c63a890e674e30249ec6b93a78"},
+{"path":"tools/hooks/guard_write.py","md5":"a6ffc427049a3d34711d95de7560eafe"},
+{"path":"tools/recipes/stage_template_ring.py","md5":"dad673839c998469c63f84665c31048a"},
+{"path":"tools/recipes/stage_template_ring_scratch.py","md5":"f3ff9d5a6b4fcf9147573583c83b7218"},
+{"path":"tools/bench/selftest_t7_ring.py","md5":"b3ed1752a1b3b0f22b324af5ceb68931"},
+{"path":"tools/bench/selftest_t7_capabilities.py","md5":"442a5eaf8aa30ab43bb8b49311f94464"},
+{"path":"docs/d1/result-gates.md","md5":"2ac8b10cdee30484d17dfc3642383cee"}],
+"facts":[
+"Census (docs/d1/result-gates.md PD377(a)): PB inline 21 files, L0 21, HB/save tail 21, FR 16, D/TD 10, sg_read 5; scratch: CENSUS-ALL/x10/MEM tail 13, EL advisory 5",
+"Extracted to tools/stagekit.py:1705-2240 (appended, earlier lines unchanged): pb_check :1806, RingSession :1908, sink_gate_spec/read :1836/:1861, converter :1724-1789, scratch helpers :2078-2222",
+"PB by POSITION: pred converted on S1 + the pred's own sim-end graph; on the real end it would erase a missed rewire (selftest_t7_ring M2). selftest_t7_ring.log 35/0",
+"pb_check PASS, no licence: P4 s03-s05 (16 rows=12 slots), s06 x2 (18=14), s07 19, s08 21, s09 21, P5-1a 21; the old name compare FAILs on s06 (14 vs 18); M1-M5 FAIL",
+"fp-70 DRAINED (tools/bench/gate_fp_queue.jsonl): selftest_t7_t6poskey.log 43/0 (was 38/5), selftest_t7_c147.log 19/1 (P0 pin only), compdiff 8/0, convert 10/0",
+"No unrun ring recipe existed: P5-1a ran in cycle 154 (stage_runs.jsonl:134, adopted 2482fe7b); P5-1b stopped at plan. Template pair written; old recipes kept as record",
+"Template vs P5-1a: DRY PASS, PRERUN 16/0, same 36 gate lines except the PB label, X10 677.3 (src 2 reads) / scratch 672.2 (diag_t7_prerun2_*.log vs diag_t7_prerun_*.log)",
+"fn-list: 185 shared files (50 tools, 72 bench, 55 recipes, 8 hooks), 2432 functions, 1155 undocumented; selftest_t7_capabilities.log 10/0 (H1 regen, H2 not-shared, H3 run+re-run, C1/C2)",
+"Regressions: stagexec 141/0, stagesim 106/0, assign_flow 16/0, fn_f2 36/0, c_e3 64/0; t6_regress t4 18/1 FAILed identically at baseline before any edit (selftest_t7_base_regress.log)",
+"Committed 676f874f (explicit paths) after removing a stale .git/index.lock of 10:08 (no git process from then); doc_lint L12 PASS, 1 pre-existing L2 dangling (docs/d1/ring-p4.md:131)"],
+"open":[
+"6(b) docstrings: only gen_capabilities' 3 written; 325 undocumented in 46 tools/*.py (stagexec 61, stage_prerun 29, stagesim 25..). Inserting shifts 900+ file:line cites (stagexec 333). Accept shift?",
+"PD373(d) named a new poskey module or vigraph as the converter's home; it went to stagekit (brief item 2: the result-gate owner). Ratify, or move it?",
+"New recipes on RingSession change stage_prerun's pattern signature, so the first launch is not a PROVEN pattern (prior-art review owed). Accept as one-time cost?"],
+"cost":{"usd":null,"minutes":41,"labview_runs":0},
+"note":"Recipe body = p5s01a line for line except PB; RingSession.executor/run/finish are checked by dry/prerun only (no LabVIEW). Open cards 149-a2-1/149-a3-3/149-a3-4 pin stagekit 06b8d844 (stale before this card). STATUS STOP line left for the chat (status_edit false)."}
