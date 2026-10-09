@@ -606,7 +606,7 @@ def premature_build(cmd):
                 f"{time.strftime('%Y-%m-%d %H:%M', time.localtime(rmt))})\n"
                 + (f"  NEW structure : {', '.join(new_p[:8])} - no clean stage ran these; a new structure class "
                    f"always gets the review (card chat-P2)\n" if new_p else "") + diff_hint +
-                f"  newest priorart review : "
+                "  newest priorart review : "
                 + (f"{_rel(latest[0])} ({time.strftime('%Y-%m-%d %H:%M', time.localtime(latest[1]))})"
                    if latest else "none archived") + "\n\n"
                 "Device for the `premature-build` slug. Either no prior-art review has run for this build, or the\n"
