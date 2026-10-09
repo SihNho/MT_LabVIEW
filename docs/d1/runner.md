@@ -44,3 +44,17 @@ tools in `docs/d1/tooling.md` (at its 400-line cap). How to add: see the 5-line 
        (runner wiring D1–D6). First real discussion in the loop: not yet run.
      USER-RULES: U1 (relied on: runner / review plumbing only - no VI, no stage computation) and U2 (offline only, the
      runner was stopped, no LabVIEW opened).
+
+- **PD383 (2026-10-09, user in the chat: "합의한 내용들 적용해서 러너 돌리자") - the 'overall plan' Claude-GPT discussion is applied.**
+  Discussion `tools/bench/debate/plan-overall-02` (rounds mode, 5 rounds, converged, doc
+  https://docs.google.com/document/d/1ftVOqFhHvaqaQ30_1XfZ_Kf4ArCUMuY8qVLv1ieYTOM/edit), summary `summary.json` there.
+     - **(a)** Applied through the runner's own channel (`debate_loop.apply`): steer card `tools/bench/cards/steer_158.json`
+       (13 agreed items, item `debate:plan-overall-02`) - the judgement session of cycle 158 follows it or refuses it
+       with evidence in next.json; outcome archive `archive/peer/2026-10-09-outcome-review-debate-c158.md`.
+     - **(b)** In substance: P5 -> P6 unchanged; keep original protection, hardware safety, timeout hooks and the replay
+       X/Y/Z acceptance; gates split into BLOCK (computation / save / safety invariants) vs RECORD (names, uids, order -
+       representation LabVIEW decides, read after the run); a mutation table of the gates on a stored ring graph runs as a
+       small offline card BESIDE P5 and never delays it; P6 adds a frame-number-gap test and an overload test (test delay
+       in 1.2: no loss at normal load, exact loss count and 0 damaged rows under overload; discard never seen = 'not
+       verified'); the new-skeleton comparison is a candidate after P6.
+     USER-RULES: U1 unchanged (no computation change), hardware rules unchanged.

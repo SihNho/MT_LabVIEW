@@ -1,4 +1,4 @@
----
+﻿---
 type: plan
 kind: index
 status: current
@@ -283,6 +283,7 @@ delivered step that later items build on; it is in force as a fact, not as an or
 - PD378(a)-(d) P5-1a adopted 2482fe7b (in-between); a CaseStructure in the real base graph gets `frame: "#<diagram uid>"` addressing + the R1/R2 / case_frame_wire variants (stagexec + stagesim, frame index = measured graph frame order, no inferred names); P5-1b (actions 21..32) → scratch → adopt `D1_ring_p5s01_*`; P5-2 plan not launched; elrule over-count carried — docs/d1/ring-p5.md:129
 - PD379(a)-(g) cycle 155 accepted (P5-1 = `D1_ring_p5s01_20261009_124542.vi` 7f2582ae, in-between); P5-2 re-made: drop `≥ 0`/And (counter ≥ 0 makes `==` imply it), t3/t4 SRs kept with a timed-out-frame pass (narrow stagexec/stagesim fix allowed), groups never split, planned MAIN ≤ 675, last step = counted 6/6 `D1_ring_p5_*`; sr_q R.outer unwired; fp-73 closed moot; violations.py reads `HH:Mx` — docs/d1/ring-p5.md:166
 - PD382(a)-(f) (card chat-D2, user "둘 다 넣자") Claude-GPT discussions in the runner: the due outcome review IS a discussion (outcome_review.py = fallback); HANDBACK-LIMIT / firefighter trigger → a stuck discussion before the next cycle; agreed items → steer/1 `debate:<slug>`, user questions → decisions_pending; deadline 40 min, auth failure → local doc + DEBATE-NO-DOC — docs/d1/runner.md:17
+- PD383 (user "합의한 내용들 적용해서 러너 돌리자") the overall-plan Claude-GPT discussion applied: steer card steer_158.json (13 agreed items) - gates BLOCK vs RECORD, mutation table beside P5, P6 gap + overload tests; P5 -> P6 unchanged - docs/d1/runner.md
 - PD381(a)-(g) op-16 cause = wire dropped by the move (E-B, working); inner face of a While/For LoopTunnel with wire 0 routes via the loop's body diagram (loops only); FATE lines after each move_in; move_in ops are RingSession checkpoints; DRY-UNVERIFIED-OK for PB on the scratch card (fp-76 = card omission); ONE scratch → adopt `D1_ring_p5s02a_*` → step-2 plan; second stop ⇒ decomposition — docs/d1/ring-p5.md:228
 - PD380(a)-(e) P5-2 step-1 scratch stopped at op 16 (`#24360` inner LoopTunnel face): measure offline first (task_156-a3-1), no fix chosen yet; PD379(e) move_in E1 checkpoints required before the next scratch; second stop at the same place ⇒ decomposition plan; failed work copy cac5236b kept, never loaded; inv helper → one shared module — docs/d1/ring-p5.md:207
 - PD369(a)-(g) FS #29721 owner read (Diagram #23166) + discriminator EQUAL accepted; op 187 refused because no one has measured the FS-tunnel name from a LoopTunnel source ⇒ ONE scratch-VI crossing (mirrors op 187), table row + stagesim rule + self-tests, then PD368(e) s09 unchanged; OpOwnerChain_v1 20-read hygiene owed before its next staged use — [ring-p4d](ring-p4d.md)
