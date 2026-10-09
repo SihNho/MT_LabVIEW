@@ -222,7 +222,11 @@ def run(a, doc=None):
         doc.append("중계 재개 (%s)" % time.strftime("%H:%M"), note_text or "이어서 진행합니다.")
         print("DOC resumed %s" % a.doc_id, flush=True)
     else:
-        url = doc.create(a.title, a.folder)
+        title = a.title
+        if not title:                          # first line of the topic file: launch scripts stay ASCII
+            first_line = next((x.strip("# ").strip() for x in open(a.topic, encoding="utf-8-sig") if x.strip()), "")
+            title = "토론: %s (%s)" % (first_line[:60], time.strftime("%Y-%m-%d %H:%M"))
+        url = doc.create(title, a.folder)
         print("DOC %s" % url, flush=True)
         doc.append("주제", open(a.topic, encoding="utf-8-sig").read())
     seen, stop_file, first, paused = set(), os.path.join(a.dir, "STOP"), not resuming, False
@@ -336,7 +340,7 @@ def parser():
     ap.add_argument("cmd", choices=("login", "run", "say", "selftest"))
     ap.add_argument("text", nargs="?", default="")
     ap.add_argument("--topic")
-    ap.add_argument("--title", default="Claude–GPT 토론 " + time.strftime("%Y-%m-%d %H:%M"))
+    ap.add_argument("--title", default="")     # empty -> "토론: <first line of the topic> (<time>)"
     ap.add_argument("--folder", default=FOLDER)
     ap.add_argument("--dir")
     ap.add_argument("--first", choices=("claude", "gpt"), default="claude")
@@ -358,7 +362,7 @@ def parser():
 
 
 def main(argv=None):
-    a = parser().parse_args(argv)
+    a = parser().parse_intermixed_args(argv)    # `say --dir D "text"`: the text comes after the options
     if a.cmd == "selftest":
         return selftest()
     if a.cmd == "say":

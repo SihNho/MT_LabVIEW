@@ -829,6 +829,14 @@ conclusions that changed direction get copied into an active doc. **Exception:**
 `archive/peer/` for the same question before re-asking — re-asking wastes quota the session may
 need later.
 
+### Claude–GPT live discussions (user 2026-10-09: "지금의 디스커션 방식이 너무 훌륭함")
+
+For strategy and structure questions the user may ask for a discussion between Claude and GPT: both write each round
+at the same time, question and critique each other until they converge, a Python program writes every round into a new
+Google Doc per topic (the user watches on the phone), the user steps in through THIS chat, Gemini fact-checks on
+request. Start only when the user gives a topic and says start. How to run, watch, relay interventions and fix
+problems: [docs/debate.md](docs/debate.md).
+
 ## Where to actually look
 
 - [STATUS.md](STATUS.md) — lock, current state, next actions. Read first, always. One screen.
