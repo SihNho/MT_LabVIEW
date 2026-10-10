@@ -309,9 +309,13 @@ def _run(a, doc, info):
     seen, stop_file, first, paused = set(), os.path.join(a.dir, "STOP"), not resuming, False
     if resuming:                               # comments and chat lines handled by the earlier run stay handled
         seen.update(cid for cid, _ in doc.comments() + chat_inbox(a.dir))
+    # chat 2026-10-10: the resume note reached only the doc, never the speakers (structure-equal-02 resume after the
+    # round-11 crash) - deliver it to both in the first resumed round, like any user line.
+    resume_user = note_text if resuming and a.resume_note else ""
     recent, checks, note = [], [], ""          # recent turn texts; pending Gemini questions; Gemini result for next turn
     while True:
-        user, cmds = [], set()
+        user, cmds = ([resume_user] if resume_user else []), set()
+        resume_user = ""
         for cid, text in doc.comments() + chat_inbox(a.dir):
             if cid in seen:
                 continue

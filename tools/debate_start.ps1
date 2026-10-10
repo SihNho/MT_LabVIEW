@@ -8,7 +8,11 @@
 #   powershell -NoProfile -File tools/debate_start.ps1 -Slug <short-name> -Worker      (internal: the detached part)
 # Writes tools/bench/debate/<slug>/ (topic.md copy, relay/, run.log). Prints the Google Doc link when it appears.
 # ASCII only: Windows PowerShell 5.1 reads this file without a BOM. Guide: docs/debate.md
-param([Parameter(Mandatory = $true)][string]$Slug, [string]$Topic = '', [switch]$Worker, [switch]$Stub)
+#   powershell -NoProfile -File tools/debate_start.ps1 -Slug <slug> -DocId <google doc id> -Note <file>   (RESUME a stopped
+#   discussion into the same doc and relay; <file> is delivered to both sides before the next round - inbox lines queued
+#   before the resume count as already handled)
+param([Parameter(Mandatory = $true)][string]$Slug, [string]$Topic = '', [switch]$Worker, [switch]$Stub,
+      [string]$DocId = '', [string]$Note = '')
 $root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
 Set-Location $root
 $d = Join-Path 'tools\bench\debate' $Slug
@@ -17,19 +21,29 @@ if ($Worker) {
     $env:GOOGLE_OAUTH_CLIENT_FILE = Join-Path $env:USERPROFILE '.config\debate\client_secret.json'
     $env:PYTHONIOENCODING = 'utf-8'
     $extra = @(); if ($Stub) { $extra = @('--stub', '--stub-secs', '3') }   # -Stub: launch-path test, no model calls
+    if ($DocId) { $extra += @('--doc-id', $DocId); if ($Note) { $extra += @('--resume-note', "@$Note") } }
     py -W ignore -u tools\debate_gdoc.py run --mode rounds --topic "$d\topic.md" --dir "$d\relay" --poll 10 @extra *> "$d\run.log"
     exit $LASTEXITCODE
 }
-if (-not (Test-Path $Topic)) { Write-Output "topic file not found: $Topic"; exit 2 }
-if (Test-Path "$d\relay\state.json") { Write-Output "slug '$Slug' already has a discussion; pick a new slug"; exit 2 }
-New-Item -ItemType Directory -Force $d | Out-Null
-Copy-Item $Topic "$d\topic.md" -Force
+if ($DocId) {
+    if (-not (Test-Path "$d\relay\state.json")) { Write-Output "no discussion to resume under '$Slug'"; exit 2 }
+    if (Test-Path "$d\run.log") { Move-Item "$d\run.log" ("$d\run_" + (Get-Date -Format 'yyyyMMdd_HHmmss') + '.log') }
+} else {
+    if (-not (Test-Path $Topic)) { Write-Output "topic file not found: $Topic"; exit 2 }
+    if (Test-Path "$d\relay\state.json") { Write-Output "slug '$Slug' already has a discussion; pick a new slug"; exit 2 }
+    New-Item -ItemType Directory -Force $d | Out-Null
+    Copy-Item $Topic "$d\topic.md" -Force
+}
 # the GPT side reads the code base from its own worktree: bring it to the latest commit first
 $wt = Join-Path (Split-Path -Parent $root) 'V6_debate'
 if (-not (Test-Path $wt)) { git worktree add --detach $wt HEAD 2>&1 | Out-Null } else { git -C $wt checkout --detach master 2>&1 | Out-Null }
 $self = $MyInvocation.MyCommand.Path
+$cl = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "' + $self + '" -Slug ' + $Slug + ' -Worker'
+if ($Stub) { $cl += ' -Stub' }
+if ($DocId) { $cl += ' -DocId ' + $DocId }
+if ($Note) { $cl += ' -Note "' + $Note + '"' }
 $r = Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{
-    CommandLine = "powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$self`" -Slug $Slug -Worker$(if ($Stub) { ' -Stub' })"
+    CommandLine = $cl
     CurrentDirectory = $root }
 Write-Output "started (wmi rc=$($r.ReturnValue)) dir=$d"
 for ($i = 0; $i -lt 30; $i++) {

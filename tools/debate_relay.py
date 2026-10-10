@@ -330,13 +330,20 @@ def round_(a):
     res, t0 = {}, time.time()
 
     def speak(n):
-        if a.stub:
-            st["turn"] = r            # the stub reads it
-            res[n] = say_stub(st, a, prompts[n], stop, n)
-        elif n == "Claude":
-            res[n] = say_claude(st, a, prompts[n], stop)
-        else:
-            res[n] = say_gpt(st, a, prompts[n], stop)
+        # chat 2026-10-10: an exception inside a speaker thread left res[n] unset and the round died on KeyError
+        # with the cause lost (structure-equal-02 round 11). Record it as that speaker's failed turn instead.
+        try:
+            if a.stub:
+                st["turn"] = r            # the stub reads it
+                res[n] = say_stub(st, a, prompts[n], stop, n)
+            elif n == "Claude":
+                res[n] = say_claude(st, a, prompts[n], stop)
+            else:
+                res[n] = say_gpt(st, a, prompts[n], stop)
+        except Exception as e:          # noqa: BLE001
+            import traceback
+            res[n] = ("(%s call failed: %s)" % (n, traceback.format_exc()[-800:]), None, False)
+            sys.stderr.write("SPEAKER-EXCEPTION %s: %r\n" % (n, e))
     th = [threading.Thread(target=speak, args=(n,)) for n in names]
     for t in th:
         t.start()
