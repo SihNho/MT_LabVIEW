@@ -7415,3 +7415,124 @@ VIOLATION: repeated-failure-class | loss_min=25 | loss_usd=? | evidence=tools/be
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle163","verdict":"refuted","alternative":"The PB stop at 12:19 was a new topology (rows wired by an earlier adopted step) that could not have been foreseen at PD395(b), so the 25 min were first-encounter discovery, not a repeat.","discriminating_test":"Replay PD395(b)'s class-2 rule offline on plan_ring_p5s02c at step 0: if it blocks the two #376 rows (wired at base, no connect in this plan), the failure was fixed by design at cycle 161 and the repeat was foreseeable.","violations":[{"slug":"repeated-failure-class","loss_min":25,"loss_usd":"?","evidence":"tools/bench/prep_c163_a1_3_dry.log:56"}],"sources":["tools/bench/prep_c163_a1_3_dry.log:56","tools/bench/cards/handback_161_1.json:6","tools/bench/cards/handback_161_2.json:6","docs/d1/ring-p5b.md:304","docs/d1/ring-p5b.md:344","tools/bench/cards/result_163-a1-4.json:13","archive/peer/2026-10-10-c163-a1-4-pbchain.md:108","tools/bench/cards/assign_result_163_1.json:22"],"note":"Window spans cycles 161-163; cycle 163 = 11:51-13:27, $30.75, PURPOSE_MET. No device failed. Assignment-session gate edit with 3 unapplied peer objections and 3 stale stagekit pins carried to cycle 164."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle163.md
 BGRUN END rc=0 after 239s
+BGRUN START 2026-10-10 17:55:27 limit 20.0 min: C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\retrospective.py --cycle 165
+BGRUN PID 3068
+   window 2026-10-10 13:31:07 .. 2026-10-10 17:55:28 (264 min); 132 build logs, 21 machinery logs, 58 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle165.txt (48304 chars)
+   review card tools\bench\cards\review_retrospective-cycle165.json
+OUTCOME: ANSWERED (326s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-10-10-retrospective-cycle165.md
+COST: $1.9589  in 44 / out 32332 / cache-create 117884 / cache-read 1845244  (324s, 36 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle165 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle165.json
+--- ANSWER ---
+**Scope.** The evidence window (13:31:07–17:55:28) holds two cycles. Cycle 164 ran from 13:31:56 to 16:08:10 and cost $58.40 (`tools/bench/cycle_runner.log:1721`). Nobody has written a retrospective of cycle 164: `cycle_runner.log:1713` counts the cycle-163 retrospective as that cycle's. Cycle 165 proper ran from 16:08:13 to 17:55:27, about 107 minutes. I charge only that interval to cycle 165. From its six logs it cost $42.42: `cycle_165.log` $1.93, assign rounds $7.87, $5.98 and $23.01, hand-back judgements $1.69 and $1.94. The audit's C4c figure of $100.81 and C7's 517 files include cycle 164.
+
+**Outcome.** The deliverable was produced. The step-5 scratch passed 20/0 and was adopted as the P5 final, `D1_ring_p5_20261010_172913.vi` 75773b0d, broken file 6 of 6 (`tools/bench/cards/assign_result_165_3.json:24`). The cycle still ended at the hand-back limit: three hand-backs (`cycle_runner.log:1740`), with purpose items 17–22 not done (`assign_result_165_3.json:25-30`). The claim on the card is refuted. The cause is two faults of about the same size, and together they produced that ending.
+
+## Structural fault 1: PD400(b) was written from two citations nobody checked (inference-over-measurement)
+
+The cycle-165 judgement wrote PD400(b) at 16:08–16:11. It made two claims without checking either:
+
+- **The precedent.** It cited `diag_c161_p5s02b_scratch.log:97` as a `connect_term_uid` from a wired source (`docs/d1/ring-p5c.md:167-168`). That source, #3934, had wire 0 (`tools/bench/prep_c165_a1_1_prec.log:9`). Card 165-1-1 found this with a one-file read and handed back (`handback_165_1.json:6`).
+- **Where the refusal came from.** It called the refusal a compile refusal at `stagexec.py:1930` (`ring-p5c.md:161-162`). The evidence it cited says otherwise. `diag_c164_a2_1_facts.md:28-29` records "route check FAIL … ADDRESS: #8776 is an INNER face". That is the base PRIME/address pass, not compile.
+  - So 165-1-1's fix and its 25/0 self-test covered only compile and the per-step route.
+  - Card 165-2-1 then hit the same UNROUTABLE 2 on the same two rows (`prep_c165_a2_1_mk.log:68,75,101`).
+  - The judgement admitted this at `ring-p5c.md:217-218`: "165-1-1's self-test checked compile and the per-step route, not PRIME … the gap is mine."
+
+**Loss:** 16:28:57 to 16:46:44, about 18 minutes and $9.61:
+
+| Step | Minutes | Cost |
+|---|---|---|
+| Hand-back judgement 1 | 2.7 | $1.69 |
+| Round 2 | 12.0 | $5.98 |
+| Hand-back judgement 2 | 3.0 | $1.94 |
+
+Part of round 2 was kept (the hashes, the 160-c3-2 closure), so $9.61 is an upper bound on the direct loss. The larger cost is that it used two of the three hand-back slots.
+
+**Counterfactual:** suppose the 16:08 judgement had read #3934's wire, cited `diag_c127_1_fsinner.log:81-102`, and set the acceptance test as "the step-5 maker finalizes with 0 UNROUTABLE". That is what `selftest_c165_prime.py` (a) later did in 48 s (`diag_c165_a3_1_facts.md:17-19`). Round 1 would then have built `loop_inner_face_sink` and the PRIME skip together, and round-3 work would have started around 16:29 instead of 16:46:44. The 17:47 Error List return would have been hand-back 1 of 3, leaving rounds for items 17–22.
+
+## Structural fault 2: the Error List device (PD354(a)) never fired (device-failed)
+
+The device comes from the decision of 2026-10-08 01:16 (`docs/violation-decisions.md:1927-1933`; also `docs/d1/INDEX.md:281`). It says the Error List is a recorded cross-check, and a card returns only on a class never seen before or a total that is off by more than 3. It is implemented as `stagekit.el_advisory` with `EL_TOTAL_TOL = 3` (`tools/stagekit.py:2758`).
+
+On 17:47 the read came back 47 against a predicted 49. Both missing items belong to classes that were in the prediction, so the difference was 2 and no class was new. That is inside the bounds, and it should have been recorded, not returned. Instead:
+
+- The Error List step ran `errorlist_check`'s by-design check. It printed "STOP - Error List items MISSING … never by design" and ended `ERRORLIST-VERDICT: MISMATCH`, rc 1 (`diag_c165_a3_4_el.log:82-86`).
+- No EL-ADVISORY line appears in any cycle-165 log.
+- The return was also written into the work in advance. PD401(b) says "the Error List delta is the plan's predicted one. Any other result = … return" (`ring-p5c.md:202-203`), and brief 165-3-4 item 5 repeats it. Neither cites or supersedes PD354(a).
+- The adoption itself went through, so the letter of the decision ("adoption held back") was not broken. What was held back is the rest of the adoption package: the graph read, the `load_by_vi` entry and the predicted census. That is the harm the device exists to prevent.
+
+**Loss:**
+- The dispute tail ran 17:47:34 to 17:55:27, about 8 minutes, including a $1.37 hypothesis peer (`archive/peer/2026-10-10-c165-a3-4-el-missing2.md:7`).
+- Items 17–19 carry into cycle 166. In cycle 164 the same tail took about 10 minutes (`diag_c164_a3_5_el.log` 15:46 to `hash_after` 15:56).
+- Cycle 166 also needs a new judgement session and a fresh LabVIEW start for that work. No log prices the carry-over, so I give no dollar figure.
+
+**Counterfactual:** had the 17:47 read been judged by `el_advisory`, card 165-3-4 would have gone on to run the graph read, which was already prepared and pre-checked (`diag_c165_a3_4_graph_prerun.log:29` PASS at 17:39). It would have finished `load_by_vi` and the predicted census at about 17:58. Round 3 would have ended with items 17–19 met instead of at the hand-back limit at 17:55.
+
+**Ranking.** Fault 1 has the larger measured loss and is why no slot was left. Fault 2 is what actually ended the cycle. Each fault alone leaves at least one round free, so neither ends the cycle at the limit; only the two together did. That makes them of the same magnitude.
+
+## FINDINGS
+
+1. **Repeated failure.**
+   - The inner-face UNROUTABLE refusal on w_k3f/w_k4f appeared in four places:
+     - 164-a2-1 (`diag_c164_a2_1_facts.md:28-29`).
+     - Carried as an open item from 164-a2-2 (`diag_c164_a2_2_facts.md:29`).
+     - Deferred by PD399(b) (`ring-p5c.md:125-129`).
+     - Hit again in 165-2-1 (`diag_c165_a2_1_facts.md:27-30`).
+   - The approach should have changed at 165-1-1, the second attempt on this class. The acceptance test should have replayed the literal failing maker run, not unit-tested the route.
+   - The Error List predictor missed again (`el-missing2.md:42-47`). This is the same family as the four misses behind the 2026-10-08 decision.
+2. **Missing tool.**
+   - `make_step_plan` does no routability check. This was carried, not built (`ring-p5c.md:128-129`).
+   - `el_advisory` exists but is not connected to the `diag_c149_a1_2_elrun` / `errorlist_check` path. That connection alone would have prevented hand-back 3.
+   - The predictor's STANDING rule matches by uid only. It ignores `clears_by` and follows no link through the tunnel (`el-missing2.md:72`).
+3. **Unmeasured steps.**
+   - Both PD400(b) premises above were inferred.
+   - The material session's explanation ("LabVIEW resolved them as a side effect") was refuted by the prediction file's own `clears_by` entries (`el-missing2.md:42-47`).
+   - The file is called "P5 final, 6 of 6" while the rule-1a questions are unmeasured: the indexing and outer type of #5204/#10404, and #31815 versus #376's value (`assign_result_165_3.json:35`).
+4. **Rule compliance.**
+   - PD354(a) was bypassed, as described in fault 2.
+   - Brief 165-1-1's order (step 3 stops before step 4) was broken: the change was made before the precedent check (`diag_c165_a1_1_facts.md:26`). The judgement then accepted it (`ring-p5c.md:188-190`).
+   - The gate-fp entry was due (`cycle_165.json:45-47`, open since cycle 149, blocking fp-86). It was answered only by scheduling it after the LabVIEW card, and was never reached (`assign_result_165_3.json:28-30`).
+   - A refused command was retried four times with sleeps (`tools/hooks/material_marker.log:4170-4173`).
+   - `diag_c165_a3_4_el.log:84` prints RESULT PASS 11/0 right above MISMATCH and rc=1.
+   - What the audit does not cover:
+     - It cannot see a brief that contradicts a Pre-decided item still in force.
+     - It cannot see a self-test that does not replay the failing command.
+     - It cannot see hand-backs caused by judgement errors.
+     - It cannot see a window that spans two cycles.
+     - C7's 517 files are noise as a scope signal.
+5. **Ordering.**
+   - Doing the tool work before the deliverable was defensible.
+   - In 165-3-4, putting the Error List verdict before the graph read made the structural read wait on an advisory check. The order should have been graph read, then `load_by_vi`, then the Error List.
+   - Under deliverable-first plus a three-hand-back cap, the gate-fp drain is starved every cycle.
+6. **Not reported.**
+   - The runner's summary (`cycle_runner.log:1738`) does not say the return contradicted PD354(a).
+   - Two of the three hand-backs were judgement errors. That is visible only in `ring-p5c.md:191,217-218`.
+   - The RESULT-PASS/rc=1 contradiction above.
+   - Cycle 165's own cost ($42.42) is hidden inside C4c's $100.81.
+   - At 17:35, during the LabVIEW scratch, chat agents for chat-X1/X2 tried to bind cards whose write list includes `tools/*.py`. They were stopped only because they were unbound (`tools/bench/cards/guard_card.log:1022-1035`).
+7. **Judgement inside a material session.**
+   - 165-1-1 chose its own order of work, but flagged it as an open question (`diag_c165_a1_1_facts.md:52`).
+   - 165-2-1 inlined a maker extension, flagged it (`diag_c165_a2_1_facts.md:43`), and it was accepted by PD402(c).
+   - In 165-3-4 the material session put its preferred explanation to an adversarial peer and recorded the result without acting on it (`el-missing2.md:85-91`).
+   - The return itself was an action the judgement had scripted into PD401(b). That mistake belongs to the judgement session, not the material one.
+
+## DEVICE EFFECT
+
+- **Worked:**
+  - bgrun forced rc=1 on the failing Error List step (`diag_c165_a3_4_el.log:86`).
+  - The peer's adversarial instructions were appended (`el-missing2.md:29-35`).
+  - Prior-art review before the recipe: priorart at 17:20, launch at 17:29.
+  - A4 16/16 reviews disposed, and C4b parsed 5 of 5 cost lines.
+  - The launch gate gave ALLOW and `--scratch-required` gave rc 3.
+  - The collect-all refusal list showed both rows in one run (`prep_c165_a2_1_mk.log:68,75`).
+  - The dry run named its unverified gate (`prep_c165_a3_3_dry.log:136`).
+  - `gates_due` was written into the cycle card.
+  - The binding refusal stopped the unbound chat agents.
+- **Failed:** PD354(a)'s Error List device (2026-10-08 01:16) never fired (fault 2).
+- **Not exercised in the window:** the stop-record read-only cases, `motor_gate`, the Jev exemption, and the `guard_session` SendMessage refusal.
+
+VIOLATION: inference-over-measurement | loss_min=18 | loss_usd=9.61 | evidence=docs/d1/ring-p5c.md:161
+VIOLATION: device-failed | loss_min=12 | loss_usd=? | evidence=tools/bench/diag_c165_a3_4_el.log:82
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle165","verdict":"refuted","alternative":"The hand-backs were honest first-unexpected-result returns on new face classes and a predictor bug, unforeseeable at judgement time, so cost was inherent to novel work.","discriminating_test":"Re-run make_step_plan on r_in 0b895983 with stagexec 6ea6637f (pre-PRIME-skip): UNROUTABLE 2 shows the failure was reproducible offline at 16:11; run stagekit.el_advisory on the 47-item read: rc 0 shows no RETURN was due.","violations":[{"slug":"inference-over-measurement","loss_min":18,"loss_usd":9.61,"evidence":"docs/d1/ring-p5c.md:161"},{"slug":"device-failed","loss_min":12,"loss_usd":"?","evidence":"tools/bench/diag_c165_a3_4_el.log:82"}],"sources":["tools/bench/cycle_runner.log:1730-1740","docs/d1/ring-p5c.md:161-168","docs/d1/ring-p5c.md:217-218","tools/bench/diag_c164_a2_1_facts.md:28-29","tools/bench/diag_c165_a3_4_el.log:82-86","docs/violation-decisions.md:1927-1933","tools/stagekit.py:2758","tools/bench/cards/assign_result_165_3.json:25-30"],"note":"Window spans cycles 164+165; only 16:08-17:55 charged to 165 ($42.42 from its six logs). Deliverable adopted (P5 final 75773b0d); cycle ended HANDBACK-LIMIT with items 17-22 undone; device = PD354(a) EL advisory (decision 2026-10-08 01:16)."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle165.md
+BGRUN END rc=0 after 347s

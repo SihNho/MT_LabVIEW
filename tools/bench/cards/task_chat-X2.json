@@ -1,0 +1,19 @@
+{
+ "schema": "task/1", "id": "chat-X2", "kind": "build",
+ "goal": "One common guard code (tools/hooks/guardcore.py) with Claude and Codex adapters, proven on fake targets; installed Codex hook checked",
+ "why": "User 2026-10-10 '좋음. 진행하도록' after discussion token-efficiency-01 converged; hooks tested on fake targets, no rig disassembly. Detail: brief_chat-X2.md",
+ "inputs": [{"path": "tools/bench/cards/brief_chat-X2.md", "md5": "f2ac3baa9c94ba5af6b6d2e6af2bce3c"}],
+ "pass": [
+  "Codex 0.162.0 hook facts with sources (event, config location, stdin fields, tool names, deny format, fail mode)",
+  "guardcore.judge + adapt_claude + adapt_codex; apply_patch old and new paths checked; .vi-family write ban in code; unknown tool denied",
+  "selftest_guardcore: every case in both formats, identical verdicts, forbidden denied, positive controls allowed; existing hook self-tests green",
+  "fake executor refusals shown with sentinel targets only; executor-check gap list (script version, card, target, timeout)",
+  "real codex exec against project-level hook config: denials quoted, sentinel markers absent, allowed command ran - or the reason it was not run; committed"
+ ],
+ "outputs": ["tools/hooks/guardcore.py", "tools/hooks/adapt_claude.py", "tools/hooks/adapt_codex.py", "tools/bench/selftest_guardcore.py"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/hooks/**", "tools/bench/selftest_guardcore.py", "tools/bench/guardcore_fake/**", "tools/bench/guardcore_fixtures/**", ".codex/**", "docs/guardcore.md"],
+  "status_edit": false, "git_commit": true, "peers": []},
+ "budget": {"failures": 2, "minutes": 150}, "unblocks": "M3",
+ "rules": ["OFFLINE, runner stopped", "chat card: tools/hooks/** edits allowed, user approved", "fake targets only: no LabVIEW, no real COM port, no real motor script", "Claude live hook behaviour unchanged unless proven identical", "never change the user's global ~/.codex config", "CLAUDE.md, AGENTS.md, docs/rules, docs/decisions, docs/START.md belong to chat-X1", "codex exec calls only for step 5, each <= 5 min"]
+}

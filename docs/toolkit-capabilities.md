@@ -1046,8 +1046,8 @@ A file is SHARED when at least one OTHER file under tools/ imports it (import gr
 | [`tools/debate_relay.py`](#tools-debate-relay-py) | shared module | 2 | 12 | 0 | 8 |
 | [`tools/dispo.py`](#tools-dispo-py) | shared module | 4 | 3 | 0 | 0 |
 | [`tools/doc_lint.py`](#tools-doc-lint-py) | shared module | 8 | 24 | 14 | 0 |
-| [`tools/elrule.py`](#tools-elrule-py) | shared module | 34 | 10 | 1 | 0 |
-| [`tools/errorlist_check.py`](#tools-errorlist-check-py) | shared module | 75 | 24 | 10 | 0 |
+| [`tools/elrule.py`](#tools-elrule-py) | shared module | 35 | 10 | 1 | 0 |
+| [`tools/errorlist_check.py`](#tools-errorlist-check-py) | shared module | 77 | 24 | 10 | 0 |
 | [`tools/fn_records.py`](#tools-fn-records-py) | shared module | 6 | 19 | 9 | 0 |
 | [`tools/fncontract.py`](#tools-fncontract-py) | shared module | 6 | 20 | 3 | 0 |
 | [`tools/gate_fp.py`](#tools-gate-fp-py) | shared module | 8 | 10 | 3 | 0 |
@@ -1082,14 +1082,14 @@ A file is SHARED when at least one OTHER file under tools/ imports it (import gr
 | [`tools/scope_header.py`](#tools-scope-header-py) | shared module | 13 | 21 | 8 | 0 |
 | [`tools/stage_prerun.py`](#tools-stage-prerun-py) | shared module | 230 | 127 | 29 | 0 |
 | [`tools/stage_shared.py`](#tools-stage-shared-py) | shared module | 20 | 3 | 0 | 0 |
-| [`tools/stagekit.py`](#tools-stagekit-py) | shared module | 327 | 143 | 10 | 0 |
-| [`tools/stagesim.py`](#tools-stagesim-py) | shared module | 193 | 68 | 25 | 0 |
-| [`tools/stagexec.py`](#tools-stagexec-py) | shared module | 386 | 190 | 61 | 0 |
+| [`tools/stagekit.py`](#tools-stagekit-py) | shared module | 328 | 143 | 10 | 0 |
+| [`tools/stagesim.py`](#tools-stagesim-py) | shared module | 194 | 68 | 25 | 0 |
+| [`tools/stagexec.py`](#tools-stagexec-py) | shared module | 388 | 190 | 61 | 0 |
 | [`tools/stop_record.py`](#tools-stop-record-py) | shared module | 31 | 19 | 0 | 2 |
-| [`tools/vigraph.py`](#tools-vigraph-py) | shared module | 171 | 22 | 4 | 0 |
+| [`tools/vigraph.py`](#tools-vigraph-py) | shared module | 172 | 22 | 4 | 0 |
 | [`tools/violations.py`](#tools-violations-py) | shared module | 2 | 5 | 0 | 2 |
-| [`tools/wiki_build.py`](#tools-wiki-build-py) | shared module | 89 | 11 | 0 | 5 |
-| [`tools/bench/bench_prep.py`](#tools-bench-bench-prep-py) | shared file in the bench folder (move to tools/ later) | 298 | 5 | 0 | 4 |
+| [`tools/wiki_build.py`](#tools-wiki-build-py) | shared module | 90 | 11 | 0 | 5 |
+| [`tools/bench/bench_prep.py`](#tools-bench-bench-prep-py) | shared file in the bench folder (move to tools/ later) | 299 | 5 | 0 | 4 |
 | [`tools/bench/build_opstopmode_v0.py`](#tools-bench-build-opstopmode-v0-py) | shared file in the bench folder (move to tools/ later) | 2 | 24 | 0 | 23 |
 | [`tools/bench/build_ringpickslot_v2.py`](#tools-bench-build-ringpickslot-v2-py) | shared file in the bench folder (move to tools/ later) | 1 | 13 | 0 | 13 |
 | [`tools/bench/c131_2_reach.py`](#tools-bench-c131-2-reach-py) | shared file in the bench folder (move to tools/ later) | 2 | 1 | 0 | 0 |
@@ -1145,7 +1145,7 @@ A file is SHARED when at least one OTHER file under tools/ imports it (import gr
 | [`tools/bench/jev_priorart_trial.py`](#tools-bench-jev-priorart-trial-py) | shared file in the bench folder (move to tools/ later) | 1 | 1 | 0 | 1 |
 | [`tools/bench/jev_triage_q.py`](#tools-bench-jev-triage-q-py) | shared file in the bench folder (move to tools/ later) | 2 | 0 | 0 | 0 |
 | [`tools/bench/jev_wave2a_trials.py`](#tools-bench-jev-wave2a-trials-py) | shared file in the bench folder (move to tools/ later) | 1 | 8 | 0 | 7 |
-| [`tools/bench/k_contract_79.py`](#tools-bench-k-contract-79-py) | shared file in the bench folder (move to tools/ later) | 41 | 2 | 0 | 2 |
+| [`tools/bench/k_contract_79.py`](#tools-bench-k-contract-79-py) | shared file in the bench folder (move to tools/ later) | 42 | 2 | 0 | 2 |
 | [`tools/bench/launch_p3b2_c135.py`](#tools-bench-launch-p3b2-c135-py) | shared file in the bench folder (move to tools/ later) | 4 | 14 | 0 | 12 |
 | [`tools/bench/launch_p3b2_c135_graph.py`](#tools-bench-launch-p3b2-c135-graph-py) | shared file in the bench folder (move to tools/ later) | 1 | 1 | 0 | 1 |
 | [`tools/bench/launch_p3b2_resume_c135_compare.py`](#tools-bench-launch-p3b2-resume-c135-compare-py) | shared file in the bench folder (move to tools/ later) | 3 | 3 | 0 | 1 |
@@ -1171,7 +1171,7 @@ A file is SHARED when at least one OTHER file under tools/ imports it (import gr
 | [`tools/bench/verify_d1_s2.py`](#tools-bench-verify-d1-s2-py) | shared file in the bench folder (move to tools/ later) | 1 | 9 | 0 | 6 |
 | [`tools/recipes/build_d1_m3a1.py`](#tools-recipes-build-d1-m3a1-py) | recipe imported by another file | 25 | 46 | 0 | 23 |
 | [`tools/recipes/build_d1_m3a3b_d3.py`](#tools-recipes-build-d1-m3a3b-d3-py) | recipe imported by another file | 4 | 21 | 0 | 17 |
-| [`tools/recipes/build_d1_v0.py`](#tools-recipes-build-d1-v0-py) | recipe imported by another file | 181 | 24 | 0 | 16 |
+| [`tools/recipes/build_d1_v0.py`](#tools-recipes-build-d1-v0-py) | recipe imported by another file | 182 | 24 | 0 | 16 |
 | [`tools/recipes/build_opcaseframes_v0.py`](#tools-recipes-build-opcaseframes-v0-py) | recipe imported by another file | 1 | 5 | 0 | 4 |
 | [`tools/recipes/build_opconnectfromwire_v0.py`](#tools-recipes-build-opconnectfromwire-v0-py) | recipe imported by another file | 55 | 12 | 0 | 10 |
 | [`tools/recipes/build_opconnectnested_v1.py`](#tools-recipes-build-opconnectnested-v1-py) | recipe imported by another file | 72 | 16 | 0 | 12 |
@@ -1485,7 +1485,7 @@ shared module; imported by 8 file(s): `tools/audit_cycle.py`, `tools/bench/selft
 
 ### tools/elrule.py
 
-shared module; imported by 34 file(s): `tools/bench/diag_c149_a1_2_eladv.py`, `tools/bench/diag_c150_a3_2_elexp.py`, `tools/bench/diag_c151_a1_1_elexp.py`, `tools/bench/diag_c152_b3_1_elexp.py`, `tools/bench/diag_c154_a3_3_elexp.py`, `tools/bench/diag_c155_a3_2_elexp.py` ...
+shared module; imported by 35 file(s): `tools/bench/diag_c149_a1_2_eladv.py`, `tools/bench/diag_c150_a3_2_elexp.py`, `tools/bench/diag_c151_a1_1_elexp.py`, `tools/bench/diag_c152_b3_1_elexp.py`, `tools/bench/diag_c154_a3_3_elexp.py`, `tools/bench/diag_c155_a3_2_elexp.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -1502,7 +1502,7 @@ shared module; imported by 34 file(s): `tools/bench/diag_c149_a1_2_eladv.py`, `t
 
 ### tools/errorlist_check.py
 
-shared module; imported by 75 file(s): `tools/bench/c109_errorlist_reverdict.py`, `tools/bench/c87_errorlist_reverdict.py`, `tools/bench/c88_reverdict.py`, `tools/bench/diag_c109c_errorlist.py`, `tools/bench/diag_c110_errorlist.py`, `tools/bench/diag_c110d_elcounts.py` ...
+shared module; imported by 77 file(s): `tools/bench/c109_errorlist_reverdict.py`, `tools/bench/c87_errorlist_reverdict.py`, `tools/bench/c88_reverdict.py`, `tools/bench/diag_c109c_errorlist.py`, `tools/bench/diag_c110_errorlist.py`, `tools/bench/diag_c110d_elcounts.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -2419,7 +2419,7 @@ shared module; imported by 20 file(s): `tools/bench/prep_c150_a3_1_licence.py`, 
 
 ### tools/stagekit.py
 
-shared module; imported by 327 file(s): `tools/bench/allterms_s1.py`, `tools/bench/allterms_s2.py`, `tools/bench/allterms_s3.py`, `tools/bench/allterms_s4.py`, `tools/bench/allterms_v1.py`, `tools/bench/build_kswap_88.py` ...
+shared module; imported by 328 file(s): `tools/bench/allterms_s1.py`, `tools/bench/allterms_s2.py`, `tools/bench/allterms_s3.py`, `tools/bench/allterms_s4.py`, `tools/bench/allterms_v1.py`, `tools/bench/build_kswap_88.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -2569,7 +2569,7 @@ shared module; imported by 327 file(s): `tools/bench/allterms_s1.py`, `tools/ben
 
 ### tools/stagesim.py
 
-shared module; imported by 193 file(s): `tools/bench/dedupe_check_s2b.py`, `tools/bench/diag_c100_6_parity.py`, `tools/bench/diag_c100_6_resim.py`, `tools/bench/diag_c100_6_resim2.py`, `tools/bench/diag_c100_disp_sim.py`, `tools/bench/diag_c100_plan.py` ...
+shared module; imported by 194 file(s): `tools/bench/dedupe_check_s2b.py`, `tools/bench/diag_c100_6_parity.py`, `tools/bench/diag_c100_6_resim.py`, `tools/bench/diag_c100_6_resim2.py`, `tools/bench/diag_c100_disp_sim.py`, `tools/bench/diag_c100_plan.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -2644,7 +2644,7 @@ shared module; imported by 193 file(s): `tools/bench/dedupe_check_s2b.py`, `tool
 
 ### tools/stagexec.py
 
-shared module; imported by 386 file(s): `tools/bench/constsrc_l2a1_82.py`, `tools/bench/constsrc_l2a1_85.py`, `tools/bench/ctsrc_l2a1_82.py`, `tools/bench/diag_c100_6_parity.py`, `tools/bench/diag_c100_rows.py`, `tools/bench/diag_c101_resim.py` ...
+shared module; imported by 388 file(s): `tools/bench/constsrc_l2a1_82.py`, `tools/bench/constsrc_l2a1_85.py`, `tools/bench/ctsrc_l2a1_82.py`, `tools/bench/diag_c100_6_parity.py`, `tools/bench/diag_c100_rows.py`, `tools/bench/diag_c101_resim.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -2867,7 +2867,7 @@ shared module; imported by 31 file(s): `tools/bench/c19_close_release_probe.py`,
 
 ### tools/vigraph.py
 
-shared module; imported by 171 file(s): `tools/addrcheck.py`, `tools/bench/c73_l7r_facts.py`, `tools/bench/c73_l7r_live.py`, `tools/bench/cdiff_blindspot_74.py`, `tools/bench/ct23541_facts_80.py`, `tools/bench/dedupe_check_s2b.py` ...
+shared module; imported by 172 file(s): `tools/addrcheck.py`, `tools/bench/c73_l7r_facts.py`, `tools/bench/c73_l7r_live.py`, `tools/bench/cdiff_blindspot_74.py`, `tools/bench/ct23541_facts_80.py`, `tools/bench/dedupe_check_s2b.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -2908,7 +2908,7 @@ shared module; imported by 2 file(s): `tools/bench/selftest_c156_b2_1_violations
 
 ### tools/wiki_build.py
 
-shared module; imported by 89 file(s): `tools/bench/build_kswap_88.py`, `tools/bench/c73_l7r_live.py`, `tools/bench/diag_c107b_bedgraph.py`, `tools/bench/diag_c108b_graph.py`, `tools/bench/diag_c108d_graph.py`, `tools/bench/diag_c108d_selind.py` ...
+shared module; imported by 90 file(s): `tools/bench/build_kswap_88.py`, `tools/bench/c73_l7r_live.py`, `tools/bench/diag_c107b_bedgraph.py`, `tools/bench/diag_c108b_graph.py`, `tools/bench/diag_c108d_graph.py`, `tools/bench/diag_c108d_selind.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -2926,7 +2926,7 @@ shared module; imported by 89 file(s): `tools/bench/build_kswap_88.py`, `tools/b
 
 ### tools/bench/bench_prep.py
 
-shared file in the bench folder (move to tools/ later); imported by 298 file(s): `tools/bench/allterms_s4.py`, `tools/bench/allterms_v1_check.py`, `tools/bench/build_kswap_88.py`, `tools/bench/build_op_const_loopterm_77.py`, `tools/bench/build_op_termtype.py`, `tools/bench/build_opstopmode_v0.py` ...
+shared file in the bench folder (move to tools/ later); imported by 299 file(s): `tools/bench/allterms_s4.py`, `tools/bench/allterms_v1_check.py`, `tools/bench/build_kswap_88.py`, `tools/bench/build_op_const_loopterm_77.py`, `tools/bench/build_op_termtype.py`, `tools/bench/build_opstopmode_v0.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -3893,7 +3893,7 @@ shared file in the bench folder (move to tools/ later); imported by 1 file(s): `
 
 ### tools/bench/k_contract_79.py
 
-shared file in the bench folder (move to tools/ later); imported by 41 file(s): `tools/bench/diag_c107b_bedgraph.py`, `tools/bench/diag_c108b_graph.py`, `tools/bench/diag_c110_bedgraph.py`, `tools/bench/diag_c111b_b1graph.py`, `tools/bench/diag_c112c_fixture.py`, `tools/bench/diag_c113a_b2agraph.py` ...
+shared file in the bench folder (move to tools/ later); imported by 42 file(s): `tools/bench/diag_c107b_bedgraph.py`, `tools/bench/diag_c108b_graph.py`, `tools/bench/diag_c110_bedgraph.py`, `tools/bench/diag_c111b_b1graph.py`, `tools/bench/diag_c112c_fixture.py`, `tools/bench/diag_c113a_b2agraph.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -4278,7 +4278,7 @@ recipe imported by another file; imported by 4 file(s): `tools/bench/diag_c86_no
 
 ### tools/recipes/build_d1_v0.py
 
-recipe imported by another file; imported by 181 file(s): `tools/bench/build_op_const_loopterm_77.py`, `tools/bench/c52_astcheck.py`, `tools/bench/c52r2_astcheck.py`, `tools/bench/c52r3_astcheck.py`, `tools/bench/c53_astcheck.py`, `tools/bench/c73_l7r_live.py` ...
+recipe imported by another file; imported by 182 file(s): `tools/bench/build_op_const_loopterm_77.py`, `tools/bench/c52_astcheck.py`, `tools/bench/c52r2_astcheck.py`, `tools/bench/c52r3_astcheck.py`, `tools/bench/c53_astcheck.py`, `tools/bench/c73_l7r_live.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|

@@ -1,0 +1,19 @@
+{
+ "schema": "task/1", "id": "chat-X1", "kind": "build",
+ "goal": "Common rules, decisions and start procedure in the repo so any session (Claude Code or Codex) continues the project; CLAUDE.md = AGENTS.md short core",
+ "why": "User 2026-10-10 '좋음. 진행하도록' after discussion token-efficiency-01 converged. Detail: brief_chat-X1.md",
+ "inputs": [{"path": "tools/bench/cards/brief_chat-X1.md", "md5": "35aa3429c7b6a4ed50938270189d1a29"}],
+ "pass": [
+  "docs/decisions/ one file per memory file (body verbatim, source + status) + INDEX.md grouped by topic",
+  "docs/rules/CLAUDE-full-2026-10-10.md byte copy + topic files + coverage.md; tools/rules_coverage.py reports 0 unmapped",
+  "CLAUDE.md and AGENTS.md = same short core <= 9,000 chars; old AGENTS.md -> docs/peer-brief.md with every reference updated",
+  "docs/START.md common start procedure; labview skill content in docs/labview/ with SKILL.md pointer",
+  "doc_lint resolves old CLAUDE.md:N citations against the frozen copy; tools reading CLAUDE.md updated; /context memory tokens before/after quoted; committed"
+ ],
+ "outputs": ["CLAUDE.md", "AGENTS.md", "docs/START.md", "docs/rules/coverage.md", "docs/decisions/INDEX.md", "tools/rules_coverage.py"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["CLAUDE.md", "AGENTS.md", "docs/**", "tools/*.py", "tools/peer.ps1", ".claude/skills/**"],
+  "status_edit": false, "git_commit": true, "peers": []},
+ "budget": {"failures": 2, "minutes": 150}, "unblocks": "M3",
+ "rules": ["OFFLINE, runner stopped", "Edit/Write tools only", "docs/script-writing.md binds", "never drop rule text: frozen copy + coverage check", "do not modify ~/.claude memory dir", "tools/hooks/** belongs to chat-X2", "one claude -p /context call with BENCH_CELL=1 allowed for the measurement"]
+}

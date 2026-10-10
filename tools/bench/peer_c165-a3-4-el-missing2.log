@@ -1,0 +1,45 @@
+BGRUN START 2026-10-10 17:49:12 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c165-a3-4-el-missing2 -TaskFile tools/bench/diag_c165_a3_4_peer_task.txt
+BGRUN PID 25536
+OUTCOME: ANSWERED (153s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-10-c165-a3-4-el-missing2.md
+COST: $1.3692  in 30 / out 13201 / cache-create 101037 / cache-read 1370510  (150s, 24 turn(s))
+--- ANSWER ---
+**Verdict: the claim mostly holds, but not for the reason it gives, and it proves less than "the file is right."** The two errors cleared through tunnel-direction inference, which the predictor's own input file already said would happen. That makes this a bug inside the predictor, not something it was unable to see. The Error List shows only that the structure is consistent. It cannot show that the computation is unchanged (rule 1a).
+
+## 1. Strongest reason the claim is wrong
+- **"LabVIEW resolved them as a side effect … the predictor could not see it" is false.** The prediction file names the clearing actions for both items:
+  - Item 4: `clears_by: A70 w_k3f … "the tunnel gets a source and its outer-side wire with it"` (`errorlist_predicted_D1_ring_p5s02e_end.json:180-186`).
+  - Item 49: `A80 w_k4f` (`:1007-1013`).
+  - The source is `attrib_c159_p5s02a.md:32,35`. It records that `w4337` and `w9636` lost their sources (#5204 outer 9631 and #10404 outer 24363), and that they come back when the tunnels' inner faces are wired.
+- **The step-5 predictor contradicts itself.** It cleared items 7 and 8 (#5204 and #10404 undirected) with A73 `w_k3f` and A84 `w_k4f` (`:43-57`). It then kept items 4 and 49 standing because "uid named by no action" (`diag_c165_a3_3_facts.md:14-15`). Those are the same two actions acting on the same two tunnels.
+- The rule matches objects by uid. It does not follow the "via #5204" link, and the action labels were renumbered from A70/A80 to A73/A84. So the predictor had the information and dropped it. "Stub deletes" are not the mechanism.
+
+## 2. Alternative explanations, and how the recorded graph settles them
+- **(a) An unintended edit deleted or merged w4337/w9636 or their sink terminals.** This would be a computation change. The files refute it:
+  - Base graph (`graph_ring_p5s02d_20261010_154830.json`): w4337 sits on 9631 (#5204 outer), 6480 (#6384 'actual # data points') and 3182 (#2048 'length'), all `is_source: false`. w9636 sits on 24363 (#10404 outer) and 6511 (#6384 'file # to append'), both `false`.
+  - Saved-file end rows (`diag_c165_p5s02e_scratch.json` `real_end_rows`; 9631 at :8988-8992, 24363 at :8995-8999, 6480 at :16856-16860, 6511 at :16877-16881, 3182 at :16947-16951) list the same terminals and wire uids. The only change is that 9631 and 24363 now have `is_source: true`.
+  - `term_identity.lost/gone` holds only the two OuterTerminal direction flips (`:1103-1130`).
+  - The simulator predicted all of this: `sim_new`/`sim_lost_w` contain 4337 and 9636 (`:1157-1173`), and the pairs match 10/10 new and 7/7 lost (`:1198-1207`).
+- **(b) Item swap.** Some other error cleared while a nosource or While→SubVI item was misread as another class. The class counts rule this out:
+  - Predicted: 23 loose ends, 22 not connected, 1 Build Array, 1 two types, 1 nosource, 1 whilesubvi = 49 (`:144-150`).
+  - Measured: 23, 22, 1, 1, 0, 0 (`el.log:30-76`). The difference is exactly the two named classes.
+  - Caveat: the checker could not name which items were missing (`missing ['None','None']`, `el.log:82`). "Item 4 = w4337" is a pairing made by count (`:179`). Since all three base nosource wires are now either deleted or have a source, the class total of 0 holds whichever pairing is right.
+- **(c) The error class still matters even though the structure is correct.** The outer terminal's direction is now right, but the inner face of #5204 is fed by `w31792` from #31815 (PD402, `facts.md:20-21`). In P5-1 it was fed by #376 'file progress' 5704 (`attrib_c159:30`).
+  - Whether #31815 carries the same value is a rule-1a question. Neither the Error List nor the D gate answers it, and PD402 is simulation only ("nothing measured in LabVIEW").
+  - The tunnel's indexing mode is also unmeasured. Weak evidence that it did not change: no new "two types" error appeared (still 1).
+
+## 3. What would falsify the claim
+Any of these would:
+- The end rows show w4337 or w9636 with a terminal set different from the base, or with no source terminal.
+- A tunnel's outer type changed (scalar to array, i.e. indexing turned on).
+- A fresh Error List read of the adopted file shows a nosource or While→SubVI item.
+
+## 4. Cheapest discriminating test
+- **The offline part is already in the files and passes.** I compared the `graph_ring_p5s02d` rows with the scratch `real_end_rows` (cited above). Both wires are intact, have the same sinks, and the only change is the tunnel outer terminal flipping from sink to source. That separates the claim from alternative (a) without a LabVIEW run.
+- **What is still open needs one LabVIEW read of the adopted file** (75773b0d): `Indexing Enabled` and the outer-terminal data type of LoopTunnels #5204 and #10404, compared with P5-1. Add to that the rule-1a value check that #31815 (and the K4f source) equal what P5-1's #376 outputs delivered. Until both are done, call the result "structural PASS, prediction-tool bug", not "the file is right."
+- **Fix in the predictor:** when an action names a tunnel and clears its undirected item, also clear the nosource or While→SubVI items whose sink set contains that tunnel's outer terminal.
+
+On tunnel direction itself: NI forum users describe the "undirected tunnel" error as a tunnel with no writer, or with more than one writer ([NI Community](https://forums.ni.com/t5/FIRST-Robotics-Competition/Loop-Tunnel-Wire-connected-to-an-undirected-tunnel/td-p/3885576)). That fits a tunnel that becomes an output once its inner face gets a source. I found no NI documentation stating the inference rule formally, so that point rests on this project's measured rows, not on vendor docs.
+
+Sources:
+- [NI Community – Loop Tunnel: Wire connected to an undirected tunnel](https://forums.ni.com/t5/FIRST-Robotics-Competition/Loop-Tunnel-Wire-connected-to-an-undirected-tunnel/td-p/3885576)
+BGRUN END rc=0 after 155s
