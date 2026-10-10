@@ -51,13 +51,16 @@ try:
 except Exception:
     pass
 
-ALWAYS = ("STATUS.md", "CLAUDE.md")
+# card chat-X1 (2026-10-10): CLAUDE.md became the short core; the rules in force are the docs/rules/ topic files.
+from rules_coverage import rule_docs  # noqa: E402
+ALWAYS = ("STATUS.md", "CLAUDE.md") + tuple(rule_docs())
 
 TASK_HEAD = """DOCUMENT INGEST (per-cycle consistency read).
 
 Read the files listed below. Report ONE thing and nothing else:
 
-  every pair of statements that CONTRADICT each other, or that contradict CLAUDE.md or STATUS.md.
+  every pair of statements that CONTRADICT each other, or that contradict the rules (CLAUDE.md, docs/rules/*.md)
+  or STATUS.md.
 
 Rules, all mandatory:
  1. Cite `file:line` for BOTH sides of every pair. A pair with one citation is not reportable - drop it.
@@ -180,8 +183,8 @@ def main():
 
     listing = "\n".join(f"  {f}" for f in files)
     task = (f"{TASK_HEAD}\n=== THE FILES ({len(files)}) - read every one; they are relative to the project root "
-            f"===\n{listing}\n\n=== HOW THIS SET WAS CHOSEN ===\n{basis}\nSTATUS.md and CLAUDE.md are always in "
-            f"the set: they are the documents everything else can contradict.\n")
+            f"===\n{listing}\n\n=== HOW THIS SET WAS CHOSEN ===\n{basis}\nSTATUS.md, CLAUDE.md and the rule files "
+            f"docs/rules/*.md are always in the set: they are the documents everything else can contradict.\n")
 
     slug = a.slug or f"ingest-{time.strftime('%Y-%m-%d')}" + ("-full" if a.full else "")
     scratch = os.path.join(os.environ.get("TEMP", "."), f"docingest_{slug}.txt")

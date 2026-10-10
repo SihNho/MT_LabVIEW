@@ -48,7 +48,7 @@ RULES = [
     ("project-requirements/", ("decision",   "current",    ["requirements", "user-source"])),
     ("STATUS.md",            ("status",      "current",    ["hand-off"])),
     ("CLAUDE.md",            ("rules",       "current",    ["rules"])),
-    ("AGENTS.md",            ("rules",       "current",    ["rules", "peer-review"])),
+    ("AGENTS.md",            ("rules",       "current",    ["rules"])),   # short core (chat-X1); peers: docs/peer-brief.md
     ("LEARNING.md",          ("reference",   "current",    ["teaching"])),
     ("README.md",            ("reference",   "current",    [])),
 ]

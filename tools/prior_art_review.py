@@ -242,8 +242,8 @@ def user_rules_block(path=None):
         with open(p, encoding="utf-8", errors="replace") as f:
             body = f.read()
     except OSError:
-        return ("=== docs/user-rules.md: ABSENT (card chat-P2 expects it) - answer C1 from CLAUDE.md rules 1a-1c'' "
-                "and docs/decisions.md instead, and say that the file was missing ===\n")
+        return ("=== docs/user-rules.md: ABSENT (card chat-P2 expects it) - answer C1 from the rules 1a-1c'' in "
+                "docs/rules/originals.md + docs/rules/hardware.md and docs/decisions.md instead, and say that the file was missing ===\n")
     return "=== docs/user-rules.md IN FULL (the user's standing design rules; PART C asks about these) ===\n" + body
 
 

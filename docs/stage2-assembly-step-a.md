@@ -37,7 +37,7 @@ defect precisely: **LabVIEW exposes a direct creation method, `Loop.Add Shift Re
 [NAMES.md:234](NAMES.md), flagged "not yet verified on this machine". The plan called shift-register creation a
 "missing primitive" while its own name registry held the API. Using `Exit While Loop.vi`'s `Shift Registers` input
 instead would have been, in the reviewer's words, an undocumented side-effect generator; and the reviewer could not
-confirm that input's behaviour at all, because `AGENTS.md` forbids peers from opening `.vi` files.
+confirm that input's behaviour at all, because the peers' brief (`docs/peer-brief.md`, then `AGENTS.md`) forbids peers from opening `.vi` files.
 
 Two further points adopted from the review:
 

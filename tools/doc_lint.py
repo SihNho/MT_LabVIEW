@@ -60,7 +60,18 @@ STATUS_MAX_LINES = 110          # CLAUDE.md section 4 says "~100"; the margin st
 # when it was introduced and were not named by the card (measured 2026-10-02); they WARN until judgement freezes,
 # splits or exempts each one - the list only shrinks.
 DOC_MAX_LINES = 400
-INDEX_DIRS = ("d1",)                                  # docs/<dir>/*.md are active docs too
+INDEX_DIRS = ("d1", "rules")                         # docs/<dir>/*.md are active docs too (rules: card chat-X1)
+# RULES SPLIT (card chat-X1, user 2026-10-10): CLAUDE.md became a short core; the old text is a BYTE COPY (footer
+# appended only, frontmatter untouched) that counts as frozen here, and the peers' brief moved from AGENTS.md to
+# docs/peer-brief.md; the labview-automation skill's text moved verbatim to docs/labview/. A citation that no longer
+# resolves at its old path (file gone, or line past the end) is checked against the moved copy instead - the citing
+# documents are never edited.
+FROZEN_COPIES = ("docs/rules/CLAUDE-full-2026-10-10.md",)
+ROOT_CITED = ("CLAUDE.md", "AGENTS.md")               # root files whose `name:N` citations are checked
+MOVED = (("CLAUDE.md", "docs/rules/CLAUDE-full-2026-10-10.md"),
+         ("AGENTS.md", "docs/peer-brief.md"),
+         (".claude/skills/labview-automation/references/", "docs/labview/references/"),
+         (".claude/skills/labview-automation/SKILL.md", "docs/labview/SKILL.md"))
 NOT_CAPPED_STATUS = ("frozen", "superseded")
 EXEMPT_REFERENCE = ("docs/NAMES.md", "docs/toolkit-capabilities.md", "docs/camera-acquisition-facts.md")
 GRANDFATHERED = ("docs/gpu-backend.md", "docs/frame-loop-wire-graph.md", "docs/restructure-plan-4.6.md",
@@ -181,11 +192,36 @@ def citation_candidates(body):
         # need a search path this checker must not invent. So: a citation is a path with a DIRECTORY in it, rooted
         # at one of the project's top-level directories. That is a deliberate false negative (A4's lesson of
         # 2026-09-15: a checker that cries wolf gets ignored, which is worse than not having it).
+        if raw in ROOT_CITED and ln is not None:          # card chat-X1: `CLAUDE.md:N` / `AGENTS.md:N`
+            yield raw, ln, lineno(m.start())
+            continue
         if not raw.startswith(TOPDIRS) or "/" not in raw:
             continue
         if raw.endswith("/") or not raw.endswith(EXTS):
             continue
         yield raw, ln, lineno(m.start())
+
+
+def _nlines(fp):
+    try:
+        return sum(1 for _ in open(fp, encoding="utf-8", errors="replace"))
+    except OSError:
+        return None
+
+
+def resolve_moved(path, ln):
+    """card chat-X1: the path a citation resolves to. The cited path itself when it exists and (for `path:N`) has line
+    N; otherwise its moved copy (MOVED, prefix match) when that one does; otherwise the cited path unchanged."""
+    fp = os.path.normpath(os.path.join(ROOT, path.replace("/", os.sep)))
+    if os.path.isfile(fp) and (ln is None or (_nlines(fp) or 0) >= ln):
+        return path
+    for old, new in MOVED:
+        if path == old or (old.endswith("/") and path.startswith(old)):
+            cand = new + path[len(old):] if old.endswith("/") else new
+            cfp = os.path.normpath(os.path.join(ROOT, cand.replace("/", os.sep)))
+            if os.path.isfile(cfp) and (ln is None or (_nlines(cfp) or 0) >= ln):
+                return cand
+    return path
 
 
 def check_citations():
@@ -199,6 +235,7 @@ def check_citations():
         is_plan = re.search(r"-plan\.md$", rel(p)) is not None
         for path, ln, at in citation_candidates(body):
             seen += 1
+            path = resolve_moved(path, ln)
             fp = os.path.normpath(os.path.join(ROOT, path.replace("/", os.sep)))
             if not os.path.isfile(fp):
                 (forward if is_plan else dangling).append(f"{rel(p)}:{at} -> {path}")
@@ -478,8 +515,15 @@ def _docname(p):
         return p.replace("\\", "/")
 
 
+def doc_status(p, name=None):
+    """The frontmatter status; "frozen" for a FROZEN_COPIES byte copy whose frontmatter is the original's (chat-X1)."""
+    if (name or _docname(p)) in FROZEN_COPIES:
+        return "frozen"
+    return (frontmatter(read(p)) or {}).get("status", "")
+
+
 def is_frozen(p):
-    return (frontmatter(read(p)) or {}).get("status") == "frozen"
+    return doc_status(p) == "frozen"
 
 
 def check_line_cap(paths=None, names=None):
@@ -490,7 +534,7 @@ def check_line_cap(paths=None, names=None):
     names = names or [_docname(p) for p in paths]
     fails, ref_warn, gf_warn, frozen = [], [], [], 0
     for p, nm in zip(paths, names):
-        st = (frontmatter(read(p)) or {}).get("status", "")
+        st = doc_status(p, nm)
         if st in NOT_CAPPED_STATUS:
             frozen += st == "frozen"
             continue

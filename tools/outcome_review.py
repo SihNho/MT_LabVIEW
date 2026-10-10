@@ -145,7 +145,8 @@ def evidence():
         + "\n\n=== STILL OPEN, from STATUS.md (question 5) ===\n" + open_block
         + "\n\nAlso on disk: STATUS.md (current state and the standing work order), "
           "archive/benchmarks/INDEX.md (what was measured and what it showed), "
-          "docs/restructure-plan-4.6.md (the plan the work order defers to the end), CLAUDE.md (the rules).\n")
+          "docs/restructure-plan-4.6.md (the plan the work order defers to the end), docs/rules/*.md (the rules; "
+          "CLAUDE.md is their short core), docs/decisions/INDEX.md (the user's decisions).\n")
 
 
 def last_two_reviews():

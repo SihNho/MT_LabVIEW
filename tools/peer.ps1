@@ -57,10 +57,12 @@
 
       role        model / effort   web   prompt                         who dispatches it
       ----------  ---------------  ----  -----------------------------  ----------------------------------
-      audit       sonnet           no    AGENTS.md brief + CLAUDE.md    -Agent claude, no -Role
-      priorart    opus / high      no    AGENTS.md brief + CLAUDE.md    prior_art_review.py
-      ingest      sonnet           no    AGENTS.md brief + CLAUDE.md    doc_ingest.py
-      hypothesis  opus-5-5 / high  YES   AGENTS.md brief + CLAUDE.md    failed-prediction reviews (SINGLE arm)
+      audit       sonnet           no    peer brief + CLAUDE.md         -Agent claude, no -Role
+      priorart    opus / high      no    peer brief + CLAUDE.md         prior_art_review.py
+      ingest      sonnet           no    peer brief + CLAUDE.md         doc_ingest.py
+      hypothesis  opus-5-5 / high  YES   peer brief + CLAUDE.md         failed-prediction reviews (SINGLE arm)
+      ("peer brief" = docs/peer-brief.md, which WAS AGENTS.md until card chat-X1, 2026-10-10; AGENTS.md is now the
+      short core rules shared with CLAUDE.md, so codex - which loads AGENTS.md natively - gets the brief inlined.)
       fact        opus-5-5 / med   YES   THIN (task only)               -Kind fact with no -Agent
       outcome     fable / medium   YES   THIN (task only)               outcome_review.py; the retrospective
                                                                         uses this role pinned -Model claude-opus-5-5
@@ -404,10 +406,18 @@ if ($Agent -eq 'gemini') {
                 'source or another search result instead of fetching that page some other way. Never modify ' +
                 'anything. Cite the URL of every source you used; if the web does not settle a point, say so.' + "`n"
 }
+# THE PEERS' BRIEF moved from AGENTS.md to docs/peer-brief.md (card chat-X1, user 2026-10-10): AGENTS.md is now the short
+# core rules shared by every session (Claude Code and Codex). Codex still loads AGENTS.md natively, so the brief it used
+# to get from that file is inlined here - the same text as before, from its new path.
+$briefPath = Join-Path $root 'docs\peer-brief.md'
+if ($Agent -eq 'codex') {
+    $brief = Get-Content $briefPath -Raw
+    $preamble = $preamble + "`n--- BRIEF ---`n$brief`n--- END BRIEF ---`n"
+}
 # A claude cell loads CLAUDE.md automatically - which addresses the SESSION that owns the work, not
 # a reviewer. Say plainly which role this cell holds, or it will try to take the lock and build.
 if ($Agent -eq 'claude' -and $Role -eq 'priorart') {
-    $brief = Get-Content (Join-Path $root 'AGENTS.md') -Raw
+    $brief = Get-Content $briefPath -Raw
     $preamble = "You are this project's PRIOR-ART REVIEWER. You are not judging whether the plan is good - other " +
                 "reviews do that. You answer ONE question: HAS THIS ALREADY BEEN DONE HERE? Already built under " +
                 "another name, already measured and written down, already tried and failed, already provided by an " +
@@ -428,7 +438,7 @@ elseif ($Agent -eq 'claude' -and $Role -eq 'ingest') {
     # RULE AND CONSISTENCY AUDITOR preamble and :250 already pins it to sonnet for this exact role") - narrowed to
     # one question and forbidden to recommend anything. Resolving a contradiction is judgement work; this layer
     # only finds them.
-    $brief = Get-Content (Join-Path $root 'AGENTS.md') -Raw
+    $brief = Get-Content $briefPath -Raw
     $preamble = "You are this project's RULE AND CONSISTENCY AUDITOR, running the per-cycle DOCUMENT INGEST. " +
                 "You answer exactly one question about the files listed below: WHICH STATEMENTS CONTRADICT EACH " +
                 "OTHER, or contradict CLAUDE.md or STATUS.md?`n" +
@@ -445,7 +455,7 @@ elseif ($Agent -eq 'claude' -and $Role -eq 'hypothesis') {
     # THE FAILED-PREDICTION REVIEWER (user, 2026-09-17). Same job codex has held: attack the framing of a
     # diagnosis formed under pressure. -Kind review appends the four-part adversarial instruction set after this,
     # so this preamble does NOT repeat it; it states the role, and the one capability no other claude role has.
-    $brief = Get-Content (Join-Path $root 'AGENTS.md') -Raw
+    $brief = Get-Content $briefPath -Raw
     $preamble = "You are this project's FAILED-PREDICTION REVIEWER. Something was predicted and something else " +
                 "was observed, and the explanation you are about to read was written AFTER the observation, under " +
                 "pressure, by the session that chose the failing experiment. Your job is to attack that framing - " +
@@ -487,7 +497,7 @@ elseif ($Agent -eq 'claude' -and $Role -eq 'prose') {
     $preamble = ''
 }
 elseif ($Agent -eq 'claude') {
-    $brief = Get-Content (Join-Path $root 'AGENTS.md') -Raw
+    $brief = Get-Content $briefPath -Raw
     $preamble = "You are this project's RULE AND CONSISTENCY AUDITOR — a peer reviewer, not the session " +
                 "doing the work. Your specific job, the one the other two peers cannot do: check the claim " +
                 "against what THIS project's own files actually say. Does it match the logs, docs/NAMES.md " +

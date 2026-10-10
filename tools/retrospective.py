@@ -61,6 +61,7 @@ ROOT = os.path.dirname(HERE)
 DECISIONS = os.path.join(ROOT, "docs", "violation-decisions.md")
 sys.path.insert(0, HERE)
 import logclass  # noqa: E402  - ONE definition of build-vs-machinery; see tools/logclass.py
+from rules_coverage import rule_docs as _rule_docs  # noqa: E402  - the rule topic files (card chat-X1)
 
 
 def current_plan_rel():
@@ -138,7 +139,7 @@ Be concrete about which log or file shows each one (file:line).
 2. MISSING TOOL. Is there a reader or op that was NOT built and whose absence made the cycle more expensive? Say
    which failures it would have answered.
 3. UNMEASURED STEPS. Was anything decided by inference where a measurement was available and cheap?
-4. RULE COMPLIANCE. Read the attached CLAUDE.md. Which of its rules were broken, evaded, or satisfied only
+4. RULE COMPLIANCE. Read the attached rule files (docs/rules/). Which of their rules were broken, evaded, or satisfied only
    formally? The compliance audit output is attached - say also what the audit does NOT cover.
 5. ORDERING. Was the cycle's order of work defensible, or should some later step have come first?
 6. WHAT WAS NOT REPORTED. From the raw logs, is there anything the session's own summary would have hidden or
@@ -437,7 +438,11 @@ def main():
           f"the cycle's build cost. Listed for ONE reason: they carry the `COST: $...` and wall-clock lines the\n"
           f"output contract asks you to quote. Never read a reviewer's quoted sentence as a build failure.\n"
         + "\n".join(f"tools/bench/{n}  ({fmt(mt)})" for n, mt in machinery)
-        + "\n\nThe rules are in CLAUDE.md at the project root; this cycle's own plan is "
+        # card chat-X1 (2026-10-10): CLAUDE.md is now the short core; the rules in force are the docs/rules/ topic
+        # files (rules_coverage.rule_docs), the old full text is the frozen copy they cite.
+        + "\n\nThe rules are in " + ", ".join(_rule_docs()) + " (CLAUDE.md at the project root is only the short "
+          "core; the old full text, which older citations `CLAUDE.md:N` point into, is "
+          "docs/rules/CLAUDE-full-2026-10-10.md); this cycle's own plan is "
           f"{plan_text} and the hand-off document is STATUS.md; every hypothesis-level review of "
           "this cycle is in archive/peer/.")
 

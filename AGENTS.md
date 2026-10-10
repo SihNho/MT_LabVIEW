@@ -1,72 +1,68 @@
 ---
 type: rules
 status: current
-date: 2026-08-31
-tags: [rules, peer-review]
+date: 2026-10-10
+tags: [rules]
 ---
 
-# AGENTS.md — brief for peer agents (Codex, Gemini / Antigravity)
+# Core rules - every session, Claude Code or Codex
 
-You are a **read-only research assistant** on a LabVIEW magnetic-tweezers project. **Claude Code is
-the manager and the only agent that executes anything.** You are called for search, diagnosis, code
-review and to attack a hypothesis — never to act.
+`CLAUDE.md` and `AGENTS.md` are the SAME text (card chat-X1, user 2026-10-10). This is only the core: the rules in
+force are in `docs/rules/`, the user's decisions in `docs/decisions/INDEX.md`, the state in `STATUS.md`.
+**Read `docs/START.md` first** - it gives the reading order, who owns execution right now, and what your role may do.
+A Codex session is, for now, READ-ONLY analysis plus card proposals. Peers dispatched by `tools/peer.ps1` follow
+`docs/peer-brief.md`. Old citations `CLAUDE.md:N` mean line N of the frozen `docs/rules/CLAUDE-full-2026-10-10.md`.
 
-## Hard rules — these are not preferences
+## Never - hard prohibitions
 
-1. **Never run, open or modify LabVIEW, any `.vi`, or any file in this repository.** The machine runs
-   a real magnetic-tweezers rig, and the project's own rule is that **only one execution path may
-   touch LabVIEW at a time**. A second agent "helpfully" running a VI can reach laboratory hardware.
-   Two instruments are forbidden outright even to the manager: the **ASI piezo stage** and the
-   **motor**.
-2. **Never write, edit, create or delete files.** Your output is your answer, nothing else. Run with
-   `--sandbox read-only --ask-for-approval never` (Codex) or the equivalent, so this is enforced and
-   not merely requested.
-3. **Do not open `.vi`, `.ctl`, `.lvlib` or `.lvproj`.** They are compiled binaries; you will get
-   noise. Ask the manager for **reporter output** (plain text listings of a VI's objects) instead.
-4. **Do not read `archive/`** unless the question explicitly points you at a file there. It holds
-   superseded history — including diagnoses that were later retracted — and will mislead you.
-   Anything from the past that bears on your question is attached to the prompt by the manager,
-   usually as an **"already ruled out"** list. If that list looks like it is missing something you
-   need in order to answer safely, **say so and name what you need** rather than going to read it.
+1. **Never modify an original file** (rule 1). Every pre-existing `.vi` (the reference VI
+   `Min_Track N beads 4.5_KimLabMTroom_3StateClamping.vi`, `zz_LabView VI\background VIs\`, anything opened for
+   inspection) is read-only. Derived work goes to `C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev`
+   only. Answer **Don't Save** to every save prompt naming an original; a dirty original is closed without saving and
+   its checksum verified. -> `docs/rules/originals.md`
+2. **Never change the original's computation** (rule 1a). Only scheduling may change; the per-bead maths, the
+   parameters' route and values, and the numbers out stay identical. Acceptance is NUMERIC (same inputs -> same X/Y/Z);
+   `ExecState == 1` proves nothing. Cannot show it preserved -> stop and ask the user. -> `docs/rules/originals.md`
+3. **Hardware follows the RIG STATE the user announced** (rule 1b; current state: `STATUS.md` hardware banner).
+   Disassembled: all. Assembled: camera; motors and the ASI piezo ONLY through `tools/motor_gate.py` inside the
+   safe-motion envelope. Experiment running: nothing. The ASI is not a special case. Controller limits are SET at every
+   cycle start and RELEASED at every cycle end, each verified by readback, after a real PI reference move. Every cycle
+   ends with LabVIEW CLOSED and verified gone. Only the user announces a state change. -> `docs/rules/hardware.md`
+4. **No serial / VISA call on the frame acquisition path** (rule 1c) - not even a conditional one.
+5. **Control signals between loops travel by LOCAL VARIABLE, never by queue** (rule 1c''); queues only for lossless
+   data streams; never detect an edge on a polled boolean; the focus loop copies the original's arithmetic.
+6. **Never touch LabVIEW outside the guarded paths.** LabVIEW-touching commands run with a timeout <= 30 s or in the
+   background through `py tools/bgrun.py --max-min N --log <file> -- <cmd>` (material runs: `--material`). One LabVIEW
+   client at a time (`labview-lock` in `STATUS.md`). GUI actions only where scripting is VERIFIED unreachable, through
+   `tools/lv_gui.ps1` with a recorded `-Exception` and `-Evidence`. Close every VI Server reference you open and prove it
+   by handle count. -> `docs/rules/labview-execution.md`
+7. **Never route around a refusal.** A hook, gate or card flag that refuses you is obeyed: do what it says, or log a
+   provable false positive (`py tools/gate_fp.py log ...`) and end BLOCKED. Never set `PEER_GUARD_OFF` /
+   `CYCLE_GUARD_OFF` or any bypass env var. **Runner cards never edit `tools/hooks/**`.**
+8. **Never start or stop work on your own.** Only the user starts ("지금 진행해") or stops ("멈춰"); silence is not
+   authorization; a `STOP` line in `STATUS.md` holds until the user lifts it.
+9. **Secrets live only in user environment variables** - never in chat, code, logs or the repo
+   (`docs/secrets-and-handover.md`).
+10. **Never edit `*.vi`, `*.ctl`, `*.lvlib`, `*.lvproj` as files**, never patch files with a shell heredoc (use the
+    editor tools), never attach `.vi` files to a peer.
 
-## What you are actually good for here
+## Always - how the work runs
 
-- **External knowledge** — NI forums, LAVA, NI documentation, error codes, "how do other people do
-  this". This is the highest-value use: on 2026-08-28 one forum search overturned a design that had
-  already cost hours.
-- **Attacking a hypothesis.** When the manager says "I think error X is caused by Y, here is my
-  evidence" — try to break it. Confident-sounding agreement is worth nothing; a counter-example with
-  a URL is worth a lot.
-- **Reviewing the Python/PowerShell in `tools/`** for logic errors, API misuse and weak verification.
-- **Reading screenshots** that are passed to you (`codex -i shot.png "..."`).
-
-## How to answer
-
-- **Short and direct.** Lead with the answer, then the reasoning.
-- **Every external claim carries a URL.** An unsourced recollection about an API is a guess; say so.
-- **Say plainly when you do not know**, and say what evidence would settle it.
-- If the question is already answered by a document in this repo, name the file rather than
-  re-deriving it.
-- Prefer "here is a way to check this cheaply" over a long speculative analysis. The manager can run
-  experiments; you cannot.
-
-## Where to look
-
-| file | what it holds |
-|---|---|
-| `STATUS.md` | current state, what has been tried, what failed and why — **read this first** |
-| `.claude/skills/labview-automation/SKILL.md` | all LabVIEW technique: VI Scripting, the ActiveX pipeline, GUI automation, known failure modes |
-| `ARCHITECTURE.md` | the rig's software and the performance model |
-| `tools/gscript.py` | the runner that drives the "Op VI" fleet over ActiveX |
-| `tools/lv_gui.ps1` | GUI automation and the modal-dialog recovery |
-| `tools/kb_com.py` | the raw ActiveX layer and its traps |
-| `docs/REFERENCES.md` | third-party code and where each derived file came from |
-
-## Minimum context
-
-LabVIEW 2026 on Windows 10. The project parallelises a per-bead tracking kernel using **VI
-Scripting**, driven from Python over LabVIEW's **ActiveX** server — front-panel controls are set by
-label from outside, the VI is run, and results are read back, with no mouse involved. The building
-blocks are small frozen **"Op VIs"** (`OpReport`, `OpForLoop`, `OpSubVI`, `OpWire`) composed by
-`tools/gscript.py`. Original VIs are never modified; all generated work lives in
-`C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev`.
+- **Answer the user first (rule 2b).** A user message mid-work is answered in the very next reply, first line, before
+  any tool call; a yes/no question gets its yes/no first. -> `docs/rules/interaction.md`
+- **Finish the cycle (rule 2c).** Once a cycle runs, do everything that does not depend on an open question, proceed
+  under a written assumption for the rest, and report once at the end; stop only when proceeding would be unsafe or
+  destructive.
+- **Keep `STATUS.md` true during the work** (rule 2): LabVIEW is shared with real experiments and the user may reclaim
+  it at any moment.
+- **Judgement vs material.** Judgement sessions decide; material sessions measure and build within their card's flags
+  and return facts (`result/1`), never the result-dependent decision. Failure budget 2; a card returns at its FIRST
+  unexpected result. -> `docs/rules/runner.md`, `docs/session-protocol.md`
+- **Every new script** starts with its scope header (`# labview:` / `# hardware:`), calls shared functions instead of
+  copying them (`docs/script-writing.md`), and ends with a `RESULT {...}` line.
+- **Every failed prediction gets an adversarial peer review**; every factual claim about a tool or API gets an external
+  search; name the verification level (structural is not functional). -> `docs/rules/reviews.md`
+- **Documents are layered**: `STATUS.md` short, facts in `docs/`, narrative in `archive/` (not read in normal work).
+  Leave a file at every step - the next session starts from disk. -> `docs/rules/docs.md`
+- **Write in plain words; state confidence and evidence; reports the user reads come through the Claude session**
+  (`docs/rules/interaction.md`).
