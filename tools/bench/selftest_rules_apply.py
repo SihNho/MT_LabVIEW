@@ -70,9 +70,8 @@ def relay(root, rnd, claude_agreed, gpt_agreed, gpt_open=()):
 
 
 def candidate(root, cid, rnd, changes, gpt="agreed", test_md5=None):
-    """Stage a candidate: files, relay round rnd, manifest via `stage`, one test via `add-test`."""
-    tok = cid + " 동의"
-    relay(root, rnd, [tok, "other"], [tok] if gpt == "agreed" else [], [tok] if gpt == "open" else [])
+    """Stage a candidate: files, manifest via `stage`, one test via `add-test`, then relay round rnd carrying the
+    FINAL bundle token (card chat-X9: token = '<bundle-id> 동의'). Returns the bundle id."""
     for rel, text in changes.items():
         write(root, "%s/%s/files/%s" % (RA.CAND_REL, cid, rel), text)
     rc, out = run(RA_PY, root, "stage", cid, "--debate", DEB, "--round", str(rnd))
@@ -84,6 +83,10 @@ def candidate(root, cid, rnd, changes, gpt="agreed", test_md5=None):
         fh.write("some test output\n" + P.result_line(P.make_result(5, 0, None, arts)) + "\n")
     rc, out = run(RA_PY, root, "add-test", cid, "--command", "py -u fake_test.py", "--log", log)
     assert rc == 0, out
+    bid = RA.bundle_id(RA._load_manifest(root, cid))
+    tok = bid + " 동의"
+    relay(root, rnd, [tok, "other"], [tok] if gpt == "agreed" else [], [tok] if gpt == "open" else [])
+    return bid
 
 
 def refused(root, cid, label, expect_in):
@@ -99,7 +102,8 @@ def main():
     t = tempfile.mkdtemp(prefix="rules_apply_selftest_")
     try:
         os.makedirs(os.path.join(t, "tools"))
-        shutil.copyfile(os.path.join(ROOT, RA.PROTECTED_REL), os.path.join(t, RA.PROTECTED_REL))
+        for f in (RA.PROTECTED_REL, RA.SELF_REL, "tools/protocol.py", "tools/debate_relay.py"):
+            shutil.copyfile(os.path.join(ROOT, f), os.path.join(t, f))
         write(t, "CLAUDE.md", "core v0\n")
         write(t, "docs/rules/a.md", "rule a v0\n")
         write(t, "tools/hooks/h.py", "X = 0\n")
@@ -110,31 +114,32 @@ def main():
         gate("S0 baseline written", rc == 0 and ledger_n(t) == 1 and RA.read_ledger(t)[0]["kind"] == "baseline",
              "rc=%d ledger=%d files=%s" % (rc, ledger_n(t), [p["path"] for p in RA.read_ledger(t)[0]["paths"]]))
         gate("S0 protected list excludes logs/unprotected", sorted(p["path"] for p in RA.read_ledger(t)[0]["paths"]) ==
-             ["CLAUDE.md", "docs/rules/a.md", "tools/hooks/h.py", "tools/rules_protected.json"])
+             ["CLAUDE.md", "docs/rules/a.md", "tools/hooks/h.py", "tools/rules_apply.py", "tools/rules_protected.json"])
         rc, out = run(RA_PY, t, "audit")
         gate("S0 audit clean after baseline", rc == 0 and "OUT-OF-BAND" not in out, "rc=%d" % rc)
         # A apply
-        candidate(t, "ch-a", 1, {"docs/rules/a.md": "rule a v1\n", "tools/hooks/h.py": "X = 1\n"})
-        rc, out = run(RA_PY, t, "apply", "ch-a")
+        bid = candidate(t, "ch-a", 1, {"docs/rules/a.md": "rule a v1\n", "tools/hooks/h.py": "X = 1\n"})
+        rc, out = run(RA_PY, t, "apply", bid)
         cand = RA.md5_file(os.path.join(RA.cand_dir(t, "ch-a"), "files", "tools/hooks/h.py"))
         led = RA.read_ledger(t)
         gate("A apply ok", rc == 0 and RA.md5_file(os.path.join(t, "tools/hooks/h.py")) == cand and len(led) == 2 and
-             led[-1]["kind"] == "apply" and led[-1]["id"] == "ch-a" and len(led[-1]["paths"]) == 2,
-             "rc=%d ledger=%d" % (rc, len(led)))
+             led[-1]["kind"] == "apply" and led[-1]["id"] == bid and len(led[-1]["paths"]) == 2,
+             "rc=%d ledger=%d %s" % (rc, len(led), [l for l in out.splitlines() if l.startswith("FAIL")]))
         rc, out = run(RA_PY, t, "audit")
-        gate("A audit VIA-APPLY", rc == 0 and out.count("VIA-APPLY") == 2 and out.count("BASELINE ") == 2, "rc=%d" % rc)
+        gate("A audit VIA-APPLY", rc == 0 and out.count("VIA-APPLY") == 2 and out.count("BASELINE ") == 3,
+             "rc=%d %s" % (rc, [l for l in out.splitlines() if l.startswith("FAIL")]))
         # refusals
-        candidate(t, "ch-b", 2, {"docs/rules/a.md": "rule a v2\n"}, gpt="missing")
-        refused(t, "ch-b", "B refused: gpt token missing", "FAIL  agreement:gpt")
-        candidate(t, "ch-c", 3, {"docs/rules/a.md": "rule a v3\n"}, gpt="open")
-        refused(t, "ch-c", "C refused: gpt token in open", "token only in STATE.open")
-        candidate(t, "ch-d", 4, {"CLAUDE.md": "core v4\n"})
+        refused(t, candidate(t, "ch-b", 2, {"docs/rules/a.md": "rule a v2\n"}, gpt="missing"),
+                "B refused: gpt token missing", "FAIL  agreement:gpt")
+        refused(t, candidate(t, "ch-c", 3, {"docs/rules/a.md": "rule a v3\n"}, gpt="open"),
+                "C refused: gpt token in open", "token only in STATE.open")
+        bid_d = candidate(t, "ch-d", 4, {"CLAUDE.md": "core v4\n"})
         write(t, "CLAUDE.md", "core v0 drifted\n")
-        refused(t, "ch-d", "D refused: live drifted", "FAIL  no-drift:CLAUDE.md")
-        candidate(t, "ch-e", 5, {"tools/hooks/h.py": "X = 5\n"}, test_md5="0" * 32)
-        refused(t, "ch-e", "E refused: test md5 != cand", "FAIL  test0:md5s")
-        candidate(t, "ch-f", 6, {"notes/free.md": "changed\n"})
-        refused(t, "ch-f", "F refused: path not protected", "FAIL  protected:notes/free.md")
+        refused(t, bid_d, "D refused: live drifted", "FAIL  no-drift:CLAUDE.md")
+        refused(t, candidate(t, "ch-e", 5, {"tools/hooks/h.py": "X = 5\n"}, test_md5="0" * 32),
+                "E refused: test md5 != cand", "FAIL  test0:md5s")
+        refused(t, candidate(t, "ch-f", 6, {"notes/free.md": "changed\n"}),
+                "F refused: path not protected", "FAIL  protected:notes/free.md")
         # G audit out-of-band (CLAUDE.md drifted above = direct edit) + a new hook file never applied
         write(t, "tools/hooks/new.py", "Y = 1\n")
         rc, out = run(RA_PY, t, "audit")
@@ -155,8 +160,7 @@ def main():
         rc, out = run(PC_PY, t)
         gate("P1 precommit refuses out-of-band staged file", rc == 1 and "REFUSED  staged:CLAUDE.md" in out,
              [l for l in out.splitlines() if "staged:" in l])
-        candidate(t, "ch-p", 7, {"CLAUDE.md": "core v7\n"})
-        rc_a, out_a = run(RA_PY, t, "apply", "ch-p")
+        rc_a, out_a = run(RA_PY, t, "apply", candidate(t, "ch-p", 7, {"CLAUDE.md": "core v7\n"}))
         write(t, "notes/free.md", "free edit\n")
         git(t, "add", "CLAUDE.md", "notes/free.md")
         rc, out = run(PC_PY, t)

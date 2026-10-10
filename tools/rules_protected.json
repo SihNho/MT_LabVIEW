@@ -1,13 +1,15 @@
 {
  "schema": "rules-protected/1",
- "why": "Discussion structure-equal-02 round 6 (relay/round_06_claude.md:43, relay/round_06_gpt.md:24): joint-agreement scope = rules, CLAUDE.md, AGENTS.md, both harnesses' hooks and settings, this protected list, the check and apply devices. Card chat-X6 (candidate, not active). The ONE place this list lives: tools/rules_apply.py and tools/git_precommit_rules.py read it.",
+ "why": "Discussion structure-equal-02 round 6 (relay/round_06_claude.md:43, relay/round_06_gpt.md:24): joint-agreement scope = rules, CLAUDE.md, AGENTS.md, both harnesses' hooks and settings, this protected list, the check and apply devices. Widened by round 10 (relay/round_10_claude.md:38, relay/round_10_gpt.md:27, card chat-X9): both sides' agent definitions, the ledger (chain_checked), the user's settings.local.json (agent_write_denied, not ledger-tracked). CANDIDATE, not active. The ONE place this list lives: tools/rules_apply.py, tools/git_precommit_rules.py and tools/hooks/protected_write.py (candidate) read it.",
  "globs": [
   "docs/rules/**",
   "CLAUDE.md",
   "AGENTS.md",
   "tools/hooks/**",
   ".codex/**",
+  ".codex/agents/**",
   ".claude/settings.json",
+  ".claude/agents/**",
   "tools/rules_protected.json",
   "tools/rules_apply.py",
   "tools/git_precommit_rules.py"
@@ -17,10 +19,18 @@
   "**/*.pyc",
   "tools/hooks/*.log"
  ],
+ "chain_checked": [
+  "tools/bench/rules_ledger.jsonl"
+ ],
+ "agent_write_denied": [
+  ".claude/settings.local.json"
+ ],
+ "notes": {
+  "chain_checked": "written ONLY by rules_apply (apply / the genesis baseline); verified by its sha256 hash chain and the committed-prefix check in `rules_apply.py audit`, not by an md5 (it changes with every apply).",
+  "agent_write_denied": "every agent write (Write/Edit/apply_patch/shell, rules_apply included) is refused; the user edits it by hand; never in the ledger or the md5 audit."
+ },
  "open": [
-  ".claude/agents/** - agent definitions (models, efforts, briefs); harness behaviour, but not named in round 6",
-  ".claude/settings.local.json - the user's own local settings; protecting it would route the user's edits through the apply path",
-  "tools/bench/rules_ledger.jsonl - the ledger itself; an edit to it can launder an out-of-band change (append-only check?)",
-  ".codex/** contents that are runtime state rather than policy, if any appear"
+  ".codex/** contents that are runtime state rather than policy, if any appear",
+  "the debate relay files an agreement cites (tools/bench/debate/<topic>/relay/round_NN_*.md) are not protected; the ledger records their sha256 so a later edit is detected, but forging relay + bundle before the first apply is not"
  ]
 }

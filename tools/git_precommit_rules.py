@@ -56,6 +56,14 @@ def check_staged(root):
     last = RA.last_md5s(RA.read_ledger(root))
     g = []
     for st, rel in staged_paths(root):
+        if rel == RA.LEDGER_REL:            # card chat-X9: the staged ledger must keep its hash chain
+            if st == "D":
+                g.append(("staged:" + rel, False, "deletion of the ledger"))
+                continue
+            blob = _git(root, "cat-file", "blob", ":" + rel).stdout.decode("utf-8", "replace")
+            ch = RA.verify_chain([x.rstrip("\r") for x in blob.split("\n") if x.strip()])
+            g.append(("staged:" + rel, all(ok for _, ok, _ in ch), "hash chain over %d line(s)" % len(ch)))
+            continue
         if not RA.is_protected(rel, prot):
             continue
         if st == "D":

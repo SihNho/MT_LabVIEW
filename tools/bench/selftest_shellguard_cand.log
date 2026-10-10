@@ -1,0 +1,403 @@
+BGRUN START 2026-10-10 22:05:03 limit 15.0 min: py -u tools/bench/selftest_shellguard_cand.py
+BGRUN PID 24700
+PASS  M0 active files listed  84 files
+PASS  S1 deny redirect >  echo x > CLAUDE.md | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny redirect >>  echo x >> tools/hooks/guard_bash.py | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny redirect ps  'x' > docs/rules/new.md | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny Set-Content  Set-Content -Path CLAUDE.md -Value x | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny Add-Content  Add-Content AGENTS.md 'x' | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny Out-File  'x' | Out-File -FilePath docs/rules/a.md | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny New-Item  New-Item -ItemType File -Path tools/hooks/new_guard.py -Force | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny Remove-Item  Remove-Item tools/hooks/guard_card.py | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny Copy-Item  Copy-Item tools/bench/selftest_x.py tools/hooks/guard_card.py | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny Move-Item  Move-Item tools/hooks/guard_card.py tools/bench/x.py | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny Rename-Item  Rename-Item -Path tools/hooks/guard_card.py -NewName old.py | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny cp  cp /tmp/x tools/hooks/guard_bash.py | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny mv  mv AGENTS.md AGENTS.bak | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny rm  rm -f .codex/hooks.json | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny tee  echo x | tee -a CLAUDE.md | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny sed -i  sed -i 's/a/b/' CLAUDE.md | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny git checkout --  git checkout -- tools/hooks/guard_bash.py | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny git restore  git restore CLAUDE.md | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny git checkout rev --  git checkout HEAD~1 -- docs/rules/reviews.md | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny py -c open w  py -c "open('CLAUDE.md','w').write('x')" | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny python -c pathlib  python -c "import pathlib; pathlib.Path('tools/hooks/guardcore.py').write_text('x')" | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny py heredoc  py - <<'EOF'
+open('AGENTS.md','a').write('x')
+EOF | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny bash -c nested  bash -c 'echo x > CLAUDE.md' | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny powershell -Command nested  powershell -NoProfile -Command "Set-Content CLAUDE.md x" | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny absolute path  Set-Content -LiteralPath "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Trackin | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny backslash path  Remove-Item tools\hooks\guard_card.py | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny cd then write  cd tools/hooks && echo x > guard_bash.py | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny ledger append  echo {} >> tools/bench/rules_ledger.jsonl | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny agent definition  Set-Content .claude/agents/material.md x | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny codex agent definition  rm .codex/agents/bench-opus-high.toml | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny settings.local shell  Set-Content .claude/settings.local.json '{}' | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny settings.local redirect  echo {} > .claude/settings.local.json | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny rm -rf dir  rm -rf tools/hooks | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny Remove-Item -Recurse dir  Remove-Item -Recurse .claude | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny wildcard  rm tools/hooks/*.py | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny rules_protected.json  Set-Content tools/rules_protected.json '{}' | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny rules_apply --root real  py tools/rules_apply.py --root . apply cand-shellguard-01@0123abcd | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny rules_apply copy  py tools/bench/candidates/rules_apply.py apply cand-shellguard-01@0123abcd | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny rules_apply baseline  py tools/rules_apply.py audit --baseline | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny git reset --hard  git reset --hard HEAD | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S2 allow redirect free  echo x > tools/bench/guardcore_fake/sg_marker.txt | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow Set-Content free  Set-Content -Path tools/bench/guardcore_fake/sg_m.txt -Value x | claude:PowerShell=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow cp protected -> free  cp CLAUDE.md tools/bench/guardcore_fake/claude_copy.md | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow Get-Content | Out-File free  Get-Content CLAUDE.md | Out-File tools/bench/guardcore_fake/c.txt | claude:PowerShell=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow cat protected  cat tools/hooks/guard_bash.py | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow grep protected  grep -n x CLAUDE.md 2>/dev/null | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow git diff protected  git diff -- CLAUDE.md | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow py -c read  py -c "print(open('CLAUDE.md').read()[:10])" | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow py -c write free  py -c "open(r'tools/bench/guardcore_fake/marker_allowed.txt','w').write('ok')" | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow rm free  rm -f tools/bench/guardcore_fake/sg_marker.txt | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow rm wildcard free  rm tools/bench/*.tmp | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow rules_apply audit  py tools/rules_apply.py audit | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow git status  git status --short | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  F0 fake-tree hooks are byte copies of the candidate  
+FAIL  F1 genesis baseline  rc=1
+PASS  M1 active hook/.codex/.claude/protected md5s unchanged  []
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\selftest_shellguard_cand.py", line 408, in <module>
+    sys.exit(main())
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\selftest_shellguard_cand.py", line 394, in main
+    fake_tree()
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\selftest_shellguard_cand.py", line 257, in fake_tree
+    b1 = bundle(t, "ch-1", 1, {"docs/rules/a.md": "rule a v1\n"})
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\selftest_shellguard_cand.py", line 223, in bundle
+    assert rc == 0, out
+AssertionError: BUNDLE ch-1@7ae20c7d  token 'ch-1@7ae20c7d ����'
+PASS  staged  1 path(s)
+Traceback (most recent call last):
+  File "C:\Users\KimLab\AppData\Local\Temp\shellguard_fake_rzbo9kue\tools\rules_apply.py", line 601, in <module>
+    sys.exit(main())
+  File "C:\Users\KimLab\AppData\Local\Temp\shellguard_fake_rzbo9kue\tools\rules_apply.py", line 588, in main
+    return cmd_stage(root, a.id, a.debate, a.round)
+  File "C:\Users\KimLab\AppData\Local\Temp\shellguard_fake_rzbo9kue\tools\rules_apply.py", line 356, in cmd_stage
+    return _finish([("staged", bool(paths), "%d path(s)" % len(paths))], "stage",
+  File "C:\Users\KimLab\AppData\Local\Temp\shellguard_fake_rzbo9kue\tools\rules_apply.py", line 334, in _finish
+    print(P.result_line(P.make_result(len(gates) - len(fails), len(fails),
+  File "C:\Users\KimLab\AppData\Local\Temp\shellguard_fake_rzbo9kue\tools\protocol.py", line 298, in result_line
+    raise ValueError("result_line: " + why)
+ValueError: result_line: no schema file for 'result-line/1' (docs\protocol\result-line.json)
+
+BGRUN END rc=1 after 23s (NO RESULT LINE)
+BGRUN START 2026-10-10 22:05:43 limit 15.0 min: py -u tools/bench/selftest_shellguard_cand.py
+BGRUN PID 28936
+PASS  M0 active files listed  84 files
+PASS  S1 deny redirect >  echo x > CLAUDE.md | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny redirect >>  echo x >> tools/hooks/guard_bash.py | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny redirect ps  'x' > docs/rules/new.md | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny Set-Content  Set-Content -Path CLAUDE.md -Value x | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny Add-Content  Add-Content AGENTS.md 'x' | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny Out-File  'x' | Out-File -FilePath docs/rules/a.md | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny New-Item  New-Item -ItemType File -Path tools/hooks/new_guard.py -Force | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny Remove-Item  Remove-Item tools/hooks/guard_card.py | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny Copy-Item  Copy-Item tools/bench/selftest_x.py tools/hooks/guard_card.py | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny Move-Item  Move-Item tools/hooks/guard_card.py tools/bench/x.py | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny Rename-Item  Rename-Item -Path tools/hooks/guard_card.py -NewName old.py | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny cp  cp /tmp/x tools/hooks/guard_bash.py | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny mv  mv AGENTS.md AGENTS.bak | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny rm  rm -f .codex/hooks.json | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny tee  echo x | tee -a CLAUDE.md | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny sed -i  sed -i 's/a/b/' CLAUDE.md | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny git checkout --  git checkout -- tools/hooks/guard_bash.py | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny git restore  git restore CLAUDE.md | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny git checkout rev --  git checkout HEAD~1 -- docs/rules/reviews.md | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny py -c open w  py -c "open('CLAUDE.md','w').write('x')" | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny python -c pathlib  python -c "import pathlib; pathlib.Path('tools/hooks/guardcore.py').write_text('x')" | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny py heredoc  py - <<'EOF'
+open('AGENTS.md','a').write('x')
+EOF | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny bash -c nested  bash -c 'echo x > CLAUDE.md' | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny powershell -Command nested  powershell -NoProfile -Command "Set-Content CLAUDE.md x" | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny absolute path  Set-Content -LiteralPath "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Trackin | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny backslash path  Remove-Item tools\hooks\guard_card.py | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny cd then write  cd tools/hooks && echo x > guard_bash.py | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny ledger append  echo {} >> tools/bench/rules_ledger.jsonl | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny agent definition  Set-Content .claude/agents/material.md x | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny codex agent definition  rm .codex/agents/bench-opus-high.toml | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny settings.local shell  Set-Content .claude/settings.local.json '{}' | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny settings.local redirect  echo {} > .claude/settings.local.json | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny rm -rf dir  rm -rf tools/hooks | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny Remove-Item -Recurse dir  Remove-Item -Recurse .claude | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny wildcard  rm tools/hooks/*.py | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny rules_protected.json  Set-Content tools/rules_protected.json '{}' | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny rules_apply --root real  py tools/rules_apply.py --root . apply cand-shellguard-01@0123abcd | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny rules_apply copy  py tools/bench/candidates/rules_apply.py apply cand-shellguard-01@0123abcd | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny rules_apply baseline  py tools/rules_apply.py audit --baseline | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny git reset --hard  git reset --hard HEAD | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S2 allow redirect free  echo x > tools/bench/guardcore_fake/sg_marker.txt | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow Set-Content free  Set-Content -Path tools/bench/guardcore_fake/sg_m.txt -Value x | claude:PowerShell=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow cp protected -> free  cp CLAUDE.md tools/bench/guardcore_fake/claude_copy.md | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow Get-Content | Out-File free  Get-Content CLAUDE.md | Out-File tools/bench/guardcore_fake/c.txt | claude:PowerShell=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow cat protected  cat tools/hooks/guard_bash.py | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow grep protected  grep -n x CLAUDE.md 2>/dev/null | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow git diff protected  git diff -- CLAUDE.md | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow py -c read  py -c "print(open('CLAUDE.md').read()[:10])" | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow py -c write free  py -c "open(r'tools/bench/guardcore_fake/marker_allowed.txt','w').write('ok')" | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow rm free  rm -f tools/bench/guardcore_fake/sg_marker.txt | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow rm wildcard free  rm tools/bench/*.tmp | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow rules_apply audit  py tools/rules_apply.py audit | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow git status  git status --short | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  F0 fake-tree hooks are byte copies of the candidate  
+PASS  F1 genesis baseline  rc=0
+PASS  A1 allow exact apply of an agreed bundle  py tools/rules_apply.py apply ch-1@11ad7c52 | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  A2 deny another executable path  py tools/bench/rules_apply.py apply ch-1@11ad7c52 | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  A3 deny modified rules_apply.py  py tools/rules_apply.py apply ch-1@11ad7c52 | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  A4 deny missing bundle  py tools/rules_apply.py apply nochange@0123abcd | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  A5 deny unagreed bundle  py tools/rules_apply.py apply ch-2@69e521e5 | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  A6 deny bundle target outside protected globs  py tools/rules_apply.py apply ch-3@0d0276e0 | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  A7 deny bundle targeting settings.local.json  py tools/rules_apply.py apply ch-4@c70de8d3 | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  A8 deny extra argument  py tools/rules_apply.py apply ch-1@11ad7c52 CLAUDE.md | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  A9 deny second segment  py tools/rules_apply.py apply ch-1@11ad7c52 ; Set-Content CLAUDE.md x | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  A10 deny --root on the real tree  py tools/rules_apply.py --root . apply ch-1@11ad7c52 | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  A11 real apply of b1 (rules_apply subprocess)  []
+PASS  A12 deny re-use of b1 (token used)  py tools/rules_apply.py apply ch-1@11ad7c52 | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  T1 token reuse refused  rc1=0 rc2=1 fails=['token-unused']
+PASS  T2 staged hash changed after agreement refused  ['FAIL  bundle-hash  staged core 31531882, id 437423fc, recorded 31531882', "FAIL  token  manifest token 'ch-6@31531882 동의'", 'FAIL  test1:md5s  differs from cand_md5: docs/rules/a.md']
+REFUSED apply ch-7@2fdaf073: pre-apply re-hash differs from the checked bundle, nothing written
+PASS  bundle-id  ch-7@2fdaf073
+PASS  manifest  schema/change_id/paths
+PASS  bundle-hash  staged core 2fdaf073, id 2fdaf073, recorded 2fdaf073
+PASS  token  manifest token 'ch-7@2fdaf073 동의'
+PASS  agreement:claude  token in agreed (round_07_claude.md)
+PASS  agreement:gpt  token in agreed (round_07_gpt.md)
+PASS  rules-apply-version  live 417ed767fd220b34583f1c1a6ed6a9e8 bundle 417ed767fd220b34583f1c1a6ed6a9e8
+PASS  token-unused  new token
+PASS  ledger-chain  3 line(s)
+PASS  protected:docs/rules/a.md  in tools/rules_protected.json globs
+PASS  no-drift:docs/rules/a.md  live 84b013298ddab9c542be3c5124a900dc base 84b013298ddab9c542be3c5124a900dc
+PASS  cand-md5:docs/rules/a.md  file 4584d3c7a84d8d8e612c3c25e6323ce5 manifest 4584d3c7a84d8d8e612c3c25e6323ce5
+PASS  no-unlisted-files  
+PASS  tests-present  1 test(s)
+PASS  test0:pass  PASS
+PASS  test0:md5s  all cand md5s
+PASS  prehash:bundle  now ch-7@2fdaf073
+PASS  prehash:rules-apply  
+FAIL  prehash:cand:docs/rules/a.md  cc57dc34c628cdaf2b5dd11f42fdbed4
+PASS  prehash:live:docs/rules/a.md  
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":19,"fail":1},"first_fail":"apply ch-7@2fdaf073: prehash:cand:docs/rules/a.md","artefacts":[],"card":"chat-X9","labview":"none"}
+PASS  T3 pre-apply re-hash refuses a change after check  rc=1
+PASS  L1 audit: chain + entries clean  []
+PASS  L1b git commit of the fake tree  
+PASS  L2 edited earlier line breaks the chain  ['chain:1', 'ledger-committed-prefix']
+PASS  L3 forged appended line without agreement flagged  ['entry:3 agreement', 'entry:3 bundle']
+PASS  L4 appended line re-using an agreed token flagged  ['entry:2 token', 'entry:3 token']
+PASS  L5 changed relay file flagged  ['entry:1 relay-files']
+PASS  L6 edited last line flagged (bundle + committed prefix, chain cannot see it)  ['entry:1 relay-files', 'entry:2 bundle', 'ledger-committed-prefix']
+FAIL  L7 restored ledger audits clean  ['entry:1 relay-files']
+PASS  W1 deny Write settings.local via guard_card  BLOCKED by tools/hooks/guard_card.py (protected files): protected file .claude/settings.local.json: the user's own settings - every agent write is refused (Writ
+PASS  W1 deny Write settings.local via adapt_claude  BLOCKED by tools/hooks/guardcore.py: protected file .claude/settings.local.json: the user's own settings - every agent write is refused (Write/Edit/patch/shell,
+PASS  W1 deny Edit settings.local via guard_card  BLOCKED by tools/hooks/guard_card.py (protected files): protected file .claude/settings.local.json: the user's own settings - every agent write is refused (Writ
+PASS  W1 deny Edit settings.local via adapt_claude  BLOCKED by tools/hooks/guardcore.py: protected file .claude/settings.local.json: the user's own settings - every agent write is refused (Write/Edit/patch/shell,
+PASS  W1 deny MultiEdit settings.local via guard_card  BLOCKED by tools/hooks/guard_card.py (protected files): protected file .claude/settings.local.json: the user's own settings - every agent write is refused (Writ
+PASS  W1 deny MultiEdit settings.local via adapt_claude  BLOCKED by tools/hooks/guardcore.py: protected file .claude/settings.local.json: the user's own settings - every agent write is refused (Write/Edit/patch/shell,
+PASS  W1 deny NotebookEdit settings.local via guard_card  BLOCKED by tools/hooks/guard_card.py (protected files): protected file .claude/settings.local.json: the user's own settings - every agent write is refused (Writ
+PASS  W1 deny NotebookEdit settings.local via adapt_claude  BLOCKED by tools/hooks/guardcore.py: protected file .claude/settings.local.json: the user's own settings - every agent write is refused (Write/Edit/patch/shell,
+PASS  W1 deny apply_patch settings.local via adapt_codex  BLOCKED by tools/hooks/guardcore.py: protected file .claude/settings.local.json: the user's own settings - every agent write is refused (Write/Edit/patch/shell,
+PASS  W1 deny apply_patch rename onto settings.local  BLOCKED by tools/hooks/guardcore.py: protected file .claude/settings.local.json: the user's own settings - every agent write is refused (Write/Edit/patch/shell,
+PASS  W1 allow Write to an unprotected path (guard_card)  
+PASS  M1 active hook/.codex/.claude/protected md5s unchanged  []
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":90,"fail":1},"first_fail":"L7 restored ledger audits clean","artefacts":[{"path":"tools/hooks/protected_write.py","md5":"12cdea3c545954226f6fbfb4a9d26d39"},{"path":"tools/hooks/guard_bash.py","md5":"853f790f4b518600e7bb5c0109549033"},{"path":"tools/hooks/guardcore.py","md5":"614e20357f19da78773b917a5ab876be"},{"path":"tools/hooks/guard_card.py","md5":"93bd76ae6085127cb5546c81e797439f"},{"path":"tools/hooks/adapt_codex.py","md5":"57920e676d901f27aa0ab1cdbd4383c3"},{"path":"tools/hooks/adapt_claude.py","md5":"3c06d313e9ca3115ac29939ac85ff5ce"}],"card":"chat-X9","labview":"none"}
+BGRUN END rc=1 after 32s
+BGRUN START 2026-10-10 22:06:55 limit 15.0 min: py -u tools/bench/selftest_shellguard_cand.py
+BGRUN PID 19032
+PASS  M0 active files listed  84 files
+PASS  S1 deny redirect >  echo x > CLAUDE.md | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny redirect >>  echo x >> tools/hooks/guard_bash.py | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny redirect ps  'x' > docs/rules/new.md | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny Set-Content  Set-Content -Path CLAUDE.md -Value x | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny Add-Content  Add-Content AGENTS.md 'x' | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny Out-File  'x' | Out-File -FilePath docs/rules/a.md | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny New-Item  New-Item -ItemType File -Path tools/hooks/new_guard.py -Force | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny Remove-Item  Remove-Item tools/hooks/guard_card.py | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny Copy-Item  Copy-Item tools/bench/selftest_x.py tools/hooks/guard_card.py | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny Move-Item  Move-Item tools/hooks/guard_card.py tools/bench/x.py | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny Rename-Item  Rename-Item -Path tools/hooks/guard_card.py -NewName old.py | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny cp  cp /tmp/x tools/hooks/guard_bash.py | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny mv  mv AGENTS.md AGENTS.bak | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny rm  rm -f .codex/hooks.json | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny tee  echo x | tee -a CLAUDE.md | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny sed -i  sed -i 's/a/b/' CLAUDE.md | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny git checkout --  git checkout -- tools/hooks/guard_bash.py | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny git restore  git restore CLAUDE.md | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny git checkout rev --  git checkout HEAD~1 -- docs/rules/reviews.md | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny py -c open w  py -c "open('CLAUDE.md','w').write('x')" | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny python -c pathlib  python -c "import pathlib; pathlib.Path('tools/hooks/guardcore.py').write_text('x')" | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny py heredoc  py - <<'EOF'
+open('AGENTS.md','a').write('x')
+EOF | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny bash -c nested  bash -c 'echo x > CLAUDE.md' | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny powershell -Command nested  powershell -NoProfile -Command "Set-Content CLAUDE.md x" | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny absolute path  Set-Content -LiteralPath "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Trackin | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny backslash path  Remove-Item tools\hooks\guard_card.py | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny cd then write  cd tools/hooks && echo x > guard_bash.py | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny ledger append  echo {} >> tools/bench/rules_ledger.jsonl | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny agent definition  Set-Content .claude/agents/material.md x | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny codex agent definition  rm .codex/agents/bench-opus-high.toml | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny settings.local shell  Set-Content .claude/settings.local.json '{}' | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny settings.local redirect  echo {} > .claude/settings.local.json | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny rm -rf dir  rm -rf tools/hooks | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny Remove-Item -Recurse dir  Remove-Item -Recurse .claude | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny wildcard  rm tools/hooks/*.py | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny rules_protected.json  Set-Content tools/rules_protected.json '{}' | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny rules_apply --root real  py tools/rules_apply.py --root . apply cand-shellguard-01@0123abcd | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny rules_apply copy  py tools/bench/candidates/rules_apply.py apply cand-shellguard-01@0123abcd | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny rules_apply baseline  py tools/rules_apply.py audit --baseline | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny git reset --hard  git reset --hard HEAD | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S2 allow redirect free  echo x > tools/bench/guardcore_fake/sg_marker.txt | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow Set-Content free  Set-Content -Path tools/bench/guardcore_fake/sg_m.txt -Value x | claude:PowerShell=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow cp protected -> free  cp CLAUDE.md tools/bench/guardcore_fake/claude_copy.md | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow Get-Content | Out-File free  Get-Content CLAUDE.md | Out-File tools/bench/guardcore_fake/c.txt | claude:PowerShell=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow cat protected  cat tools/hooks/guard_bash.py | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow grep protected  grep -n x CLAUDE.md 2>/dev/null | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow git diff protected  git diff -- CLAUDE.md | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow py -c read  py -c "print(open('CLAUDE.md').read()[:10])" | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow py -c write free  py -c "open(r'tools/bench/guardcore_fake/marker_allowed.txt','w').write('ok')" | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow rm free  rm -f tools/bench/guardcore_fake/sg_marker.txt | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow rm wildcard free  rm tools/bench/*.tmp | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow rules_apply audit  py tools/rules_apply.py audit | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow git status  git status --short | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  F0 fake-tree hooks are byte copies of the candidate  
+PASS  F1 genesis baseline  rc=0
+PASS  A1 allow exact apply of an agreed bundle  py tools/rules_apply.py apply ch-1@55b996a8 | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  A2 deny another executable path  py tools/bench/rules_apply.py apply ch-1@55b996a8 | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  A3 deny modified rules_apply.py  py tools/rules_apply.py apply ch-1@55b996a8 | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  A4 deny missing bundle  py tools/rules_apply.py apply nochange@0123abcd | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  A5 deny unagreed bundle  py tools/rules_apply.py apply ch-2@9b427d1a | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  A6 deny bundle target outside protected globs  py tools/rules_apply.py apply ch-3@4e3b7055 | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  A7 deny bundle targeting settings.local.json  py tools/rules_apply.py apply ch-4@bdddc0d5 | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  A8 deny extra argument  py tools/rules_apply.py apply ch-1@55b996a8 CLAUDE.md | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  A9 deny second segment  py tools/rules_apply.py apply ch-1@55b996a8 ; Set-Content CLAUDE.md x | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  A10 deny --root on the real tree  py tools/rules_apply.py --root . apply ch-1@55b996a8 | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  A11 real apply of b1 (rules_apply subprocess)  []
+PASS  A12 deny re-use of b1 (token used)  py tools/rules_apply.py apply ch-1@55b996a8 | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  T1 token reuse refused  rc1=0 rc2=1 fails=['token-unused']
+PASS  T2 staged hash changed after agreement refused  ['FAIL  bundle-hash  staged core 0bf3dbb3, id 0a8d6def, recorded 0bf3dbb3', "FAIL  token  manifest token 'ch-6@0bf3dbb3 동의'", 'FAIL  test1:md5s  differs from cand_md5: docs/rules/a.md']
+  T3 apply output: REFUSED apply ch-7@fb0f1476: pre-apply re-hash differs from the checked bundle, nothing written | fail  prehash:cand:docs/rules/a.md  cc57dc34c628cdaf2b5dd11f42fdbed4 | RESULT {"schema":"result-line/1","status":"fail","gates":{"pass":19,"fail":1},"first_fail":"apply ch-7@fb0f1476: prehash:cand:docs/rules/a.md","artefacts":[],"card":"chat-X9","labview":"none"}
+PASS  T3 pre-apply re-hash refuses a change after check  rc=1
+PASS  L1 audit: chain + entries clean  []
+PASS  L1b git commit of the fake tree  
+PASS  L2 edited earlier line breaks the chain  ['chain:1', 'ledger-committed-prefix']
+PASS  L3 forged appended line without agreement flagged  ['entry:3 agreement', 'entry:3 bundle']
+PASS  L4 appended line re-using an agreed token flagged  ['entry:2 token', 'entry:3 token']
+PASS  L5 changed relay file flagged  ['entry:1 relay-files']
+PASS  L6 edited last line flagged (bundle + committed prefix, chain cannot see it)  ['entry:2 bundle', 'ledger-committed-prefix']
+PASS  L7 restored ledger audits clean  []
+PASS  W1 deny Write settings.local via guard_card  BLOCKED by tools/hooks/guard_card.py (protected files): protected file .claude/settings.local.json: the user's own settings - every agent write is refused (Writ
+PASS  W1 deny Write settings.local via adapt_claude  BLOCKED by tools/hooks/guardcore.py: protected file .claude/settings.local.json: the user's own settings - every agent write is refused (Write/Edit/patch/shell,
+PASS  W1 deny Edit settings.local via guard_card  BLOCKED by tools/hooks/guard_card.py (protected files): protected file .claude/settings.local.json: the user's own settings - every agent write is refused (Writ
+PASS  W1 deny Edit settings.local via adapt_claude  BLOCKED by tools/hooks/guardcore.py: protected file .claude/settings.local.json: the user's own settings - every agent write is refused (Write/Edit/patch/shell,
+PASS  W1 deny MultiEdit settings.local via guard_card  BLOCKED by tools/hooks/guard_card.py (protected files): protected file .claude/settings.local.json: the user's own settings - every agent write is refused (Writ
+PASS  W1 deny MultiEdit settings.local via adapt_claude  BLOCKED by tools/hooks/guardcore.py: protected file .claude/settings.local.json: the user's own settings - every agent write is refused (Write/Edit/patch/shell,
+PASS  W1 deny NotebookEdit settings.local via guard_card  BLOCKED by tools/hooks/guard_card.py (protected files): protected file .claude/settings.local.json: the user's own settings - every agent write is refused (Writ
+PASS  W1 deny NotebookEdit settings.local via adapt_claude  BLOCKED by tools/hooks/guardcore.py: protected file .claude/settings.local.json: the user's own settings - every agent write is refused (Write/Edit/patch/shell,
+PASS  W1 deny apply_patch settings.local via adapt_codex  BLOCKED by tools/hooks/guardcore.py: protected file .claude/settings.local.json: the user's own settings - every agent write is refused (Write/Edit/patch/shell,
+PASS  W1 deny apply_patch rename onto settings.local  BLOCKED by tools/hooks/guardcore.py: protected file .claude/settings.local.json: the user's own settings - every agent write is refused (Write/Edit/patch/shell,
+PASS  W1 allow Write to an unprotected path (guard_card)  
+PASS  M1 active hook/.codex/.claude/protected md5s unchanged  []
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":91,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/hooks/protected_write.py","md5":"12cdea3c545954226f6fbfb4a9d26d39"},{"path":"tools/hooks/guard_bash.py","md5":"853f790f4b518600e7bb5c0109549033"},{"path":"tools/hooks/guardcore.py","md5":"614e20357f19da78773b917a5ab876be"},{"path":"tools/hooks/guard_card.py","md5":"93bd76ae6085127cb5546c81e797439f"},{"path":"tools/hooks/adapt_codex.py","md5":"57920e676d901f27aa0ab1cdbd4383c3"},{"path":"tools/hooks/adapt_claude.py","md5":"3c06d313e9ca3115ac29939ac85ff5ce"}],"card":"chat-X9","labview":"none"}
+BGRUN END rc=0 after 33s
+BGRUN START 2026-10-10 22:08:08 limit 15.0 min: py -u tools/bench/selftest_shellguard_cand.py
+BGRUN PID 4476
+PASS  M0 active files listed  84 files
+PASS  S1 deny redirect >  echo x > CLAUDE.md | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny redirect >>  echo x >> tools/hooks/guard_bash.py | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny redirect ps  'x' > docs/rules/new.md | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny Set-Content  Set-Content -Path CLAUDE.md -Value x | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny Add-Content  Add-Content AGENTS.md 'x' | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny Out-File  'x' | Out-File -FilePath docs/rules/a.md | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny New-Item  New-Item -ItemType File -Path tools/hooks/new_guard.py -Force | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny Remove-Item  Remove-Item tools/hooks/guard_card.py | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny Copy-Item  Copy-Item tools/bench/selftest_x.py tools/hooks/guard_card.py | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny Move-Item  Move-Item tools/hooks/guard_card.py tools/bench/x.py | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny Rename-Item  Rename-Item -Path tools/hooks/guard_card.py -NewName old.py | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny cp  cp /tmp/x tools/hooks/guard_bash.py | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny mv  mv AGENTS.md AGENTS.bak | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny rm  rm -f .codex/hooks.json | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny tee  echo x | tee -a CLAUDE.md | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny sed -i  sed -i 's/a/b/' CLAUDE.md | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny git checkout --  git checkout -- tools/hooks/guard_bash.py | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny git restore  git restore CLAUDE.md | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny git checkout rev --  git checkout HEAD~1 -- docs/rules/reviews.md | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny py -c open w  py -c "open('CLAUDE.md','w').write('x')" | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny python -c pathlib  python -c "import pathlib; pathlib.Path('tools/hooks/guardcore.py').write_text('x')" | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny py heredoc  py - <<'EOF'
+open('AGENTS.md','a').write('x')
+EOF | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny bash -c nested  bash -c 'echo x > CLAUDE.md' | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny powershell -Command nested  powershell -NoProfile -Command "Set-Content CLAUDE.md x" | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny absolute path  Set-Content -LiteralPath "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Trackin | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny backslash path  Remove-Item tools\hooks\guard_card.py | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny cd then write  cd tools/hooks && echo x > guard_bash.py | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny ledger append  echo {} >> tools/bench/rules_ledger.jsonl | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny agent definition  Set-Content .claude/agents/material.md x | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny codex agent definition  rm .codex/agents/bench-opus-high.toml | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny settings.local shell  Set-Content .claude/settings.local.json '{}' | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny settings.local redirect  echo {} > .claude/settings.local.json | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny rm -rf dir  rm -rf tools/hooks | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny Remove-Item -Recurse dir  Remove-Item -Recurse .claude | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny wildcard  rm tools/hooks/*.py | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny rules_protected.json  Set-Content tools/rules_protected.json '{}' | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny rules_apply --root real  py tools/rules_apply.py --root . apply cand-shellguard-01@0123abcd | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny rules_apply copy  py tools/bench/candidates/rules_apply.py apply cand-shellguard-01@0123abcd | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny rules_apply baseline  py tools/rules_apply.py audit --baseline | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny git reset --hard  git reset --hard HEAD | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S1 deny cp into protected dir  cp tools/bench/selftest_x.py tools/hooks/ | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  S2 allow redirect free  echo x > tools/bench/guardcore_fake/sg_marker.txt | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow Set-Content free  Set-Content -Path tools/bench/guardcore_fake/sg_m.txt -Value x | claude:PowerShell=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow cp protected -> free  cp CLAUDE.md tools/bench/guardcore_fake/claude_copy.md | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow Get-Content | Out-File free  Get-Content CLAUDE.md | Out-File tools/bench/guardcore_fake/c.txt | claude:PowerShell=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow cat protected  cat tools/hooks/guard_bash.py | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow grep protected  grep -n x CLAUDE.md 2>/dev/null | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow git diff protected  git diff -- CLAUDE.md | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow py -c read  py -c "print(open('CLAUDE.md').read()[:10])" | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow py -c write free  py -c "open(r'tools/bench/guardcore_fake/marker_allowed.txt','w').write('ok')" | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow rm free  rm -f tools/bench/guardcore_fake/sg_marker.txt | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow rm wildcard free  rm tools/bench/*.tmp | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow rules_apply audit  py tools/rules_apply.py audit | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow git status  git status --short | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  S2 allow cp hook -> candidate folder  cp tools/hooks/guard_bash.py tools/bench/candidates/cand-shellguard-01/files/tools/hooks/ | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  F0 fake-tree hooks are byte copies of the candidate  
+PASS  F1 genesis baseline  rc=0
+PASS  A1 allow exact apply of an agreed bundle  py tools/rules_apply.py apply ch-1@55b996a8 | claude:Bash=allow ; codex:guard_bash=allow ; codex:guardcore=allow 
+PASS  A2 deny another executable path  py tools/bench/rules_apply.py apply ch-1@55b996a8 | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  A3 deny modified rules_apply.py  py tools/rules_apply.py apply ch-1@55b996a8 | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  A4 deny missing bundle  py tools/rules_apply.py apply nochange@0123abcd | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  A5 deny unagreed bundle  py tools/rules_apply.py apply ch-2@9b427d1a | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  A6 deny bundle target outside protected globs  py tools/rules_apply.py apply ch-3@4e3b7055 | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  A7 deny bundle targeting settings.local.json  py tools/rules_apply.py apply ch-4@bdddc0d5 | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  A8 deny extra argument  py tools/rules_apply.py apply ch-1@55b996a8 CLAUDE.md | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  A9 deny second segment  py tools/rules_apply.py apply ch-1@55b996a8 ; Set-Content CLAUDE.md x | claude:PowerShell=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  A10 deny --root on the real tree  py tools/rules_apply.py --root . apply ch-1@55b996a8 | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  A11 real apply of b1 (rules_apply subprocess)  []
+PASS  A12 deny re-use of b1 (token used)  py tools/rules_apply.py apply ch-1@55b996a8 | claude:Bash=DENY ; codex:guard_bash=DENY ; codex:guardcore=DENY 
+PASS  T1 token reuse refused  rc1=0 rc2=1 fails=['token-unused']
+PASS  T2 staged hash changed after agreement refused  ['FAIL  bundle-hash  staged core 0bf3dbb3, id 0a8d6def, recorded 0bf3dbb3', "FAIL  token  manifest token 'ch-6@0bf3dbb3 동의'", 'FAIL  test1:md5s  differs from cand_md5: docs/rules/a.md']
+  T3 apply output: REFUSED apply ch-7@fb0f1476: pre-apply re-hash differs from the checked bundle, nothing written | fail  prehash:cand:docs/rules/a.md  cc57dc34c628cdaf2b5dd11f42fdbed4 | RESULT {"schema":"result-line/1","status":"fail","gates":{"pass":19,"fail":1},"first_fail":"apply ch-7@fb0f1476: prehash:cand:docs/
+PASS  T3 pre-apply re-hash refuses a change after check  rc=1
+PASS  L1 audit: chain + entries clean  []
+PASS  L1b git commit of the fake tree  
+PASS  L2 edited earlier line breaks the chain  ['chain:1', 'ledger-committed-prefix']
+PASS  L3 forged appended line without agreement flagged  ['entry:3 agreement', 'entry:3 bundle']
+PASS  L4 appended line re-using an agreed token flagged  ['entry:2 token', 'entry:3 token']
+PASS  L5 changed relay file flagged  ['entry:1 relay-files']
+PASS  L6 edited last line flagged (bundle + committed prefix, chain cannot see it)  ['entry:2 bundle', 'ledger-committed-prefix']
+PASS  L7 restored ledger audits clean  []
+PASS  W1 deny Write settings.local via guard_card  BLOCKED by tools/hooks/guard_card.py (protected files): protected file .claude/settings.local.json: the user's own settings - every agent write is refused (Writ
+PASS  W1 deny Write settings.local via adapt_claude  BLOCKED by tools/hooks/guardcore.py: protected file .claude/settings.local.json: the user's own settings - every agent write is refused (Write/Edit/patch/shell,
+PASS  W1 deny Edit settings.local via guard_card  BLOCKED by tools/hooks/guard_card.py (protected files): protected file .claude/settings.local.json: the user's own settings - every agent write is refused (Writ
+PASS  W1 deny Edit settings.local via adapt_claude  BLOCKED by tools/hooks/guardcore.py: protected file .claude/settings.local.json: the user's own settings - every agent write is refused (Write/Edit/patch/shell,
+PASS  W1 deny MultiEdit settings.local via guard_card  BLOCKED by tools/hooks/guard_card.py (protected files): protected file .claude/settings.local.json: the user's own settings - every agent write is refused (Writ
+PASS  W1 deny MultiEdit settings.local via adapt_claude  BLOCKED by tools/hooks/guardcore.py: protected file .claude/settings.local.json: the user's own settings - every agent write is refused (Write/Edit/patch/shell,
+PASS  W1 deny NotebookEdit settings.local via guard_card  BLOCKED by tools/hooks/guard_card.py (protected files): protected file .claude/settings.local.json: the user's own settings - every agent write is refused (Writ
+PASS  W1 deny NotebookEdit settings.local via adapt_claude  BLOCKED by tools/hooks/guardcore.py: protected file .claude/settings.local.json: the user's own settings - every agent write is refused (Write/Edit/patch/shell,
+PASS  W1 deny apply_patch settings.local via adapt_codex  BLOCKED by tools/hooks/guardcore.py: protected file .claude/settings.local.json: the user's own settings - every agent write is refused (Write/Edit/patch/shell,
+PASS  W1 deny apply_patch rename onto settings.local  BLOCKED by tools/hooks/guardcore.py: protected file .claude/settings.local.json: the user's own settings - every agent write is refused (Write/Edit/patch/shell,
+PASS  W1 allow Write to an unprotected path (guard_card)  
+PASS  M1 active hook/.codex/.claude/protected md5s unchanged  []
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":93,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/hooks/protected_write.py","md5":"12cdea3c545954226f6fbfb4a9d26d39"},{"path":"tools/hooks/guard_bash.py","md5":"853f790f4b518600e7bb5c0109549033"},{"path":"tools/hooks/guardcore.py","md5":"614e20357f19da78773b917a5ab876be"},{"path":"tools/hooks/guard_card.py","md5":"93bd76ae6085127cb5546c81e797439f"},{"path":"tools/hooks/adapt_codex.py","md5":"57920e676d901f27aa0ab1cdbd4383c3"},{"path":"tools/hooks/adapt_claude.py","md5":"3c06d313e9ca3115ac29939ac85ff5ce"}],"card":"chat-X9","labview":"none"}
+BGRUN END rc=0 after 31s

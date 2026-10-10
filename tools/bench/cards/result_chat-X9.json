@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"chat-X9","status":"PASS","gates":{"pass":4,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/candidates/cand-shellguard-01/files/tools/hooks/protected_write.py","md5":"12cdea3c545954226f6fbfb4a9d26d39"},
+ {"path":"tools/bench/candidates/cand-shellguard-01/manifest.json","md5":"901389a9a32f446f639ce9ac61427f30"},
+ {"path":"tools/rules_apply.py","md5":"538db66b58ca922af7f43d28da0257c8"},
+ {"path":"tools/rules_protected.json","md5":"c2cea373f0ebfe379e0d6629bda41adc"},
+ {"path":"tools/git_precommit_rules.py","md5":"e3d99f9f665eceb498106f3347ef0303"},
+ {"path":"tools/bench/selftest_shellguard_cand.py","md5":"e68fb6e649899a5ddc7c638b986955bd"},
+ {"path":"tools/bench/selftest_rules_apply.py","md5":"dc9cc3bab72bad56264b74e96f368b70"},
+ {"path":"tools/bench/rules_baseline_20261010.json","md5":"8a69773d54e3d953bd3be21f0eb572e8"},
+ {"path":"tools/bench/candidates/README.md","md5":"8952063cb809cdac5442e5a60d8b8293"}],
+"facts":[
+ "candidate protected_write.py:417 shell_decision, :385 apply_exception, :553 agent_write_decision; called from cand guard_bash.py:649, guardcore.py:165 (R7), guard_card.py:145",
+ "selftest_shellguard_cand 93/0 (tools/bench/selftest_shellguard_cand.log:402): 41 deny forms x3 routes (Claude, Codex->guard_bash, Codex->guardcore), 15 allow x3, A1-A12, T1-T3, L1-L7, W1, M1",
+ "rules_apply.py:266 check: bundle id=<cid>@core-md5[:8], token '<bid> 동의', device md5 = bundle's, token-unused, chain intact; :384 prehash re-hashes right before write",
+ "rules_apply.py:449 audit_ledger: sha256 prev chain, baseline only at genesis, token reuse, relay sha256 (CRLF folded), line md5s = bundle cand_md5, git-committed prefix",
+ "rules_protected.json:12-28 adds .claude/agents/**, .codex/agents/**, chain_checked [ledger], agent_write_denied [.claude/settings.local.json]",
+ "tools/bench/rules_baseline_20261010.json: 75 protected files+md5, HEAD cdfa25b2, 79 dirty paths, ledger absent; header says status record, not approval/restore",
+ "bundle cand-shellguard-01@23fd5380 staged; rules_apply check 29/2, only agreement:claude/gpt fail (token not in round_10 STATE) - expected, nothing activated",
+ "active tools/hooks md5 unchanged (guard_bash da9ee70b, guardcore 6debea28, guard_card 30f6440b; M1 gate); no rules_ledger.jsonl; .git/hooks = 14 *.sample, core.hooksPath unset",
+ "old self-tests green: selftest_rules_apply 17/0 (tools/bench/selftest_rules_apply.log, updated to bundle ids), selftest_guardcore 111/0 (tools/bench/selftest_guardcore.log)",
+ "found in test: relay sha256 must fold CRLF - git checkout under autocrlf changed bytes and L7 failed until rules_apply.py text_sha256"],
+"open":[
+ "Activation prerequisites: both debaters agree 'cand-shellguard-01@23fd5380 동의' (any re-stage changes the id); who writes the genesis baseline, since the guard refuses `audit --baseline`?",
+ "Uncovered by the text check (audit is the backstop): scripts writing protected files from inside, git pull/merge/rebase/cherry-pick/revert/apply/am, git checkout <branch>, concatenated paths, unprotected relay files",
+ "Claude Write/Edit/patch to protected files (other than settings.local.json) still allowed - step 5 'direct-write refusal' is a later card; parser crash fails closed only for write-shaped commands - acceptable?"],
+"cost":{"usd":null,"minutes":23,"labview_runs":0},
+"note":"Nothing switched on (no active hook edit, no ledger, no git hook). Level: structural, candidate copies only. Caveat: git warns LF->CRLF on the candidate files; a fresh autocrlf checkout would change their md5 and fail cand-md5 - eol=lf .gitattributes owed before activation."}

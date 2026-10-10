@@ -49,6 +49,47 @@ tools/bench/candidates/<change-id>/
 | `py tools/rules_apply.py audit [--baseline [--dry]]` | hash every protected file and compare with the ledger's last md5: `VIA-APPLY`, `BASELINE`, or `OUT-OF-BAND` (mismatch, never applied, or missing). `--baseline` writes the first ledger entry from the current tree (refused when a ledger exists); `--dry` prints only |
 
 `tools/git_precommit_rules.py` (written and tested, NOT installed) refuses a commit whose staged protected files do not
-match the ledger.
+match the ledger, and a staged ledger whose hash chain is broken.
 
 Self-test: `tools/bench/selftest_rules_apply.py` (temp fake tree only, never the real files).
+
+## Bundle ids, tokens and the hash-chained ledger (card chat-X9, discussion structure-equal-02 round 10)
+
+- **Bundle id** = `<change-id>@<first 8 hex of the md5 of the manifest's canonical core>`; the core is the manifest
+  without its `agreement` and `bundle` blocks (paths with base/cand md5s, `rules_apply_md5`, tests). `stage` and
+  `add-test` print the id; every change to the staged content gives a new id.
+- **Agreement token** = `"<bundle-id> 동의"`, in the last STATE `agreed` list of BOTH relay round files. `check` and
+  `apply` take the bundle id, not the change id.
+- **Binding**: `check` recomputes the core hash (`bundle-hash`), requires the live `tools/rules_apply.py` md5 to equal
+  `rules_apply_md5` (`rules-apply-version`), refuses a token already in the ledger (`token-unused`) and a broken
+  ledger chain (`ledger-chain`). `apply` re-hashes manifest, candidates, live files and the device right before
+  writing (`prehash:*`) and writes the bytes it hashed.
+- **Ledger** `tools/bench/rules_ledger.jsonl` (`chain_checked` in `tools/rules_protected.json`): each line carries
+  `prev` = sha256 of the previous line (genesis: 64 zeros) and, for an apply, the sha256 (CRLF folded) of the two relay
+  files. `audit` flags a broken chain, a baseline after genesis, a reused token, a relay file changed since the apply,
+  an apply whose token is no longer in both STATE agreed lists, an apply line whose md5s are not its bundle's
+  cand_md5s, and a live ledger that does not extend the git-committed one.
+- `baseline-list --out <file>` writes the STATUS RECORD (`tools/bench/rules_baseline_20261010.json`): every protected
+  file with md5 plus the repo version. It is not a ledger entry, not an approval and not an auto-restore target.
+
+## Shell-write guard (candidate `cand-shellguard-01`, NOT installed)
+
+`files/tools/hooks/protected_write.py` (new) holds the one decision; `guard_bash.py` (Claude and Codex shell),
+`guardcore.py` (Codex write/patch, R7) and `guard_card.py` (Claude Write/Edit) call it. A shell write to a protected path
+or the ledger is refused unless the WHOLE command is `py tools/rules_apply.py apply <bundle-id>` and that bundle passes
+`rules_apply.check` with the live device md5 it names. `.claude/settings.local.json` is refused for every agent write.
+Verification level: command TEXT (structural); a program that writes a protected file from inside is invisible to
+it, and the post-hoc `audit` is the backstop. The real-harness check (sentinel run in the main folder, as in card
+chat-X5b) runs only after activation. Self-test: `tools/bench/selftest_shellguard_cand.py`.
+
+## Restore
+
+Restore means one of two things, never the baseline list:
+
+1. **an approved bundle**: re-apply the previous verified bundle (its files are kept under `<change-id>/files/`) through
+   `tools/rules_apply.py apply <bundle-id>` with a fresh agreement on a new bundle id;
+2. **the pre-install state** of a device that was installed. For the git pre-commit hook, checked 2026-10-10 22:1x:
+   `.git/hooks/` holds only the 14 `*.sample` files git ships (`applypatch-msg.sample` ... `update.sample`, including
+   `pre-commit.sample`), no `pre-commit`, and `git config core.hooksPath` is unset. Restoring it = deleting the
+   installed `.git/hooks/pre-commit` (or unsetting `core.hooksPath` if that is how it is installed). Had a
+   `pre-commit` existed, its original bytes would be restored instead.
