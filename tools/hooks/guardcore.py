@@ -67,6 +67,9 @@ READ_ONLY_TOOLS = {
     "Read", "Glob", "Grep", "LS", "WebSearch", "WebFetch", "NotebookRead", "TodoWrite", "ToolSearch",   # Claude
     "update_plan", "view_image", "list_mcp_resources", "list_mcp_resource_templates", "read_mcp_resource",  # Codex
     "web_search", "list_files", "search", "read_file",
+    # guardcore-fix-20261010 (Claude + GPT agreed, discussion structure-equal-02 round 4; user: apply on both agreeing):
+    # three EXACT read-only Codex names seen refused in guardcore.log - no prefix match; mcp__node_repl__js stays refused
+    "mcp__codex_apps__google_drive__fetch", "webrun", "clocksleep",
 }
 LV_IMAGE = "LabVIEW" + "." + "exe"     # the process image name, read from tasklist only (R4); never started here
 KINDS = ("shell","write", "edit", "patch", "agent", "read", "other")

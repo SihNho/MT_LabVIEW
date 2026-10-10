@@ -29,7 +29,27 @@ CASES = [  # (name, tool_name, command, extra tool_input, extra top-level, expec
     ("say_then_lv", "Bash", SAY + " && " + LV, {}, {}, True),
     ("lv_gui_action", "PowerShell", "& .\\tools\\lv_gui.ps1 -Action ping", {}, {}, True),
     ("py_c_gscript", "Bash", 'py -c "import gscript"', {}, {}, True),
+    # guardcore-fix-20261010 (structure-equal-02 round 4): a file name ending .py before a tools/ path is not a launch
+    ("rg_two_py_files", "Bash", "rg -n 'def |STOP' tools/debate_relay.py tools/debate_gdoc.py", {}, {}, False),
+    ("rg_lv_file_listed", "Bash", "rg -n x tools/bench/a.py tools/bench/guardcore_fake/sentinel_lv.py", {}, {}, False),
+    ("pyexe_path_lv", "Bash", "C:\\Windows\\py.exe tools/bench/guardcore_fake/sentinel_lv.py", {}, {}, True),
+    ("python_lv", "Bash", "python tools/bench/guardcore_fake/sentinel_lv.py", {}, {}, True),
+    ("rg_then_lv", "Bash", "rg -n x tools/a.py; py tools/bench/guardcore_fake/sentinel_lv.py", {}, {}, True),
 ]
+# guardcore-fix-20261010: the three exact read-only Codex tool names pass adapt_codex; code execution and look-alike
+# names stay refused (exact names only, no prefix match).
+CODEX_TOOLS = [("mcp__codex_apps__google_drive__fetch", False), ("webrun", False), ("clocksleep", False),
+               ("mcp__node_repl__js", True), ("mcp__codex_apps__google_drive__write", True),
+               ("mcp__codex_apps__google_drive__fetchx", True), ("webrun2", True)]
+ADAPT_CODEX = os.path.join(ROOT, "tools", "hooks", "adapt_codex.py")
+
+
+def codex_tool(name):
+    ev = {"hook_event_name": "PreToolUse", "tool_name": name, "tool_input": {}, "cwd": ROOT, "turn_id": "t",
+          "session_id": "s", "model": "gpt-6.1-sol"}
+    p = subprocess.run([sys.executable, ADAPT_CODEX], input=json.dumps(ev), capture_output=True, text=True,
+                       encoding="utf-8", timeout=120)
+    return '"deny"' in (p.stdout or ""), p.returncode
 
 
 def run(name, tool, cmd, ti_extra, top_extra):
@@ -47,8 +67,14 @@ def main():
         ok = (rc == 2) == expect and rc in (0, 2)
         fails += not ok
         print("%s  %-18s rc=%d %s" % ("PASS" if ok else "FAIL", name, rc, err if not ok else ""))
+    for name, expect_deny in CODEX_TOOLS:
+        denied, rc = codex_tool(name)
+        ok = denied == expect_deny and rc == 0
+        fails += not ok
+        print("%s  codex tool %-40s denied=%s rc=%d" % ("PASS" if ok else "FAIL", name, denied, rc))
+    total = len(CASES) + len(CODEX_TOOLS)
     print("RESULT %s" % json.dumps({"schema": "result-line/1", "status": "PASS" if not fails else "FAIL",
-                                    "pass": len(CASES) - fails, "fail": fails}))
+                                    "pass": total - fails, "fail": fails}))
     return 1 if fails else 0
 
 

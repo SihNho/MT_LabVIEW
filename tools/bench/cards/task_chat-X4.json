@@ -1,0 +1,19 @@
+{
+ "schema": "task/1", "id": "chat-X4", "kind": "measure",
+ "goal": "Regression of guardcore-fix-20261010 (agreed by Claude and GPT, discussion structure-equal-02 round 4) before it is committed",
+ "why": "User 2026-10-10: apply the fix once both debaters agree. GPT condition: compare agreement, hashes and test results right before applying.",
+ "inputs": [{"path": "tools/hooks/guard_bash.py", "md5": "da9ee70b52f6e56f7bfa63215c36fa96"},
+            {"path": "tools/hooks/guardcore.py", "md5": "6debea28b819062a2a35038cb7db49df"},
+            {"path": "tools/bench/selftest_guard_bash_codex.py", "md5": "6682ea96f5bf969602880e339376ec72"}],
+ "pass": [
+  "selftest_guard_bash_codex PASS (RESULT line quoted): 16 hook cases + 7 Codex tool-name cases",
+  "selftest_guardcore PASS (RESULT line quoted)",
+  "every hook self-test (selftest_*guard*/*gate*/*protocol*/*card*/*hook*) run, exit quoted",
+  "each FAIL: test, first failing line, and whether it concerns the diff (git diff HEAD -- tools/hooks)"
+ ],
+ "outputs": ["tools/bench/cards/result_chat-X4.json"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false, "write": ["tools/bench/cards/result_chat-X4.json"],
+  "status_edit": false, "git_commit": false, "peers": []},
+ "budget": {"failures": 2, "minutes": 30}, "unblocks": "M3",
+ "rules": ["OFFLINE", "run tests only, change nothing", "a gate refusal is logged as a false positive and the card ends BLOCKED - never an equivalent form that dodges the gate", "selftest_c155_gatefp73 failed before this change (stage_prerun, card chat-X3): report it, do not diagnose"]
+}

@@ -419,12 +419,15 @@ def retro_closes(cmd, data):
 # now skipped; --max-min with a number is still required, so the deadline guarantee is unchanged.
 BGRUN_RE = re.compile(r"bgrun\.py\s+(?:-\S+\s+)*--max-min\s+\d")
 
-LABVIEW_RE = re.compile(r"lv_gui\.ps1\s+-Action|py[\w.]*\s+(?:-u\s+)?[^\s|;&]*tools[\\/][^\s|;&]*\.py|"
-                        r"py[\w.]*\s+(?:-u\s+)?\"[^\"]*tools[\\/][^\"]*\.py\"|"
-                        r"py[\w.]*\s+-c\s+.*?(?:import\s+(?:gscript|lvclick)|from\s+(?:gscript|lvclick))|"
+# guardcore-fix-20261010 (Claude + GPT agreed, discussion structure-equal-02 round 4): every `py` is anchored with
+# (?<![\w.]) so the `.py` ending of a FILE NAME followed by a tools/ path (`rg x tools/a.py tools/b.py`) is not read
+# as a `py tools/...` launch (fp-94 class); `py`, `python`, `C:\...\py.exe` in command position still match.
+LABVIEW_RE = re.compile(r"lv_gui\.ps1\s+-Action|(?<![\w.])py[\w.]*\s+(?:-u\s+)?[^\s|;&]*tools[\\/][^\s|;&]*\.py|"
+                        r"(?<![\w.])py[\w.]*\s+(?:-u\s+)?\"[^\"]*tools[\\/][^\"]*\.py\"|"
+                        r"(?<![\w.])py[\w.]*\s+-c\s+.*?(?:import\s+(?:gscript|lvclick)|from\s+(?:gscript|lvclick))|"
                         r"peer\.ps1\s+-Agent|import gscript", re.I | re.S)
 # The parts of LABVIEW_RE that are NOT a tools/ script launch: these always need the timeout / bgrun routing.
-NON_SCRIPT_LV_RE = re.compile(r"lv_gui\.ps1\s+-Action|py[\w.]*\s+-c\s+.*?(?:import\s+(?:gscript|lvclick)|"
+NON_SCRIPT_LV_RE = re.compile(r"lv_gui\.ps1\s+-Action|(?<![\w.])py[\w.]*\s+-c\s+.*?(?:import\s+(?:gscript|lvclick)|"
                               r"from\s+(?:gscript|lvclick))|peer\.ps1\s+-Agent|import gscript", re.I | re.S)
 
 
