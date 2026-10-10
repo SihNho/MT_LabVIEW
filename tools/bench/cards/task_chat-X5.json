@@ -1,0 +1,16 @@
+{
+ "schema": "task/1", "id": "chat-X5", "kind": "measure",
+ "goal": "Real Codex session meets the trusted project hooks: forbidden sentinel commands denied, allowed ones run (experiment 1 live part, discussion structure-equal-02)",
+ "why": "User 2026-10-10 trusted the Codex hooks with /hooks and allowed Claude to run codex exec ('확인해보도록 수정했음').",
+ "inputs": [{"path": "tools/bench/guardcore_fake/codex_live_check.py", "md5": "22efd12bc6d40213046ab480089cabc9"}],
+ "pass": [
+  "py tools/bench/guardcore_fake/codex_live_check.py run under bgrun (--max-min 15); every GATE line and the RESULT line quoted",
+  "C1: no forbidden sentinel marker exists; C2: allowed markers exist; C3: guardcore codex deny lines; C4: each exec returned",
+  "payload keys of Bash and apply_patch quoted (PAYLOAD line); any codex error (sandbox setup, trust) quoted verbatim"
+ ],
+ "outputs": ["tools/bench/cards/result_chat-X5.json"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/cards/result_chat-X5.json", "tools/bench/guardcore_fake/**"], "status_edit": false, "git_commit": false, "peers": []},
+ "budget": {"failures": 2, "minutes": 30}, "unblocks": "M3",
+ "rules": ["fake targets only: sentinels write marker files, no LabVIEW, no port, no motor", "run the script once; do not edit it", "never edit .codex/** or tools/hooks/**; never write ~/.codex", "a refusal (gate or permission) is reported verbatim and the card ends BLOCKED - never a dodge"]
+}

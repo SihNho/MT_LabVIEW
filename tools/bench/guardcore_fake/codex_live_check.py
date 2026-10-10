@@ -4,8 +4,8 @@
 # ---
 """codex_live_check.py - card chat-X2 step 5: one REAL `codex exec` (0.162.0) against the project-level .codex/hooks.json
 (adapt_codex.py appended as PreToolUse group 1; the user's trusted group 0 left byte-identical), plus one with
-CYCLE_SESSION=1 for the runner hook-file ban. Hook trust is bypassed FOR THIS INVOCATION ONLY
-(--dangerously-bypass-hook-trust, nothing persisted): the user's ~/.codex/config.toml is never written.
+CYCLE_SESSION=1 for the runner hook-file ban. The hooks are the ones the USER trusted with /hooks (2026-10-10); no
+trust bypass flag; the user's ~/.codex/config.toml is never written by this script.
 
 Every forbidden command is a SENTINEL: if a guard let it through it would only write a marker file under
 tools/bench/guardcore_fake/ (a `.vi` named text file, a marker, a log) - no LabVIEW, no port, no motor.
@@ -86,8 +86,12 @@ def run_codex(tag, prompt, extra_env):
     env.update({"GUARDCORE_CODEX_RAW": RAW, "GUARDCORE_LOG": GLOG})
     env.update(extra_env)
     out = os.path.join(HERE, "codex_exec_%s.jsonl" % tag)
-    cmd = ["node", CODEX_JS, "exec", "--json", "--skip-git-repo-check", "--dangerously-bypass-hook-trust",
-           "-m", "gpt-6.1-sol", "-s", "workspace-write", "-C", ROOT, "-"]
+    # chat 2026-10-10: the user trusted the project hooks with /hooks in Codex, so no trust bypass - the run tests the
+    # hooks exactly as an ordinary Codex session meets them.
+    # user 2026-10-10: Codex sandboxes fail on this PC ("setup refresh had errors", workspace-write and read-only alike),
+    # so every Codex session runs with full access; the project hooks (guardcore) are the guard, as in the discussions.
+    cmd = ["node", CODEX_JS, "exec", "--json", "--skip-git-repo-check",
+           "-m", "gpt-6.1-sol", "-s", "danger-full-access", "-C", ROOT, "-"]
     t0 = time.time()
     try:
         r = subprocess.run(cmd, input=prompt, capture_output=True, text=True, encoding="utf-8", errors="replace",
