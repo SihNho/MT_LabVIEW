@@ -1,0 +1,94 @@
+{
+ "mode": "rounds",
+ "topic": "# Review case 3 - cycle 165 hand-back 2: route check refuses connects onto inner faces t8776/t24342\n\n**Question:** What is the most likely cause of this failure, what is the strongest alternative, and what is the\ncheapest test that tells them apart?\n\n**Repository root:** `G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop` - every path\nbelow is relative to it (read the files there, not in any other checkout).\n\n**Reading rules (same for every reviewer):** answer from this file and from the code / data / log files it cites. For\nthe executor code use ONLY `tools/bench/reviewbench/src/stagexec_case3.py.txt` (the code as it stood at the failure:\ntoday's `tools/stagexec.py` minus the change made AFTER this failure; md5 ec4f38e5 - the pinned 6ea6637f was never\ncommitted, so line numbers may differ from the log's by ~1). Do NOT open `tools/stagexec.py`, `docs/**`, `archive/**`,\n`STATUS.md`, `tools/bench/cards/**`, `tools/bench/reviewbench/**` (other than this file and the code copy), or any\ncycle-165 file not cited here: the case is a replay of the moment of failure, and the later record would give the answer\naway.\n\n## Background (decisions in force at the time, quoted from the plan, cycle 165 judgement)\n\n> PD400(a) K3f/K4f route = the designed form, not the outer-face rewrite. t8776 and t24342 each hold a one-end sink-only\n> stub (w10362, w25232) with no source; OK3/OK4 sit on the same diagram 23405 as the inner faces. [...] Design form: plan\n> rows `delete_wire` w10362 before A70 and `delete_wire` w25232 before A80 (each a checkpoint, PD393(a)); then A70/A80\n> unchanged.\n> PD400(b) The tool gap, closed narrowly (compile refuses A70 at `stagexec.py:1930`). A dst that is the INNER face of a\n> While/For LoopTunnel with wire 0 (seen after the stub-delete checkpoint) routes by `gscript.connect_term_uid` (face uid <-\n> source terminal uid). That is the sink-side twin of `loop_inner_face_route`, with the same owner checks. Every other\n> inner face (wired, Case / Flat Sequence tunnel, owner not one While/For loop) still stops. stagesim models the same.\n> Self-test on graph 2a5fa0c4: A70/A80 compile to `connect_term_uid`; the four stop cases still stop; the stored plans\n> compile byte-equal.\n> PD401 (hand-back round 1): `stagexec.loop_inner_face_sink` (stagexec.py:6345, md5 6ea6637f) self-test 25/0, the six\n> stored plans compile and dry byte-equal; r_in 9dadb0c1 -> 0b895983 = exactly the 2 added `delete_wire` rows. KEPT.\n> (b) What the step-5 plan predicts, per stub-delete + connect pair: after `delete_wire` w10362 / w25232 the face has wire\n> 0; after A70 / A80 the census is in [{}, {'Wire': 1}], t8776 / t24342 sit on OK3's / OK4.outer's net.\n\n## Machine record\n\nHand-back `tools/bench/cards/handback_165_2.json` (verbatim):\n\n```json\n{\"schema\": \"handback/1\", \"cycle\": 165, \"round\": 2, \"trigger\": \"session\",\n \"detail\": \"165-2-1 FAIL: route check refuses connects onto inner faces t8776/t24342 (UNROUTABLE 2, mk.log:68,75). Face still wired by stub at base, so stagexec.py:1934 refuses; fix edits pinned stagexec 6ea6637f.\",\n \"cards\": [{\"id\": \"165-2-1\", \"status\": \"FAIL\", \"first_fail\": \"SB REALSIM FINAL: route check FAIL, UNROUTABLE 2 (w_k3f #8776, w_k4f #24342: 'INNER face of LoopTunnel ... only the outer face's owner route is measured')\"}],\n \"cost_usd\": 5.98, \"minutes\": 12.0}\n```\n\nFailing log `tools/bench/prep_c165_a2_1_mk.log`:\n\n```\n33: FACT DW dw_10362 w10362 in base graph: rows [(5204, 'file progress', False)]; sourceless True\n34: FACT DW dw_25232 w25232 in base graph: rows [(10404, 'file number to append out', False)]; sourceless True\n36: GATE PASS | STUB no base sink end carries a wire that no plan delete_wire removes (no stub delete needed) | []\n38: FACT C K3f A72..A73: 2 ops [('delete_wire', None, [1]), ('connect', None, [2])]; checkpoints [0, 1, 2]; delete_wire ops [1]\n45: GATE PASS | C K3f+K4+K4f compiles; every delete_wire op [1, 8] is a checkpoint | [0, 1, 3, 4, 6, 7, 8, 9]\n68:   ROUTE 2 connect ['w_k3f']: connect_term_uid  UNROUTABLE ADDRESS: 1 wired end(s) not addressable at base: ADDRESS: #8776 is an INNER face of LoopTunnel #5204: only the outer face's owner route is measured (l2a1_faces_81.log)\n75:   ROUTE 9 branch ['w_k4f']: connect_term_uid  UNROUTABLE ADDRESS: 1 wired end(s) not addressable at base: ADDRESS: #24342 is an INNER face of LoopTunnel #10404: ...\n100: FACT REALSIM plan tools/bench/plan_ring_p5s02e.json md5 20bde81a...: final False; failed null; steps 13; provisional []; route check FAIL; UNROUTABLE 2\n101: GATE FAIL | SB REALSIM FINAL on the base graph: failed None, 13/13 replayed, 0 PROVISIONAL, route ... {'final': False, 'route': 'FAIL'}\n```\n\nCard 165-2-1 facts (from its result): \"C compile PASS all 3 prefixes, every delete_wire a checkpoint: full = 9 ops, cps\n[0,1,3,4,6,7,8,9], delete_wire ops [1,8]\"; \"SB FAIL: REALSIM 13/13 ok, 0 provisional, but route check UNROUTABLE 2: w_k3f\nt8776 / w_k4f t24342 'ADDRESS ... INNER face of LoopTunnel'\"; \"Refusal text is tools/stagexec.py:1934 (_triple:\nFACE_ROUTED owner with term_class != OuterTerminal), raised by the route check's base ADDRESS step\"; \"c127 precedent:\ndiag_c127_1_fsinner.log:81-102 three connect_term_uid <- #32868 each returned wire 32859, census {}\". Its OPEN:\n\"loop_inner_face_sink (stagexec 6ea6637f) compiles A73/A84 but the route check's base ADDRESS check\n(stagexec.py:1929-1935) still refuses the inner face: tool fix owed before step 5?\"\n\n## Files\n\n- code `tools/bench/reviewbench/src/stagexec_case3.py.txt` (`Addr._triple`, `loop_inner_face_sink`, the Executor's\n  base pass and the route check), `tools/stagesim.py`\n- `tools/bench/diag_c165_a2_1_facts.md`, `tools/bench/diag_c165_a1_1_facts.md`, `tools/bench/diag_c164_a3_2_facts.md`\n- graph `tools/bench/graph_ring_p5s02d_20261010_154830.json` (2a5fa0c4); plan input `tools/bench/plan_ring_p5s02r_in.json`\n  at the time = 0b895983 (later versions may exist on disk); `tools/bench/diag_c127_1_fsinner.log:81-102`\n",
+ "round": 4,
+ "turn": 0,
+ "sid": {
+  "Claude": "0d44f20a-e6eb-44d7-b7bb-38cc31fdc8d6",
+  "GPT": "01a125bb-e9b5-7e90-9736-07cd68d6befe"
+ },
+ "last_msg": {
+  "Claude": "**A. 상대 질문에 대한 답**\n\n상대 질문이 없습니다. 두 사람의 의견은 모였고, 토론으로 더 정할 것은 남지 않았습니다.\n\n**B. 상대 주장에 대한 피드백**\n- **동의 (범위 (ii)):** 예외 범위로 (ii)가 더 좁고 옳다는 데 동의합니다. 상대가 붙인 세 조건도 동의합니다.\n  - 대상이 While/For LoopTunnel의 안쪽 받는 쪽 면(sink)일 것\n  - 앞선 `delete_wire`가 바로 그 기준 전선을 지울 것\n  - 그 삭제가 체크포인트일 것\n- 이 조건들은 PD400(b)의 \"연결된 면, Case/Flat Sequence 터널, 소유자가 While/For 루프 하나가 아닌 경우는 계속 멈춘다\"와 맞습니다. 연결 시점의 검사(`stagexec_case3.py.txt:6355-6367`)는 그대로 남으므로 이중으로 막힙니다.\n- 동작 전체를 건너뛰는 방식 (i)은 같은 동작의 다른 끝점까지 검사에서 빠질 수 있다는 지적이 맞습니다. `:2604`의 `fs_acts` 방식이 바로 그런 통째 면제입니다.\n- **동의 (대조 실험):** 음성 대조 두 가지를 실험에 넣자는 데 동의합니다.\n  - 삭제 행이 없는 경우\n  - 연결 시점에도 목적지가 연결돼 있는 경우\n- 이 둘이 계속 거부되어야, 예외가 원하는 곳보다 넓게 열리지 않았다는 것을 보일 수 있습니다.\n- **보완 (임시 실행기):** 사본 `:2628-2630`은 문법상 그대로 실행되지 않을 것으로 봅니다. 그래서 실험에 쓸 임시 실행기는 이 사본이 아니라, 판정 시점에 고정했던 실행기(6ea6637f)를 다시 만든 것이어야 합니다. 그 파일은 커밋되지 않았으므로, 해시가 같은지 먼저 확인해야 합니다(facts.md:8의 pin 값).\n\n**C. 내 입장에서 바뀐 것**\n- 예외 방식을 (i) 이 계열 동작 전체 면제에서 (ii) 조건을 붙인 끝점 예외로 바꿉니다.\n- 정리하면 다음과 같습니다.\n  - **가장 유력한 원인:** 새 연결 경로(`loop_inner_face_sink`)가 시작 전 주소 점검에는 반영되지 않았습니다.\n  - **가장 강한 대안:** 기준 상태에서 증명되는 주소만 허용하려는 의도된 제한이라는 해석입니다. 다만 PD400(b)와 기존의 경로별 예외(`:2604`, `:2626-2627`) 때문에 설득력은 약합니다. 삭제 뒤 상태가 어긋났다는 원리 대안은 기존 로그로 배제됐습니다.\n  - **가장 싼 시험:** 조건부 끝점 예외만 넣은 임시 실행기로 K3f/K4f를 한 번 재생하고, 음성 대조 두 가지를 함께 확인합니다.\n- 실제 LabVIEW에서 이 연결이 되는지는 여전히 측정되지 않았습니다. Gemini 검토도 공식 문서에 이 경우가 명시돼 있지 않다고 확인했습니다.\n\n**D. 상대에게 새 질문**\n\n없음.\n\nSTATE {\"agreed\":[\"주원인은 새 연결 경로가 시작 전 주소 점검(PRIME)에 반영되지 않은 것\",\"삭제 뒤 상태가 어긋났다는 원리 대안은 기존 로그(:2821-2828, mk.log:68,75)로 배제\",\"남은 대안인 의도된 기준 상태 제한은 PD400(b)와 기존 경로별 예외 때문에 설득력이 약함\",\"예외 범위는 조건부 끝점 예외(While/For 안쪽 sink, 앞선 delete_wire가 그 전선을 지움, 체크포인트)가 더 좁음\",\"실제 LabVIEW 연결 성공은 측정되지 않음\"],\"open\":[],\"questions\":[],\"experiment\":\"pin 해시(6ea6637f)가 같은지 확인한 임시 실행기에 조건부 끝점 예외만 넣고, K3f/K4f 경로 점검을 오프라인에서 한 번 재생한다. UNROUTABLE 0이 나와야 하고, 음성 대조(삭제 행 없음, 연결 시점에도 목적지가 연결됨)는 계속 거부돼야 한다.\",\"user_needed\":\"PD185(3) 시작 전 점검에 이 조건부 예외를 넣어 고정 실행기를 수정할지, 아니면 계획을 나눌지 사용자가 결정해야 한다.\",\"check\":\"\",\"done\":true}",
+  "GPT": "A. 상대 질문에 대한 답\n\n1. **실패 원리의 두 가설을 가르는 데는 동의합니다.** PRIME에만 좁은 예외를 둔 K3f 재생이 통과하면, 그 한 쌍에서는 시작 전 주소 검사가 실패를 만든 원인이었음을 확인합니다. 삭제 후 연결에서 실패하면 상태 불일치 대안이 살아납니다.\n\n   **수정 방침 층까지 가르지는 못합니다.** 예를 들어 “PD400(b)에 맞춰 도구 예외를 추가해야 한다”와 “기준 주소 제한을 유지하고 계획을 분할해야 한다”는 해석은 같은 임시 실행에서 모두 UNROUTABLE 0을 예측합니다. 실행 결과로 두 해석을 구분할 수 없습니다.\n\nB. 상대 주장에 대한 피드백\n\n관찰만으로는 부족하다는 지적을 받아들였고, 3라운드부터 예외를 넣은 재생을 제안했습니다. 최소 인과 검사는 **K3f 한 쌍, 실제 삭제 모델 적용, PRIME의 해당 목적지만 예외 처리**로 합의할 수 있습니다.\n\n두 가지는 보완하겠습니다.\n\n- K3f 통과가 t24342의 K4f까지 검증하지는 않습니다. 공통 실패 원리에 대한 근거이며, 전체 두 행의 해소 확인은 후속 전체 재생의 몫입니다(`tools/bench/prep_c165_a2_1_mk.log:68`, :75).\n- 터널 자동 제거가 상태 불일치의 **유일한 경로**는 아닙니다. 연결 경로는 소스의 방향·전선과 소유자·몸체도 검사합니다(`stagexec_case3.py.txt:6358–6367`). 다만 현재 기록에서는 연결 시점 실패가 없으므로 이 대안들은 약합니다.\n\n수정 방침은 이미 제공된 PD400(b)가 삭제 후 연결을 허용한다는 점에서 좁은 도구 예외가 더 잘 맞습니다. 실제 수정은 이번 읽기 전용 논의의 범위 밖입니다.\n\nC. 내 입장에서 바뀐 것\n\n없음. 주원인은 PRIME 반영 누락, 경험적 대안은 삭제 후 상태 불일치, 최소 추가 검사는 좁은 예외를 둔 K3f 재생이라는 입장을 유지합니다.\n\nD. 상대에게 새 질문\n\n없음.\n\nSTATE {\"agreed\":[\"기록된 거부는 시작 전 ADDRESS 검사에서 발생\",\"주원인은 새 연결 경로의 PRIME 반영 누락\",\"K3f 한 쌍에 좁은 PRIME 예외를 둔 오프라인 재생이 최소 인과 검사\",\"실제 LabVIEW 기능은 별도 측정 필요\"],\"open\":[],\"questions\":[],\"experiment\":\"구문이 검증된 임시 실행기에서 K3f 삭제·연결 한 쌍을 실제 삭제 모델로 재생하며 해당 목적지의 PRIME 검사만 좁게 제외한다. 통과는 그 한 쌍의 원인을 확인하고, 삭제 후 연결 실패는 상태 불일치 대안을 지지한다. 수정 방침의 타당성은 이 시험으로 결정되지 않는다.\",\"user_needed\":\"\",\"check\":\"\",\"done\":true}"
+ },
+ "pending_user": {},
+ "pending_note": {},
+ "history": [
+  {
+   "Claude": {
+    "done": false,
+    "open": [
+     "시작 전 점검(PRIME, :2605-2635)이 계획 순서를 보지 않아서 생긴 실패인가, 아니면 의도된 기준 상태 점검인가",
+     "사본 :2628-2630 들여쓰기 불일치가 판단에 영향을 주는가"
+    ],
+    "questions": [
+     "1. :2628-2630의 원래 의미는?",
+     "2. 거부가 실행 시점 경로(:3608/:4087)에서 나왔다는 근거가 있나?",
+     "3. PD185(3)의 시작 전 점검은 delete_wire 이후 상태를 봐야 하나, 기준 상태만 봐야 하나?"
+    ]
+   },
+   "GPT": {
+    "done": false,
+    "open": [
+     "기초 주소 검사 누락이라는 원인 판단",
+     "가장 강한 대안과 최소 검사 선택"
+    ],
+    "questions": [
+     "1. connect_term_uid 경로와 ADDRESS at base 실패의 조합이 주원인의 결정적 근거인가?",
+     "2. 삭제 후 상태 불일치보다 이 오프라인 실패를 더 잘 설명하는 대안이 있는가?"
+    ]
+   }
+  },
+  {
+   "Claude": {
+    "done": false,
+    "open": [
+     "가장 강한 대안: 삭제 뒤 상태 어긋남인가, 의도된 기준 상태 점검(PD185(3))인가",
+     "고칠 범위: 이 계열 동작 전체를 건너뛸지, delete_wire가 지우는 끝점만 건너뛸지"
+    ],
+    "questions": [
+     "1. 합쳐진 줄에 이유가 ADDRESS 하나뿐이라는 점(:2821-2828)이 삭제 뒤 상태 어긋남이라는 대안을 배제하는가?",
+     "2. 이 계열 동작 전체를 건너뛰기와 delete_wire가 지우는 끝점만 건너뛰기 중 PD400(b)를 지키면서 범위가 더 좁은 쪽은?"
+    ]
+   },
+   "GPT": {
+    "done": false,
+    "open": [
+     "최소 검사의 범위와 판별력"
+    ],
+    "questions": [
+     "1. 우선 K3f 한 쌍에서 검사 규칙을 바꾸지 않고 삭제 후 상태와 경로 선택을 확인하는 것으로 충분한가?"
+    ]
+   }
+  },
+  {
+   "Claude": {
+    "done": false,
+    "open": [
+     "최소 검사: 규칙을 바꾸지 않는 관찰인가, 시작 전 점검에만 예외를 둔 임시 사본 실행인가"
+    ],
+    "questions": [
+     "1. 시작 전 점검에만 LOOP_FACE_SINK 예외를 둔 K3f 한 번의 실행이 두 원인 층을 한 번에 가른다는 데 동의하는가? 아니라면 구분되지 않는 경우는?"
+    ]
+   },
+   "GPT": {
+    "done": true,
+    "open": [],
+    "questions": []
+   }
+  },
+  {
+   "Claude": {
+    "done": true,
+    "open": [],
+    "questions": []
+   },
+   "GPT": {
+    "done": true,
+    "open": [],
+    "questions": []
+   }
+  }
+ ],
+ "usd": 2.7494478
+}

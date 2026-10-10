@@ -1,0 +1,50 @@
+BGRUN START 2026-10-10 21:13:36 limit 25.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -Slug reviewbench-2 -TaskFile tools/bench/reviewbench/case_2.md
+BGRUN PID 22148
+OUTCOME: ANSWERED (179s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-10-reviewbench-2.md
+COST: $1.1374  in 26 / out 12918 / cache-create 76100 / cache-read 944896  (175s, 22 turn(s))
+--- ANSWER ---
+No: the hand-back's framing does not hold as written. One real risk is in it, but its proposed fix is wrong and its precedent doesn't show what it claims. The K3f/K4f part is a separate problem from J and needs its own decision. (I couldn't save a plan file because the Write tool is disabled here, so the full review is below. Nothing was run, edited or locked.)
+
+## 1. The strongest reason the claim is wrong
+
+**The "settled form" can't be applied to w23519, and the old failure was not caused by `delete_object`.**
+
+- **The fix would cut live wires.** The settled form (PD321(b)) says: before deleting a node, delete every wire whose only other end is that node, after checking that all the wire's sinks sit on that node. w23519 fails that check. The graph shows four sinks: one on #23501, and three on other nodes (tunnels #23417 and #23172, and Function #7201) (`graph_ring_p5s02c_20261010_131658.json`, `diag_c164_a2_4_facts.md:3`). So the release step "add `delete_wire` rows for 23519" would disconnect three live branches. That changes the original's computation, which hard rule 2 forbids. Only w23460 passes the check (`diag_c164_a2_4_facts.md:4`).
+- **The old run failed at a step J doesn't have.** In the old P4 run, `delete_object` #10171 succeeded with its input wire still attached (no error, node count 664 → 663, `diag_c140_2_facts.md:26-27`). The error 1055 came from the *next* step, `wire_remove_loose_ends` on a wire that had just lost all its sinks (`:27-28`, `diag_c140_3_facts.md:9`). Group J has no `wire_remove_loose_ends` row. Deleting the wire first is a fix that worked, not a proven requirement.
+- **A3 ("contradicted") points at test runs on copies, not at a launch.** Its evidence is the two scratch runs on byte copies. `diag_c140_3_facts.md:27` says "Launch NOT made". So the plan's sentence "`delete_object` has no passing launch yet" may be literally true. A3 is a disagreement about wording, not about a plan defect.
+- **The truly new step was called "settled".** P4 never deleted a tunnel: #23417 survived. J deletes LoopTunnel #23501 while its outer face still carries a wire with other sinks. That shape is not covered by P4.
+  - There is related evidence outside the case's file list: `tools/bench/diag_c116b_scratch.json:553-579` shows 13 LoopTunnel deletions with no error (tunnels 151 → 138, wires 1945 → 1934). I did not check whether wires were attached at each of those deletions.
+
+## 2. Alternative explanations
+
+**A. The real risk is leftover broken wires and the Error List count, not error 1055.** In LabVIEW, deleting a node or tunnel leaves the attached wires behind as broken wires ([NI forum, scripting move/delete](https://forums.ni.com/t5/LabVIEW/Disable-a-Node-Using-Scripting/td-p/3251989); [NI Idea Exchange, deleted tunnels leave broken wires](https://forums.ni.com/t5/LabVIEW-Idea-Exchange/Automatically-Delete-Passthrough-Wires-when-a-Linked-Tunnel-is/idi-p/2421080) — these are user reports, not NI documentation).
+- The session's own Error List prediction already marks A54 and A55 as UNPREDICTED because of exactly these wires (`diag_c164_a2_3_facts.md:18-19`). That is the same kind of failure that stopped 140-3 (52 errors where 51 were predicted).
+- Deleting w23460 first removes one possible broken leftover. It cannot fix w23519's leftover end at the deleted tunnel; that would need a `wire_remove_loose_ends` on w23519, which has not been measured.
+
+**B. K3f/K4f are most likely wrongly addressed rows, not a gap in the router.**
+- These rows are not in plan 872822f3 at all: the J+K3 plan routes with no failures (164-a2-2 PASS). They belong in a separate decision.
+- The message at `stagexec.py:1933-1935` says the router has no *measured* route for an inner face. It does not say LabVIEW cannot make that wire.
+- The STUB gate at `prep_c164_a2_1_mk.log:37` shows the target terminals t8776 and t24342 already carry wires w10362 and w25232. Adding a second wire to an input that is already fed would give a broken wire even with a working route. So the rows likely point at the wrong face, or are missing a `delete_wire`.
+
+## 3. What would falsify the claim
+
+Run J exactly as planned on a scratch copy. The claim is falsified if all of these hold:
+- A54 and A55 return no error.
+- After A55, w23519 still has its three other sinks and is not broken.
+- The lost-wire set and the Error List match the prediction.
+
+## 4. The cheapest test that separates them
+
+- **Offline, free, already done:** the sink-subset check above (`diag_c164_a2_4_facts.md:3-4`). It already rules out the "delete w23519" fix. Only a `delete_wire` of w23460 qualifies.
+- **Smallest LabVIEW test:** the one scratch run the plan already calls for, on a new byte copy (the user has to authorize it). Read three things right after A55:
+  1. w23519's sinks and whether it is broken;
+  2. whether a stub of w23460 remains (wire count change);
+  3. the Error List count.
+- **How to read the result:**
+  - All match the prediction → the prior-art block can be lifted (marked REFUTED) for J as planned.
+  - w23519 is broken, or the count is off → alternative A is right, and the fix is a measured cleanup of w23519, not deleting it.
+
+**Two limits:**
+- The simulator cannot settle this. It keeps w23460 as a half-wire under its default rule (`stagesim.py:1080-1095`) and has no model of loose wire ends (`:139-143`), so only a real run separates the two explanations.
+- What would change my view: if PD321(b)'s actual text required deleting every attached wire whatever its other sinks, then the plan has a real conflict between that rule and rule 2, and the user has to decide.
+BGRUN END rc=0 after 180s

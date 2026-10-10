@@ -1,0 +1,33 @@
+{"schema": "result/1", "id": "chat-X7", "status": "BLOCKED",
+ "gates": {"pass": 3, "fail": 0},
+ "first_fail": null,
+ "blocked_by": {"device": "permission-layer:Write", "message": "Write of tools/bench/reviewbench/report_x7.md refused: 'Subagents should return findings as text, not write report files. Include this content in your final response instead.' Report not written, nothing committed. GPT scorer's mcp__node_repl__js also denied by guardcore (21:22:45)."},
+ "artefacts": [
+  {"path": "tools/bench/reviewbench/case_1.md", "md5": "7bc2612de5acfbbf26689eff201d8024"},
+  {"path": "tools/bench/reviewbench/case_2.md", "md5": "3808b62b7daf6535971607c8a2867bb7"},
+  {"path": "tools/bench/reviewbench/case_3.md", "md5": "cfde166e85c91049d5edbb4c32aa83fe"},
+  {"path": "tools/bench/reviewbench/truth_1.md", "md5": "ee4a291eb0e5d91478412aa47b431793"},
+  {"path": "tools/bench/reviewbench/truth_2.md", "md5": "782c0b813da761fb52bf400a1c40d23c"},
+  {"path": "tools/bench/reviewbench/truth_3.md", "md5": "c4230be09fe936eb32d9f02f4197b08b"},
+  {"path": "tools/bench/reviewbench/score_x7.py", "md5": "0845d40065e9d735c6d9ada8ccd9d9ca"},
+  {"path": "tools/bench/reviewbench/scores_x7.json", "md5": "f3d3f82a2a636bf231fa3e2d02c3adc3"},
+  {"path": "tools/bench/reviewbench/mapping_x7.json", "md5": "1b43db2c6be1103b936df2ea88135970"}
+ ],
+ "facts": [
+  "Arm A (peer.ps1 hypothesis, opus-5-5 high) cause/test/wrong/actionable: c1 yes/yes/0/yes, c2 partial/partial/0/yes, c3 yes/partial/0/yes (scores_x7.json unblinded.claude)",
+  "Arm B (debate_gdoc, 4/3/4 rounds, all converged): c1 yes/yes/0/yes, c2 partial/partial/0/yes, c3 yes/yes/0/yes (scores_x7.json; disc_<n>/summary.json)",
+  "Claude USD A 1.03/1.14/0.87 = 3.04 (archive/peer/2026-10-10-reviewbench-<n>.md:7); B 3.43/2.16/2.75 = 8.34 (summary.json claude_usd), 2.7x",
+  "Minutes A 2.4/3.0/2.7 (archive outcome line); B 5.9/6.8/7.4 (armB_<n>.log BGRUN END 355/409/443 s); B ran 1/2/2 Gemini checks",
+  "GPT tokens of arm B not recorded: debate_relay.say_gpt reads codex --json only for the session id (tools/debate_relay.py:129-136)",
+  "GPT scorer case 1: A and B both yes/yes/0/yes; 140,825 in (109,696 cached) / 814 out; file reads refused (tools/hooks/guardcore.log, 21:22:45)",
+  "Case 2: both arms avoid deleting w23519 but neither writes the new J order; both test by LabVIEW scratch, truth = offline end-graph check (scores_x7.json notes)",
+  "Case 3: only B gives the narrow conditional PRIME skip + negatives (truth_3.md); A's exemption is broader, its test in-memory only (scores_x7.json)",
+  "Leak: disc_2 Claude opened a later plan_ring_p5s02d_pred.json (164-3-6) and said it did not use it (disc_2/relay/round_03_claude.md:13); arm A reads unaudited",
+  "Case 3 code = reconstruction src/stagexec_case3.py.txt md5 ec4f38e5 (today minus PD402), pinned 6ea6637f never committed; cases 1-2 used today's stagexec.py"
+ ],
+ "open": [
+  "Write report_x7.md from the handback (the subagent Write of a report file is refused by the permission layer) and commit tools/bench/reviewbench/** + archive/peer/2026-10-10-reviewbench-*.md?",
+  "Is one better test item (case 3) worth 2.7x Claude cost + GPT + Gemini and 2.5x time at n=3, with a Claude scorer and partial blinding (Korean B vs English A)?"
+ ],
+ "cost": {"usd": 11.76, "minutes": 19, "labview_runs": 0},
+ "note": "usd = arms A+B Claude (3.04+8.34) + scorer 1.35 (rounded); excludes this session, GPT, Gemini. Pass items 1-3 met; item 4 (report + commit) BLOCKED by the Write refusal. Arm-A archives carry a disposition. Nothing committed."}

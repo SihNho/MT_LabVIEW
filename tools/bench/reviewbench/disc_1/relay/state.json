@@ -1,0 +1,97 @@
+{
+ "mode": "rounds",
+ "topic": "# Review case 1 - cycle 164 hand-back 1: K3/K4 pass wires do not compile\n\n**Question:** What is the most likely cause of this failure, what is the strongest alternative, and what is the\ncheapest test that tells them apart?\n\n**Repository root:** `G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop` - every path\nbelow is relative to it (read the files there, not in any other checkout).\n\n**Reading rules (same for every reviewer):** answer from this file and from the code / data / log files it cites\n(`tools/*.py`, `tools/bench/plan_*.json`, the cited `tools/bench/*.log` and `diag_*_facts.md` files, the cited selftest\nfiles). Do NOT open `docs/**`, `archive/**`, `STATUS.md`, `tools/bench/cards/**`, `tools/bench/reviewbench/**` (other than\nthis file), or any cycle-164/165 file not cited here: the case is a replay of the moment of failure, and the later\nrecord would give the answer away. Line numbers in `tools/stagexec.py` may have moved by a few lines since the failure\n(the pinned version a4df7e15 was not committed); search by function name.\n\n## Background (decision in force at the time, quoted from the plan, PD397(b)-(c), cycle 164 judgement)\n\n> (b) K3/K4 GAP, decided from the facts (`diag_c163_a3_1_facts.md` §1-§3). `w_k3pass` (A69) and `w_k4pass` (A79) carry\n> no `frame` key, so the sink resolves to OK's own group frame (-29, 'False') and the sim stops on the border. PD379(b)\n> places the pass wire in the TIMED-OUT frame between the in-tunnel's and the out-tunnel's 'True' faces. That is the\n> shape already adopted three times in this graph: `w_gpass` A33, `w_hpass` A40 and `w_c7_pass` A52, with\n> `frame: \"True\"` on BOTH ends (wire 31722 on frame 31517). Decision: A69 and A79 get `\"frame\": \"True\"` on both ends in\n> `plan_ring_p5s02r_in.json`. No other byte changes. [...] This adds no computation: the pass wire carries the register\n> value unchanged in the frame where no element arrived, as designed.\n> (c) Step 4 = `plan_ring_p5s02d.json` on the real p5s02c graph 3d5196ab: longest prefix of WHOLE groups J (A53..A60,\n> `delete_object`), K3 (A61..A69), K3f (A70), K4 (A71..A79), K4f (A80) with MAIN <= 675, rows <= 40; a group is never split.\n\n## Machine record\n\nHand-back `tools/bench/cards/handback_164_1.json` (verbatim):\n\n```json\n{\"schema\": \"handback/1\", \"cycle\": 164, \"round\": 1, \"trigger\": \"session\",\n \"detail\": \"PD397(b) K3/K4 pass wires (frame True both ends) do not compile: stagexec.py:901 needs a frameless out wire after new:IK3; case_pass_wire takes frameless src only (:6286). J alone on file: plan 1152ce60, MAIN 628.0, 8 rows.\",\n \"cards\": [\n  {\"id\": \"164-a1-1\", \"status\": \"FAIL\", \"first_fail\": \"J+K3 compile refused: action 15 tunnel new:IK3 needs one in + one out wire (stagexec.py:901); STUB non-fatal FAIL on K3f/K4f sink wires\"},\n  {\"id\": \"164-a1-2\", \"status\": \"FAIL\", \"first_fail\": \"stagexec.py:901-903 action 15: tunnel new:IK3 has no out-wire; its only candidate w_k3pass has src frame 'True' -> case_pass_wire False (line 6287)\"}],\n \"cost_usd\": 8.48, \"minutes\": 17.4}\n```\n\nFailing log `tools/bench/prep_c164_a1_1_mk.log` (first failing lines):\n\n```\n41: GATE FAIL | STUB no base sink end carries a wire that no plan delete_wire removes (no stub delete needed) | [('w_k3f', 'dst', 8776, [10362]), ('w_k4f', 'dst', 24342, [25232])]\n46: FACT C J+K3 compile refused: action 15: tunnel new:IK3 must be followed by exactly one wire into it and one out of it (LabVIEW makes a tunnel only by wiring across the border)\n89: FACT REALSIM plan tools/bench/plan_ring_p5s02d.json md5 1152ce60...: final True; failed null; steps 8; provisional []; route check PASS; UNROUTABLE 0\n```\n\nCard 164-a1-1 facts (from its result): \"K3 refusal cause: case_pass_wire accepts only a FRAMELESS src\n(stagexec.py:6286-6288); PD397(b) put frame on both ends, frame wires are never group wires (stagexec.py:896-897)\";\n\"plan_ring_p5s02d.json 1152ce60 = J (A53..A60): REALSIM final True, 8/8, route PASS\"; \"STUB non-fatal FAIL: K3f dst t8776\nhas w10362, K4f dst t24342 has w25232 on 3d5196ab, no delete_wire for them\". Its OPEN: \"K3/K4 pass wire: PD397(b) frame on\nboth ends vs stagexec.py:6286-6288 (frameless src + dst frame) - which shape before K3/K4 can be planned?\"\n\nCard 164-a1-2 (read-only diagnosis) facts: \"Adopted pass wires w_gpass/w_hpass/w_c7_pass compile as standalone\ncase_frame_wire (stagexec.py 936-937, 931-933)\"; \"Adopted tunnels TG1/TG2/TC7/TD7 each followed by 2 frameless wires;\npass wire after both groups\"; \"IK3 t_k3i followed by w_k3l in + w_k3pass both ends frame True: no frameless out\";\n\"Group wire = no frame on either end (stagexec.py 896-897); window = next 2 actions (895)\"; \"case_pass_wire accepts only\nframeless src + dst frame = own body frame, dir in (stagexec.py 6286-6304)\".\n\n## Files\n\n- plan input `tools/bench/plan_ring_p5s02r_in.json` at the time = md5 4c8d3645 (A69 `w_k3pass`, A79 `w_k4pass`); the\n  file on disk today is a later version - read the A69/A79 rows as described above, not as they are now.\n- facts `tools/bench/diag_c164_a1_1_facts.md`, `tools/bench/diag_c164_a1_2_facts.md`\n- code `tools/stagexec.py` (`compile_plan`, the tunnel group check near \"must be followed by exactly one wire\",\n  `case_pass_wire`, `case_frame_wire`)\n",
+ "round": 4,
+ "turn": 0,
+ "sid": {
+  "Claude": "411d0b02-4700-4f5b-b397-1236f81b1fba",
+  "GPT": "01a125bb-66f8-7761-a658-0772a2148357"
+ },
+ "last_msg": {
+  "Claude": "GPT가 인용한 줄을 직접 확인했고, 남은 쟁점은 없습니다. 이 사례는 토론을 마치고 시험 결과만 남기면 됩니다.\n\n**A. 상대 질문에 대한 답**\n상대 질문은 없었습니다. 3라운드에서 제가 던진 질문(남은 대안 하나와 판별 시험)에는 귀하의 C와 실험안이 사실상 동의로 답했습니다.\n\n**B. 상대 주장에 대한 피드백**\n- 인용을 확인했습니다. `prep_c164_a1_1_mk.log:29`에서 A67 t_k3i의 body는 `new:CQ7.f1`에서 31517로, loop는 31308로 바뀝니다. `:30`에서 A69의 dst와 src frame은 모두 'True'에서 '#31517'로 바뀝니다.\n  - 그래서 base 분기의 이름 검사(`stagexec.py:6331`, `\"#{0}\".format(body)` = '#31517')와 dst frame '#31517'은 일치합니다.\n  - 제 2라운드 질문 1은 이것으로 해소됐습니다.\n- \"경쟁 원인이 아니라 후속 문제\"라는 정정에 동의합니다. 양 끝에 frame이 붙은 원형은 `:6318-6320`에서 False가 되어 base 분기에 아예 도달하지 않습니다. 따라서 base 분기는 이번 거부의 원인일 수 없습니다. 이 사례의 형식상 \"가장 강한 대안\"을 꼽는다면 이 후속 위험이 맞지만, 이번 거부를 설명하는 원인은 하나뿐입니다.\n- 기대 op 형태로 `[15,16,17]`과 `connect_term_uid / register_end_case_border`를 든 것에 동의합니다. 근거는 두 가지입니다. 하나는 `stagexec.py:913-919`이고, 이 분기는 base case를 `base_case_named`로 받습니다(`:914`). 다른 하나는 selftest의 plan-made 버전 결과입니다(`selftest_c156_passwire.log:38`).\n\n**C. 내 입장에서 바뀐 것**\n\"대안\"이라는 표현을 정리했습니다. 이번 컴파일 거부의 원인은 하나입니다. src에 frame을 붙여서 IK3의 유일한 출력 후보가 탈락한 것입니다. base 분기와 실제 그래프 route는 수정이 충분한지를 위협하는 후속 위험으로 분류하고, 아래 오프라인 시험이 그것을 판별합니다.\n\n**D. 새 질문**\n없음.\n\nSTATE {\"agreed\":[\"직접 원인: A69/A79의 src frame 때문에 그룹 와이어 조건(:896-897)과 case_pass_wire(:6318-6320) 양쪽에서 탈락해 IK3 출력 후보가 0개\",\"G/H/C7 선례는 그룹 뒤에 붙는 독립 와이어라 K3와 역할이 다름\",\"매핑 결과 IK3 body는 31517, frame은 '#31517'(mk.log:29-30)로 base 분기 이름 검사와 일치\",\"base 분기와 실제 그래프 route는 경쟁 원인이 아니라 후속 위험\",\"dst-only 모양은 plan-made case에서 실행 기록 PASS(selftest_c156_passwire.log:38-39,66)\",\"시험은 K3f를 빼고 J+K3로 함; STUB FAIL은 별개 문제\"],\"open\":[\"dst-only 수정본이 실제 base 그래프에서 기대 op·#31517 동일 프레임·route PASS를 만족하는가(오프라인 시험 필요)\"],\"questions\":[],\"experiment\":\"당시 입력 4c8d3645를 재구성하고 A69 src frame만 제거한 대조본과 함께 기존 매핑을 거쳐 J+K3 compile_plan(acts 15-17 connect_term_uid register_end_case_border) + REALSIM + route check 비교, 오프라인\",\"user_needed\":\"\",\"check\":\"\",\"done\":true}",
+  "GPT": "**A. 상대 질문에 대한 답**\n\n**1. 네, 동의합니다.** 남은 대안은 “dst-only 수정 뒤에도 BASE 분기나 실제 그래프의 실행 경로에서 실패한다”로 좁히고, 매핑을 거친 J+K3를 최소 시험으로 삼겠습니다. 이는 최초 거부의 직접 원인보다 **수정의 충분성에 대한 대안**입니다.\n\n**B. 상대 주장에 대한 피드백**\n\n문서화된 규약과 도구 변경의 설계 판단을 구분하자는 설명에 동의합니다. `case_pass_wire`는 src 프레임을 터널의 body에서 얻고, dst에만 frame을 지정하는 형태를 명시합니다(`tools/stagexec.py:6306–6314`). 따라서 가장 유력한 원인은 **PD397(b)가 역할이 다른 독립 와이어의 표기를 가져와 기존 규약을 벗어난 것**입니다.\n\n제시하신 실행 기록(`tools/bench/selftest_c156_passwire.log:38–39`, `:66`)을 반영하면, dst-only 형태에는 plan-made case에서 통과한 증거가 있습니다. BASE 그래프에서의 성공은 여전히 별도 확인 대상입니다.\n\n시험 설명에서 한 가지 표기를 바로잡겠습니다. **body는 정수 `31517`, dst.frame은 문자열 `\"#31517\"`**입니다. 둘 다 `\"#31517\"`로 바뀌는 것은 아닙니다(`tools/bench/prep_c164_a1_1_mk.log:29–30`).\n\n시험은 당시 입력의 메모리 대조본에서 A69의 src.frame만 제거하고 기존 매핑을 적용합니다. J+K3까지만 컴파일하여 기대 op와 그룹을 확인하고, 시뮬레이션 완료·동일 프레임·route PASS를 검사하면 됩니다. 실패하면 첫 실패 지점을 기록해 남은 문제를 특정해야 하며, 곧바로 도구 수정이 필요하다고 결론 내리지는 않습니다.\n\n**C. 내 입장에서 바뀐 것**\n\n“도구가 지나치게 엄격하다”는 주장을 이번 실패의 경쟁 원인에서 제외합니다. 직접 원인은 높은 확신으로 정리됐고, 남은 불확실성은 BASE 그래프에서 최소 수정이 충분한지입니다.\n\n**D. 상대에게 새 질문**\n\n없음. 추가 토론보다 정해진 오프라인 시험이 필요한 단계입니다.\n\nSTATE {\"agreed\":[\"가장 유력한 원인은 PD397(b)가 역할이 다른 독립 와이어의 양끝 frame 표기를 그룹 출력에 적용해 문서화된 규약을 벗어난 것\",\"dst-only 형태에는 plan-made case의 실행 통과 기록이 있음\",\"매핑된 body는 정수 31517이고 dst.frame은 문자열 #31517\",\"최소 시험은 A69 src.frame만 제거하고 기존 매핑을 거친 J+K3 대조\",\"K3f/K4f의 STUB 문제는 첫 시험에서 제외\"],\"open\":[\"dst-only 수정본의 BASE 분기와 실제 그래프 실행 경로 통과 여부: 오프라인 시험 필요\"],\"questions\":[],\"experiment\":\"당시 입력의 메모리 대조본에서 A69 src.frame만 제거하고 기존 매핑 적용 후 J+K3의 기대 op·그룹·동일 프레임·시뮬레이션 완료·route PASS 확인; 실패 시 첫 실패 지점 기록\",\"user_needed\":\"\",\"check\":\"\",\"done\":true}"
+ },
+ "pending_user": {},
+ "pending_note": {},
+ "history": [
+  {
+   "Claude": {
+    "done": false,
+    "open": [
+     "원인: PD397(b)가 양 끝 frame 모양을 잘못 고름 vs 도구가 지나치게 엄격함",
+     "K3/K4 패스 와이어의 올바른 모양(src는 frame 없음, dst만 frame 'True')"
+    ],
+    "questions": [
+     "Q1: A33처럼 frame 없는 출력 와이어와 독립 패스 와이어로 만드는 경로가 가능하며, 계산을 바꾸지 않는다는 근거가 있는가?",
+     "Q2: selftest_c156의 k_actions 행이 실제 입력 4c8d3645의 A61..A79와 구조가 같은가?"
+    ]
+   },
+   "GPT": {
+    "done": false,
+    "open": [
+     "표기 수정만으로 실제 기반 그래프의 주소·경로 검사까지 통과하는가",
+     "별도 내부 출력 와이어가 필요하다는 대안의 근거"
+    ],
+    "questions": [
+     "1. 별도 내부 와이어가 필요하다는 설명을 지지하는, 그룹 모양의 차이보다 강한 증거가 있습니까?",
+     "2. K3f를 제외한 위 대조 시험으로 먼저 범위를 좁히는 데 동의합니까?"
+    ]
+   }
+  },
+  {
+   "Claude": {
+    "done": false,
+    "open": [
+     "dst-only 모양이 base-case 분기(:6330-6331)와 실제 그래프 route census에서도 통과하는가"
+    ],
+    "questions": [
+     "1. 매핑된 행에서 t_k3i의 body가 정수 uid 31517로 바뀌는가, 'new:CQ7.f1'으로 남는가?"
+    ]
+   },
+   "GPT": {
+    "done": false,
+    "open": [
+     "최소 시험 결과로 계획 표기 오류와 도구의 과도한 제한까지 구별할 수 있는가"
+    ],
+    "questions": [
+     "1. 수정본의 성공은 최소 수정의 충분성을 확인하고, 계획 표기 오류와 도구의 과도한 제한 사이의 책임 판단은 남긴다는 해석에 동의합니까?"
+    ]
+   }
+  },
+  {
+   "Claude": {
+    "done": false,
+    "open": [
+     "dst-only 모양이 base-case 분기(:6330-6331)와 실제 그래프 route에서도 통과하는가"
+    ],
+    "questions": [
+     "1. 남은 대안을 'base 분기 + 실제 그래프 route' 하나로 두고, 매핑을 거친 J+K3 시험을 그 판별 시험으로 삼는 데 동의하는가?"
+    ]
+   },
+   "GPT": {
+    "done": true,
+    "open": [
+     "dst-only 수정본이 실제 BASE 그래프에서 기대 op·동일 프레임·route PASS를 만족하는가: 오프라인 시험 필요"
+    ],
+    "questions": []
+   }
+  },
+  {
+   "Claude": {
+    "done": true,
+    "open": [
+     "dst-only 수정본이 실제 base 그래프에서 기대 op·#31517 동일 프레임·route PASS를 만족하는가(오프라인 시험 필요)"
+    ],
+    "questions": []
+   },
+   "GPT": {
+    "done": true,
+    "open": [
+     "dst-only 수정본의 BASE 분기와 실제 그래프 실행 경로 통과 여부: 오프라인 시험 필요"
+    ],
+    "questions": []
+   }
+  }
+ ],
+ "usd": 3.4290268
+}

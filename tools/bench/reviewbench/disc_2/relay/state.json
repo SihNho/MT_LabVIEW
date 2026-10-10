@@ -1,0 +1,82 @@
+{
+ "mode": "rounds",
+ "topic": "# Review case 2 - cycle 164 hand-back 2: prior art says group J must use the P4 delete form; K3f/K4f unroutable\n\n**Question:** What is the most likely cause of this failure, what is the strongest alternative, and what is the\ncheapest test that tells them apart?\n\n**Repository root:** `G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop` - every path\nbelow is relative to it (read the files there, not in any other checkout).\n\n**Reading rules (same for every reviewer):** answer from this file and from the code / data / log files it cites\n(`tools/*.py`, `tools/bench/plan_*.json`, `tools/bench/graph_ring_p5s02c_20261010_131658.json`, the cited\n`tools/bench/*.log` and `diag_*_facts.md` files). Do NOT open `docs/**`, `archive/**`, `STATUS.md`, `tools/bench/cards/**`,\n`tools/bench/reviewbench/**` (other than this file), or any cycle-164/165 file not cited here: the case is a replay of the\nmoment of failure, and the later record would give the answer away. Line numbers in `tools/stagexec.py` may have moved\nsince the failure; search by function name.\n\n## Background (decision in force at the time, quoted from the plan, PD397(c)-(d) and PD398, cycle 164 judgement)\n\n> Step 4 = `plan_ring_p5s02d.json` on the real p5s02c graph 3d5196ab: the longest prefix of WHOLE groups J (A53..A60,\n> `delete_object`), K3 (A61..A69), K3f (A70), K4 (A71..A79), K4f (A80) whose MAIN is <= 675, rows <= 40; a group is never\n> split. [...] Prior-art review `novel` + disposition when owed (owed for the TUNNEL deletion; `delete_object` has no\n> passing launch yet). Then ONE scratch on a NEW byte copy of 564d8cbe.\n> PD398 (hand-back round 1): A69/A79 pass wires carry `frame: \"True\"` on the DST end only; compile must take it as the\n> group out-wire or hand back.\n\nGroup J as planned (from `tools/bench/diag_c164_a2_4_facts.md`): A53 `delete_wire` w23489; A54 `delete_object` #23042\n(Comparison `x = y?`); A55 `delete_object` #23501 (LoopTunnel); A56..A60 create a Local read LR7 + `Equal?` EQ7 and wire\nthem to the loop condition. No `delete_wire` of w23460 or w23519 in A53..A60.\n\n## Machine record\n\nHand-back `tools/bench/cards/handback_164_2.json` (verbatim, trimmed to the failing / passing cards):\n\n```json\n{\"schema\": \"handback/1\", \"cycle\": 164, \"round\": 2, \"trigger\": \"session\",\n \"detail\": \"Prior art on plan 872822f3 (J+K3) is settled-already+contradicted: J deletes #23042/#23501 with w23519/w23460 attached (PD321(b)). K3f/K4f sit on LoopTunnel inner faces, unroutable (stagexec.py:1930). Facts: diag_c164_a2_4_facts.md, diag_c164_a2_1_facts.md:27-34.\",\n \"cards\": [\n  {\"id\": \"164-a2-1\", \"status\": \"FAIL\", \"first_fail\": \"SB REALSIM FINAL: plan_ring_p5s02d.json e3054ab6 final False, route FAIL, UNROUTABLE 2 (k14 w_k3f #8776, k20 w_k4f #24342 = INNER face of LoopTunnel) - prep_c164_a2_1_mk.log:161\"},\n  {\"id\": \"164-a2-2\", \"status\": \"PASS\", \"retry_of_card\": \"164-a2-1\"},\n  {\"id\": \"164-a2-3\", \"status\": \"FAIL\", \"first_fail\": \"pass item 4: prior-art verdict settled-already + contradicted, not novel (tools/bench/prep_c164_a2_3_priorart.log:48-49); STOP RECORDs armed on both recipes (:53-54)\"},\n  {\"id\": \"164-a2-4\", \"status\": \"PASS\"}],\n \"cost_usd\": 14.04, \"minutes\": 36.1}\n```\n\n164-a2-2 PASS: `plan_ring_p5s02d.json` 872822f3 = J+K3 (A53..A69), 17 rows, final True, route PASS, UNROUTABLE 0, MAIN 642.5.\n\n`tools/bench/prep_c164_a2_1_mk.log` (164-a2-1, the all-5-group prefix):\n\n```\n37:  GATE FAIL | STUB no base sink end carries a wire that no plan delete_wire removes (no stub delete needed) | [('w_k3f', 'dst', 8776, [10362]), ('w_k4f', 'dst', 24342, [25232])]\n103:   ROUTE 14 branch ['w_k3f']: branch  UNROUTABLE ADDRESS: #8776 is an INNER face of LoopTunnel #5204: only the outer face's owner route is measured (l2a1_faces_81.log)\n109:   ROUTE 20 branch ['w_k4f']: branch  UNROUTABLE ADDRESS: #24342 is an INNER face of LoopTunnel #10404: ...\n161: GATE FAIL | SB REALSIM FINAL on the base graph: ... {'final': False, 'route': 'FAIL', 'first_fail': \"UNROUTABLE 2 row(s) ...\"}\n```\n\n`tools/bench/prep_c164_a2_3_priorart.log` (164-a2-3, the prior-art review of plan 872822f3), lines 12-26 and 48-54:\n\n```\nA1 SETTLED ALREADY: how to delete a scaffold stop. P4 session 1 removed loop 1.2's scaffold stop the same way: deleted the\nstop-to-cond wire w23310, then the Comparison #10171, then routed a new stop onto the existing cond. That attempt failed\nfirst with error 1055: deleting the node left its tunnel->Comparison input wire with no sink, and the follow-up\n`wire_remove_loose_ends` then failed on that wire. The settled form, PD321(b) and PD323(a): first `delete_wire` every wire\nwhose only other end is the node; then `delete_object`; and gate on \"that wire's sink set is a subset of the node's\nterminals\". This plan does not follow it: J deletes only w23489, then `delete_object`s #23042 and the in-tunnel #23501\nwhile wires 23519 and 23460 are still attached. What LabVIEW does to 23519, and to the outer wire 23460, has not been\nmeasured. To release: add `delete_wire` rows for 23519, and for 23460 if its sinks are only #23501, each with PD321(b)'s\nsink-subset gate. Or show in writing why deleting the tunnel object is safe for these wires.\nA3 CONTRADICTED: the plan says \"`delete_object` has no passing launch yet\"; diag_c140_2_facts.md:26 shows op 2\n`delete_object` Comparison #10171 returned err '' with the node count 664->663.\n48: PRIOR-ART: settled-already\n49: PRIOR-ART: contradicted\ndiscriminating_test (the reviewer's): \"On graph 3d5196ab list sinks of w23519 and w23460: if 23460 has a sink outside\n#23501, deleting the tunnel cuts a live branch; then compare predicted D-gate lost-wire set with the stagesim end graph.\"\n53-54: STOP RECORD armed on tools/recipes/stage_d1_ring_p5s02d{,_scratch}.py (launch refused until FIXED:/REFUTED:)\n```\n\n`tools/bench/diag_c164_a2_4_facts.md` (164-a2-4, read-only, graph 3d5196ab), Wires section:\n\n```\n- w23519: source #8486 Function `x+1` t8494. Sinks: #23501 LoopTunnel t23514; #23417 LoopTunnel t23450; #23172 LoopTunnel t23241; #7201 Function `x` t7606. Only 1 of 4 sinks on #23501; none on #23042.\n- w23460: source #23501 LoopTunnel inner t23505. Sinks: #23042 Comparison `x` t23481 and `y` t23477. All sinks on #23042.\n- w23489: source #23042 Comparison `x = y?` t23472. Sink: t23456 owner #23405 (Diagram). Source on #23042.\n- P4 #10171 / error 1055 (diag_c140_2_facts.md:26-28): op 1 delete_wire w23310, op 2 delete_object #10171 ran (err ''); op 3 wire_remove_loose_ends w23255 -> error 1055; w23255 = source LoopTunnel #23417 -> sinks only #10171.\n```\n\n## Files\n\n- `tools/bench/diag_c164_a2_1_facts.md`, `tools/bench/diag_c164_a2_3_facts.md`, `tools/bench/diag_c164_a2_4_facts.md`\n- `tools/bench/diag_c140_2_facts.md`, `tools/bench/diag_c140_3_facts.md` (the P4 precedent)\n- graph `tools/bench/graph_ring_p5s02c_20261010_131658.json` (3d5196ab)\n- code `tools/stagexec.py`, `tools/stagesim.py` (delete_wire / delete_object / wire_remove_loose_ends handling; the\n  route ADDRESS check for an INNER face of a LoopTunnel)\n",
+ "round": 3,
+ "turn": 0,
+ "sid": {
+  "Claude": "a36624ea-477a-4d2d-9c30-d2eb2a576a5b",
+  "GPT": "01a125bb-d1a1-70e2-b356-096b1b7bb0c9"
+ },
+ "last_msg": {
+  "Claude": "A. 답\n1. 네, 동의합니다. 계획 그대로 A53→A54→A55만 돌려 보는 것이 두 설명을 가르는 가장 작은 시험입니다. 다만 읽을 항목을 하나 더 붙여야 합니다. A54와 A55 직후에 w23460이 남아 있는지, w23519의 싱크 집합과 broken 상태, 그리고 Error List의 'Wire has loose ends' 개수입니다. 이유는 B의 두 번째 항목에 있습니다.\n\nB. 피드백\n- 받아들입니다. EL 52≠51은 끊긴 선 때문이 아니라 `Insert Into Array`의 미배선 단자 때문이었습니다(diag_c140_3_facts.md:24-26). 저는 \"같은 관문에서 걸리는 형태\"라는 뜻으로만 끌어왔지만, 선례로 쓰기에는 부적절해서 철회합니다.\n- 동의하고 확인했습니다. D-gate는 선 객체가 아니라 연결 쌍을 비교합니다. w23519가 new와 lost 목록에 동시에 나옵니다(prep_c164_a2_3_dry.log:58). 그래서 끝이 빈 가지가 생겨도 D-gate는 못 봅니다. 이걸 볼 수 있는 건 EL 개수와 선별 broken 상태뿐이고, 그래서 위에서 EL 읽기를 덧붙였습니다.\n- 동의하고 확인했습니다. 시뮬레이터의 RLE는 상태를 바꾸지 않습니다(stagesim.py:2249-2265). 이 행이 들어가도 모의 결과는 아무것도 보장하지 않습니다.\n- 이번 Gemini 출처는 NI 공식 문서(`wire_has_loose_ends`)여서 앞선 포럼 링크보다 무겁게 봅니다. 확인된 것은 \"끝이 빈 가지가 하나라도 있으면 선 전체가 broken이고 VI가 실행되지 않는다\"는 데까지입니다. scripting Delete가 실제로 그 가지를 남기는지는 여전히 실측해야 할 질문입니다.\n\nC. 바뀐 것\n- 2라운드에서 낸 오프라인 단계(예측 파일 읽기)를 철회합니다. 확인하려고 `plan_ring_p5s02d_pred.json`을 열었는데, 디스크에 있는 판본은 실패 시점 것이 아니었습니다. 그 뒤에 다시 만든 판본(card 164-3-6, :2-4)입니다. 읽기 규칙이 피하려던 '나중 기록'에 해당하므로 이 파일을 근거로 쓰지 않습니다. 이 사실은 사용자께 그대로 밝혀 둡니다.\n- 그래서 오프라인으로 두 설명을 가를 수단은 더 남아 있지 않습니다. 남은 미지수는 실측으로만 풀립니다.\n\nD. 새 질문: 없음\n\nSTATE {\"agreed\":[\"K3f/K4f: STUB (occupied sink) and inner-face ADDRESS are two separate blockers; prefix rule ignored routability\",\"P4 1055 came from the later RLE op, not delete_object; prior-art 'settled-already' mismatched the failing op\",\"w23519 whole delete_wire is harmful and withdrawn\",\"dry PASS and sim RLE give no independent evidence (stagexec.py:4249-4250, stagesim.py:2249-2265)\",\"D-gate compares pairs and cannot see a loose stub (prep_c164_a2_3_dry.log:58); EL count is the observer\",\"minimal discriminator = original A53->A54->A55 only, reading w23460 presence, w23519 sinks + broken state, EL loose-end count after A54 and A55\"],\"open\":[],\"questions\":[],\"experiment\":\"on a new byte copy (user-approved): run original A53->A54->A55 only; after A54 and A55 read w23460 presence, w23519 sinks and broken state, Error List 'Wire has loose ends' count\",\"user_needed\":\"approval to run the 3-delete scratch; note: Claude opened plan_ring_p5s02d_pred.json, which on disk is a later (164-3-6) version, and did not use it as evidence\",\"check\":\"\",\"done\":true}",
+  "GPT": "A. 상대 질문에 대한 답\n\n1. **네, 실제 위험이라는 데 동의합니다.** 다만 “빈 가지가 남으면 배선이 broken”이라는 규칙과 “#23501 삭제가 빈 가지를 남긴다”는 동작은 구분해야 합니다. Gemini 결과는 전자를 뒷받침하며, 후자는 이 구조의 실측이 필요합니다.\n2. **RLE는 유력한 정리 후보입니다.** w23519에는 살아 있는 도착점 세 개가 있으므로 P4의 도착점 없는 배선과 조건이 다릅니다. 그래도 안전하다고 확정할 수는 없습니다. 먼저 삭제 직후 상태를 기록하고, 빈 가지가 확인될 때 별도 단계에서 RLE 후 세 연결의 보존을 확인하는 순서가 적절합니다(`tools/bench/diag_c164_a2_4_facts.md:3,8`).\n\nB. 상대 주장에 대한 피드백\n\n`only_sink_fate`에 대한 정정에 동의합니다. 핵심 빈틈은 **일부 도착점만 삭제되는 w23519의 배선 모양과 broken 상태**입니다. 모든 도착점이 삭제되는 w23460과 구분해야 합니다(`tools/stagesim.py:1042-1047,1088-1094,1413-1416`).\n\n다만 오류 예측을 “빈 가지를 빠뜨린 확정 예측”으로 표현하면 과합니다. 기존 기록은 A54/A55를 이미 `UNPREDICTED`로 분류하고, 오류 수 53에 상한 57을 적었습니다(`tools/bench/prep_c164_a2_3_el.log:17-22`). 따라서 예측 파일 확인은 불확실성을 좁히지만, 두 설명을 실제로 가르는 시험은 아닙니다.\n\n최종적으로 가장 유력한 설명은 **K3f/K4f의 두 계획 차단 사유와, J 선행 검토의 적용·수정안 오류**입니다. 가장 강한 대안은 **원래 J가 공유 배선에 빈 가지를 남기는 실제 동작 문제**입니다.\n\nC. 내 입장에서 바뀐 것\n\n시뮬레이터가 빈 배선을 전혀 다루지 않는다는 설명을 철회합니다. 또한 실제 오류가 반드시 예측 범위를 벗어난다고 단정하지 않겠습니다.\n\n최소 판별 시험은 원래 **A53→A54→A55만** 실행하며, 정리를 추가하기 전에 두 배선의 존재·broken 상태와 w23519의 나머지 세 연결을 읽는 것입니다. 전체 J 실행이나 새 노드 생성은 이 질문을 가르는 데 필요하지 않습니다.\n\nD. 상대에게 새 질문\n\n없음.\n\nSTATE {\"agreed\":[\"w23519 전체 삭제는 부적절\",\"K3f/K4f의 STUB와 ADDRESS는 별개 차단 사유\",\"P4의 1055는 J에 없는 후속 RLE에서 발생\",\"부분 도착점 삭제 뒤 빈 가지가 남는지가 J의 핵심 실측 항목\",\"오류 예측은 A54/A55를 이미 UNPREDICTED로 표시\"],\"open\":[\"#23501 삭제 뒤 w23519의 실제 broken 상태와 세 연결 보존 여부는 실측 필요\"],\"questions\":[],\"experiment\":\"새 복사본에서 원래 A53→A54→A55만 실행하고 정리 전에 두 배선의 존재·broken 상태와 w23519의 나머지 세 연결을 단계별 확인\",\"user_needed\":\"실험 실행은 이번 읽기 전용 범위 밖\",\"check\":\"\",\"done\":true}"
+ },
+ "pending_user": {},
+ "pending_note": {},
+ "history": [
+  {
+   "Claude": {
+    "done": false,
+    "open": [
+     "K3f/K4f: route gap vs plan error (occupied sink w10362/w25232)",
+     "prior-art match: P4 failed at RLE op 3, not delete_object",
+     "does LabVIEW leave a broken stub on w23519/w23460 after delete_object (sim models none)"
+    ],
+    "questions": [
+     "1. P4 broken_before True = sinkless wire survives delete_object?",
+     "2. K3f/K4f STUB a separate plan error?",
+     "3. form for w23519 other than whole delete_wire?"
+    ]
+   },
+   "GPT": {
+    "done": false,
+    "open": [
+     "J의 실제 터널 삭제가 공유 배선에 미치는 영향",
+     "P4 선례의 적용 범위"
+    ],
+    "questions": [
+     "w23519 전체 삭제 권고를 철회하는 데 동의합니까?",
+     "P4 선례만으로 터널 삭제 위험을 확정할 수 있습니까, 아니면 단계별 시험이 필요합니까?"
+    ]
+   }
+  },
+  {
+   "Claude": {
+    "done": false,
+    "open": [
+     "does deleting #23501 leave w23519 with a loose-end stub (broken wire) that the sim does not model and the EL prediction omits",
+     "how to clean that stub if it exists"
+    ],
+    "questions": [
+     "1. Is the partial-sink loose stub on w23519 (EL mismatch) the real J risk?",
+     "2. Is RLE on a still-live w23519 an acceptable cleanup, given P4's 1055 was on a fully dead wire?"
+    ]
+   },
+   "GPT": {
+    "done": false,
+    "open": [
+     "원래 J의 공유 배선·빈 가지에 대한 실제 효과",
+     "최소 시험 범위 합의"
+    ],
+    "questions": [
+     "전체 J 대신 원래 세 삭제 단계만 관측하는 시험이 두 설명을 가르는 최소 시험이라는 데 동의합니까?"
+    ]
+   }
+  },
+  {
+   "Claude": {
+    "done": true,
+    "open": [],
+    "questions": []
+   },
+   "GPT": {
+    "done": true,
+    "open": [
+     "#23501 삭제 뒤 w23519의 실제 broken 상태와 세 연결 보존 여부는 실측 필요"
+    ],
+    "questions": []
+   }
+  }
+ ],
+ "usd": 2.1564556
+}

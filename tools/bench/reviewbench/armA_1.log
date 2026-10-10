@@ -1,0 +1,42 @@
+BGRUN START 2026-10-10 21:13:14 limit 25.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -Slug reviewbench-1 -TaskFile tools/bench/reviewbench/case_1.md
+BGRUN PID 5996
+OUTCOME: ANSWERED (146s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-10-reviewbench-1.md
+COST: $1.0331  in 22 / out 10800 / cache-create 82071 / cache-read 679154  (142s, 20 turn(s))
+--- ANSWER ---
+**Verdict:** the hand-back has the code mechanism right and the cause wrong. The compile refusal really does come from `case_pass_wire` turning down a src end that carries `frame`. But the shape PD397(b) picked was never a fair contender against the code. It rests on a wrong analogy, and the right shape was already in the project and tested.
+
+## 1. Strongest reason the claim is wrong
+
+The hand-back ends on an OPEN question: "PD397(b) both-ends `frame` vs `stagexec.py:6286-6288`, which shape?" That treats this as a plan-vs-tool disagreement. The record does not support that:
+
+- **The analogy to A33/A40/A52 is false.** Every adopted pass-wire tunnel has `body: "new:CQ7.f0"`, the 'False' frame: TG1 and TG2 (`plan_ring_p5s02r_in_pre164.json:371,403`), TH1 and TH2 (`:450,482`), TC7 and TD7 (`:590,629`). Their pass wires live in a third frame, 'True', away from both tunnels' own frames, so both ends need `frame`. Each of those tunnels also has its own frameless out-wire, and the pass wire comes after both groups as a standalone `case_frame_wire` (`diag_c164_a1_2_facts.md:7-8`). IK3 and IK4 are different: their body is `new:CQ7.f1`, which is 'True' itself (`pre164.json:821,919`; frames list `["False","True"]` at `:168-171`). The pass wire's src is therefore already in the 'True' frame. Writing `frame:"True"` on it adds no information, and it makes the wire stop counting as a group wire (`stagexec.py:896-897`).
+- **PD397(b)'s own evidence covered only the dst end.** Its text says "the **sink** resolves to OK's own group frame (-29, 'False')". Nothing in it points at the src end, so adding `frame` there was not justified by anything observed.
+- **The correct shape already existed and had passed tests.** `case_pass_wire` was written by card 156-a1-2 for exactly this K3 layout. Its docstring (`stagexec.py:6306-6314`) and the self-test header (`selftest_c156_passwire.py:7-10,14-15`) say it in so many words: frameless src, `frame` on the dst only, and they separate it from the "both ends, after both groups" G/H/I rows. Gates A31 and A32 pass in that layout (one `register_end_case_border` op over acts 67-69, sim `case_frame` index 1 'True'), and the final runs are 20/0 (`selftest_c156_passwire.log:38-39,66`; also the `_c160*.log` runs).
+
+So the most likely cause is that the PD397(b) judgement copied the wrong example and did not check the self-test that already covered K3. It is not a limitation of the tool.
+
+## 2. Alternative explanations
+
+- **A. The tool is too strict (the strongest alternative).** A src `frame` that equals the in-tunnel's own body frame means exactly the same as no `frame`. `case_pass_wire` returns False on any src `frame` (`:6318-6320`) without comparing values. It also returns False silently instead of raising one of its specific errors, so the user only sees the generic "exactly one wire into it and one out of it" message (`:901-903`). On this reading the plan meant the right thing and the code checks the form of the end, not its meaning. The evidence fits both readings. They differ only in which fix you choose, and changing the plan is cheaper and keeps the tool as it is.
+- **B. The refusal is real, but the tested shape may still fail on this graph.** A31/A32 ran on a plan-made CQ7 with sim ids (-28 and -30). The step-4 plan runs on the real graph 3d5196ab, where CQ7 is the base case #31308 and the frame is mapped to `'#31517'` (`prep_c164_a1_1_mk.log:30,33`). That takes `case_pass_wire`'s base-case branch (`:6330-6331`, name = `'#'+body`), which no recorded test exercises for this group. Fixing the src end could hit the next error ("dst `frame` ... must name the in-tunnel's own body frame") if `body` is not mapped to the integer 31517. Unknown, not measured.
+- **Not the cause:** the error message does not say whether `ins` or `outs` failed. I checked by hand. `w_k3l` (SK3L.inner -> IK3.outer, frameless, `pre164.json:827-833`) gives ins = 1. `w_k3pass` with a src frame gives outs = 0. The count is consistent with the hand-back.
+
+## 3. What would prove the claim wrong
+
+The framing would be refuted if the dst-only shape also failed to compile (or failed REALSIM) on the step-4 graph for a reason unrelated to frames. Then the src `frame` was not the only block, and PD397(b) would be one defect among several.
+
+## 4. Cheapest test that tells them apart
+
+This is offline and needs no LabVIEW. Rebuild the J+K3 prefix (A53..A69) from the same inputs, changing exactly one thing: remove `frame` from the **src** end of A69 and keep dst `frame:"True"` (mapped to `'#31517'`). Then run `compile_plan` and REALSIM.
+
+- If it compiles to one tunnel or `register_end_case_border` op over acts 15-17 and the sim passes: the claim, reframed as "wrong analogy, the known-good shape works", holds. The tool needs no change.
+- If it fails in the base-case branch of `case_pass_wire`: alternative B is real, and K3 needs a check on base-case frames before any shape decision.
+
+Alternative A changes only which fix you prefer, not what happened. It can stay a separate note for the tool owner: compare a src `frame` against the tunnel's own body frame instead of rejecting any src `frame`.
+
+**What would change my mind:** a record that `case_pass_wire`'s src rule was meant to reject even a redundant frame for a semantic reason, for example a measured LabVIEW difference. Nothing I read shows one.
+
+**Not settled:** the reading rules kept me from checking whether cycle 164's judgement saw the c156 self-test, so I can't say whether this was a missed reference or a deliberate choice. One external fact, not under dispute here: LabVIEW needs a case output tunnel wired in every case unless "Use Default If Unwired" is set. That is why OK3 needs a value in the 'True' frame at all ([NI forum: missing assignment to tunnel](https://forums.ni.com/t5/LabVIEW/Block-Diagram-Errors-Tunnel-missing-assignment-to-tunnel/td-p/323435), [NI forum: output tunnel defaults](https://forums.ni.com/t5/LabVIEW/Do-you-use-output-tunnel-default-values/td-p/947691)). The other claims are about this project's own tool, so they rest on the file:line citations above, not on web sources.
+
+Writing to the plan file was refused because the Write tool is disabled in this session, so this review exists only in this reply.
+BGRUN END rc=0 after 147s
