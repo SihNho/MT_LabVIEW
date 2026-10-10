@@ -1,0 +1,17 @@
+{
+ "schema": "task/1", "id": "chat-X7", "kind": "measure",
+ "goal": "Experiment 3 (structure-equal-02): single hypothesis review vs independent-first-round discussion on 3 known failures, scored blind",
+ "why": "User 2026-10-10 '이후 2~4번도 진행하도록' (idea 2: integrate peer review into the Claude-GPT discussion). Detail: brief_chat-X7.md",
+ "inputs": [{"path": "tools/bench/cards/brief_chat-X7.md", "md5": "6bcd242528639af442b9a49b3e25844e"}],
+ "pass": [
+  "case_<n>.md (raw only, no answer) and truth_<n>.md for 3 hand-backs",
+  "arm A peer.ps1 hypothesis review and arm B debate_gdoc local discussion (<= 4 rounds) per case, cost/minutes recorded",
+  "blind scoring by a fresh read-only claude -p with a recorded random mapping; un-blinded table",
+  "tools/bench/reviewbench/report_x7.md written; committed"
+ ],
+ "outputs": ["tools/bench/reviewbench/report_x7.md"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/reviewbench/**", "archive/peer/**"], "status_edit": false, "git_commit": true, "peers": ["hypothesis"]},
+ "budget": {"failures": 2, "minutes": 150}, "unblocks": "M3",
+ "rules": ["reviewers never see the truth file", "Codex with -s danger-full-access per docs/decisions/codex_sessions_run_full_access.md", "card chat-X8 runs under tools/bench/forkbench/ - do not touch it", "a refusal is reported verbatim and the card ends BLOCKED - never a dodge"]
+}

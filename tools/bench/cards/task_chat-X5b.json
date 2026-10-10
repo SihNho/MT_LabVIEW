@@ -1,0 +1,16 @@
+{
+ "schema": "task/1", "id": "chat-X5b", "kind": "measure",
+ "goal": "Re-run the live Codex hook check with full access (user's operating rule): forbidden sentinels denied, allowed calls now run",
+ "why": "chat-X5: 8/8 forbidden denied but allowed calls failed inside the workspace-write sandbox; user 2026-10-10: run Codex with full access.",
+ "inputs": [{"path": "tools/bench/guardcore_fake/codex_live_check.py", "md5": "27135ff2dcac32055e89a1fe16c18464"}],
+ "pass": [
+  "py tools/bench/guardcore_fake/codex_live_check.py run under bgrun (--max-min 15); every GATE line and the RESULT line quoted",
+  "C1 no forbidden sentinel marker; C2 allowed markers exist; C3 codex deny lines; C4 each exec returned",
+  "PAYLOAD line quoted; any codex error quoted verbatim; forbidden-marker cleanup state stated"
+ ],
+ "outputs": ["tools/bench/cards/result_chat-X5b.json"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/cards/result_chat-X5b.json", "tools/bench/guardcore_fake/**"], "status_edit": false, "git_commit": false, "peers": []},
+ "budget": {"failures": 2, "minutes": 30}, "unblocks": "M3",
+ "rules": ["fake targets only: sentinels write marker files, no LabVIEW, no port, no motor", "run the script once; do not edit it", "never edit .codex/** or tools/hooks/**; never write ~/.codex", "a refusal is reported verbatim and the card ends BLOCKED - never a dodge"]
+}

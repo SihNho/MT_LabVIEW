@@ -1,0 +1,17 @@
+{
+ "schema": "task/1", "id": "chat-X8", "kind": "measure",
+ "goal": "Experiment 4 (structure-equal-02): forked (continued) judgement session vs fresh session on the same 3 real hand-backs, scored blind against ground truth",
+ "why": "User 2026-10-10 '이후 2~4번도 진행하도록' (idea: long cycles keep context). Detail: brief_chat-X8.md",
+ "inputs": [{"path": "tools/bench/cards/brief_chat-X8.md", "md5": "210944453c7343e6f53fab0760732939"}],
+ "pass": [
+  "3 cases x 2 arms run read-only (BENCH_CELL=1), each <= 15 min; raw outputs under tools/bench/forkbench/",
+  "original purpose-session transcript md5 unchanged by each fork; fork session ids differ",
+  "blind scoring vs ground truth: decision match, next-round mistake avoided, evidence cited; cost, tokens, minutes",
+  "tools/bench/forkbench/report_x8.md written; committed"
+ ],
+ "outputs": ["tools/bench/forkbench/report_x8.md"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/forkbench/**"], "status_edit": false, "git_commit": true, "peers": []},
+ "budget": {"failures": 2, "minutes": 120}, "unblocks": "M3",
+ "rules": ["claude -p only, no codex", "arms are read-only: no file writes, no Bash, no Agent", "never modify the original session transcripts", "a refusal is logged as a false positive and the card ends BLOCKED - never a dodge"]
+}
