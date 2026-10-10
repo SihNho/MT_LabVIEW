@@ -23,6 +23,8 @@ tags: [debate, gpt, gemini, google-docs]
 1. **시작** (사용자가 주제를 주고 시작하라고 할 때만): 주제를 `tools/bench/debate/<slug>/topic_in.md`로 쓰고(첫 줄 = 문서 제목, 출발 자료 경로, "요약을 믿지 말고 원문을 볼 것", 결론 형식 '계속 / 줄이거나 바꿈 / 판별 실험') 실행:
    `powershell -NoProfile -File tools/debate_start.ps1 -Slug <slug> -Topic tools/bench/debate/<slug>/topic_in.md`
    → 출력의 `DOC <링크>`를 사용자에게 준다.
+   - **라운드 상한 없음** (사용자 2026-10-10: 직접 여는 토론은 수렴할 때까지): `--max-rounds` 기본값 0. 멈추는 경우는 수렴, 같은 쟁점 3회 반복(일시정지), 사용자의 `/stop`·`/end`뿐. 러너 안 토론은 자기 상한(6)을 따로 넘긴다.
+   - **같은 비중** (사용자 2026-10-10 "GPT와 클로드에 같은 비중"): 주제 문서에는 사용자 원문과 측정 사실만 넣고, 채팅(Claude)의 안을 넣지 않는다 - 1라운드는 두 쪽이 독립적으로 동시에 쓴다. 결론 요약에는 각 합의가 누구의 제안에서 나왔는지 적는다.
 2. **지켜보기**: 라운드마다 한 줄만 채팅에 (원문은 문서에서 본다 - 채팅 컨텍스트 절약). Monitor(bash, 30분마다 다시 걸기):
    `cd tools/bench/debate/<slug>; seen=" "; while true; do for f in relay/round_[0-9][0-9]_gpt.md; do [ -f "$f" ] || continue; case "$seen" in *" $f "*) ;; *) seen="$seen $f "; c="${f/_gpt/_claude}"; echo "$(head -1 $c | cut -c1-60) | $(head -1 $f | cut -c1-60)$(grep -q 'call failed' $f $c && echo ' FAILED')";; esac; done; iconv -f UTF-16LE -t UTF-8 run.log 2>/dev/null | grep -qE "^(END|ERROR|STOPPED|PAUSED)" && { iconv -f UTF-16LE -t UTF-8 run.log | grep -E "^(END|ERROR|STOPPED|PAUSED)" | tail -1; break; }; sleep 20; done`
 3. **사용자 개입 전달**: `py tools/debate_gdoc.py say --dir tools/bench/debate/<slug>/relay "<그대로>"`

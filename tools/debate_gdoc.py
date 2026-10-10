@@ -478,7 +478,9 @@ def parser():
     ap.add_argument("--gemini-model", default="gemini-3.1-pro-high")   # the fact-chain model of tools/peer.ps1
     ap.add_argument("--gemini-timeout", type=int, default=600)
     # card chat-D2 (user 2026-10-09 "둘 다 넣자"): the runner runs a discussion unattended, between cycles
-    ap.add_argument("--max-rounds", type=int, default=6, help="pause every N rounds; with --auto-end finish at N (0 = none)")
+    # user 2026-10-10: a discussion the user starts runs until it converges - no round cap by default (0). The runner's
+    # in-loop discussions pass their own --max-rounds (tools/debate_loop.py MAX_ROUNDS); the repetition pause stays.
+    ap.add_argument("--max-rounds", type=int, default=0, help="pause every N rounds; with --auto-end finish at N (0 = none)")
     ap.add_argument("--auto-end", action="store_true", help="on converged / repeating / max-rounds finish, do not wait")
     ap.add_argument("--summary", help="write the end state (debate-summary/1 JSON) here on every exit, + a RESULT line")
     ap.add_argument("--doc", choices=("google", "local", "authfail"), default="google",
