@@ -1,0 +1,17 @@
+{
+ "schema": "task/1", "id": "chat-X10", "kind": "measure",
+ "goal": "GPT vs Claude on the same replayed material cards (matbench + a Codex arm): score, time, retries, tokens, plan-limit movement",
+ "why": "User 2026-10-11 '진행': the benchmark was the purpose; subscription decision after 2026-10-16. Detail: brief_chat-X10.md",
+ "inputs": [{"path": "tools/bench/cards/brief_chat-X10.md", "md5": "5476480c320ae75034d2d0b774e00fcd"}],
+ "pass": [
+  "matbench driver extended with a Codex arm (shared code); LabVIEW-needing tasks dropped and named",
+  "every task x arm (x2 if time) run under bgrun, each <= 20 min; blind A/B scoring with a recorded mapping",
+  "per run: score, minutes, retries, tokens, Claude USD, GPT rate_limits used_percent first/last",
+  "report returned as text; driver, raw outputs and logs committed under tools/bench/matbench/"
+ ],
+ "outputs": ["tools/bench/matbench/"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/matbench/**"], "status_edit": false, "git_commit": true, "peers": []},
+ "budget": {"failures": 2, "minutes": 240}, "unblocks": "M3",
+ "rules": ["offline tasks only", "Codex with -s danger-full-access in each task's isolated start directory", "hook refusals are data: quote guardcore.log, never work around", "report as text; the chat writes report_x10.md"]
+}
