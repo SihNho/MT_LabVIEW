@@ -1,0 +1,51 @@
+{
+ "schema": "task/1",
+ "id": "160-g1-1",
+ "kind": "diagnose",
+ "goal": "PD390(d): facts table splitting A41..A80 by whole groups into steps (new instance each, START_ASSUMED 603.4, MAIN <= 675), file names listed; no step-3 plan.",
+ "why": "The cut at A40 leaves 40 actions; the purpose asks for the remaining split as facts so the next judgement can plan step 3 without re-deriving the groups.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_160-g1-1.md", "md5": "9d445bf4436418ec19889e5a2d289047"},
+  {"path": "docs/d1/ring-p5b.md", "md5": "b9646fde47e344996ca0d73e911104e1"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+  {"path": "tools/bench/diag_c159_c1_1_facts.md", "md5": "d8ccd976d2334bbff85b07b38ee680b3"},
+  {"path": "tools/bench/memory_model.json", "md5": "5b87de43b3b3653c9ed1d9a576ddd167"},
+  {"path": "tools/bench/plan_ring_p5s02b_in.json", "md5": "56bfddd3c519d793b676865185bc14c6"},
+  {"path": "tools/bench/graph_ring_p5s02a_20261010_032547.json", "md5": "7ac24924f979afde964e63fb27957b45"}
+ ],
+ "pass": [
+  "groups I J K3 K3f K4 K4f listed with action counts and OK/GAP/BLOCKED status quoted from the log with file:line",
+  "per-step table: actions, groups, MAIN in a fresh instance (<= 675) for the OK groups; each step a new instance from START_ASSUMED 603.4",
+  "in-between and saved file name patterns listed per step; GAP/BLOCKED groups marked as having no MAIN; no step-3 plan written",
+  "md5 unchanged: stagekit, stagesim, stagexec, stage_prerun, plan input, graph; tools/hooks untouched"
+ ],
+ "outputs": [
+  "tools/bench/diag_c160_g1_1_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c160_g1_1*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 1,
+  "minutes": 30
+ },
+ "rules": [
+  "Offline; no LabVIEW process; no tool, recipe, plan or tools/hooks edit",
+  "Facts only; numbers from files; call shared functions, no pasted blocks",
+  "No step-3 plan file; do not choose between cut alternatives",
+  "Rule 1a: no computation touched"
+ ],
+ "advances": ["M3", "M8", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c159_c1_1_facts.md"}
+ ]
+}

@@ -1,0 +1,90 @@
+BGRUN START 2026-10-10 17:29:12 limit 50.0 min: py -u tools/recipes/stage_d1_ring_p5s02e_scratch.py --unverified-card tools/bench/cards/task_165-3-4.json
+BGRUN PID 19016
+BGRUN STAGE-RUN recorded stage_d1_ring_p5s02e_scratch.py cycle='cycle 165' card=None pid=29480 -> stage_runs.jsonl
+stage_d1_ring_p5s02e_scratch - card 165-3-3 (WRITTEN, NOT LAUNCHED): the ONE SCRATCH RUN of RING P5-2 step 5 (docs/d1/ring-p5c.md PD400,
+PD401, PD402, D-2026-10-01-01: a full scratch before every ring step) on plan_ring_p5s02e.json fd23974e (K3f A72-73, K4 A74-82, K4f A83-84).
+Pair shape of stage_d1_ring_p5s02d_scratch.py on the shared stagekit calls (census_all_install, op_class_census_install, pred_x10,
+scratch_offline_modes / el_advisory, scratch_tail): only names, plan / pred paths, the log and the census ops differ (docs/script-writing.md
+rules 1-2).
+Runs tools/recipes/stage_d1_ring_p5s02e.py's OWN body (imported unchanged) on a dated byte copy claudeDev\D1_ring_p5s02e_<ts>.vi of the saved
+p5s02d file 6dcd5c3d. No VI is run; the bed is never edited. SAVE on (rule-6 gui_save of the work copy). PRIME-SKIP lines expected for #8776
+and #24342 (stagexec 1d5309f4). The two stub-delete + connect pairs (ops 1 -> 2: dw_10362 / w_k3f; ops 8 -> 9: dw_25232 / w_k4f, each delete a
+checkpoint) carry the PD401(b) / PD402 expectations in the pred keys `pd401b` / `pd402` (face wire 0 after the delete, census in [{}, {'Wire': 1}],
+Is Broken? False). The two connect_term_uid register_end_case_border groups (ops 6 / 7: OK4 / IK4 onto the new SR SK4, pass wire on frame #31517)
+are judged by wire ENDS (PD389(b)). OPCENSUS ops 2 / 6 / 7 / 9 (printing only, reads the run takes anyway); an op whose previous op is not a
+checkpoint prints "not measured".
+Error List (next, separate run): `--el-advisory <read json>` against the pred (predicted 49, UNPREDICTED groups A77 t_k4o / A80 t_k4i, upper 51);
+`--el-advisory-selftest`.
+PREDICTION (numbers in plan_ring_p5s02e_pred.json): every recipe gate PASS incl. PRIM; peak private MB <= SX.X10_FAIL_MB (680) and <= X10 + 10
+(X10 peak 659.9, MAIN 665.0 <= 675); bed md5 unchanged; LabVIEW gone.
+    py tools/bgrun.py --material --max-min 50 --unverified-card tools/bench/cards/task_165-3-4.json --log tools/bench/diag_c165_p5s02e_scratch.log -- py -u tools/recipes/stage_d1_ring_p5s02e_scratch.py
+MEM_STOP_MB 680.0; X10 from the md5-pinned pred 659.9; declared sink gates []; retry card {'path': None, 'note': "not in this process's argv (a bgrun --retry-card is read by the launch gate and bgrun)"}
+stage_d1_ring_p5s02e - card 165-3-3 (WRITTEN, NOT LAUNCHED), RING P5-2 step 5 (docs/d1/ring-p5c.md PD400, PD401, PD402): on the saved p5s02d
+file (claudeDev\D1_ring_p5s02d_20261010_152518.vi 6dcd5c3d, path/md5 read from the plan's base graph 2a5fa0c4), apply the 13 actions of
+plan_ring_p5s02e.json fd23974e = K3f (A72-73: delete_wire of the sink-only stub w10362 on LoopTunnel #5204's inner face t8776, then w_k3f
+OK3.outer -> t8776), K4 (A74-82: SR SK4 on loop #23041, init const KI4, case tunnels OK4 / IK4 through register_end_case_border, pass wire w_k4pass
+on frame #31517), K4f (A83-84: delete_wire of the stub w25232 on LoopTunnel #10404's inner face t24342, then w_k4f OK4.outer -> t24342);
+tools/bench/prep_c165_a3_2_mk.py. PRIME-SKIP of #8776 / #24342 (stagexec 1d5309f4, card 165-3-1). Licence plan_ring_p5s02e_licence.json;
+sink-gate census prep_c165_a3_3_sg.json (0 rows).
+Shape = the pair shape of stage_d1_ring_p5s02d.py on stagekit.RingSession (docs/script-writing.md rules 1-2): only plan / pred / licence /
+census file / names / output name differ; every gate is CALLED.
+FRESH LabVIEW -> claudeDev\D1_ring_p5s02e_<ts>.vi (rule-6 GUI save, ExecState 0 by design; file name per brief_165-3-3.md:19-20 - PD400(c)
+names the full-prefix result the P5 FINAL D1_ring_p5_<ts>.vi, broken file 6 of 6: the adopting card decides the name). The FIRST run is the full SCRATCH run on a byte copy (stage_d1_ring_p5s02e_scratch.py). ROWS ONLY FROM PLAN; expected values
+only from PRED.
+PREDICTION (numbers in PRED, prep_c165_a3_3_pred.py / _pd402.py): SG 0 sink gates; L1 13 actions -> 9 ops == pred kinds; E1 every checkpoint
+[0,1,3,4,6,7,8,9] == sim; NG; PRIM; FR; D; TD; CEN2 (Wire by ENDS, PD389(b); census UNPREDICTED until the scratch measures it); PB by POSITION
+(FATAL, before save); HB handles <= +700; PS saved, input unchanged. X10 start 609.8, MAIN 665.0 <= 675; Error List predicted 49 (upper 51).
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/launch_c165_p5s02e.log -- py -u tools/recipes/stage_d1_ring_p5s02e.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_ring_p5s02e_in[N]; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan  ('fd23974e46dc9637cc41e0cc09fbf0e4', {'path': 'tools/bench/graph_ring_p5s02d_20261010_154830.json', 'md5': '2a5fa0c40866f88111d3ab14e5f9c32d'}, '6dcd5c3d506f69947a5ce259ccbe2221')
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 351 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 6dcd5c3d506f69947a5ce259ccbe2221  got 6dcd5c3d506f69947a5ce259ccbe2221
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33934
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  D1_ring_p5s02e_20261010_172913.vi
+  FACT  ExecState [after open] D1_ring_p5s02e_20261010_172913.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so D1_ring_p5s02e_20261010_172913.vi is deleted at close
+  PASS  SG one declared sink gate per census row (0 rows of prep_c165_a3_3_sg.json): []; per row: sink term(s), plan action(s), source, source name []
+  PASS  L1 the 13 actions compile into 9 real ops == pred kinds, each action once; checkpoints (0, 1, 3, 4, 6, 7, 8, 9)  ['delete_wire', 'connect', 'add_sr', 'create', 'connect', 'connect_term_uid', 'connect_term_uid', 'delete_wire', 'branch']
+  METER start  k   0  private 564.2 MB (d -)  handles 45688 (d -)
+  METER read   k   0  private 565.8 MB (d +1.6)  handles 45738 (d +50)
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 4 touched diagram(s) [686, 23405, 31506, 31517]: one-side-only Nodes[] entries 0
+  PRIME-SKIP end #8776 (LoopTunnel #5204 inner sink, base w10362) of action 2 (w_k3f, op 2): left to its step - w10362 is deleted by checkpointed op 1 (action 1 dw_10362)
+  PRIME-SKIP end #24342 (LoopTunnel #10404 inner sink, base w25232) of action 13 (w_k4f, op 9): left to its step - w25232 is deleted by checkpointed op 8 (action 12 dw_25232)
+  PRIME 0 terminal indexes proved at base; 0 ControlTerminal end(s) by 179(b); unprovable []
+  CHECKPOINTS whole-VI read+diff after ops [1, 3, 4, 6, 7, 8, 9] of 9
+  METER pre    k   1  private 552.3 MB (d -13.5)  handles 45766 (d +28)
+  FACT  delete_wire node census: 706 rows
+      stagexecdeleted wire w10362
+  FACT  OP delete_wire w10362 -> err '' (2.2 s)
+  FACT  delete_wire w10362 (plan w10362) AFTER node census: 706 rows
+  FACT  delete_wire w10362 (plan w10362) CENSUS DIFF: Node 706 -> 706 ; 0 new uid(s): []
+  METER op     k   1  private 553.7 MB (d +1.4)  handles 45782 (d +16)
+  METER read   k   1  private 564.7 MB (d +11.0)  handles 45776 (d -6)
+  STEPX 01 delete_wire    acts [1] ids ['dw_10362'] bound {} diff 0
+  METER pre    k   2  private 564.7 MB (d +0.0)  handles 45776 (d +0)
+  FACT  connect_term_uid node census: 706 rows
+  FACT  OP connect_term_uid connect_term_uid #8776 <- #31815 -> err '' (6.0 s)
+  FACT  connect_term_uid #8776 <- #31815 AFTER node census: 706 rows
+  FACT  connect_term_uid #8776 <- #31815 CENSUS DIFF: Node 706 -> 706 ; 0 new uid(s): []
+  METER op     k   2  private 566.9 MB (d +2.2)  handles 45808 (d +32)
+  STEPX 02 connect        acts [2] ids ['w_k3f'] diff skipped (not a checkpoint)
+  METER pre    k   3  private 566.9 MB (d +0.0)  handles 45838 (d +30)
+  FACT  add_shift_reg node census: 706 rows
+  FACT  OP add_shift_reg loop[0] y=120 -> err '' (0.1 s)
+  FACT  add_sr #23041 AFTER node census: 706 rows
+  FACT  add_sr #23041 CENSUS DIFF: Node 706 -> 706 ; 0 new uid(s): []
+  METER op     k   3  private 566.9 MB (d +0.0)  handles 45857 (d +19)
+  METER read   k   3  private 570.0 MB (d +3.1)  handles 45857 (d +0)

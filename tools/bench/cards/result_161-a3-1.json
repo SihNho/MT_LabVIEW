@@ -1,0 +1,30 @@
+{"schema": "result/1", "id": "161-a3-1", "status": "FAIL",
+ "gates": {"pass": 4, "fail": 2},
+ "first_fail": "prep_c160_c3_1_pred X10 (prep_c161_a3_1_pred.log:11): MAIN 665.0 / peak 659.9 != session 657.4 / 652.3 (old BIND rule) - fatal, pred not re-made",
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/stagekit.py", "md5": "9b8f82c1a0150bcaacaf9c56e003c335"},
+  {"path": "tools/bench/selftest_c161_pbinherit.py", "md5": "9be05189703e6d48d4664dbe7c0266cc"},
+  {"path": "tools/bench/diag_c161_a3_1_facts.md", "md5": "67684a29bb278c5122e5f29d3c270d3d"},
+  {"path": "tools/bench/prep_c156_a1_1_lib.py", "md5": "5ade19fe8c219293ffbdc3fc357d0c58"},
+  {"path": "tools/bench/prep_c160_c3_1_pred.py", "md5": "fd94f035f49a4d22c49e40933a3545a7"}
+ ],
+ "facts": [
+  "stagekit.py:2093 pb_inherited_row records class 1/2 (PD394(a)/PD395(b)); pb_inherit_ctx :2033 (adopt chain); pb_check_bound :2011 and pb_386 :2148 call it",
+  "selftest_c161_pbinherit.log 10/0: p5s02b 5 rows RECORDED (class 1 cal cluster path, file size; class 2 w_in3_376/w_g376/w_h376), PB ok, extra_left []",
+  "selftest_c161_pbinherit.log: B1-B5 mutations each BLOCK; stored p5s01a 21/21, p5s01b 21/21, p5s02a 31/31 (2 rec) off==on, stored PB PASS",
+  "prep_c161_a3_1_suite_after.log: c155 21/0, invcheck 20/0, passwire 20/0, delwire 20/0, regface 12/0, s4 24/0, c157 13/0, t7 35/0, c158 16/0",
+  "selftest_c161_delckpt 9/2 before AND after (prep_c161_a3_1_suite_before.log:8): D2 + P pinned to old pred 48b50b29; pre-existing, not loosened",
+  "prep_c161_a3_1_pred.log:10 pred MAIN on SX.checkpoint_ops [0,1,2,3,4,5,7,8,9,10]: 661.3 at start 599.7, 665.0 at 603.4; both <= 675",
+  "prep_c161_a3_1_pred.log:11 X10 gate fatal on equality to b3-1 session 657.4/652.3 (old rule) -> pred stays 18729409; licence/EL not run",
+  "prep_c161_a3_1_lib.log:5 lib --selftest T3: main_of(155 step 1) 682.5 != stored 680.0 under the shared rule (prep_c156_a1_1_lib.py:99)",
+  "md5 unchanged: stagesim 95a162ba, stagexec a4df7e15, stage_prerun 7605116f, plan f4520b10, pred 18729409, licence f61a2514, EL 79ec3207",
+  "not re-pinned/not run: prep_c160_b3_1_mk (writes plan files), prep_c160_b1_1_mk (outside write globs); open card 160-c3-2 pins stagekit 0b5bb678"
+ ],
+ "open": [
+  "prep_c160_c3_1_pred X10 equates MAIN to the old-rule session (657.4/652.3); restate it on the shared rule (665.0/659.9) so the pred can be re-made?",
+  "prep_c156_a1_1_lib T3 stored 680.0 vs 682.5 under checkpoint_ops: restate or keep?",
+  "selftest_c161_delckpt D2/P written against pred 48b50b29 (fail since 161-b1-1): restate / re-pin?"
+ ],
+ "cost": {"usd": null, "minutes": 42, "labview_runs": 0},
+ "note": "PB part (items 1-3) complete and green; pin sweep done; PD394(b) stopped at the pred maker's X10 equality gate (first unexpected result), nothing written by it."}

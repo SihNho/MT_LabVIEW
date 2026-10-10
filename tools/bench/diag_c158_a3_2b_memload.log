@@ -1,0 +1,16 @@
+BGRUN START 2026-10-10 03:29:09 limit 2.0 min: py -u tools/bench/diag_c158_a3_2b_memload.py
+BGRUN PID 10288
+GATE PASS | M exactly one 'MEM after load' line in the graph log | [(24, '  FACT  MEM after load: 593.8 MB private; handles 45657')]
+GATE PASS | K md5 94ffff94 not yet a load_by_vi key | ['4dfa44aac8fb32f706b3eb792ee7d3cc', '9d7bf28738b7c154280e5e7c2c9d4961', '6cc6922192b3e330f163561bb95a8115', '49cf7f770fc331e06607687af640ad5e', '395118775a52bc90073f4449b99f899d', '95e408ff14a406edd3f16b32ba7324f1', '3f9ac26b69179eb53c202d90407ce7ee', '569ffbf51eb6051bf0fdb58946f9bb02', 'b3f86b322292a6ec6c67976a589b5b06', 'f99e8414a2081538552e26ba24ee713d', 'eb1d0f3107bbba49c9ae67a47c0ee50f', '2482fe7bf3426e18b0801c77ec629073', '7f2582ae54dc5bc42c3df0bdf3c72d2e']
+GATE PASS | D flattened key-by-key diff: only the 3 leaves of load_by_vi/94ffff94 added | {'added': ['/load_by_vi/94ffff9413599d5153a5e6fb409294ab/cite', '/load_by_vi/94ffff9413599d5153a5e6fb409294ab/value', '/load_by_vi/94ffff9413599d5153a5e6fb409294ab/vi'], 'removed': [], 'changed': []}
+GATE PASS | F re-dump of the OLD object reproduces the old file byte for byte (so only the new entry's lines differ) | 
+GATE PASS | T text diff = inserted lines + the previous last entry's closing brace gaining its comma (JSON syntax) | ['+  },', '+  "94ffff9413599d5153a5e6fb409294ab": {', '+   "value": 593.8,', '+   "vi": "claudeDev\\\\D1_ring_p5s02a_20261010_023239.vi (P5-2 step 1 ADOPTED in-between file = the retry scratch work copy, card 158-a3-2b; PD354(a), PD379(c), PD386(e))",', '+   "cite": "tools/bench/diag_c158_a3_2b_graph.log:24 (MEM after load: 593.8 MB private)"']
+DIFF +  },
+DIFF +  "94ffff9413599d5153a5e6fb409294ab": {
+DIFF +   "value": 593.8,
+DIFF +   "vi": "claudeDev\\D1_ring_p5s02a_20261010_023239.vi (P5-2 step 1 ADOPTED in-between file = the retry scratch work copy, card 158-a3-2b; PD354(a), PD379(c), PD386(e))",
+DIFF +   "cite": "tools/bench/diag_c158_a3_2b_graph.log:24 (MEM after load: 593.8 MB private)"
+FACT memory_model.json md5 c87d170a8370c4b5dcf77d1aa6738aed -> 5b87de43b3b3653c9ed1d9a576ddd167; added key load_by_vi/94ffff9413599d5153a5e6fb409294ab value 593.8 (cite log :24)
+FACT calibration (no coefficient changed): metered scratch start 573.6 MB (scratch log :53) vs pred start 603.4 (d -29.8); last-segment peak 621.1 MB (:266) vs X10 667.0 (d -45.9); sum peak_mb 621.1
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":5,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/bench/memory_model.json","md5":"5b87de43b3b3653c9ed1d9a576ddd167"}],"card":"159-a1-1","labview":"read"}
+BGRUN END rc=0 after 1s

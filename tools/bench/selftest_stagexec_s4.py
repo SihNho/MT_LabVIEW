@@ -13,7 +13,7 @@ PREDICTION CONTRACT (all must hold):
   R3 another cycle refused ; R4 file md5 changed refused ; R5 actions 1..s_act changed refused, an action after s_act changed
      (a FIXED plan) accepted ; R6 the bed as the resume file refused
   B1/B2 partial_reads=True == whole reads: same binding, every step diff 0, reads_partial > 0, whole + partial == whole run's
-     reads, on plan_disp (every op a checkpoint) and plan_ring_p4_s01 (its BIND + last checkpoints)
+     reads, on plan_disp (every op a checkpoint) and plan_ring_p4_s01 (stagexec.checkpoint_ops, card 161-a1-2; was BIND + last)
   B3 x10_model_peak(partial=) removes exactly the partial k from R (never k 0 / the last op)
   B4 a real change outside the simulated diff (extra_obj) is missed by the partial read and CAUGHT by the last whole read
 Usage: py tools/bgrun.py --material --max-min 8 --log tools/bench/selftest_stagexec_s4.log -- py -u tools/bench/selftest_stagexec_s4.py
@@ -156,11 +156,10 @@ def pair(plan_path, checkpoints):
 
 
 for lab, pp, cps in (("B1 plan_disp, every op a checkpoint", DISP, None),
-                     ("B2 plan_ring_p4_s01, BIND + last checkpoints", os.path.join(ROOT, "tools", "bench", "plan_ring_p4_s01.json"), "bind")):
+                     ("B2 plan_ring_p4_s01, stagexec.checkpoint_ops checkpoints", os.path.join(ROOT, "tools", "bench", "plan_ring_p4_s01.json"), "shared")):
     try:
-        if cps == "bind":
-            o_ = SX.compile_plan(SX._j(pp))
-            cps = sorted({0, len(o_)} | set(i for i, o in enumerate(o_, 1) if o["kind"] in SX.BIND_KINDS))
+        if cps == "shared":                                                         # card 161-a1-2: the ONE rule, not a copy
+            cps = list(SX.checkpoint_ops(SX.compile_plan(SX._j(pp))))
         xw, xp = pair(pp, cps)
         same = xw.bind == xp.bind and all(x["diff"]["n"] == 0 for x in xp.report) and all(x["diff"]["n"] == 0 for x in xw.report)
         gate(lab + ": partial == whole (binding, every diff 0), partial reads {0}, whole {1} -> {2}, fallbacks {3}".format(
@@ -200,6 +199,7 @@ shutil.rmtree(tmp, ignore_errors=True)
 print(protocol.result_line(protocol.make_result(P[0], len(F), F[0] if F else None)))
 sys.exit(1 if F else 0)
 # ---
-# labview: read
+# labview: none
 # hardware: none
+# evidence: tools/bench/selftest_stagexec_s4.log:69
 # ---

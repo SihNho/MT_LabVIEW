@@ -1,0 +1,61 @@
+{
+ "schema": "task/1",
+ "id": "159-b1-1",
+ "kind": "build",
+ "goal": "PD388(a)(b): item-by-item expected Error List of base 94ffff94 (w10394 -> delete_wire 10394), the CEN2 12th wire by offline sim-vs-graph diff, then delete failed copy 152721 + resume record.",
+ "why": "Round 1 handed back on the termless wire w10394; PD388 decides it is a plan omission cleared by a first delete_wire in step 2, so 94ffff94 is the step-2 base. The expected list and the CEN2 wire are the inputs of the step-2 plan.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_159-b1-1.md", "md5": "5a9935038ee53935a05fa170b8231813"},
+  {"path": "docs/d1/ring-p5b.md", "md5": "48ade6d9230e76a47ece1985fa70c280"},
+  {"path": "tools/bench/errorlist_D1_ring_p5s02a_20261010_023239_20261010_024108.json", "md5": "25d6084b2c2988338659758c1315a3fb"},
+  {"path": "tools/bench/errorlist_expected_D1_ring_p5s01_20261009_124542.json", "md5": "ffc4cf666d84bbd30e167dcfe21c5569"},
+  {"path": "tools/bench/attrib_c159_p5s02a.md", "md5": "f5a17ff88f891f32655e07c265c590f7"},
+  {"path": "tools/bench/attrib_c159_p5s02a.json", "md5": "d7c9ef00611b94fdb9a67bbbf2b05498"},
+  {"path": "tools/bench/plan_ring_p5s02r_in.json", "md5": "d84634bdbe0f4f94669d2443af116b8e"},
+  {"path": "tools/bench/plan_ring_p5s02a.json", "md5": "4284c22a540f9e3f39c7092affe516af"},
+  {"path": "tools/bench/graph_ring_p5s01_20261009_125622.json", "md5": "6716c49948f097b8ac0e1780930bfab1"},
+  {"path": "tools/bench/graph_ring_p5s02a_20261010_032547.json", "md5": "7ac24924f979afde964e63fb27957b45"},
+  {"path": "tools/stagesim.py", "md5": "eb99c6bab81633f9bdd7c10dce6bfc0a"},
+  {"path": "tools/stagekit.py", "md5": "9cd8822e7605cc6f6a1f899323c9d54b"},
+  {"path": "tools/vigraph.py", "md5": "a7eb58c7e35a134f93df168ea4cdea80"},
+  {"path": "tools/addrcheck.py", "md5": "207beb0d09102c78b1e06d1f076eec7e"}
+ ],
+ "pass": [
+  "errorlist_expected_D1_ring_p5s02a_20261010_023239.json: 56 rows, each with its own clears_by (action+step, standing+cause, or delete_wire 10394); totals after step 2 and step 3 quoted",
+  "diag_c159_cen2_wire.md: CEN2 scope (file:line), the extra LabVIEW wire (uid, ends, frame), whether it equals w10394, any other sim-vs-real wire difference",
+  "Failed copy D1_ring_p5s02a_20261009_152721.vi md5 cac5236b verified, deleted with its resume record (path quoted); nothing else deleted",
+  "md5 before == after: 94ffff94 (023239.vi), s09 eb1d0f31, P5-1a 2482fe7b, P5-1 7f2582ae; tool/plan pins unchanged; no tools/hooks edit; no original opened",
+  "tools/bench/diag_c159_b1_1_facts.md written (<= 35 lines, facts only)"
+ ],
+ "outputs": [
+  "tools/bench/errorlist_expected_D1_ring_p5s02a_20261010_023239.json",
+  "tools/bench/diag_c159_cen2_wire.md",
+  "tools/bench/diag_c159_b1_1_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/errorlist_expected_D1_ring_p5s02a_20261010_023239.json",
+   "tools/bench/diag_c159_cen2_wire.md",
+   "tools/bench/diag_c159_b1_1*",
+   "tools/bench/sim/ring_p5s02a_c159/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "rules": [
+  "Offline, no LabVIEW; failed copy deleted as a plain file after md5 check; nothing else in claudeDev touched",
+  "No tool, plan, recipe or hook edit; do not pin or write tools/stage_prerun.py (159-b2-1 edits it)",
+  "Build the list row by row; an item with no attributable action is reported unattributed, never guessed",
+  "Call shared functions; no copied blocks (docs/script-writing.md)"
+ ],
+ "advances": ["M3", "M8", "R1"]
+}

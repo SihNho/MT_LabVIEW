@@ -558,10 +558,12 @@ def git_commit_cycle(n, runner_log):
     try:
         # chat 2026-10-09: a stale .git/index.lock (left by a killed git, seen 10-08 18:34 and 10-09 10:08) made the
         # cycle 149/150 commits fail silently (rc 128). Remove it only when it is older than 10 min and no git runs.
+        # chat 2026-10-10: the "no git.exe" condition never held (the Claude app runs git every few seconds), so a lock
+        # from 10-09 23:18 blocked the commits of cycles 160-164. A lock older than 30 min is removed regardless.
         lock = os.path.join(ROOT, ".git", "index.lock")
         if os.path.exists(lock) and time.time() - os.path.getmtime(lock) > 600:
             tl = subprocess.run(["tasklist", "/FI", "IMAGENAME eq git.exe"], capture_output=True, text=True, timeout=30)
-            if "git.exe" not in (tl.stdout or ""):
+            if "git.exe" not in (tl.stdout or "") or time.time() - os.path.getmtime(lock) > 1800:
                 os.remove(lock)
                 log_line(runner_log, "GIT | %s | cycle %d | removed stale .git/index.lock" % (time.strftime("%Y-%m-%d %H:%M:%S"), n))
         subprocess.run(["git", "add", "-A"], cwd=ROOT, timeout=120, capture_output=True)

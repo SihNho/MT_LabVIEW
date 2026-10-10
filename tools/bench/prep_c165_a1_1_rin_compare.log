@@ -1,0 +1,13 @@
+BGRUN START 2026-10-10 16:21:47 limit 3.0 min: py -u tools/bench/prep_c165_a1_1_rin.py compare
+BGRUN PID 12328
+FACT old 9dadb0c1d3faeeb52f109a0af36929b5 82 actions; new 0b8959833a6e37259f3cadf4fc7c9ea8 84 actions
+  PASS  J0 old copy md5 9dadb0c1  9dadb0c1d3faeeb52f109a0af36929b5
+  PASS  J1 top-level keys other than actions equal  []
+  PASS  J2 exactly 2 added actions, the rest byte-equal as JSON and in order  ['dw_10362', 'dw_25232']
+  PASS  J3 dw_10362: op delete_wire wire_uid 10362, immediately before w_k3f (A72 -> new index 71)  {'op': 'delete_wire', 'id': 'dw_10362', 'wire_uid': 10362, 'why': 'PD400(a): sink-only stub w10362 on the INNER face t8776 of LoopTunnel #5204 (one terminal row, no source; graph 2a5fa0c4) - removed BEFORE w_k3f (checkpoint, PD393(a))'}
+  PASS  J3 dw_25232: op delete_wire wire_uid 25232, immediately before w_k4f (A83 -> new index 82)  {'op': 'delete_wire', 'id': 'dw_25232', 'wire_uid': 25232, 'why': 'PD400(a): sink-only stub w25232 on the INNER face t24342 of LoopTunnel #10404 (one terminal row, no source; graph 2a5fa0c4) - removed BEFORE w_k4f (checkpoint, PD393(a))'}
+  PASS  J4 the new rows have the dw_cond / dw_23460 key set ['id', 'op', 'why', 'wire_uid']  [['id', 'op', 'why', 'wire_uid'], ['id', 'op', 'why', 'wire_uid']]
+  PASS  J5 new plan validates (stageplan/1)  OK stageplan/1
+FACT A70/A80 in the OLD numbering: w_k3f = action 72, w_k4f = action 82 (1-based)
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":7,"fail":0},"first_fail":null,"artefacts":[{"path":"tools\\bench\\plan_ring_p5s02r_in.json","md5":"0b8959833a6e37259f3cadf4fc7c9ea8"}],"card":"165-1-1","labview":"none"}
+BGRUN END rc=0 after 1s

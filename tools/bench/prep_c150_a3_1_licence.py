@@ -16,6 +16,7 @@ import collections, hashlib, json, os, sys                                      
 ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 sys.path.insert(0, ROOT)
 sys.path.insert(0, os.path.join(ROOT, "tools"))
+import stage_shared as SH                                                                   # noqa: E402  base_sink_renames (card 162-a2-3)
 from tools import protocol  # noqa: E402
 import stage_prerun as SPR                                                                  # noqa: E402
 # The real TD/PB reader stagekit.licence_renames is exercised by the MAIN recipe's dry run (REN = K.licence_renames(...)); this offline script
@@ -68,19 +69,8 @@ for n in nodes:
                 "why": "X11 (stage_prerun.buildarray_open_sibling) flags row(s) {0} on #{1} wiring {2} while sibling input(s) {3} are open rows at the s07 end (PD365(d), "
                        "PD352(d) extended to the session that carries v18 op 150); read by this script from the rebased plan, not typed".format(
                            rows, n, sorted(set(f["wired"] for f in x11 if int(f["node"]) == n)), sorted(set(o for f in x11 if int(f["node"]) == n for o in f["open"])))})
-own = collections.defaultdict(set)
-wr = collections.defaultdict(list)
-for a in A:
-    if str(a.get("op")).lower() != "wire" or not isinstance(a.get("dst"), dict) or a["dst"].get("term_uid") is None:
-        continue
-    r = bt.get(int(a["dst"]["term_uid"]))
-    if r is None or r.get("is_source"):
-        continue
-    own[int(r["owner_uid"])].add(int(r["term_uid"]))
-    wr[int(r["owner_uid"])].append(a["id"])
-ren = [{"node": o, "term_uids": sorted(own[o]),
-        "why": "PD365(d) (chat-T6 rule for this session only): BASE sink terminal(s) of #{0} wired by s07 row(s) {1}; from/to unset = any name "
-               "(stagekit.licence_renames, tools/stagekit.py:1412-1421)".format(o, wr[o])} for o in sorted(own)]
+ren, own, wr = SH.base_sink_renames(A, bt, "PD365(d) (chat-T6 rule for this session only): BASE sink terminal(s) of #{0} wired by s07 row(s) {1}; from/to unset = any name "
+                                           "(stagekit.licence_renames, tools/stagekit.py:1412-1421)")   # card 162-a2-3: shared, was a copied block
 print("FACT renames {0} entr(y/ies), {1} term uid(s), owners {2}".format(len(ren), sum(len(e["term_uids"]) for e in ren), sorted(own)), flush=True)
 for e in ren:
     print("FACT  rename node #{0} term_uids {1} rows {2} names {3}".format(e["node"], e["term_uids"], wr[e["node"]], [bt[u]["term_name"] for u in e["term_uids"]]), flush=True)

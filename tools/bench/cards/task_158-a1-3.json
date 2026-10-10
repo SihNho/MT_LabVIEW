@@ -1,0 +1,65 @@
+{
+ "schema": "task/1",
+ "id": "158-a1-3",
+ "kind": "build",
+ "goal": "Fill the empty prior-art disposition (c156-a1-1), then dry + prerun + X10 of plan_ring_p5s02a on stagexec df82d75e; quote planned MAIN vs 675 and the launch-gate label. Offline.",
+ "why": "PD384(c): the empty disposition blocks the next prior-art dispatch; MAIN <= 675 under the run-closing rule decides whether the plan stands (hand back, no re-cut, if above).",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_158-a1-3.md", "md5": "24b16f80aea171636a96b8b80fd6f41a"},
+  {"path": "tools/bench/diag_c158_a1_2_facts.md", "md5": "9332866c070516b629f2c4577deff8b2"},
+  {"path": "tools/bench/diag_c158_a1_1_facts.md", "md5": "7cdd49fc3e2457a774a5c77266327122"},
+  {"path": "tools/bench/diag_c157_a1_2_facts.md", "md5": "4ede428f881ade8301358cee5f8bfe93"},
+  {"path": "tools/bench/cards/brief_157-a1-2.md", "md5": "0e3526efe99af86d73bfd8428a772fef"},
+  {"path": "archive/peer/2026-10-09-priorart-priorart-c156-a1-1-p5s02a.md", "md5": "cf1eab313bf23110ae8b68e51508e49a"},
+  {"path": "tools/bench/plan_ring_p5s02a.json", "md5": "4284c22a540f9e3f39c7092affe516af"},
+  {"path": "tools/recipes/stage_d1_ring_p5s02a.py", "md5": "b52b9ff56390bb6777d8f5401e8ef183"},
+  {"path": "tools/recipes/stage_d1_ring_p5s02a_scratch.py", "md5": "71c3aed49ed794572a3edce75fb6ae50"},
+  {"path": "tools/stagexec.py", "md5": "df82d75eeea3447d45a17b1757198720"},
+  {"path": "tools/stagekit.py", "md5": "0d8f6d252eac3d0c28fc3a2141f54a14"},
+  {"path": "tools/stage_prerun.py", "md5": "9decb20f6d67793abad967347e2a37ab"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"}
+ ],
+ "pass": [
+  "'What was done with it' of the c156-a1-1 prior-art review filled, one line per finding with file:line or a stated carry; the prior-art gate's own verdict on the file quoted",
+  "dry PASS on stage_d1_ring_p5s02a.py and _scratch.py on stagexec df82d75e; PB state quoted",
+  "prerun PASS on both; X10 planned MAIN peak vs 675 and Executor-only quoted; checkpoint list (0,1,3,6,8,9,12,15,16,17) quoted",
+  "--scratch-required rc and the launch-gate text for the full scratch command quoted (function + line); DRY-UNVERIFIED-OK label prefix named",
+  "diag_c158_a1_3_facts.md written (<= 40 lines); no LabVIEW, no hook edit, no recipe/plan/pred/tool edit; records stated as valid for these bytes only"
+ ],
+ "outputs": [
+  "archive/peer/2026-10-09-priorart-priorart-c156-a1-1-p5s02a.md",
+  "tools/bench/prerun_records.jsonl",
+  "tools/bench/diag_c158_a1_3_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "archive/peer/2026-10-09-priorart-priorart-c156-a1-1-p5s02a.md",
+   "tools/bench/diag_c158_a1_3*",
+   "tools/bench/prep_c158_a1_3*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/jev_*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 40
+ },
+ "rules": [
+  "Offline, no LabVIEW, no hook edit; no edit to any recipe, plan, pred, licence, stage tool or P5 file",
+  "Disposition lines state only what changed (path:line) or the carry; no invented release keyword",
+  "A gate refusing your own command text is a false positive: py tools/gate_fp.py log, no env bypass",
+  "Return (do not re-cut) if planned MAIN is above 675"
+ ],
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c158_a1_2_facts.md"}
+ ]
+}

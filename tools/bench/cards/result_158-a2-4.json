@@ -1,0 +1,24 @@
+{"schema": "result/1", "id": "158-a2-4", "status": "PASS", "gates": {"pass": 36, "fail": 0}, "first_fail": null, "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/bench/mutation_table_p5.md", "md5": "72e54d232a7b087372f1a37d0f87ebf1"},
+  {"path": "tools/bench/mutation_table_p5.json", "md5": "2d9fd0513a5490b91ea191872708275a"},
+  {"path": "tools/bench/diag_c158_a2_4_mut.py", "md5": "461d4f3adabe2f044101c5738f952647"}
+ ],
+ "facts": [
+  "29 rows on graph 6716c499 (md5 same before/after, diag_c158_a2_4_mut.log:3,:72): 1 control (passes all gates, :9), 12 invariant, 16 representation",
+  "Gates called: vigraph computation_diff default+frame, stagekit term_identity_gates (TD, D), pb_check (PB), stagexec.compare (E1); INV n.a. (tools/invcheck.py:97 takes file pins)",
+  "Blocks inv/rep per gate: CD 9/4, CDF 9/4, TD 8/4, D 9/7, PB 7/4, E1 9/7 (tools/bench/mutation_table_p5.md:47)",
+  "Gaps (invariant passes all): M6.0-2 constant value changed - the stored graph has no value field at all (diag_c158_a2_4_probe.log:4-8)",
+  "False blocks (representation blocks): M5n.0-2 one node's uids renumbered and M5a all uids renumbered block on every gate (mutation_table_p5.md:34-40)",
+  "False blocks: M3t.0-2 node moved + relayed by new Tunnels: CD/CDF/TD/PB PASS, D BLOCK (d_new 4 vs sim 0) and E1 BLOCK (mutation_table_p5.json:912-933)",
+  "Pass everywhere as representation should: M3r diagram field only, M4 rename of 5 tunnel classes, M5w wire uid only (mutation_table_p5.md:23-39)",
+  "M1.1 / M2.1 (sink #30398 'f'): CD/CDF block but PB PASS with 0 extra / 0 missing slots (mutation_table_p5.json:149,:353); cause not measured",
+  "No gate, tool, recipe, plan or hook edited; no LabVIEW; no shared mutation helper existed (only inline mut, selftest_c153_compdiff_poskey.py:51)"
+ ],
+ "open": [
+  "M3t (move with tunnel relays) is classed representation by the stated rule; is that the steer's 'M3 changes a connection' or not?",
+  "PB passes M1.1/M2.1 while CD blocks: is #30398 outside S1 or is its slot already among the 21 pred rows (PB compares slot sets, stagekit.py:1822-1827)?",
+  "M6 gap needs a constant-value read the graph format lacks; whether to add one is judgement"
+ ],
+ "cost": {"usd": null, "minutes": 9, "labview_runs": 0},
+ "note": "facts: tools/bench/diag_c158_a2_4_facts.md; JEV ladder n/a (no failed gate)"}

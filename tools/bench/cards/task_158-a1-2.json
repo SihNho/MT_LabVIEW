@@ -1,0 +1,70 @@
+{
+ "schema": "task/1",
+ "id": "158-a1-2",
+ "kind": "build",
+ "goal": "PD384(b) only: checkpoint = last op of each move_in run, FATE from the run-closing read, Executor refuses a set lacking one; self-test; regression. Part (a) is not in this card.",
+ "why": "Every-move_in checkpoints put planned MAIN at 679.7 > 675 (157-a1-2); run-closing ones keep 674.7 (157-a1-4). Part (a) stopped in 158-a1-1: no Nodes[] row for a loop inner face.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_158-a1-2.md", "md5": "aacfeb3060924c23cd94c002599f7132"},
+  {"path": "tools/bench/diag_c158_a1_1_facts.md", "md5": "7cdd49fc3e2457a774a5c77266327122"},
+  {"path": "tools/bench/prep_c158_a1_1_before.log", "md5": "e896d2bcb9be2b5cd8dcbac0762912d9"},
+  {"path": "tools/bench/sim/ring_p5s02a_c158/before.json", "md5": "f75a3dba49b6440c3daa60103b874c5c"},
+  {"path": "tools/bench/prep_c158_a1_1_regress.py", "md5": "11e1b767c3002ef3f351fe83ab56abc9"},
+  {"path": "tools/bench/plan_ring_p5s02a.json", "md5": "4284c22a540f9e3f39c7092affe516af"},
+  {"path": "tools/stagexec.py", "md5": "69b1a301ad6456d261cf150714e25da4"},
+  {"path": "tools/stagekit.py", "md5": "0d8f6d252eac3d0c28fc3a2141f54a14"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"}
+ ],
+ "pass": [
+  "checkpoint_ops(p5s02a) = (0,1,3,6,8,9,12,15,16,17); FATE lines of ops 10-12 come from the op-12 read and give the six M3 wires; no FATE-UNREAD for a non-closing move_in",
+  "Executor refuses before op 1 a checkpoint set lacking a move_in run-closing op (self-tested: set missing 12, set missing 17)",
+  "Every stored plan compiles to the same ops as before.json; suite counts equal before.log:9-21 except stated rule updates (c157 case iv)",
+  "New selftest_c158_runcheck.py PASS; c155 21/0, c156 20/0, c157 updated and passing; only md5 strings and the old every-move_in case changed",
+  "New md5s of stagexec/stagekit reported; stagesim/addrcheck/stage_prerun unchanged; no LabVIEW, no hook edit; diag_c158_a1_2_facts.md written (<= 40 lines)"
+ ],
+ "outputs": [
+  "tools/stagexec.py",
+  "tools/bench/selftest_c158_runcheck.py",
+  "tools/bench/selftest_c157_innerface.py",
+  "tools/bench/diag_c158_a1_2_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagexec.py",
+   "tools/stagekit.py",
+   "tools/bench/selftest_c158_*",
+   "tools/bench/selftest_c157_innerface*",
+   "tools/bench/selftest_c156_passwire*",
+   "tools/bench/selftest_c155_basecase_frame*",
+   "tools/bench/diag_c158_a1_2*",
+   "tools/bench/prep_c158_a1_2*",
+   "tools/bench/sim/ring_p5s02a_c158/**",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/jev_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "rules": [
+  "Offline, no LabVIEW, no hook edit; no edit to stored plan/pred/licence/recipe/P5 file, stagesim, addrcheck, stage_prerun",
+  "Rule 1a: only how stage tools ADDRESS a wire and what they PRINT changes; no VI content or computation",
+  "script-writing.md: one shared function, called from every site; docstring names its self-test; no pasted copies",
+  "Do not touch loop_inner_face_route or the cfw / connect_nested_v1 act; return if any stored plan's op list changes",
+  "A gate refusing your own command text is a false positive: py tools/gate_fp.py log, no env bypass"
+ ],
+ "advances": ["M3", "M8", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c158_a1_1_facts.md"},
+  {"kind": "file", "name": "tools/bench/prep_c158_a1_1_before.log"}
+ ]
+}

@@ -1,0 +1,14 @@
+# diag_c158_a2_5 facts (card 158-a2-5, offline, no LabVIEW, no .py edited)
+- Entries before / after: 119 / 185 (+66). md5 before e97f4b018ee7371a168fef48b2e3786b (== git HEAD, card pin) / after c54377eabbdbb8afa79e4e4c1ec42206.
+- Added by module: stagexec 28, stagesim 24, stagekit 10, vigraph 4 (addrcheck had 0 undocumented). Candidates from gen_capabilities.described_rows via tools/bench/diag_c158_a2_5_list.py (log diag_c158_a2_5_list.log): 1059 undocumented before.
+- Check tools/bench/diag_c158_a2_5_check.py vs `git show HEAD:docs/fn_descriptions.json`: 6/0 (no entry changed, none removed, 66 added, L12 stale_descriptions() = [] for all keys, every new key now shows as 'side file', each <= 300 chars) - diag_c158_a2_5_check.log.
+- gen_capabilities --summary: "rewrote | fn-table 152 rows; fn-list 196 files, 2522 functions, 185 from the side file, 993 undocumented" (diag_c158_a2_5_gen.log). Tracked file rewritten: docs/toolkit-capabilities.md (0bd5115da07320266c91deb0dd127767 -> 7fc3f7aac1600e1570ed22dc9910666f). tools/bench/capabilities_* md5 unchanged.
+- gen_capabilities --check BEFORE the rewrite: DRIFT "stale 5 (stagekit.op:connect_nested_v1, connect_term_uid, wire_const_sr, wire_control, wire_ctlsink); fn-list block differs" (diag_c158_a2_5_gencheck.log). The 'stale 5' are fn_records registry states (fn-table), not side-file keys; pre-existing, untouched.
+- doc_lint (diag_c158_a2_5_doclint.log:21): L12 WARN only "stale 5" fn-table records; NO "stale description" part -> L12 clean for the new keys. FAILs L2 (docs/d1/ring-p4.md:131 -> build_oploopendref_v0.py), L6, L8, L10 are pre-existing and unrelated.
+
+Samples (description <- code):
+1. stagesim.op_remove_bad_wires <- tools/stagesim.py:1612-1616 `n_src = sum(...is_source)`; `if n_src != 1 or n_src == len(rows): bad.append(w)` and rows unwired; :1618-1626 drop_unconnected_fsit drops FlatSequenceInnerTunnels left unwired; returns ({removed_wires, dropped_fsit}, []).
+2. stagekit.Stage.safe <- tools/stagekit.py:336-343 `try: return fn(), ""` / except: `self._last_exc = e`, `self.fact("{0} raised {1}")`, `return default, msg`.
+3. vigraph.show <- tools/vigraph.py:254-257 `node, cls, name, ordinal = key_parts(key)`; `"#{0} {1} {2}{3}"` with repr(name) or '(unnamed)' and ' [ordinal]' only when ordinal != 0.
+
+OPEN: not described (remaining stage-toolchain undocumented): stagexec 32 (e.g. Executor.step/run/execute/sim_uid/obj_real, Addr.snap_loop/track_new/retrack/triple, LVBackend.connect/indicator/branch/wire_sr/index_mode_fix/set_description/get_description, SimBackend.create/stop/value_gate/connect/branch/wire_sr/move_in/add_sr/index_mode_fix/rle, RetireGuardBE.delete_object, lv_run, selftest, main, ...) and stage_prerun 28 (OfflineGraph.*, DryState, fake_com, install, patch_stagekit, plan_ops, lint, main, ...) - not read this card (budget ~60); long multi-branch bodies need a full read each.

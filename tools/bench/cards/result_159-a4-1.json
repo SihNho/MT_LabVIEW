@@ -1,0 +1,26 @@
+{"schema":"result/1","id":"159-a4-1","status":"BLOCKED","gates":{"pass":4,"fail":1},
+"first_fail":"pass 3: selftest_stagekit, selftest_c134_1_dry not run (card labview none vs header read, fp-80); runcheck 9/1, wire0face 23/1 only on the stage_prerun md5 pin",
+"blocked_by":{"device":"gate-fp:fp-80","message":"guard_bash refused bgrun of selftest_stagekit / selftest_c134_1_dry under labview none card; both say offline (selftest_stagekit.py:1, selftest_c134_1_dry.py:2)"},
+"artefacts":[
+{"path":"tools/stage_prerun.py","md5":"9ea1bdeb8afcd2eef4abfe6b3531f66f"},
+{"path":"tools/stagekit.py","md5":"9cd8822e7605cc6f6a1f899323c9d54b"},
+{"path":"tools/bench/selftest_c159_a4_1.py","md5":"43d0ac89245f70a0968a1172d4cb93ae"},
+{"path":"tools/bench/selftest_c159_a4_1_final.log","md5":"e0d9972d13be81bf7afa69bcf464fb16"},
+{"path":"tools/bench/diag_c159_a4_1_facts.md","md5":"c567e0b052f62ff8a68da4b08371396b"}],
+"facts":[
+"Self-test 13/0 (selftest_c159_a4_1_final.log): stored c158 dry logs now count CEN2+PB = 2 (stored said unverified 1); c158 pred -> CEN2 UNPREDICTED, counted",
+"Repair 1: dry final unverified = every UNVERIFIED-DRY/UNVERIFIED/UNPREDICTED gate line (stage_prerun.py:946-981,1075); PB/D/TD/CEN2 TRUE on stub -> UNVERIFIED-DRY (:816-822)",
+"Repair 2/3: census_unpredicted_reason + sim_census_snapshot (stagekit.py:2244-2286); gate_cen2 in a dry compares the simulated end (stagekit.py:2414-2427)",
+"Found: addrcheck.pos_table was a dry STUB, so D/TD/PB were computed on stub data in every dry (diag_c159_a4_1_taint.log:81-93); fixed by PURE_MODS stage_prerun.py:675",
+"After fix D 21==21 pairs, lost 12==12, PB/TD PASS on the sim end, 0 taint sites (diag_c159_a4_1_taint2.log); scratch-pair statements traced (stage_prerun.py:1030-1049)",
+"p5s02a dry was PASS unverified 0 (pre_dry.log:93, CEN2 UNVERIFIED-DRY :83 uncounted); now FAIL CEN2 Wire sim 11 vs measured 12 (selftest_c159_a4_1_final.log D3/D4)",
+"Fully declared fixture (p5s02a pred with its own sim census) -> DRY PASS unverified 0; no stored RingSession plan has sim==declared (diag_c159_a4_1_probe2.log:66-71)",
+"fp-77 cause: stage_prerun.py:3179-3183 pre-edit counted super().connect in a SimBackend override; fixed :3261, F1-F6 PASS; DRAINED with note (gate_fp_queue.jsonl)",
+"Suites t7_ring 35/0->35/0, gates386 16/0->16/0; runcheck/wire0face fail only 'P pins unchanged' (stage_prerun pinned 9decb20f); stagexec unchanged, 120 plans compile",
+"No hook edit; vigraph/errorlist_check/addrcheck untouched; VI_MOD_EXEMPT_PATHS pins (stage_prerun.py:3216) are other files, no re-pin"],
+"open":[
+"p5s02a dry now FAILS CEN2 (sim Wire 11, measured 12): accept as the device working, or record MEASURED-vs-sim census differences as UNVERIFIED-DRY?",
+"Bump DRY_RULE (stage_prerun.py:3434) so dry records written before this repair stop satisfying check_launch?",
+"Run selftest_stagekit / selftest_c134_1_dry (fp-80) under a labview read card to finish the suite comparison?"],
+"cost":{"usd":null,"minutes":32,"labview_runs":0},
+"note":"Offline only; LabVIEW never opened. Logs: tools/bench/diag_c159_a4_1_{pre,final}_*.log, _taint*.log, _probe*.log."}

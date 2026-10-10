@@ -1,0 +1,109 @@
+BGRUN START 2026-10-10 11:58:27 limit 3.0 min: py -u tools/bench/diag_c163_a1_1_probe.py
+BGRUN PID 28212
+RIN keys ['schema', 'context', 'stage', 'goal', 'base']
+A01 sr_q7 add_shift_reg as=QS7 {"loop": 23041, "body": 23405, "parent": 686}
+A02 w_obt_q7 wire as=None {"src": {"uid": 31258, "term": "queue out", "term_uid": 31335}, "dst": "new:QS7L.outer"}
+A03 c_deq create as=DQ1 {"class": "Function", "diagram": 23405, "prim": "Dequeue Element", "donor": {"donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorQueue_v0.vi", "uid": 45}, "terminals": [{"name": "queue", "is_source": false, "term_class": 
+A04 w_q7_deq wire as=None {"src": "new:QS7L.inner", "dst": "new:DQ1.queue"}
+A05 w_deq_q7 wire as=None {"src": "new:DQ1.queue out", "dst": "new:QS7R.inner"}
+A06 c_rel create as=RQ1 {"class": "Function", "diagram": 686, "prim": "Release Queue", "donor": {"donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorQueue_v0.vi", "uid": 46}, "terminals": [{"name": "queue", "is_source": false, "term_class": "Par
+A07 w_q7_rel wire as=None {"src": "new:QS7R.outer", "dst": "new:RQ1.queue"}
+A08 c_tmo create as=TM1 {"class": "DigitalNumericConstant", "diagram": 23405, "on": "new:DQ1.timeout in ms (-1)", "value": 100}
+A09 c_case7 create as=CQ7 {"class": "CaseStructure", "diagram": 23405, "selector_as": "SL7", "frames": ["False", "True"], "src": "new:DQ1.timed out?"}
+A10 mv_376 move_in as=None {"nodes": [376], "dest_diagram": "new:CQ7.f0", "pos": [10194, 18599]}
+A11 mv_3052 move_in as=None {"nodes": [3052], "dest_diagram": "new:CQ7.f0", "pos": [10094, 18534]}
+A12 mv_3453 move_in as=None {"nodes": [3453], "dest_diagram": "new:CQ7.f0", "pos": [10334, 18534]}
+A13 w_ref wire as=None {"src": {"uid": 3052, "term": "File # Saved", "term_uid": 3060}, "dst": {"uid": 376, "term": "saved file refnum", "term_uid": 5772}}
+A14 w_prog wire as=None {"src": {"uid": 376, "term": "file progress", "term_uid": 5704}, "dst": {"uid": 3453, "term_uid": 3453}}
+A15 t_el7 tunnel as=TE7 {"loop": "new:CQ7", "body": "new:CQ7.f0", "parent": 23405, "dir": "in"}
+A16 w_el7_in wire as=None {"src": "new:DQ1.element", "dst": "new:TE7.outer"}
+A17 w_el7_376 wire as=None {"src": "new:TE7.inner", "dst": {"uid": 376, "term": "current frame data array in", "term_uid": 5754}}
+A18 t_in1 tunnel as=TF1 {"loop": "new:CQ7", "body": "new:CQ7.f0", "parent": 23405, "dir": "in"}
+A19 w_in1_t wire as=None {"src": {"uid": 24357, "term": "", "term_uid": 24360}, "dst": "new:TF1.outer"}
+A20 w_in1_376 wire as=None {"src": "new:TF1.inner", "dst": {"uid": 376, "term": "cal cluster path", "term_uid": 5760}}
+A21 t_in2 tunnel as=TF2 {"loop": "new:CQ7", "body": "new:CQ7.f0", "parent": 23405, "dir": "in"}
+A22 w_in2_t wire as=None {"src": {"uid": 24361, "term": "", "term_uid": 24367}, "dst": "new:TF2.outer"}
+A23 w_in2_376 wire as=None {"src": "new:TF2.inner", "dst": {"uid": 376, "term": "file size", "term_uid": 5778}}
+A24 t_in3 tunnel as=TF3 {"loop": "new:CQ7", "body": "new:CQ7.f0", "parent": 23405, "dir": "in"}
+A25 w_in3_t wire as=None {"src": {"uid": 25223, "term": "", "term_uid": 25235}, "dst": "new:TF3.outer"}
+A26 w_in3_376 wire as=None {"src": "new:TF3.inner", "dst": {"uid": 376, "term": "selected path", "term_uid": 5787}}
+A27 t_gi tunnel as=TG1 {"loop": "new:CQ7", "body": "new:CQ7.f0", "parent": 23405, "dir": "in"}
+A28 w_gl wire as=None {"src": {"uid": 24133, "term": "error out", "term_uid": 24190}, "dst": "new:TG1.outer"}
+A29 w_g376 wire as=None {"src": "new:TG1.inner", "dst": {"uid": 376, "term": "error in", "term_uid": 5683}}
+A30 t_go tunnel as=TG2 {"loop": "new:CQ7", "body": "new:CQ7.f0", "parent": 23405, "dir": "out"}
+A31 w_gout wire as=None {"src": {"uid": 376, "term": "error out", "term_uid": 3934}, "dst": "new:TG2.inner"}
+A32 w_gr wire as=None {"src": "new:TG2.outer", "dst": {"uid": 24083, "term": "error out", "term_uid": 24139}}
+A33 w_gpass wire as=None {"src": {"uid": "new:TG1", "side": "inner", "frame": "True"}, "dst": {"uid": "new:TG2", "side": "inner", "frame": "True"}}
+A34 t_hi tunnel as=TH1 {"loop": "new:CQ7", "body": "new:CQ7.f0", "parent": 23405, "dir": "in"}
+A35 w_hl wire as=None {"src": {"uid": 24187, "term": "", "term_uid": 24288}, "dst": "new:TH1.outer"}
+A36 w_h376 wire as=None {"src": "new:TH1.inner", "dst": {"uid": 376, "term": "total data array in", "term_uid": 5782}}
+A37 t_ho tunnel as=TH2 {"loop": "new:CQ7", "body": "new:CQ7.f0", "parent": 23405, "dir": "out"}
+A38 w_hout wire as=None {"src": {"uid": 376, "term": "total data array out", "term_uid": 3954}, "dst": "new:TH2.inner"}
+A39 w_hr wire as=None {"src": "new:TH2.outer", "dst": {"uid": 24150, "term": "", "term_uid": 24235}}
+A40 w_hpass wire as=None {"src": {"uid": "new:TH1", "side": "inner", "frame": "True"}, "dst": {"uid": "new:TH2", "side": "inner", "frame": "True"}}
+A41 sr_c7 add_shift_reg as=CS7 {"loop": 23041, "body": 23405, "parent": 686}
+     why: PD374(b) 1.7 record counter SR
+A42 c_k07 create as=K07 {"class": "DigitalNumericConstant", "diagram": 686, "prim": "const_donor", "donor": {"donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorSRInit_v0.vi", "uid": 248}, "terminals": [{"name": "", "is_source": true, "term_clas
+     why: PD374(b) init 0 (donor as P5-1 c_k0)
+A43 w_k07 wire as=None {"src": "new:K07.value", "dst": "new:CS7L.outer"}
+     why: PD374(b)
+A44 c_inc7 create as=IN7 {"class": "Function", "diagram": "new:CQ7.f0", "prim": "Increment", "donor": {"donor": "$work", "uid": 1978}, "terminals": [{"name": "x+1", "is_source": true, "term_class": "OverridableParameterTerminal"}, {"name": "x", "is_source": false, "term_class": "Param
+     why: PD374(b) +1 only where an element was dequeued (donor as P5-1 c_inc)
+A45 t_ci7 tunnel as=TC7 {"loop": "new:CQ7", "body": "new:CQ7.f0", "parent": 23405, "dir": "in"}
+     why: PD374(b)
+A46 w_ci7_in wire as=None {"src": "new:CS7L.inner", "dst": "new:TC7.outer"}
+     why: PD374(b)
+A47 w_ci7_inc wire as=None {"src": "new:TC7.inner", "dst": "new:IN7.x"}
+     why: PD374(b)
+A48 w_c7_fi wire as=None {"src": {"uid": "new:TC7", "side": "inner", "frame": "False"}, "dst": {"uid": 376, "term": "frame index", "term_uid": 5763}}
+     why: PD374(b) t7 <- the counter's LEFT value (before this call)
+A49 t_co7 tunnel as=TD7 {"loop": "new:CQ7", "body": "new:CQ7.f0", "parent": 23405, "dir": "out"}
+     why: PD374(b)
+A50 w_inc7_co wire as=None {"src": "new:IN7.x+1", "dst": "new:TD7.inner"}
+     why: PD374(b)
+A51 w_co7_r wire as=None {"src": "new:TD7.outer", "dst": "new:CS7R.inner"}
+     why: PD374(b)
+A52 w_c7_pass wire as=None {"src": {"uid": "new:TC7", "side": "inner", "frame": "True"}, "dst": {"uid": "new:TD7", "side": "inner", "frame": "True"}}
+     why: PD374(b) no element -> no increment
+A53 dw_cond delete_wire as=None {"wire_uid": 23489}
+     why: PD374(d) scaffold stop wire #23042 -> cond (read from the graph)
+A54 do_23042 delete_object as=None {"uid": 23042}
+     why: PD374(d) scaffold stop `#23042` removed
+A55 do_23501 delete_object as=None {"uid": 23501}
+     why: PD374(d) scaffold in-tunnel `#23501` removed (NOT #8486)
+A56 c_lr7 create as=LR7 {"class": "Local", "diagram": 23405, "label": "records final (1.2 to 1.7)", "mode": "read", "terminals": [{"name": "records final (1.2 to 1.7)", "is_source": true, "term_class": "Terminal"}]}
+     why: PD374(c)+PD379(a) published counter read by a local
+A57 c_eq7 create as=EQ7 {"class": "Comparison", "diagram": 23405, "prim": "Equal?", "donor": {"donor": "$work", "uid": 10019}, "terminals": [{"name": "x = y?", "is_source": true, "term_class": "ParameterTerminal"}, {"name": "y", "is_source": false, "term_class": "ParameterTerminal"},
+     why: PD374(c)+PD379(a) counter (after this iteration) == records final; feeds cond directly (Stop if True, read)
+A58 w_eq7_x wire as=None {"src": "new:TD7.outer", "dst": "new:EQ7.x"}
+     why: PD374(c)+PD379(a) the counter AFTER this iteration = the case out-tunnel value
+A59 w_eq7_y wire as=None {"src": "new:LR7.value", "dst": "new:EQ7.y"}
+     why: PD374(c)+PD379(a)
+A60 w_eq7_cond wire as=None {"src": "new:EQ7.x = y?", "dst": {"uid": 23041, "term": "cond"}}
+     why: PD374(c)+PD379(a) 1.7 stops when they are equal
+A61 sr_k3 add_shift_reg as=SK3 {"loop": 23041, "body": 23405, "parent": 686}
+A62 c_k3i create as=KI3 {"class": "DigitalNumericConstant", "diagram": 686, "prim": "const_donor", "donor": {"donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorSRInit_v0.vi", "uid": 248}, "terminals": [{"name": "", "is_source": true, "term_clas
+A63 w_k3i wire as=None {"src": "new:KI3.value", "dst": "new:SK3L.outer"}
+A64 t_k3o tunnel as=OK3 {"loop": "new:CQ7", "body": "new:CQ7.f0", "parent": 23405, "dir": "out"}
+A65 w_k3out wire as=None {"src": {"uid": 376, "term": "file progress", "term_uid": 5704}, "dst": "new:OK3.inner"}
+A66 w_k3r wire as=None {"src": "new:OK3.outer", "dst": "new:SK3R.inner"}
+A67 t_k3i tunnel as=IK3 {"loop": "new:CQ7", "body": "new:CQ7.f1", "parent": 23405, "dir": "in"}
+A68 w_k3l wire as=None {"src": "new:SK3L.inner", "dst": "new:IK3.outer"}
+A69 w_k3pass wire as=None {"src": "new:IK3.inner", "dst": "new:OK3.inner"}
+A70 w_k3f wire as=None {"src": "new:OK3.outer", "dst": {"uid": 5204, "term_uid": 8776}}
+A71 sr_k4 add_shift_reg as=SK4 {"loop": 23041, "body": 23405, "parent": 686}
+A72 c_k4i create as=KI4 {"class": "DigitalNumericConstant", "diagram": 686, "prim": "const_donor", "donor": {"donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorSRInit_v0.vi", "uid": 248}, "terminals": [{"name": "", "is_source": true, "term_clas
+A73 w_k4i wire as=None {"src": "new:KI4.value", "dst": "new:SK4L.outer"}
+A74 t_k4o tunnel as=OK4 {"loop": "new:CQ7", "body": "new:CQ7.f0", "parent": 23405, "dir": "out"}
+A75 w_k4out wire as=None {"src": {"uid": 376, "term": "file number to append out", "term_uid": 5739}, "dst": "new:OK4.inner"}
+A76 w_k4r wire as=None {"src": "new:OK4.outer", "dst": "new:SK4R.inner"}
+A77 t_k4i tunnel as=IK4 {"loop": "new:CQ7", "body": "new:CQ7.f1", "parent": 23405, "dir": "in"}
+A78 w_k4l wire as=None {"src": "new:SK4L.inner", "dst": "new:IK4.outer"}
+A79 w_k4pass wire as=None {"src": "new:IK4.inner", "dst": "new:OK4.inner"}
+A80 w_k4f wire as=None {"src": "new:OK4.outer", "dst": {"uid": 10404, "term_uid": 24342}}
+P5S02B keys ['schema', 'context', 'stage', 'goal', 'base', 'open_rows', 'actions', 'final', 'finalized'] final True base {'path': 'tools/bench/graph_ring_p5s02a_20261010_032547.json', 'md5': '7ac24924f979afde964e63fb27957b45'} fz keys ['base', 'plan_in', 'last_step', 'summary', 'end_cdiff_rows', 'failed', 'first_divergent', 'open_rows', 'open_rows_match', 'open_rows_match_legacy', 'open_rows_classed', 'cdiff_inputs', 'step_files', 'undecided', 'at', 'fs_routes', 'addr_pos', 'fs_border_gate', 'route_check']
+P5S02B step_files last [{'n': 20, 'op': 'wire', 'path': 'tools/bench/sim/ring_p5s02b/step_20_wire.json', 'md5': '03268eff6a5f2f58f5053869d6d29da5'}]
+P5S02B actions ['dw_a13', 't_in3', 'w_in3_t', 'w_in3_376', 't_gi', 'w_gl', 'w_g376', 'dw_go', 't_go', 'w_gout', 'w_gr', 'w_gpass', 't_hi', 'w_hl', 'w_h376', 'dw_ho', 't_ho', 'w_hout', 'w_hr', 'w_hpass']
+B3 SESSION keys ['card', 'plan_in', 'plan_in2', 'plan', 'b1_plan', 'old_plan', 'creation_map', 'symbol_map', 'remnant_wire', 'frame_map', 'merge', 'stubs', 'start_mb', 'actions', 'realsim', 'compile', 'x10', 'realsim_states'] creation_map tools/bench/creation_map/plan_ring_p5s02a_4284c22a_20261010_023453.jsonl
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[],"card":"163-a1-1","labview":"none"}
+BGRUN END rc=0 after 1s

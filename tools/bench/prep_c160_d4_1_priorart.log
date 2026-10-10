@@ -1,0 +1,44 @@
+BGRUN START 2026-10-10 07:18:48 limit 12.0 min: py -u tools/prior_art_review.py --plan-file tools/bench/prep_c160_d4_1_priorart_plan.md --slug priorart-c160-d4-1-p5s02b --trigger new-op --recipe tools/recipes/stage_d1_ring_p5s02b.py
+BGRUN PID 26032
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-c160-d4-1-p5s02b.txt (77971 chars)
+   review card tools\bench\cards\review_priorart-priorart-c160-d4-1-p5s02b.json
+OUTCOME: ANSWERED (106s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-10-10-priorart-priorart-c160-d4-1-p5s02b.md
+COST: $1.6080  in 18 / out 9077 / cache-create 149841 / cache-read 1138229  (102s, 12 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-priorart-c160-d4-1-p5s02b verdict=novel -> tools\bench\cards\verdict_priorart-priorart-c160-d4-1-p5s02b.json
+--- ANSWER ---
+**Verdict: novel.** Nothing in the project's files shows this step 2 already built, already failed, or blocked by an existing decision. Two earlier records answer questions (a) and (c) directly, and the plan does not cite either. Neither stops the work, but both bear on the predictions.
+
+## PART A: the direction
+- **A1 (decided already).** The direction was decided by this cycle's own judgement: PD391(a)–(f) (`docs/d1/ring-p5b.md:130-164`, 2026-10-10). Nothing earlier contradicts it.
+- **A2 (tried and dropped before).** No record of deleting a base register's stub and then connecting it through `register_end_case_border` being tried and abandoned. The only search for this case is `diag_c160_b2_1_facts.md:23`, which found no precedent. I found none either: `p5_route_census.md:26` and `diag_c155_*` concern registers the plan created (`ring-p5b.md:141-143`).
+- **A3 (contradicted, informational only).** The "24360/24367 MERGE precedent" (`ring-p5b.md:39-40`) did not keep the stub's uid in LabVIEW:
+  - For A22, LabVIEW deleted 24153 and made a new wire, 31587. The simulator joined onto 24153 instead (`tools/bench/diag_c159_cen2_wire.md:25-26`). A19's uid swapped (`:22,25`).
+  - An older measured rule says the same: "a same-diagram connect keeps the uid; a border crossing re-creates it" (`docs/d1-loop12-17-split-plan.md:2032`, `cfw_border_rule`).
+  - So `expect_uid: 24285` (`plan_ring_p5s02b_pred.json:136`), and likewise 24312, will probably be wrong. Both rows say the uid is "printed as UID-REUSE, not judged" (`:140`), and CEN2 compares wire ends (PD389(b)). No gate depends on these uids, so this is not a blocker.
+  - Do not let any later row or gate key on w24285 or w24312 surviving.
+- **A4 (evidence not read).** See B4: the cycle-115 run that deleted stub wires was not cited for question (a).
+
+## PART B: the artifact
+- **(a) / B4 (already measured, in the plan's favour).** LabVIEW has already deleted stub wires by uid, sink-only ones included.
+  - Cycle 115, L2-R1: 11 stubs, among them w9215 and w29591, which `d1-loop12-17-split-plan.md:1932` calls "sink-only". Each delete returned `err ''`, created 0 new uids, and the step diff was 0 (`tools/bench/diag_c115b_scratch_v2.log:52-57, 80-85`).
+  - The accepted run removed exactly the 11 stubs and made no new wire; one-sided wires went from 30 to 19 (`d1-loop12-17-split-plan.md:2069-2072`).
+  - Error List effect: deleting 11 stubs cleared only 6 stub items (`:2074`). Step 2's "CLEARED 5" should be checked against that ratio.
+  - What was not measured then: in L2-R1 the register itself was deleted next, so connecting a fresh wire to a stub-freed register face (this plan's case) is still unmeasured. Step 2's scratch is the right test, as PD391(e) says.
+  - The plan's line "Never run in LabVIEW" is true only for the new simulator branch, not for the LabVIEW delete itself.
+- **(b) / B2 (already failed).** `register_end_case_border` has never been run on a register the plan did not create (`diag_c160_b2_1_facts.md:21-23`). This part is new.
+- **(c).** The only recorded "MERGE" is the 24360/24367 case in A3. It is one wire per pair by ends, with a new or swapped uid.
+- **(d) / B3 (existing helper).** No shared function automatically inserts stub deletes before a connect.
+  - The existing pattern is plan-level ordering: "delete the stub wires first, then the objects" (`d1-loop12-17-split-plan.md:2068, 2078`) and PD321's delete-before-delete-object ordering (cycle 140).
+  - The live delete reuses `stagekit.delete_wire` (`ring-p5b.md:100`), so nothing is hand-rolled.
+- **B1 (already built).** `base_register_end` (`stagexec.py:662`) is the new code under review. I found no earlier copy of it.
+
+## PART C: the user's rules
+No contradiction. The step changes only wiring: no queue, no serial on the frame path, no camera wait. PD391 relies on U1 (no source means no data), and that holds.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-priorart-c160-d4-1-p5s02b","verdict":"novel","alternative":"MERGE uid expectation (pred :136 expect_uid 24285/24312) is likely wrong: the cited 24360/24367 precedent re-made the uid (diag_c159_cen2_wire.md:25-26; cfw_border_rule d1-loop12-17:2032); harmless only because CEN2 judges ends.","discriminating_test":"In the step-2 scratch log the UID-REUSE facts for w_gl/w_hl: new uid vs 24285/24312; and Error List cleared count vs the c115 ratio (11 stub deletes cleared 6 items, d1-loop12-17:2074).","violations":[],"sources":["tools/bench/diag_c115b_scratch_v2.log:52-85","docs/d1-loop12-17-split-plan.md:2068-2074","tools/bench/diag_c159_cen2_wire.md:25-26","docs/d1-loop12-17-split-plan.md:2032","tools/bench/diag_c160_b2_1_facts.md:23"],"note":"Sink-only stub delete by uid already ran in LabVIEW (c115 L2-R1: err '', diff 0); a base-register connect_term_uid after a stub delete is unmeasured; the scratch is the test."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-c160-d4-1-p5s02b.md
+   STOP RECORD: none - 2026-10-10-priorart-priorart-c160-d4-1-p5s02b.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_ring_p5s02b.py sha b19d6b20b9ef -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 109s

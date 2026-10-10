@@ -1,0 +1,23 @@
+BGRUN START 2026-10-10 06:35:40 limit 8.0 min: py -u tools/bench/diag_c160_a2_1_baseline.py
+BGRUN PID 28120
+  PASS  P0 pins (unedited stagesim / stagexec, the three plans, the 94ffff94 graph)  {'tools/stagesim.py': 'a3261b56', 'tools/stagexec.py': 'c4a6e0b6', 'tools/bench/plan_ring_p5s01a.json': 'ed62e8d6', 'tools/bench/plan_ring_p5s01b.json': '75a77a00', 'tools/bench/plan_ring_p5s02b_in.json': '56bfddd3', 'tools/bench/graph_ring_p5s02a_20261010_032547.json': '7ac24924'}
+  PASS  C copy of unedited stagesim.py kept as selftest_c160_delwire_stagesim_a3261b56.txt  
+  PASS  C copy of unedited stagexec.py kept as selftest_c160_delwire_stagexec_c4a6e0b6.txt  
+FACT plan_ring_p5s01a.json: 14 ops, kinds ['add_sr', 'connect', 'connect_term_uid', 'create', 'tunnel']; ops_md5 5f95830fccc5a4e7b55bb902d4fb42d5; outside ends [('t_el', 'tunnel', 'BuildArray', 'Terminal', True, 0, False), ('t_ci', 'connect_term_uid', None, None, None, None, False), ('t_co', 'connect_term_uid', None, None, None, None, False)]
+  PASS  K plan_ring_p5s01a.json compiles with the current stagexec  None
+FACT plan_ring_p5s01b.json: 8 ops, kinds ['add_sr', 'case_frame_wire', 'connect', 'connect_term_uid', 'create']; ops_md5 b8b59791733225662ff473357a3ed808; outside ends [('t_qi', 'connect_term_uid', None, None, None, None, False), ('t_qo', 'connect_term_uid', None, None, None, None, False)]
+  PASS  K plan_ring_p5s01b.json compiles with the current stagexec  None
+FACT plan_ring_p5s02b_in.json: 8 ops, kinds ['case_frame_wire', 'delete_wire', 'tunnel']; ops_md5 fc5411e086590259fe5c4e240f2367f5; outside ends [('t_in3', 'tunnel', 'LoopTunnel', 'InnerTerminal', True, 0, False), ('t_gi', 'tunnel', 'LeftShiftRegister', 'InnerTerminal', True, 24285, True), ('t_go', 'tunnel', 'RightShiftRegister', 'InnerTerminal', False, 24264, True), ('t_hi', 'tunnel', 'LeftShiftRegister', 'InnerTerminal', True, 24312, True), ('t_ho', 'tunnel', 'RightShiftRegister', 'InnerTerminal', False, 24300, True)]
+  PASS  K plan_ring_p5s02b_in.json compiles with the current stagexec  None
+  PASS  K4 p5s02b_in: t_go / t_ho -> tunnel with an RSR inner outside end; t_gi / t_hi -> tunnel with an LSR inner outside end  {'t_in3': ('tunnel', 'LoopTunnel', False), 't_gi': ('tunnel', 'LeftShiftRegister', True), 't_go': ('tunnel', 'RightShiftRegister', True), 't_hi': ('tunnel', 'LeftShiftRegister', True), 't_ho': ('tunnel', 'RightShiftRegister', True)}
+FACT delete w10394: rows []; in objs True; effect {'wire': 10394, 'n_terminals': 0, 'auto_removed_tunnels': [], 'termless_wire_object': True}; err None; in objs after False; termless_wire after False
+FACT delete w24264: rows [(24139, 'RightShiftRegister', 'InnerTerminal', False)]; in objs True; effect {'wire': 24264, 'n_terminals': 1, 'auto_removed_tunnels': []}; err None; in objs after True; termless_wire after True
+FACT delete w24300: rows [(24235, 'RightShiftRegister', 'InnerTerminal', False)]; in objs True; effect {'wire': 24300, 'n_terminals': 1, 'auto_removed_tunnels': []}; err None; in objs after True; termless_wire after True
+FACT delete w24285: rows [(24190, 'LeftShiftRegister', 'InnerTerminal', True)]; in objs True; effect {'wire': 24285, 'n_terminals': 1, 'auto_removed_tunnels': []}; err None; in objs after True; termless_wire after True
+FACT delete w32594: rows [(31498, 'SubVI', 'Terminal', True), (3869, 'SelectorTunnel', 'InnerTerminal', False)]; in objs True; effect {'wire': 32594, 'n_terminals': 2, 'auto_removed_tunnels': []}; err None; in objs after True; termless_wire after True
+  PASS  D w24264 / w24300 have one sink row and no source row; w24285 has a source row; w32594 has a source and a sink row  {'10394': [], '24264': [(24139, False)], '24300': [(24235, False)], '24285': [(24190, True)], '32594': [(31498, True), (3869, False)]}
+FACT baseline json tools/bench/diag_c160_a2_1_baseline.json md5 25b320c456621ae4b047f28a11906b62
+  PASS  P1 stagesim / stagexec still unedited after the run  
+RESULT 9/0
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":9,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/bench/diag_c160_a2_1_baseline.json","md5":"25b320c456621ae4b047f28a11906b62"}],"card":"160-a2-1","labview":"none"}
+BGRUN END rc=0 after 2s

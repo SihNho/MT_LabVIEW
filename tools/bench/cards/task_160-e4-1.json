@@ -1,0 +1,56 @@
+{
+  "schema": "task/1",
+  "id": "160-e4-1",
+  "kind": "build",
+  "goal": "gate-fp fp-82: stagekit RingSession.gate_l0 accepts plan_in '<stem>_in' or '<stem>_in<N>' (predicate as module function + self-test); regression suites unchanged.",
+  "why": "Card 160-c3-1 was blocked at dry gate L0 only because the step-2 plan's input is plan_ring_p5s02b_in2.json; the clause's purpose (same stem) holds. One gate predicate, tested both ways.",
+  "inputs": [
+    {"path": "tools/bench/cards/brief_160-e4-1.md", "md5": "b076343e70b42511b52f818af34de841"},
+    {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+    {"path": "tools/stagekit.py", "md5": "1441bb4ca75eb5a59afaa3555690db37"},
+    {"path": "tools/bench/selftest_c160_stagemap.py", "md5": "505b793edf3e78d1e880992dc8895a0b"},
+    {"path": "tools/stagesim.py", "md5": "95a162baec5324ff037a8d23bd7ef46d"},
+    {"path": "tools/stagexec.py", "md5": "ddf23a31b10767015da246be8ceaa2e2"},
+    {"path": "tools/stage_prerun.py", "md5": "7605116f1dfe1c6fd4963dbfcf259de1"},
+    {"path": "tools/bench/diag_c160_c3_1_facts.md", "md5": "f149e694b1a7419022da5ec284edf800"}
+  ],
+  "pass": [
+    "stagekit.py gate_l0 suffix test replaced by a module-level predicate accepting exactly <stem>_in and <stem>_in<digits>; old/new line quoted; no other function touched",
+    "selftest_c160_l0stem.py: accepts _in/_in2/_in12; refuses _inx/_in_2/_in2b/other stem/no suffix/_out; RESULT all green quoted",
+    "regression: stagemap + every self-test importing stagekit/RingSession: RESULT before == after (last-pass counts); the p5s01a and p5s02a plan_in paths still match",
+    "md5 unchanged: stagesim, stagexec, stage_prerun, plan_ring_*, tools/hooks/**; OPEN lists every file pinning stagekit 1441bb4c (file:line), none edited outside globs"
+  ],
+  "outputs": [
+    "tools/stagekit.py",
+    "tools/bench/selftest_c160_l0stem.py",
+    "tools/bench/diag_c160_e4_1_facts.md"
+  ],
+  "flags": {
+    "labview": "none",
+    "gui": false,
+    "hardware": "none",
+    "run_vi": false,
+    "write": [
+      "tools/stagekit.py",
+      "tools/bench/selftest_c160_l0stem*",
+      "tools/bench/diag_c160_e4_1*"
+    ],
+    "status_edit": false,
+    "git_commit": false,
+    "peers": []
+  },
+  "budget": {
+    "failures": 2,
+    "minutes": 35
+  },
+  "rules": [
+    "Offline; ONE function of stagekit.py (gate_l0 predicate); no hooks edit; no env bypass",
+    "Anchored match both ends; every other L0 clause stays; a looser form than <stem>_in[digits] is a FAIL",
+    "A suite count that differs from its last pass is a FAIL, not a re-pin",
+    "New function carries a docstring naming its self-test; call shared functions, no pasted blocks"
+  ],
+  "advances": ["M3", "M8", "R1"],
+  "requires": [
+    {"kind": "file", "name": "tools/stagekit.py"}
+  ]
+}

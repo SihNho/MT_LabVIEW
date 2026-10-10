@@ -1,0 +1,83 @@
+BGRUN START 2026-10-10 03:51:34 limit 5.0 min: py -u tools/bench/diag_c159_a4_1_taint.py
+BGRUN PID 7912
+stage_d1_ring_p5s02a - card 156-a1-1 (WRITTEN, NOT LAUNCHED), RING P5-2 step 1 RE-MADE (docs/d1/ring-p5.md PD374(b)(d), PD376(d), PD379): on
+the ADOPTED P5-1 file (claudeDev\D1_ring_p5s01_20261009_124542.vi 7f2582ae, path/md5 read from the plan's base graph 6716c499), apply the actions
+of plan_ring_p5s02a.json = the first step of the P5-2 all-groups plan plan_ring_p5s02r_all.json, cut at a GROUP boundary with planned MAIN <= 675
+(tools/bench/prep_c156_a1_1_mk.py, no rebase; step content and numbers in prep_c156_a1_1_session.json). X11 / licence plan_ring_p5s02a_licence.json.
+Shape = tools/recipes/stage_template_ring.py (INPUTS + CALLS into stagekit.RingSession), the pair shape of stage_d1_ring_p5s02.py: only plan path /
+pred / licence / session table / names / output name differ (docs/script-writing.md rules 1-2).
+Sink gates: one per census row of prep_c156_a1_1_session.json with needs_sink_gate, read by script.
+FRESH LabVIEW -> claudeDev\D1_ring_p5s02a_<ts>.vi (rule-6 GUI save, ExecState 0 by design) = an in-between file of step P5 (PD379(c), not counted).
+The FIRST run is the full SCRATCH run on a byte copy (stage_d1_ring_p5s02a_scratch.py). ROWS ONLY FROM PLAN; expected values only from PRED.
+PREDICTION (numbers in PRED): SG one declared sink gate per census row; L1 actions -> pred ops; E1 every checkpoint == sim (incl. the three move_in
+ops, pred e1.move_in_checks); NG; PRIM; FR; D; TD; CEN2; PB by POSITION (FATAL, before save); HB handles <= +700; PS saved, input unchanged.
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/launch_c156_p5s02a.log -- py -u tools/recipes/stage_d1_ring_p5s02a.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_ring_p5s02a_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan  ('4284c22a540f9e3f39c7092affe516af', {'path': 'tools/bench/graph_ring_p5s01_20261009_125622.json', 'md5': '6716c49948f097b8ac0e1780930bfab1'}, '7f2582ae54dc5bc42c3df0bdf3c72d2e')
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 7f2582ae54dc5bc42c3df0bdf3c72d2e  got 7f2582ae54dc5bc42c3df0bdf3c72d2e
+  PASS  DRY graph JSON for input md5 7f2582ae54dc5bc42c3df0bdf3c72d2e  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_ring_p5s01_20261009_125622.json
+  PASS  SG one declared sink gate per census row (0 rows of prep_c156_a1_1_session.json): []; per row: sink term(s), plan action(s), source, source name []
+  PASS  L1 the 23 actions compile into 17 real ops == pred kinds, each action once; checkpoints (0, 1, 3, 6, 8, 9, 12, 15, 16, 17)  ['add_sr', 'connect', 'create', 'wire_sr', 'wire_sr', 'create', 'connect', 'create', 'create', 'move_in', 'move_in', 'move_in', 'connect', 'connect', 'tunnel', 'tunnel', 'tunnel']
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 2 touched diagram(s) [686, 23405]: one-side-only Nodes[] entries 0
+  PRIME 3 terminal indexes proved at base; 1 ControlTerminal end(s) by 179(b); unprovable []
+  CHECKPOINTS whole-VI read+diff after ops [1, 3, 6, 8, 9, 12, 15, 16, 17] of 17
+  FACT  OP add_sr [1] -> err '' (0.0 s)
+  STEPX 01 add_sr         acts [1] ids ['sr_q7'] bound {-1: 10000001, -2: 10000004} diff 0
+  FACT  OP wire_connect [2] -> err '' (0.0 s)
+  STEPX 02 connect        acts [2] ids ['w_obt_q7'] diff skipped (not a checkpoint)
+  FACT  OP create [3] -> err '' (0.0 s)
+  STEPX 03 create         acts [3] ids ['c_deq'] bound {-7: 10000007} diff 0
+  FACT  OP wire_wire_sr [4] -> err '' (0.0 s)
+  STEPX 04 wire_sr        acts [4] ids ['w_q7_deq'] diff skipped (not a checkpoint)
+  FACT  OP wire_wire_sr [5] -> err '' (0.0 s)
+  STEPX 05 wire_sr        acts [5] ids ['w_deq_q7'] diff skipped (not a checkpoint)
+  FACT  OP create [6] -> err '' (0.0 s)
+  STEPX 06 create         acts [6] ids ['c_rel'] bound {-17: 10000017} diff 0
+  FACT  OP wire_connect [7] -> err '' (0.0 s)
+  STEPX 07 connect        acts [7] ids ['w_q7_rel'] diff skipped (not a checkpoint)
+  FACT  OP create [8] -> err '' (0.0 s)
+  STEPX 08 create         acts [8] ids ['c_tmo'] bound {-25: 10000026} diff 0
+  FACT  OP create [9] -> err '' (0.0 s)
+  STEPX 09 create         acts [9] ids ['c_case7'] bound {-28: 10000035, -29: 10000032, -30: 10000034, -31: 10000029} diff 0
+  FACT  OP move_in [10] -> err '' (0.0 s)
+  STEPX 10 move_in        acts [10] ids ['mv_376'] diff skipped (not a checkpoint)
+  FACT  OP move_in [11] -> err '' (0.0 s)
+  STEPX 11 move_in        acts [11] ids ['mv_3052'] diff skipped (not a checkpoint)
+  FACT  OP move_in [12] -> err '' (0.0 s)
+  FATE step=10 wire=10394 src_term=3060 src_wire=0 sink_term=5772 sink_wire=0
+  FATE step=10 wire=24091 src_term=25235 src_wire=24091 sink_term=5787 sink_wire=0
+  FATE step=10 wire=24153 src_term=24367 src_wire=24153 sink_term=5778 sink_wire=0
+  FATE step=10 wire=24285 src_term=24190 src_wire=24285 sink_term=5683 sink_wire=0
+  FATE step=10 wire=24312 src_term=24288 src_wire=24312 sink_term=5782 sink_wire=0
+  FATE step=10 wire=24330 src_term=24360 src_wire=24330 sink_term=5760 sink_wire=0
+  STEPX 12 move_in        acts [12] ids ['mv_3453'] bound {} diff 0
+  FACT  OP wire_connect [13] -> err '' (0.0 s)
+  STEPX 13 connect        acts [13] ids ['w_ref'] diff skipped (not a checkpoint)
+  FACT  OP wire_connect [14] -> err '' (0.0 s)
+  STEPX 14 connect        acts [14] ids ['w_prog'] diff skipped (not a checkpoint)
+  FACT  OP wire_tunnel [15, 16, 17] -> err '' (0.0 s)
+  STEPX 15 tunnel         acts [15, 16, 17] ids ['t_el7', 'w_el7_in', 'w_el7_376'] bound {-38: 10000040} diff 0
+  FACT  OP wire_tunnel [18, 19, 20] -> err '' (0.0 s)
+  STEPX 16 tunnel         acts [18, 19, 20] ids ['t_in1', 'w_in1_t', 'w_in1_376'] bound {-44: 10000045} diff 0
+  FACT  OP wire_tunnel [21, 22, 23] -> err '' (0.0 s)
+  STEPX 17 tunnel         acts [21, 22, 23] ids ['t_in2', 'w_in2_t', 'w_in2_376'] bound {-49: 10000050} diff 0
+  PASS  E1 every checkpoint's real graph == its simulated step (17 ops)
+  PASS  NG every crossing op's NEW tunnel names == the simulator's (stagexec.tunnel_name_check, per op, from the step files): 0 op(s) []
+  PASS  FR the 4 created objects sit on [686, 23405] frame(s) of the simulated end; real frames == the sim end's  {'on': [686, 23405], 'nc': 4, 'extra': [], 'missing': []}
+  PASS  D new (source, sink) pairs 21 == sim's 21; lost 12 == sim's 12 (position pairs, stagekit.term_identity_pairs PD386(b)); source-only stubs RECORDED sim-only [] real-only []; deleted uids re-used: noted []  {'pairs': {'new_real': 21, 'new_sim': 21, 'lost_real': 12, 'lost_sim': 12, 'new_only_real': [], 'new_only_sim': [], 'lost_only_real': [], 'lost_only_sim': []}, 'wires_new': ['10000015', '10000016', '10000024', '10000025', '10000028', '10000037', '10000038', '10000039', '10000044', '10000049', '10362', '24091', '24153', '24264', '24285', '24300', '24312', '24330', '25232', '31243', '4337', '9636'], 'wires_lost': ['10362', '24091', '24153', '24264', '24285', '24300', '24312', '24330', '25232', '31243', '4337', '9636'], 'reuse_noted': []}
+  FAIL  CEN2 new-object census (classes of the pred) == plan_ring_p5s02a_pred.json census  {'measured': {'Wire': 11, 'InnerTerminal': 10, 'OuterTerminal': 6, 'SelectorTunnel': 3, 'Tunnel': 1, 'Diagram': 2, 'CaseStructure': 1, 'Terminal': 1, 'DigitalNumericConstant': 1, 'ParameterTerminal': 13, 'Function': 2, 'RightShiftRegister': 1, 'LeftShiftRegister': 1}, 'declared': {'CaseStructure': 1, 'Diagram': 2, 'DigitalNumericConstant': 1, 'Function': 2, 'InnerTerminal': 10, 'LeftShiftRegister': 1, 'OuterTerminal': 6, 'ParameterTerminal': 13, 'RightShiftRegister': 1, 'SelectorTunnel': 3, 'Terminal': 1, 'Tunnel': 1, 'Wire': 12}, 'diff (measured, declared)': {'Wire': (11, 12)}, 'source': 'stagesim simulated end (sim_census_snapshot), card 159-a4-1'}
+  PASS  TD every base terminal the sim keeps wired is still wired; identities lost == the plan's deletes (key position (node, index, term class, direction), stagekit.term_identity_gates); renames 0, unlicensed []  {'unwired': [], 'lost': [(5204, 0, 'OuterTerminal', True), (10404, 0, 'OuterTerminal', True)], 'plan_deletes': [(5204, 0, 'OuterTerminal', True), (10404, 0, 'OuterTerminal', True)], 'recycled_uids': [], 'raw_lost': [], 'renames': [], 'unlicensed_renames': [], 'unwired_recorded': []}
+  FACT  ExecState [after all rows (ExecState 0 expected: P5-2 step 1's in-between file is broken by design)] D1_ring_p5s02a_20261010_035135.vi = <dry:g.exec_state>
+  FACT  RECORD PB 376|Terminal|cal cluster path|0: tag only: S1 source uids, plan frame (PD386(a)) - after ['3391|ParameterTerminal|string|0@10000045/f0']
+  FACT  RECORD PB 376|Terminal|file size|0: tag only: S1 source uids, plan frame (PD386(a)) - after ['1766|ParameterTerminal|32bit integer|0@10000050/f0']
+  PASS  PB frame-keyed cdiff(S1, real end) by POSITION (owner, index, class) == the sim end's re-keyed by the run's bindings ([31, 31] rows) and == the pred's 29 rows (29 slots) + 2 RECORDED tag-only row(s), the plan's 27 open (node, term) pairs; no unlicensed rename (FATAL, before save)  {'eq_diff': [], 'blocked': [], 'pairs_extra_left': [], 'pairs_missing': [], 'recorded': ['376|Terminal|cal cluster path|0', '376|Terminal|file size|0'], 'move_frames': {376: [10000032], 3052: [10000032], 3453: [10000032]}, 'restored': [], 'unlicensed': []}
+  FACT  PH handles: post-open <dry:bench_prep.labview_handles> -> before-save None
+  PASS  HB open->save handle growth <= +700 (PD236(b) band; refs balance is H5)  (<dry:bench_prep.labview_handles>, None)
+  PASS  PS artefact saved, md5 differs from the input; input unchanged  dry0dry0dry0dry0dry0dry0dry0dry0
+
+=== TAINT EVENTS inside RingSession result gates: 0 locations
+FACT dry status FAIL unverified []
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":0,"fail":0},"first_fail":null,"artefacts":[],"card":"159-a4-1","labview":"none"}
+BGRUN END rc=0 after 31s

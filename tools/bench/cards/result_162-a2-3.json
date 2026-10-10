@@ -1,0 +1,29 @@
+{"schema": "result/1", "id": "162-a2-3", "status": "PASS", "gates": {"pass": 4, "fail": 0}, "first_fail": null, "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/stage_shared.py", "md5": "b688edd471ec0075918ce544c9413b06"},
+  {"path": "tools/bench/selftest_c162_stage_shared.py", "md5": "949c363ac8aabcbaf49bced974a2c94f"},
+  {"path": "tools/bench/selftest_c162_stage_shared_final.log", "md5": "3ccb2ab00de4baa4e6e7a66098c2a905"},
+  {"path": "tools/bench/prep_c162_a2_3_copies.log", "md5": "f9abe97265529ace661cdde0851dc2e9"},
+  {"path": "tools/bench/prep_c162_a2_3_copies.py", "md5": "8db9950efebf0d95a278bed357afa0af"},
+  {"path": "tools/bench/prep_c162_a2_3_equiv.py", "md5": "0f5e86cc9197edd4d0e182edd4be2c11"},
+  {"path": "tools/bench/prep_c162_a2_3_equiv.log", "md5": "2a53d5cc51e809959b61d384e937dab9"},
+  {"path": "tools/bench/prep_c162_a2_3_equiv.json", "md5": "e96256189e7f74e00526b1a177a8ac7e"},
+  {"path": "tools/bench/prep_c162_a2_3_pinsweep.log", "md5": "cdafb97b81112c1eea7b0e750575cc4a"},
+  {"path": "tools/bench/diag_c162_a2_3_facts.md", "md5": "ee90abfdba8ab1d2c1b9b0af12249608"}
+ ],
+ "facts": [
+  "15 copies in 14 files: licence table 8 (7 differ only in the why text / own-wr line form), pred E1 table 5 (c160_c3_1 adds ids), stub-delete 2 (prep_c162_a2_3_copies.log)",
+  "tools/stage_shared.py: base_sink_renames, checkpoint_step_table(actions=None for ids), insert_stub_deletes; labview none, only collections (tools/stage_shared.py:13-55)",
+  "Old block vs new function on each caller's real inputs, checked before any rewrite: 15/15 EQ + EQS 1/1; all 15 also equal the stored licence/pred/in2 json (prep_c162_a2_3_equiv.log)",
+  "15 callers rewritten (md5 old->new in diag_c162_a2_3_facts.md:13-17); selftest_c160_regface 12/0 before -> 12/0 after, its temp plan md5 73971108 both",
+  "Prep writers not re-run (each rewrites its licence/pred/plan json); no selftest_c15*/c16* names them; covered by selftest_c162 A/C gates (diag_c162_a2_3_facts.md:18)",
+  "selftest_c162_stage_shared 47/0 (selftest_c162_stage_shared_final.log); a first 42/5 run was a self-test int/str key compare bug, fixed before the final run",
+  "Pin re-sweep 5/0: TARGET stale 1 = selftest_c159_a4_1.py:300 stagexec, already there before this card; no new stale pin, nothing re-pinned (prep_c162_a2_3_pinsweep.log)",
+  "Frozen 489 files (plan/EL json, stage tools, recipes, hooks): before == after, 0 differ (prep_c162_a2_3_frozen_after.log F1)"
+ ],
+ "open": [
+  "7 old check scripts outside the sweep still pin the old md5s of edited prep scripts (prep_c150_a3_5_check.py:52 ... prep_c156_a1_1_inv.py:37-38, list in diag_c162_a2_3_facts.md:29-31). Re-pin them or leave them as records?",
+  "docs/script-writing.md rule 4 keeps old scripts that already ran as the record, but brief step 4 said rewrite every copy. I followed the brief and rewrote 13 historical prep scripts. Keep that, or revert those and keep only the 3 named sites?"
+ ],
+ "cost": {"usd": null, "minutes": 12, "labview_runs": 0},
+ "note": "Offline only. No LabVIEW, no hooks/stage tools/recipes/json edited, STATUS not edited, no commit."}

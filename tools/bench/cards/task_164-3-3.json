@@ -1,0 +1,52 @@
+{
+ "schema": "task/1",
+ "id": "164-3-3",
+ "kind": "diagnose",
+ "goal": "Offline measurement per brief_164-3-3.md: how a delete_wire wire is represented in stagesim end graphs and in real adopted graphs (object, terminal rows). Retry of 164-3-1 END1. No plan edit.",
+ "why": "Card 164-3-1 failed END1: sim end graph keeps a Wire object for w23460 with 0 rows; the answer needs the earlier adopted delete_wire cases.",
+ "retry_of_card": "164-3-1",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_164-3-3.md", "md5": "c5fee24e6fe30c71a7727ef427dff4b8"},
+  {"path": "tools/bench/plan_ring_p5s02d.json", "md5": "725cd68ef36865c430a83a5dc0120d6f"},
+  {"path": "tools/bench/plan_ring_p5s02r_in.json", "md5": "9dadb0c1d3faeeb52f109a0af36929b5"},
+  {"path": "tools/bench/diag_c164_a3_1_facts.md", "md5": "7b0ec0d442f5906b4cc38f69e77b02da"},
+  {"path": "tools/bench/prep_c164_a3_1_mk.log", "md5": "2b43b860888c7b75c027b66ce91d8673"},
+  {"path": "tools/stagesim.py", "md5": "95a162baec5324ff037a8d23bd7ef46d"},
+  {"path": "docs/d1/ring-p5c.md", "md5": "1611e1e7d521453b6db49d51135ba99b"},
+  {"path": "docs/d1/ring-p4.md", "md5": "980e34ce95be37093fa9b82c4f597aa9"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"}
+ ],
+ "pass": [
+  "Every delete_wire in the adopted earlier plans listed: wire uid, action id, stage, each with file:line",
+  "Per such wire: sim end-graph rows and Wire object yes/no, from the stage's own last sim step file",
+  "Per such wire: real adopted graph object yes/no and rows (graph file + md5 each); no graph = OPEN line",
+  "New plan wires dw_cond, dw_23460: same columns re-read from the new sim end graph, no maker re-run",
+  "Table stage|wire|sim rows|sim object|real object|real rows; facts file <= 40 lines; md5 of plan 725cd68e and r_in 9dadb0c1 unchanged"
+ ],
+ "outputs": [
+  "tools/bench/diag_c164_a3_3_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c164_a3_3*",
+   "tools/bench/cards/result_164-3-3.json"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 30
+ },
+ "advances": ["M3", "M8", "R1"],
+ "rules": [
+  "Offline read-only: no LabVIEW, no motor or camera, no hooks edit, no plan or tool edit",
+  "Measurements and OPEN lines only; no judgement on the plan",
+  "Helper scripts diag_c164_a3_3_* call shared functions"
+ ]
+}

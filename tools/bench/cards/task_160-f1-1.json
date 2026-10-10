@@ -1,0 +1,54 @@
+{
+ "schema": "task/1",
+ "id": "160-f1-1",
+ "kind": "diagnose",
+ "goal": "PD390(g): name the commit in 421d6108..a9d0da22 that drops the 2626 array PB rows from selftest_c134_1_dry; new pred file only if it is the PB-by-position change.",
+ "why": "selftest_c134_1_dry reads 9/2 instead of 11/0; the cause lies in committed tool changes (diag_c159_f1_2_facts.md:20). The purpose asks for the commit named and the pred re-pinned only if intended.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_160-f1-1.md", "md5": "c963adaace289acaaaf91c3a4130770c"},
+  {"path": "docs/d1/ring-p5b.md", "md5": "b9646fde47e344996ca0d73e911104e1"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+  {"path": "tools/bench/diag_c159_f1_2_facts.md", "md5": "292e41db6e8d1e947789f898a5c1146d"},
+  {"path": "tools/bench/diag_c159_f1_2_t2.py", "md5": "5e068c1cbf4697d8fc224e7e3ef982b0"},
+  {"path": "tools/bench/selftest_c134_1_dry.py", "md5": "10178208ac328a292d3573d1692ac01b"},
+  {"path": "tools/bench/plan_ring_p3b2a_pred.json", "md5": "45eb0b6761716e2d7aa86f56d5b4a750"},
+  {"path": "tools/bench/plan_ring_p3b2a.json", "md5": "a419f23f29760447da8b43e1154fa470"},
+  {"path": "tools/recipes/stage_d1_ring_p3b2a.py", "md5": "0d1f0c150924bb91e187a6fed0e57f17"}
+ ],
+ "pass": [
+  "first bad commit named (hash, subject, date) with the decisive hunk file:line; bisect table of commits tested, each with its PB result",
+  "the four 2626|Terminal|array|0-3 rows: position key they get under the new PB shown, or shown absent because it equals another row",
+  "pred re-pinned in a NEW file plan_ring_p3b2a_pred_c160.json only if the first bad commit is chat-T6/T7 PB-by-position and the rows are old keys; else an OPEN line",
+  "T2a pin edit proposed (old and new prefix), not applied; md5 of recipe, selftest, old pred, stagekit, stage_prerun unchanged; temp trees deleted; tools/hooks untouched"
+ ],
+ "outputs": [
+  "tools/bench/diag_c160_f1_1_facts.md"
+ ],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c160_f1_1*",
+   "tools/bench/plan_ring_p3b2a_pred_c160.json"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 1,
+  "minutes": 45
+ },
+ "rules": [
+  "No import from the working tree: git archive each commit into a temp dir; stagesim/stagexec are edited by another card",
+  "No edit of stage tools, recipes, selftest_c134_1_dry.py or tools/hooks; no LabVIEW process; delete temp dirs",
+  "Re-pin only by the mechanical rule in the brief step 3; otherwise OPEN and stop",
+  "Rule 1a: no per-bead computation touched"
+ ],
+ "advances": ["M3", "M8", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c159_f1_2_t2.py"}
+ ]
+}

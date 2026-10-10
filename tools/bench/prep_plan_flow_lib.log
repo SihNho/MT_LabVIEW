@@ -1,0 +1,288 @@
+BGRUN START 2026-10-10 13:46:51 limit 10.0 min: py -u tools/bench/prep_plan_flow_lib.py --selftest
+BGRUN PID 18988
+GATE PASS | T0 replay input pins {'plan_ring_p5s02c.json': '930699ec', 'plan_ring_p5s02r_in_pre164.json': 'd84634bd', 'graph_ring_p5s02b_20261010_111905.json': '431cfd83', 'D1_ring_p5s02b_20261010_105511.vi': 'f9ae7751', 'plan_ring_p5s02b.json': 'f4520b10', 'plan_ring_p5s02a.json': '4284c22a', 'graph_ring_p5s02a_20261010_032547.json': '7ac24924'} | 
+GATE PASS | GRP census ['I', 'J']: [(41, 52, 12), (53, 60, 8)]; contiguous whole groups | 
+FACT OLD previous tools/bench/sim/ring_p5s02d/_replay163/plan_ring_p5s02c.json kept as None: none existed
+GATE PASS | OWN every used symbol is made by exactly one adopted step: {'new:CQ7': ['p5s02a'], 'new:CQ7.f0': ['p5s02a']} | []
+GATE PASS | E1 p5s02a last step file md5 == recorded b1892ad9 | 
+GATE PASS | CM creation map of the p5s02a run that saved D1_ring_p5s02a_20261010_023239.vi: tools/bench/creation_map/plan_ring_p5s02a_4284c22a_20261010_023453.jsonl (None) | {'schema': 'creation-map/1', 'rec': 'run', 'plan': 'tools/bench/plan_ring_p5s02a.json', 'plan_md5': '4284c22a540f9e3f39c7092affe516af', 'stage': 'plan_ring_p5s02a', 'work': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p5s02a_20261010_023239.vi', 'from_step': None, 't': 1791567293.6, 'iso': '2026-10-10 02:34:53'}
+FACT p5s02a MAP new:CQ7 -> sim -28 -> real #31308 (0 rows; obj True)
+FACT p5s02a MAP new:CQ7.f0 -> sim -29 -> real diagram #31506; owners entry ['CaseStructure', 31308]
+GATE PASS | MAP p5s02a symbols ['new:CQ7', 'new:CQ7.f0'] -> real uids in the base graph | []
+GATE PASS | MAPALL every used symbol ['new:CQ7', 'new:CQ7.f0'] bound | []
+FACT p5s02a FRM w_c7_fi end new:TC7: frame 'False' = index 0 of new:CQ7 -> new:CQ7.f0 -> sim -29 -> real #31506; graph frames of #31308 [31506, 31517]: True
+FACT p5s02a FRM w_c7_pass end new:TC7: frame 'True' = index 1 of new:CQ7 -> new:CQ7.f1 -> sim -30 -> real #31517; graph frames of #31308 [31506, 31517]: True
+FACT p5s02a FRM w_c7_pass end new:TD7: frame 'True' = index 1 of new:CQ7 -> new:CQ7.f1 -> sim -30 -> real #31517; graph frames of #31308 [31506, 31517]: True
+GATE PASS | FRM frame ends (3 mapped of 3) -> '#<real frame uid>': [('False', '#31506'), ('True', '#31517')] | []
+FACT ROW A44 c_inc7: mapped [('/diagram', 'new:CQ7.f0', 31506)]
+FACT ROW A45 t_ci7: mapped [('/body', 'new:CQ7.f0', 31506), ('/loop', 'new:CQ7', 31308)]
+FACT ROW A48 w_c7_fi: mapped [('/src/frame', 'False', '#31506')]
+FACT ROW A49 t_co7: mapped [('/body', 'new:CQ7.f0', 31506), ('/loop', 'new:CQ7', 31308)]
+FACT ROW A52 w_c7_pass: mapped [('/dst/frame', 'True', '#31517'), ('/src/frame', 'True', '#31517')]
+GATE PASS | ROWS stagekit.apply_map(A41..A60) == the input except symbol -> uid and frame -> '#uid' leaves | []
+FACT END w_c7_fi dst t5763: wires in base graph []
+FACT DW dw_cond w23489 in base graph: rows [(23042, 'x = y?', True), (23405, '', False), (23405, '', False)]; sourceless False
+FACT DO delete_object rows (id, uid, obj class, owners entry): [('do_23042', 23042, ['Comparison'], None), ('do_23501', 23501, ['LoopTunnel'], None)]
+GATE PASS | STUB no base sink end carries a wire that no plan delete_wire removes (no stub delete needed) | []
+GATE PASS | XS START = stage_prerun.x10_start(md5 f9ae7751) = (607.1, '601.2 + op-0 read 5.9 (tools/bench/diag_c162_a1_2_graph.log:24 (MEM after load: 601.2 MB private); tools/bench/stage_d1_ring_p3b1.log:42-43 (METER start k 0 561.8 MB -> METER read k 0 567.7 MB, d +5.9); pin4 :59-60 +6.0 (result_133-2.json); card 133-3, PD283(b))') | 
+FACT C I A41..A52: 8 ops [('add_sr', None, [1]), ('create', None, [2]), ('connect', None, [3]), ('create', None, [4]), ('connect_term_uid', 'register_end_case_border', [5, 6, 7]), ('case_frame_wire', 'branch', [8]), ('connect_term_uid', 'register_end_case_border', [9, 10, 11]), ('case_frame_wire', 'new_wire', [12])]; kinds {'add_sr': 1, 'create': 2, 'connect': 1, 'connect_term_uid': 2, 'case_frame_wire': 2}; checkpoints [0, 1, 2, 4, 5, 7, 8]; delete_wire ops []
+FACT X10 I: rows 12 START 607.1 N 8 R 7 Executor peak 653.2 MAIN 658.3 (limit 675.0, rows <= 40)
+GATE PASS | C I compiles; every delete_wire op [] is a checkpoint | [0, 1, 2, 4, 5, 7, 8]
+FACT C I+J A41..A60: 16 ops [('add_sr', None, [1]), ('create', None, [2]), ('connect', None, [3]), ('create', None, [4]), ('connect_term_uid', 'register_end_case_border', [5, 6, 7]), ('case_frame_wire', 'branch', [8]), ('connect_term_uid', 'register_end_case_border', [9, 10, 11]), ('case_frame_wire', 'new_wire', [12]), ('delete_wire', None, [13]), ('delete_object', None, [14]), ('delete_object', None, [15]), ('create', None, [16]), ('create', None, [17]), ('branch', None, [18]), ('connect', None, [19]), ('stop', None, [20])]; kinds {'add_sr': 1, 'create': 4, 'connect': 2, 'connect_term_uid': 2, 'case_frame_wire': 2, 'delete_wire': 1, 'delete_object': 2, 'branch': 1, 'stop': 1}; checkpoints [0, 1, 2, 4, 5, 7, 9, 12, 13, 16]; delete_wire ops [9]
+FACT X10 I+J: rows 20 START 607.1 N 16 R 10 Executor peak 671.9 MAIN 677.0 (limit 675.0, rows <= 40)
+GATE PASS | C I+J compiles; every delete_wire op [9] is a checkpoint | [0, 1, 2, 4, 5, 7, 9, 12, 13, 16]
+FACT RULE prefix I+J fails (MAIN 677.0, rows 20, error None); longer prefixes not tried
+GATE PASS | X10 first group I alone fits: MAIN 658.3 <= 675.0, rows 12 <= 40 | {'hi': 52, 'rows': 12, 'ops': [('add_sr', None, [1]), ('create', None, [2]), ('connect', None, [3]), ('create', None, [4]), ('connect_term_uid', 'register_end_case_border', [5, 6, 7]), ('case_frame_wire', 'branch', [8]), ('connect_term_uid', 'register_end_case_border', [9, 10, 11]), ('case_frame_wire', 'new_wire', [12])], 'cps': [0, 1, 2, 4, 5, 7, 8], 'main': 658.3, 'peak': 653.2, 'N': 8, 'R': 7}
+FACT RULE plan = I (A41..A52, 12 rows, MAIN 658.3) = longest whole-group prefix with MAIN <= 675.0 and rows <= 40
+GATE PASS | SPLIT no group split: A41..A52 ends at a census group end | 
+GATE PASS | PROBE A41..A52 replay on the base graph: failed null | 
+FACT TIE 26 end rows; open pairs 24: [(10068, 'x', 'c163-a1-2: open at step 0 = declared open row of the base pl'), (10150, 'x', 'c163-a1-2: open at step 0 = declared open row of the base pl'), (10382, 'x', 'c163-a1-2: open at step 0 = declared open row of the base pl'), (10757, 'array', 'c163-a1-2: open at step 0 = declared open row of the base pl'), (11261, 'array', 'c163-a1-2: open at step 0 = declared open row of the base pl'), (11261, 'element', 'c163-a1-2: open at step 0 = declared open row of the base pl'), (11529, 'x', 'c163-a1-2: open at step 0 = declared open row of the base pl'), (2048, 'array', 'c163-a1-2: open at step 0 = declared open row of the base pl'), (2048, 'length', 'c163-a1-2: open at step 0 = declared open row of the base pl'), (2626, 'array', 'c163-a1-2: open at step 0 = declared open row of the base pl'), (2626, 'element', 'c163-a1-2: open at step 0 = declared op
+GATE PASS | TIE every probe end row tied to a step action or a base-plan open row | []
+GATE PASS | S1 plan input validates (12 actions, 24 open pairs) | OK stageplan/1
+  BASE-FLIPS seeded 4 terminal(s) on 2 undirected tunnel(s): [5204, 10404]
+  STEP 01 add_shift_reg    ok cands=0 cdiff=26 measured:tools/bench/opmodels/add_shift_reg.json@c184ce030aea6aaee181fc7b97eeca83
+  STEP 02 create           ok cands=0 cdiff=26 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 03 wire             ok cands=0 cdiff=26 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 04 create           ok cands=0 cdiff=26 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 05 tunnel           ok cands=0 cdiff=26 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 06 wire             ok cands=0 cdiff=26 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 07 wire             ok cands=0 cdiff=26 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 08 wire             ok cands=0 cdiff=26 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 09 tunnel           ok cands=0 cdiff=26 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 10 wire             ok cands=0 cdiff=26 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 11 wire             ok cands=0 cdiff=26 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 12 wire             ok cands=0 cdiff=26 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  ROUTE 1 add_sr ['sr_c7']: add_sr
+  ROUTE 2 create ['c_k07']: primitive
+  ROUTE 3 connect ['w_k07']: const_sr
+  ROUTE 4 create ['c_inc7']: primitive
+  ROUTE 5 connect_term_uid ['t_ci7', 'w_ci7_in', 'w_ci7_inc']: connect_term_uid
+  ROUTE 6 case_frame_wire ['w_c7_fi']: case_frame_wire
+  ROUTE 7 connect_term_uid ['t_co7', 'w_inc7_co', 'w_co7_r']: connect_term_uid
+  ROUTE 8 case_frame_wire ['w_c7_pass']: case_frame_wire
+FACT STEP REALSIM n 00 op base id None: ok model None; file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_00_base.json md5 9f52b780994d2bdc52922f7bd11ca0ef; state b6d7be51
+FACT STEP REALSIM n 01 op add_shift_reg id sr_c7: ok model measured:tools/bench/opmodels/add_shift_reg.json@c184ce030aea6aaee181fc7b97eeca83; file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_01_add_shift_reg.json md5 75215e1d63795e084ed4b528bea95ad3; state 34ad655f
+FACT STEP REALSIM n 02 op create id c_k07: ok model measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran); file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_02_create.json md5 89b71efdc903a19784d25f7f63f4ff6b; state 41706b9b
+FACT STEP REALSIM n 03 op wire id w_k07: ok model measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def; file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_03_wire.json md5 14541403f21f5b303ade3cf2f4dcd873; state adcd9783
+FACT STEP REALSIM n 04 op create id c_inc7: ok model measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran); file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_04_create.json md5 28ade4c51e881910d85c0aeeda048319; state fe3e0054
+FACT STEP REALSIM n 05 op tunnel id t_ci7: ok model measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4; file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_05_tunnel.json md5 bb433024e6851654407f22e68935c900; state e2c87318
+FACT STEP REALSIM n 06 op wire id w_ci7_in: ok model measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def; file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_06_wire.json md5 050e1568b29a759ea9c8679f3f6da255; state dfcb9b9d
+FACT STEP REALSIM n 07 op wire id w_ci7_inc: ok model measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def; file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_07_wire.json md5 15158e153a7e64fd7c0c7934546f8ad8; state cd48355f
+FACT STEP REALSIM n 08 op wire id w_c7_fi: ok model measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def; file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_08_wire.json md5 754ac838d57b2c892d880ad6332ce1f0; state 7a7f63f2
+FACT STEP REALSIM n 09 op tunnel id t_co7: ok model measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4; file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_09_tunnel.json md5 2f5c0a440acd87114a16c7a0bc1c796a; state 6239ce4b
+FACT STEP REALSIM n 10 op wire id w_inc7_co: ok model measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def; file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_10_wire.json md5 396c9ac75083a948309f0eab653c9dff; state f4b8510f
+FACT STEP REALSIM n 11 op wire id w_co7_r: ok model measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def; file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_11_wire.json md5 a2bafbea875d15d136da75419e58350d; state 0091f3ee
+FACT STEP REALSIM n 12 op wire id w_c7_pass: ok model measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def; file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_12_wire.json md5 01c841574a795102ad91b38bc1c3c3d9; state a6f6ad80
+FACT ROUTE k=1 add_sr ['sr_c7']: route add_sr
+FACT ROUTE k=2 create ['c_k07']: route primitive
+FACT ROUTE k=3 connect ['w_k07']: route const_sr
+FACT ROUTE k=4 create ['c_inc7']: route primitive
+FACT ROUTE k=5 connect_term_uid ['t_ci7', 'w_ci7_in', 'w_ci7_inc']: route connect_term_uid
+FACT ROUTE k=6 case_frame_wire ['w_c7_fi']: route case_frame_wire
+FACT ROUTE k=7 connect_term_uid ['t_co7', 'w_inc7_co', 'w_co7_r']: route connect_term_uid
+FACT ROUTE k=8 case_frame_wire ['w_c7_pass']: route case_frame_wire
+FACT REALSIM plan tools/bench/sim/ring_p5s02d/_replay163/plan_ring_p5s02c.json md5 277c670070a1e2740376d2f33132d014: final True; failed null; steps 12; provisional []; route check PASS; UNROUTABLE 0
+GATE PASS | SB REALSIM FINAL on the base graph: failed None, 12/12 replayed, 0 PROVISIONAL, route PASS, 0 UNROUTABLE | {'final': True, 'failed': None, 'route': 'PASS', 'first_fail': None}
+GATE PASS | C-OUT compile of plan_ring_p5s02c.json == candidate I ops/checkpoints; MAIN 658.3 | ([0, 1, 2, 4, 5, 7, 8], 658.3)
+GATE PASS | IDS plan action ids == A41..A52 in order | ['sr_c7', 'c_k07', 'w_k07', 'c_inc7', 't_ci7', 'w_ci7_in', 'w_ci7_inc', 'w_c7_fi', 't_co7', 'w_inc7_co', 'w_co7_r', 'w_c7_pass']
+GATE PASS | X8 control_path_lint clean | []
+GATE PASS | X17 x17_gate over the plan | 1 primitive create action(s), every donor label == its prim
+GATE PASS | T1 chosen I with MAIN(I) 658.3, MAIN(I+J) 677.0 (as prep_c163_a1_2_mk.log:28-34) | {'I': 658.3, 'I+J': 677.0}
+GATE PASS | T2 replay plan_in md5 eb48fabc == 163-a1-2's eb48fabc | 
+GATE FAIL | T3 every step-file md5 equal (13 steps) | [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":25,"fail":1},"first_fail":"T3 every step-file md5 equal (13 steps)","artefacts":[{"path":"tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/_probe/plan_ring_p5s02cq_in.json","md5":"f769a6c64a14b94267aa4be50e8ea69f"},{"path":"tools/bench/sim/ring_p5s02d/_replay163/plan_ring_p5s02c_in.json","md5":"eb48fabc9679da57966a64e6da302be6"},{"path":"tools/bench/sim/ring_p5s02d/_replay163/plan_ring_p5s02c.json","md5":"277c670070a1e2740376d2f33132d014"},{"path":"tools/bench/sim/ring_p5s02d/_replay163/replay163_session.json","md5":"a19081dd61339ed2ad54a5109d86b848"}],"card":"164-a1-1","labview":"none"}
+BGRUN END rc=1 after 44s
+BGRUN START 2026-10-10 13:48:09 limit 10.0 min: py -u tools/bench/prep_plan_flow_lib.py --selftest
+BGRUN PID 18400
+GATE PASS | T0 replay input pins {'plan_ring_p5s02c.json': '930699ec', 'plan_ring_p5s02r_in_pre164.json': 'd84634bd', 'graph_ring_p5s02b_20261010_111905.json': '431cfd83', 'D1_ring_p5s02b_20261010_105511.vi': 'f9ae7751', 'plan_ring_p5s02b.json': 'f4520b10', 'plan_ring_p5s02a.json': '4284c22a', 'graph_ring_p5s02a_20261010_032547.json': '7ac24924'} | 
+GATE PASS | GRP census ['I', 'J']: [(41, 52, 12), (53, 60, 8)]; contiguous whole groups | 
+FACT OLD previous tools/bench/sim/ring_p5s02d/_replay163/plan_ring_p5s02c.json kept as None: none existed
+GATE PASS | OWN every used symbol is made by exactly one adopted step: {'new:CQ7': ['p5s02a'], 'new:CQ7.f0': ['p5s02a']} | []
+GATE PASS | E1 p5s02a last step file md5 == recorded b1892ad9 | 
+GATE PASS | CM creation map of the p5s02a run that saved D1_ring_p5s02a_20261010_023239.vi: tools/bench/creation_map/plan_ring_p5s02a_4284c22a_20261010_023453.jsonl (None) | {'schema': 'creation-map/1', 'rec': 'run', 'plan': 'tools/bench/plan_ring_p5s02a.json', 'plan_md5': '4284c22a540f9e3f39c7092affe516af', 'stage': 'plan_ring_p5s02a', 'work': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p5s02a_20261010_023239.vi', 'from_step': None, 't': 1791567293.6, 'iso': '2026-10-10 02:34:53'}
+FACT p5s02a MAP new:CQ7 -> sim -28 -> real #31308 (0 rows; obj True)
+FACT p5s02a MAP new:CQ7.f0 -> sim -29 -> real diagram #31506; owners entry ['CaseStructure', 31308]
+GATE PASS | MAP p5s02a symbols ['new:CQ7', 'new:CQ7.f0'] -> real uids in the base graph | []
+GATE PASS | MAPALL every used symbol ['new:CQ7', 'new:CQ7.f0'] bound | []
+FACT p5s02a FRM w_c7_fi end new:TC7: frame 'False' = index 0 of new:CQ7 -> new:CQ7.f0 -> sim -29 -> real #31506; graph frames of #31308 [31506, 31517]: True
+FACT p5s02a FRM w_c7_pass end new:TC7: frame 'True' = index 1 of new:CQ7 -> new:CQ7.f1 -> sim -30 -> real #31517; graph frames of #31308 [31506, 31517]: True
+FACT p5s02a FRM w_c7_pass end new:TD7: frame 'True' = index 1 of new:CQ7 -> new:CQ7.f1 -> sim -30 -> real #31517; graph frames of #31308 [31506, 31517]: True
+GATE PASS | FRM frame ends (3 mapped of 3) -> '#<real frame uid>': [('False', '#31506'), ('True', '#31517')] | []
+FACT ROW A44 c_inc7: mapped [('/diagram', 'new:CQ7.f0', 31506)]
+FACT ROW A45 t_ci7: mapped [('/body', 'new:CQ7.f0', 31506), ('/loop', 'new:CQ7', 31308)]
+FACT ROW A48 w_c7_fi: mapped [('/src/frame', 'False', '#31506')]
+FACT ROW A49 t_co7: mapped [('/body', 'new:CQ7.f0', 31506), ('/loop', 'new:CQ7', 31308)]
+FACT ROW A52 w_c7_pass: mapped [('/dst/frame', 'True', '#31517'), ('/src/frame', 'True', '#31517')]
+GATE PASS | ROWS stagekit.apply_map(A41..A60) == the input except symbol -> uid and frame -> '#uid' leaves | []
+FACT END w_c7_fi dst t5763: wires in base graph []
+FACT DW dw_cond w23489 in base graph: rows [(23042, 'x = y?', True), (23405, '', False), (23405, '', False)]; sourceless False
+FACT DO delete_object rows (id, uid, obj class, owners entry): [('do_23042', 23042, ['Comparison'], None), ('do_23501', 23501, ['LoopTunnel'], None)]
+GATE PASS | STUB no base sink end carries a wire that no plan delete_wire removes (no stub delete needed) | []
+GATE PASS | XS START = stage_prerun.x10_start(md5 f9ae7751) = (607.1, '601.2 + op-0 read 5.9 (tools/bench/diag_c162_a1_2_graph.log:24 (MEM after load: 601.2 MB private); tools/bench/stage_d1_ring_p3b1.log:42-43 (METER start k 0 561.8 MB -> METER read k 0 567.7 MB, d +5.9); pin4 :59-60 +6.0 (result_133-2.json); card 133-3, PD283(b))') | 
+FACT C I A41..A52: 8 ops [('add_sr', None, [1]), ('create', None, [2]), ('connect', None, [3]), ('create', None, [4]), ('connect_term_uid', 'register_end_case_border', [5, 6, 7]), ('case_frame_wire', 'branch', [8]), ('connect_term_uid', 'register_end_case_border', [9, 10, 11]), ('case_frame_wire', 'new_wire', [12])]; kinds {'add_sr': 1, 'create': 2, 'connect': 1, 'connect_term_uid': 2, 'case_frame_wire': 2}; checkpoints [0, 1, 2, 4, 5, 7, 8]; delete_wire ops []
+FACT X10 I: rows 12 START 607.1 N 8 R 7 Executor peak 653.2 MAIN 658.3 (limit 675.0, rows <= 40)
+GATE PASS | C I compiles; every delete_wire op [] is a checkpoint | [0, 1, 2, 4, 5, 7, 8]
+FACT C I+J A41..A60: 16 ops [('add_sr', None, [1]), ('create', None, [2]), ('connect', None, [3]), ('create', None, [4]), ('connect_term_uid', 'register_end_case_border', [5, 6, 7]), ('case_frame_wire', 'branch', [8]), ('connect_term_uid', 'register_end_case_border', [9, 10, 11]), ('case_frame_wire', 'new_wire', [12]), ('delete_wire', None, [13]), ('delete_object', None, [14]), ('delete_object', None, [15]), ('create', None, [16]), ('create', None, [17]), ('branch', None, [18]), ('connect', None, [19]), ('stop', None, [20])]; kinds {'add_sr': 1, 'create': 4, 'connect': 2, 'connect_term_uid': 2, 'case_frame_wire': 2, 'delete_wire': 1, 'delete_object': 2, 'branch': 1, 'stop': 1}; checkpoints [0, 1, 2, 4, 5, 7, 9, 12, 13, 16]; delete_wire ops [9]
+FACT X10 I+J: rows 20 START 607.1 N 16 R 10 Executor peak 671.9 MAIN 677.0 (limit 675.0, rows <= 40)
+GATE PASS | C I+J compiles; every delete_wire op [9] is a checkpoint | [0, 1, 2, 4, 5, 7, 9, 12, 13, 16]
+FACT RULE prefix I+J fails (MAIN 677.0, rows 20, error None); longer prefixes not tried
+GATE PASS | X10 first group I alone fits: MAIN 658.3 <= 675.0, rows 12 <= 40 | {'hi': 52, 'rows': 12, 'ops': [('add_sr', None, [1]), ('create', None, [2]), ('connect', None, [3]), ('create', None, [4]), ('connect_term_uid', 'register_end_case_border', [5, 6, 7]), ('case_frame_wire', 'branch', [8]), ('connect_term_uid', 'register_end_case_border', [9, 10, 11]), ('case_frame_wire', 'new_wire', [12])], 'cps': [0, 1, 2, 4, 5, 7, 8], 'main': 658.3, 'peak': 653.2, 'N': 8, 'R': 7}
+FACT RULE plan = I (A41..A52, 12 rows, MAIN 658.3) = longest whole-group prefix with MAIN <= 675.0 and rows <= 40
+GATE PASS | SPLIT no group split: A41..A52 ends at a census group end | 
+GATE PASS | PROBE A41..A52 replay on the base graph: failed null | 
+FACT TIE 26 end rows; open pairs 24: [(10068, 'x', 'c163-a1-2: open at step 0 = declared open row of the base pl'), (10150, 'x', 'c163-a1-2: open at step 0 = declared open row of the base pl'), (10382, 'x', 'c163-a1-2: open at step 0 = declared open row of the base pl'), (10757, 'array', 'c163-a1-2: open at step 0 = declared open row of the base pl'), (11261, 'array', 'c163-a1-2: open at step 0 = declared open row of the base pl'), (11261, 'element', 'c163-a1-2: open at step 0 = declared open row of the base pl'), (11529, 'x', 'c163-a1-2: open at step 0 = declared open row of the base pl'), (2048, 'array', 'c163-a1-2: open at step 0 = declared open row of the base pl'), (2048, 'length', 'c163-a1-2: open at step 0 = declared open row of the base pl'), (2626, 'array', 'c163-a1-2: open at step 0 = declared open row of the base pl'), (2626, 'element', 'c163-a1-2: open at step 0 = declared op
+GATE PASS | TIE every probe end row tied to a step action or a base-plan open row | []
+GATE PASS | S1 plan input validates (12 actions, 24 open pairs) | OK stageplan/1
+  BASE-FLIPS seeded 4 terminal(s) on 2 undirected tunnel(s): [5204, 10404]
+  STEP 01 add_shift_reg    ok cands=0 cdiff=26 measured:tools/bench/opmodels/add_shift_reg.json@c184ce030aea6aaee181fc7b97eeca83
+  STEP 02 create           ok cands=0 cdiff=26 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 03 wire             ok cands=0 cdiff=26 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 04 create           ok cands=0 cdiff=26 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 05 tunnel           ok cands=0 cdiff=26 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 06 wire             ok cands=0 cdiff=26 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 07 wire             ok cands=0 cdiff=26 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 08 wire             ok cands=0 cdiff=26 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 09 tunnel           ok cands=0 cdiff=26 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 10 wire             ok cands=0 cdiff=26 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 11 wire             ok cands=0 cdiff=26 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 12 wire             ok cands=0 cdiff=26 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  ROUTE 1 add_sr ['sr_c7']: add_sr
+  ROUTE 2 create ['c_k07']: primitive
+  ROUTE 3 connect ['w_k07']: const_sr
+  ROUTE 4 create ['c_inc7']: primitive
+  ROUTE 5 connect_term_uid ['t_ci7', 'w_ci7_in', 'w_ci7_inc']: connect_term_uid
+  ROUTE 6 case_frame_wire ['w_c7_fi']: case_frame_wire
+  ROUTE 7 connect_term_uid ['t_co7', 'w_inc7_co', 'w_co7_r']: connect_term_uid
+  ROUTE 8 case_frame_wire ['w_c7_pass']: case_frame_wire
+FACT STEP REALSIM n 00 op base id None: ok model None; file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_00_base.json md5 9f52b780994d2bdc52922f7bd11ca0ef; state b6d7be51
+FACT STEP REALSIM n 01 op add_shift_reg id sr_c7: ok model measured:tools/bench/opmodels/add_shift_reg.json@c184ce030aea6aaee181fc7b97eeca83; file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_01_add_shift_reg.json md5 75215e1d63795e084ed4b528bea95ad3; state 34ad655f
+FACT STEP REALSIM n 02 op create id c_k07: ok model measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran); file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_02_create.json md5 89b71efdc903a19784d25f7f63f4ff6b; state 41706b9b
+FACT STEP REALSIM n 03 op wire id w_k07: ok model measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def; file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_03_wire.json md5 14541403f21f5b303ade3cf2f4dcd873; state adcd9783
+FACT STEP REALSIM n 04 op create id c_inc7: ok model measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran); file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_04_create.json md5 28ade4c51e881910d85c0aeeda048319; state fe3e0054
+FACT STEP REALSIM n 05 op tunnel id t_ci7: ok model measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4; file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_05_tunnel.json md5 bb433024e6851654407f22e68935c900; state e2c87318
+FACT STEP REALSIM n 06 op wire id w_ci7_in: ok model measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def; file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_06_wire.json md5 050e1568b29a759ea9c8679f3f6da255; state dfcb9b9d
+FACT STEP REALSIM n 07 op wire id w_ci7_inc: ok model measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def; file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_07_wire.json md5 15158e153a7e64fd7c0c7934546f8ad8; state cd48355f
+FACT STEP REALSIM n 08 op wire id w_c7_fi: ok model measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def; file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_08_wire.json md5 754ac838d57b2c892d880ad6332ce1f0; state 7a7f63f2
+FACT STEP REALSIM n 09 op tunnel id t_co7: ok model measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4; file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_09_tunnel.json md5 2f5c0a440acd87114a16c7a0bc1c796a; state 6239ce4b
+FACT STEP REALSIM n 10 op wire id w_inc7_co: ok model measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def; file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_10_wire.json md5 396c9ac75083a948309f0eab653c9dff; state f4b8510f
+FACT STEP REALSIM n 11 op wire id w_co7_r: ok model measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def; file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_11_wire.json md5 a2bafbea875d15d136da75419e58350d; state 0091f3ee
+FACT STEP REALSIM n 12 op wire id w_c7_pass: ok model measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def; file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_12_wire.json md5 01c841574a795102ad91b38bc1c3c3d9; state a6f6ad80
+FACT ROUTE k=1 add_sr ['sr_c7']: route add_sr
+FACT ROUTE k=2 create ['c_k07']: route primitive
+FACT ROUTE k=3 connect ['w_k07']: route const_sr
+FACT ROUTE k=4 create ['c_inc7']: route primitive
+FACT ROUTE k=5 connect_term_uid ['t_ci7', 'w_ci7_in', 'w_ci7_inc']: route connect_term_uid
+FACT ROUTE k=6 case_frame_wire ['w_c7_fi']: route case_frame_wire
+FACT ROUTE k=7 connect_term_uid ['t_co7', 'w_inc7_co', 'w_co7_r']: route connect_term_uid
+FACT ROUTE k=8 case_frame_wire ['w_c7_pass']: route case_frame_wire
+FACT REALSIM plan tools/bench/sim/ring_p5s02d/_replay163/plan_ring_p5s02c.json md5 7896276f50315a404c390cf47983e3e1: final True; failed null; steps 12; provisional []; route check PASS; UNROUTABLE 0
+GATE PASS | SB REALSIM FINAL on the base graph: failed None, 12/12 replayed, 0 PROVISIONAL, route PASS, 0 UNROUTABLE | {'final': True, 'failed': None, 'route': 'PASS', 'first_fail': None}
+GATE PASS | C-OUT compile of plan_ring_p5s02c.json == candidate I ops/checkpoints; MAIN 658.3 | ([0, 1, 2, 4, 5, 7, 8], 658.3)
+GATE PASS | IDS plan action ids == A41..A52 in order | ['sr_c7', 'c_k07', 'w_k07', 'c_inc7', 't_ci7', 'w_ci7_in', 'w_ci7_inc', 'w_c7_fi', 't_co7', 'w_inc7_co', 'w_co7_r', 'w_c7_pass']
+GATE PASS | X8 control_path_lint clean | []
+GATE PASS | X17 x17_gate over the plan | 1 primitive create action(s), every donor label == its prim
+GATE PASS | T1 chosen I with MAIN(I) 658.3, MAIN(I+J) 677.0 (as prep_c163_a1_2_mk.log:28-34) | {'I': 658.3, 'I+J': 677.0}
+GATE PASS | T2 replay plan_in md5 eb48fabc == 163-a1-2's eb48fabc | 
+GATE PASS | T3a 930699ec's step files on disk still have their recorded md5 (changed: []) | 
+FACT REPLAY step files with another md5: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]; content differences after the path map (other than prev/md5): [(1, '/prev/path'), (2, '/prev/path'), (3, '/prev/path'), (4, '/prev/path'), (5, '/prev/path'), (6, '/prev/path'), (7, '/prev/path'), (8, '/prev/path'), (9, '/prev/path'), (10, '/prev/path'), (11, '/prev/path'), (12, '/prev/path')]
+GATE FAIL | T3 every step file equal after the path map; only `prev` (path -> md5 chain) differs (13 steps) | [(1, '/prev/path'), (2, '/prev/path'), (3, '/prev/path'), (4, '/prev/path'), (5, '/prev/path'), (6, '/prev/path'), (7, '/prev/path'), (8, '/prev/path'), (9, '/prev/path'), (10, '/prev/path'), (11, '/prev/path'), (12, '/prev/path')]
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":26,"fail":1},"first_fail":"T3 every step file equal after the path map; only `prev` (path -> md5 chain) differs (13 steps)","artefacts":[{"path":"tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/_probe/plan_ring_p5s02cq_in.json","md5":"f769a6c64a14b94267aa4be50e8ea69f"},{"path":"tools/bench/sim/ring_p5s02d/_replay163/plan_ring_p5s02c_in.json","md5":"eb48fabc9679da57966a64e6da302be6"},{"path":"tools/bench/sim/ring_p5s02d/_replay163/plan_ring_p5s02c.json","md5":"7896276f50315a404c390cf47983e3e1"},{"path":"tools/bench/sim/ring_p5s02d/_replay163/replay163_session.json","md5":"7f928f1a21b0ff0556e8dc4e97870d13"}],"card":"164-a1-1","labview":"none"}
+BGRUN END rc=1 after 42s
+BGRUN START 2026-10-10 13:49:12 limit 10.0 min: py -u tools/bench/prep_plan_flow_lib.py --selftest
+BGRUN PID 27240
+GATE PASS | T0 replay input pins {'plan_ring_p5s02c.json': '930699ec', 'plan_ring_p5s02r_in_pre164.json': 'd84634bd', 'graph_ring_p5s02b_20261010_111905.json': '431cfd83', 'D1_ring_p5s02b_20261010_105511.vi': 'f9ae7751', 'plan_ring_p5s02b.json': 'f4520b10', 'plan_ring_p5s02a.json': '4284c22a', 'graph_ring_p5s02a_20261010_032547.json': '7ac24924'} | 
+GATE PASS | GRP census ['I', 'J']: [(41, 52, 12), (53, 60, 8)]; contiguous whole groups | 
+FACT OLD previous tools/bench/sim/ring_p5s02d/_replay163/plan_ring_p5s02c.json kept as None: none existed
+GATE PASS | OWN every used symbol is made by exactly one adopted step: {'new:CQ7': ['p5s02a'], 'new:CQ7.f0': ['p5s02a']} | []
+GATE PASS | E1 p5s02a last step file md5 == recorded b1892ad9 | 
+GATE PASS | CM creation map of the p5s02a run that saved D1_ring_p5s02a_20261010_023239.vi: tools/bench/creation_map/plan_ring_p5s02a_4284c22a_20261010_023453.jsonl (None) | {'schema': 'creation-map/1', 'rec': 'run', 'plan': 'tools/bench/plan_ring_p5s02a.json', 'plan_md5': '4284c22a540f9e3f39c7092affe516af', 'stage': 'plan_ring_p5s02a', 'work': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p5s02a_20261010_023239.vi', 'from_step': None, 't': 1791567293.6, 'iso': '2026-10-10 02:34:53'}
+FACT p5s02a MAP new:CQ7 -> sim -28 -> real #31308 (0 rows; obj True)
+FACT p5s02a MAP new:CQ7.f0 -> sim -29 -> real diagram #31506; owners entry ['CaseStructure', 31308]
+GATE PASS | MAP p5s02a symbols ['new:CQ7', 'new:CQ7.f0'] -> real uids in the base graph | []
+GATE PASS | MAPALL every used symbol ['new:CQ7', 'new:CQ7.f0'] bound | []
+FACT p5s02a FRM w_c7_fi end new:TC7: frame 'False' = index 0 of new:CQ7 -> new:CQ7.f0 -> sim -29 -> real #31506; graph frames of #31308 [31506, 31517]: True
+FACT p5s02a FRM w_c7_pass end new:TC7: frame 'True' = index 1 of new:CQ7 -> new:CQ7.f1 -> sim -30 -> real #31517; graph frames of #31308 [31506, 31517]: True
+FACT p5s02a FRM w_c7_pass end new:TD7: frame 'True' = index 1 of new:CQ7 -> new:CQ7.f1 -> sim -30 -> real #31517; graph frames of #31308 [31506, 31517]: True
+GATE PASS | FRM frame ends (3 mapped of 3) -> '#<real frame uid>': [('False', '#31506'), ('True', '#31517')] | []
+FACT ROW A44 c_inc7: mapped [('/diagram', 'new:CQ7.f0', 31506)]
+FACT ROW A45 t_ci7: mapped [('/body', 'new:CQ7.f0', 31506), ('/loop', 'new:CQ7', 31308)]
+FACT ROW A48 w_c7_fi: mapped [('/src/frame', 'False', '#31506')]
+FACT ROW A49 t_co7: mapped [('/body', 'new:CQ7.f0', 31506), ('/loop', 'new:CQ7', 31308)]
+FACT ROW A52 w_c7_pass: mapped [('/dst/frame', 'True', '#31517'), ('/src/frame', 'True', '#31517')]
+GATE PASS | ROWS stagekit.apply_map(A41..A60) == the input except symbol -> uid and frame -> '#uid' leaves | []
+FACT END w_c7_fi dst t5763: wires in base graph []
+FACT DW dw_cond w23489 in base graph: rows [(23042, 'x = y?', True), (23405, '', False), (23405, '', False)]; sourceless False
+FACT DO delete_object rows (id, uid, obj class, owners entry): [('do_23042', 23042, ['Comparison'], None), ('do_23501', 23501, ['LoopTunnel'], None)]
+GATE PASS | STUB no base sink end carries a wire that no plan delete_wire removes (no stub delete needed) | []
+GATE PASS | XS START = stage_prerun.x10_start(md5 f9ae7751) = (607.1, '601.2 + op-0 read 5.9 (tools/bench/diag_c162_a1_2_graph.log:24 (MEM after load: 601.2 MB private); tools/bench/stage_d1_ring_p3b1.log:42-43 (METER start k 0 561.8 MB -> METER read k 0 567.7 MB, d +5.9); pin4 :59-60 +6.0 (result_133-2.json); card 133-3, PD283(b))') | 
+FACT C I A41..A52: 8 ops [('add_sr', None, [1]), ('create', None, [2]), ('connect', None, [3]), ('create', None, [4]), ('connect_term_uid', 'register_end_case_border', [5, 6, 7]), ('case_frame_wire', 'branch', [8]), ('connect_term_uid', 'register_end_case_border', [9, 10, 11]), ('case_frame_wire', 'new_wire', [12])]; kinds {'add_sr': 1, 'create': 2, 'connect': 1, 'connect_term_uid': 2, 'case_frame_wire': 2}; checkpoints [0, 1, 2, 4, 5, 7, 8]; delete_wire ops []
+FACT X10 I: rows 12 START 607.1 N 8 R 7 Executor peak 653.2 MAIN 658.3 (limit 675.0, rows <= 40)
+GATE PASS | C I compiles; every delete_wire op [] is a checkpoint | [0, 1, 2, 4, 5, 7, 8]
+FACT C I+J A41..A60: 16 ops [('add_sr', None, [1]), ('create', None, [2]), ('connect', None, [3]), ('create', None, [4]), ('connect_term_uid', 'register_end_case_border', [5, 6, 7]), ('case_frame_wire', 'branch', [8]), ('connect_term_uid', 'register_end_case_border', [9, 10, 11]), ('case_frame_wire', 'new_wire', [12]), ('delete_wire', None, [13]), ('delete_object', None, [14]), ('delete_object', None, [15]), ('create', None, [16]), ('create', None, [17]), ('branch', None, [18]), ('connect', None, [19]), ('stop', None, [20])]; kinds {'add_sr': 1, 'create': 4, 'connect': 2, 'connect_term_uid': 2, 'case_frame_wire': 2, 'delete_wire': 1, 'delete_object': 2, 'branch': 1, 'stop': 1}; checkpoints [0, 1, 2, 4, 5, 7, 9, 12, 13, 16]; delete_wire ops [9]
+FACT X10 I+J: rows 20 START 607.1 N 16 R 10 Executor peak 671.9 MAIN 677.0 (limit 675.0, rows <= 40)
+GATE PASS | C I+J compiles; every delete_wire op [9] is a checkpoint | [0, 1, 2, 4, 5, 7, 9, 12, 13, 16]
+FACT RULE prefix I+J fails (MAIN 677.0, rows 20, error None); longer prefixes not tried
+GATE PASS | X10 first group I alone fits: MAIN 658.3 <= 675.0, rows 12 <= 40 | {'hi': 52, 'rows': 12, 'ops': [('add_sr', None, [1]), ('create', None, [2]), ('connect', None, [3]), ('create', None, [4]), ('connect_term_uid', 'register_end_case_border', [5, 6, 7]), ('case_frame_wire', 'branch', [8]), ('connect_term_uid', 'register_end_case_border', [9, 10, 11]), ('case_frame_wire', 'new_wire', [12])], 'cps': [0, 1, 2, 4, 5, 7, 8], 'main': 658.3, 'peak': 653.2, 'N': 8, 'R': 7}
+FACT RULE plan = I (A41..A52, 12 rows, MAIN 658.3) = longest whole-group prefix with MAIN <= 675.0 and rows <= 40
+GATE PASS | SPLIT no group split: A41..A52 ends at a census group end | 
+GATE PASS | PROBE A41..A52 replay on the base graph: failed null | 
+FACT TIE 26 end rows; open pairs 24: [(10068, 'x', 'c163-a1-2: open at step 0 = declared open row of the base pl'), (10150, 'x', 'c163-a1-2: open at step 0 = declared open row of the base pl'), (10382, 'x', 'c163-a1-2: open at step 0 = declared open row of the base pl'), (10757, 'array', 'c163-a1-2: open at step 0 = declared open row of the base pl'), (11261, 'array', 'c163-a1-2: open at step 0 = declared open row of the base pl'), (11261, 'element', 'c163-a1-2: open at step 0 = declared open row of the base pl'), (11529, 'x', 'c163-a1-2: open at step 0 = declared open row of the base pl'), (2048, 'array', 'c163-a1-2: open at step 0 = declared open row of the base pl'), (2048, 'length', 'c163-a1-2: open at step 0 = declared open row of the base pl'), (2626, 'array', 'c163-a1-2: open at step 0 = declared open row of the base pl'), (2626, 'element', 'c163-a1-2: open at step 0 = declared op
+GATE PASS | TIE every probe end row tied to a step action or a base-plan open row | []
+GATE PASS | S1 plan input validates (12 actions, 24 open pairs) | OK stageplan/1
+  BASE-FLIPS seeded 4 terminal(s) on 2 undirected tunnel(s): [5204, 10404]
+  STEP 01 add_shift_reg    ok cands=0 cdiff=26 measured:tools/bench/opmodels/add_shift_reg.json@c184ce030aea6aaee181fc7b97eeca83
+  STEP 02 create           ok cands=0 cdiff=26 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 03 wire             ok cands=0 cdiff=26 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 04 create           ok cands=0 cdiff=26 measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran)
+  STEP 05 tunnel           ok cands=0 cdiff=26 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 06 wire             ok cands=0 cdiff=26 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 07 wire             ok cands=0 cdiff=26 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 08 wire             ok cands=0 cdiff=26 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 09 tunnel           ok cands=0 cdiff=26 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 10 wire             ok cands=0 cdiff=26 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 11 wire             ok cands=0 cdiff=26 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 12 wire             ok cands=0 cdiff=26 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  ROUTE 1 add_sr ['sr_c7']: add_sr
+  ROUTE 2 create ['c_k07']: primitive
+  ROUTE 3 connect ['w_k07']: const_sr
+  ROUTE 4 create ['c_inc7']: primitive
+  ROUTE 5 connect_term_uid ['t_ci7', 'w_ci7_in', 'w_ci7_inc']: connect_term_uid
+  ROUTE 6 case_frame_wire ['w_c7_fi']: case_frame_wire
+  ROUTE 7 connect_term_uid ['t_co7', 'w_inc7_co', 'w_co7_r']: connect_term_uid
+  ROUTE 8 case_frame_wire ['w_c7_pass']: case_frame_wire
+FACT STEP REALSIM n 00 op base id None: ok model None; file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_00_base.json md5 9f52b780994d2bdc52922f7bd11ca0ef; state b6d7be51
+FACT STEP REALSIM n 01 op add_shift_reg id sr_c7: ok model measured:tools/bench/opmodels/add_shift_reg.json@c184ce030aea6aaee181fc7b97eeca83; file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_01_add_shift_reg.json md5 75215e1d63795e084ed4b528bea95ad3; state 34ad655f
+FACT STEP REALSIM n 02 op create id c_k07: ok model measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran); file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_02_create.json md5 89b71efdc903a19784d25f7f63f4ff6b; state 41706b9b
+FACT STEP REALSIM n 03 op wire id w_k07: ok model measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def; file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_03_wire.json md5 14541403f21f5b303ade3cf2f4dcd873; state adcd9783
+FACT STEP REALSIM n 04 op create id c_inc7: ok model measured-file-present-no-sim-params:tools/bench/opmodels/const.json@45351563158665d45578e83cf314bdb9 (provisional rule ran); file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_04_create.json md5 28ade4c51e881910d85c0aeeda048319; state fe3e0054
+FACT STEP REALSIM n 05 op tunnel id t_ci7: ok model measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4; file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_05_tunnel.json md5 bb433024e6851654407f22e68935c900; state e2c87318
+FACT STEP REALSIM n 06 op wire id w_ci7_in: ok model measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def; file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_06_wire.json md5 050e1568b29a759ea9c8679f3f6da255; state dfcb9b9d
+FACT STEP REALSIM n 07 op wire id w_ci7_inc: ok model measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def; file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_07_wire.json md5 15158e153a7e64fd7c0c7934546f8ad8; state cd48355f
+FACT STEP REALSIM n 08 op wire id w_c7_fi: ok model measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def; file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_08_wire.json md5 754ac838d57b2c892d880ad6332ce1f0; state 7a7f63f2
+FACT STEP REALSIM n 09 op tunnel id t_co7: ok model measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4; file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_09_tunnel.json md5 2f5c0a440acd87114a16c7a0bc1c796a; state 6239ce4b
+FACT STEP REALSIM n 10 op wire id w_inc7_co: ok model measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def; file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_10_wire.json md5 396c9ac75083a948309f0eab653c9dff; state f4b8510f
+FACT STEP REALSIM n 11 op wire id w_co7_r: ok model measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def; file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_11_wire.json md5 a2bafbea875d15d136da75419e58350d; state 0091f3ee
+FACT STEP REALSIM n 12 op wire id w_c7_pass: ok model measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def; file tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/step_12_wire.json md5 01c841574a795102ad91b38bc1c3c3d9; state a6f6ad80
+FACT ROUTE k=1 add_sr ['sr_c7']: route add_sr
+FACT ROUTE k=2 create ['c_k07']: route primitive
+FACT ROUTE k=3 connect ['w_k07']: route const_sr
+FACT ROUTE k=4 create ['c_inc7']: route primitive
+FACT ROUTE k=5 connect_term_uid ['t_ci7', 'w_ci7_in', 'w_ci7_inc']: route connect_term_uid
+FACT ROUTE k=6 case_frame_wire ['w_c7_fi']: route case_frame_wire
+FACT ROUTE k=7 connect_term_uid ['t_co7', 'w_inc7_co', 'w_co7_r']: route connect_term_uid
+FACT ROUTE k=8 case_frame_wire ['w_c7_pass']: route case_frame_wire
+FACT REALSIM plan tools/bench/sim/ring_p5s02d/_replay163/plan_ring_p5s02c.json md5 ab85091ca5d1e58b4bc684ab7bb2d017: final True; failed null; steps 12; provisional []; route check PASS; UNROUTABLE 0
+GATE PASS | SB REALSIM FINAL on the base graph: failed None, 12/12 replayed, 0 PROVISIONAL, route PASS, 0 UNROUTABLE | {'final': True, 'failed': None, 'route': 'PASS', 'first_fail': None}
+GATE PASS | C-OUT compile of plan_ring_p5s02c.json == candidate I ops/checkpoints; MAIN 658.3 | ([0, 1, 2, 4, 5, 7, 8], 658.3)
+GATE PASS | IDS plan action ids == A41..A52 in order | ['sr_c7', 'c_k07', 'w_k07', 'c_inc7', 't_ci7', 'w_ci7_in', 'w_ci7_inc', 'w_c7_fi', 't_co7', 'w_inc7_co', 'w_co7_r', 'w_c7_pass']
+GATE PASS | X8 control_path_lint clean | []
+GATE PASS | X17 x17_gate over the plan | 1 primitive create action(s), every donor label == its prim
+GATE PASS | T1 chosen I with MAIN(I) 658.3, MAIN(I+J) 677.0 (as prep_c163_a1_2_mk.log:28-34) | {'I': 658.3, 'I+J': 677.0}
+GATE PASS | T2 replay plan_in md5 eb48fabc == 163-a1-2's eb48fabc | 
+GATE PASS | T3a 930699ec's step files on disk still have their recorded md5 (changed: []) | 
+FACT REPLAY step files with another md5: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]; content differences after the path map (other than prev/md5): []
+GATE PASS | T3 every step file equal after the path map; only `prev` (path -> md5 chain) differs (13 steps) | []
+FACT REPLAY byte-equal False; JSON differences after the path map: [('/finalized/at', '2026-10-10 12:08:26', '2026-10-10 13:49:42'), ('/finalized/last_step/md5', '5c20a434674456dd0216eba420d9b186', '01c841574a795102ad91b38bc1c3c3d9'), ('/finalized/step_files/1/md5', '223cccf2b8d42ad89e733051b6e8c01c', '75215e1d63795e084ed4b528bea95ad3'), ('/finalized/step_files/10/md5', '164e51e2f982bd2a3d6398e9b033ecc4', '396c9ac75083a948309f0eab653c9dff'), ('/finalized/step_files/11/md5', '815cdad948237fd1fe6f737dd4bc9e17', 'a2bafbea875d15d136da75419e58350d'), ('/finalized/step_files/12/md5', '5c20a434674456dd0216eba420d9b186', '01c841574a795102ad91b38bc1c3c3d9'), ('/finalized/step_files/2/md5', '0116d4208062f65392f50a93d3a7634d', '89b71efdc903a19784d25f7f63f4ff6b'), ('/finalized/step_files/3/md5', '094102e5c0c3b4aab5886b4edc4c01ea', '14541403f21f5b303ade3cf2f4dcd873'), ('/finalized/step_files/4/md5', 'b38dc08b80c45249f7aeabdf165af10c', '28ade4c51e881910d85c0aeeda048319'), ('/finalized/step_files/5/md5', 'd6afbd550d1dedb0115edc07844e6ea6', 'bb433024e6851654407f22e68935c900'), ('/finalized/step_files/6/md5', 'be018b636e0b68598f9a6eaf3fbc2992', '050e1568b29a759ea9c8679f3f6da255'), ('/finalized/step_files/7/md5', '308d1fb516993ab5ccda5e138ca8bb03', '15158e153a7e64fd7c0c7934546f8ad8'), ('/finalized/step_files/8/md5', '005ed30edbda27a5db9fdc5c498ce1bd', '754ac838d57b2c892d880ad6332ce1f0'), ('/finalized/step_files/9/md5', '53afd4e869dae84eb6ddfb7d7a2b99ca', '2f5c0a440acd87114a16c7a0bc1c796a'), ('
+GATE PASS | T4 replay == 930699ec except finalized.at, the summary md5 (it records the plan path) and the step-file md5 chain of T3 | []
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":28,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/_probe/plan_ring_p5s02cq_in.json","md5":"f769a6c64a14b94267aa4be50e8ea69f"},{"path":"tools/bench/sim/ring_p5s02d/_replay163/plan_ring_p5s02c_in.json","md5":"eb48fabc9679da57966a64e6da302be6"},{"path":"tools/bench/sim/ring_p5s02d/_replay163/plan_ring_p5s02c.json","md5":"ab85091ca5d1e58b4bc684ab7bb2d017"},{"path":"tools/bench/sim/ring_p5s02d/_replay163/replay163_session.json","md5":"d99ae66e21fed68205298dba6e67314b"}],"card":"164-a1-1","labview":"none"}
+BGRUN END rc=0 after 43s

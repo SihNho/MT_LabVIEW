@@ -1,0 +1,22 @@
+{"schema":"result/1","id":"159-f1-2","status":"PASS","gates":{"pass":4,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/bench/diag_c159_f1_2_facts.md","md5":"292e41db6e8d1e947789f898a5c1146d"},
+{"path":"tools/bench/diag_c159_f1_2_t2.py","md5":"5e068c1cbf4697d8fc224e7e3ef982b0"},
+{"path":"tools/bench/diag_c159_f1_2_t2.log","md5":"4ce55fcaa3dda2e304b149c56481667e"},
+{"path":"tools/bench/diag_c159_f1_2_t2.json","md5":"b16e97d188099013a08208d5814d8e96"},
+{"path":"tools/bench/diag_c159_f1_2_vipins.log","md5":"27ed5bc9c768989ac77401d1fadbdc8c"}],
+"facts":[
+"T2a: git diff 0b72718d (bb5ba064) vs current 0d1f0c15 = 4 appended comment lines (chat-E3 scope header, e86181ad); no code line changed (diag_c159_f1_2_facts.md:8-9)",
+"T2 with stagekit 9cd8822e served in place of ac3a8f57 (meta_path finder, disk untouched): same DRY FAIL GATE PB, unverified 1 (diag_c159_f1_2_t2.log:25,28)",
+"No single swap restores PASS: stage_prerun 9decb20f (pre-PD387(e)) log:37,73; addrcheck 951efd0e log:49; addrcheck 589685c8 log:61 - all FAIL PB",
+"All tools/*.py at 421d6108 (last 11/0, 10-02): T2 PASS, PB PASS, unverified 0 (log:85-86); all at HEAD a9d0da22 (10-09): FAIL PB (log:95,98)",
+"=> PB regression is a committed change in 421d6108..a9d0da22 (vigraph, stagexec, stagekit, jev_candidates all changed; 11 commits on the first three/jev); not bisected",
+"PB (stage_d1_ring_p3b2a.py:73-74) expects pred cdiff_rows 16 + plan open_rows 11; gets 12 rows: missing 2626|Terminal|array|0..3 (log:13); extra none",
+"16/11 are plan/pred file properties: the 10-02 tools meet them with today's data files (log:85)",
+"T2 also needs unverified 0 (selftest_c134_1_dry.py:84) but stage_prerun 7605116f counts CEN2 UNVERIFIED-DRY (stage_prerun.py:1075) -> unverified 1",
+"md5 after unchanged: stagekit ac3a8f57, stage_prerun 7605116f, stagesim eb99c6ba, stagexec 7a712ccb (t2.log:99); VIs 94ffff94/eb1d0f31/2482fe7b/7f2582ae (vipins.log V0/V1)",
+"tools/hooks: only material_marker.log modified (bgrun); no LabVIEW process; Jev ladder: no failed run in this card (C0 FAIL was the predicted reproduction)"],
+"open":[
+"Which commit in 421d6108..a9d0da22 drops rows 2626|Terminal|array|0-3 from PB (stage_d1_ring_p3b2a.py:71-74): bisect it, or re-pin pred?",
+"T2's `unverified 0` (selftest_c134_1_dry.py:84) cannot hold under PD387(e) counting (stage_prerun.py:1075): amend T2 or the count?"],
+"cost":{"usd":null,"minutes":12,"labview_runs":0},
+"note":"labview:read card, no LabVIEW started; scratch bytes served from memory, no temp dirs left. git-by-md5 helper exists inline in 3 bench scripts (facts file), not extracted."}

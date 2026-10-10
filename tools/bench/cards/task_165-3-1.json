@@ -1,0 +1,79 @@
+{
+ "schema": "task/1",
+ "id": "165-3-1",
+ "kind": "build",
+ "goal": "Offline per brief_165-3-1.md: re-hash inputs, narrow stagexec PRIME skip (PD402(b)), self-test on graph 2a5fa0c4: step-5 plan finalizes, 4 negatives refuse, 6 stored plans byte-equal.",
+ "why": "Purpose items 1-5 and 6 of assignment 165-3: the step-5 plan cannot finalize because PRIME refuses the stub-holding inner faces t8776/t24342 before the plan's own delete_wire rows run (stagexec.py:2620-2642); every later gate and the one scratch depend on this.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_165-3-1.md", "md5": "9c08c3076123399933069c4635942c58"},
+  {"path": "docs/d1/ring-p5c.md", "md5": "ffb92f59acef4c1539f59acd61e59072"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+  {"path": "tools/bench/diag_c165_a1_1_facts.md", "md5": "21ba88ff1da3b1318974d65a855d7c0f"},
+  {"path": "tools/bench/diag_c165_a2_1_facts.md", "md5": "c4bbe91068943c341fa3832baa6a0177"},
+  {"path": "tools/bench/selftest_c165_innerface.py", "md5": "9244f800adedd891ab583485701bc1aa"},
+  {"path": "tools/bench/prep_c165_a2_1_mk.py", "md5": "70f7e553d0221843acce4cf5446df067"},
+  {"path": "tools/bench/prep_c164_a3_1_mk.py", "md5": "c9f18e2bf1626a4d682fc96e49a0fbaa"},
+  {"path": "tools/bench/prep_plan_flow_lib.py", "md5": "34264f5eebda642dc99d5e0be49416b2"},
+  {"path": "tools/bench/graph_ring_p5s02d_20261010_154830.json", "md5": "2a5fa0c40866f88111d3ab14e5f9c32d"},
+  {"path": "tools/bench/plan_ring_p5s02r_in.json", "md5": "0b8959833a6e37259f3cadf4fc7c9ea8"},
+  {"path": "tools/stagexec.py", "md5": "6ea6637fe9d1cfe5818c2f6208a4b508"},
+  {"path": "tools/stagesim.py", "md5": "95a162baec5324ff037a8d23bd7ef46d"},
+  {"path": "tools/stagekit.py", "md5": "dd57c1cac5d56b82c08c6ef9d7b1a22d"},
+  {"path": "tools/stage_prerun.py", "md5": "7605116f1dfe1c6fd4963dbfcf259de1"},
+  {"path": "tools/stage_shared.py", "md5": "b688edd471ec0075918ce544c9413b06"}
+ ],
+ "pass": [
+  "md5 table of the card inputs plus VI 6dcd5c3d (python hashlib, bytes only) equal to the judgement-time values, else FAIL with the table (hand back)",
+  "PRIME skips ONLY a LoopTunnel inner-face sink whose base wire = wire_uid of an EARLIER checkpointed delete_wire; skip logged (end, wire, op); others primed as before; new md5 + lines quoted",
+  "selftest_c165_prime.py on 2a5fa0c4: r_in step-5 plan finalizes in SB REALSIM, route PASS, 0 UNROUTABLE; non-collect PRIME silent on t8776/t24342; skip lines + counts quoted",
+  "negatives refuse: n1 no delete_wire, n2 delete of another wire or non-checkpoint, n3 delete after the connect, n4 wired SelectorTunnel / FS inner face; refusal texts quoted",
+  "six stored plans (p5s01a/b, p5s02a-d) compile + dry byte-equal; c157, c158, c165 innerface, stagesim, stagexec self-tests green, counts quoted; re-pinned tests listed",
+  "diag_c165_a3_1_facts.md written (<= 50 lines) with the UNCHANGED md5 list; hooks, plan doc, r_in, memory_model.json untouched (md5 equal)"
+ ],
+ "outputs": [
+  "tools/stagexec.py",
+  "tools/bench/selftest_c165_prime.py",
+  "tools/bench/diag_c165_a3_1_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagexec.py",
+   "tools/bench/diag_c165_a3_1*",
+   "tools/bench/prep_c165_a3_1*",
+   "tools/bench/selftest_c165_prime*",
+   "tools/bench/selftest_c165_innerface*",
+   "tools/bench/selftest_c157_innerface*",
+   "tools/bench/selftest_c158*",
+   "tools/bench/sim/ring_p5s02e/**",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_*",
+   "tools/bench/cards/result_165-3-1.json"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "advances": ["M3", "M8", "R1"],
+ "rules": [
+  "Offline only: no LabVIEW/motor/camera, no --launch, no hooks or plan-doc edit",
+  "Edit stagexec only; stagesim only if the self-test shows it needs the same skip (say so)",
+  "r_in, graph 2a5fa0c4 and memory_model.json read only; limit 675 kept",
+  "Call shared functions, never copy (docs/script-writing.md)",
+  "Self-test failing after 2 attempts = FAIL with the text; no third route",
+  "Hook false positive on own command: py tools/gate_fp.py log; no env bypass"
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/plan_ring_p5s02r_in.json"},
+  {"kind": "file", "name": "tools/bench/selftest_c165_innerface.py"}
+ ]
+}

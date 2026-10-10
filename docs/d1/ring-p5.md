@@ -255,3 +255,132 @@ How to add: see the 5-line note at the top of `docs/d1/INDEX.md`.
        record (PD380(d)).
      - **(f) A second stop at op 16/17 means PD380(c):** no retry in the card; hand back for a decomposition plan.
      - **(g) gate-fp DUE:** every open entry (fp-62..69, 71, 74, 75) is a hook gate, so the chat drains them. No runner card does.
+384. **(cycle 158 judgement, 2026-10-09 — cycle 157 (stopped mid-cycle by the chat) judged; steer_158 followed)**
+     USER-RULES: U1 (relied on: ops 16/17 still join the same source face to the same `#376` input; only how the act finds the
+     source changes; checkpoints read, they compute nothing), U4 (unchanged); none contradicted.
+     - **Accepted (cycle 157 cards):** 157-a1-1 route fix + FATE lines + checkpoint rule (stagexec 69b1a301, stagekit 0d8f6d25,
+       `selftest_c157_innerface.py`, all 200 stored plans compile equal); 157-a1-2 re-pins (20/0, 21/0) and dry/prerun facts;
+       157-a1-3 fn descriptions 62 → 119; 157-a1-4 cut facts and fp-76 closed.
+     - **(a) The wire-0 LIVE act is not `cfw`** (157-a1-1 open 1: `_cfw(0, …)` at `stagexec.py:3135` cannot work — there is no wire
+       to branch). PD381(b) is amended: when the read shows the LoopTunnel inner face unwired, the act is the term-to-term
+       `connect_nested_v1` route (`stagexec.py:3137-3142`) with src = that face's triple on the owner loop's body diagram; when it
+       is wired, `cfw` as before. Same dst both ways. Self-test both outcomes on ops 16/17 through the act path (sim backend);
+       Case/FS inner faces still stop.
+     - **(b) Checkpoint rule, amended (PD381(d), memory):** every-`move_in` checkpoints put planned MAIN at 679.7 (> 675), and no
+       group-end cut fits (20: 675.8, 26: 683.6; `diag_c157_a1_4_facts.md`). Rule now: the LAST op of each maximal run of
+       consecutive `move_in` ops is a checkpoint; the FATE lines of every `move_in` in the run come from that read, compared with
+       the checkpoint before the run. p5s02a = (0,1,3,6,8,9,12,15,16,17), model MAIN 674.7 (157-a1-4 line 14). The plan
+       4284c22a is kept, not re-cut. A moved node's E1 check is per run, not per op (localisation lost, detection kept; ops 10–12
+       move three different nodes). The Executor REFUSES before op 1 a checkpoint set missing a run-closing op (not FATE-UNREAD).
+     - **(c) Then the deliverable, as PD381(e)** with the empty disposition of the c156-a1-1 prior-art review filled first (it
+       blocks the next prior-art dispatch). If planned MAIN is still > 675 after (b), hand back; do not re-cut in the card.
+     - **(d) Steer `debate:plan-overall-02` FOLLOWED** (PD383): P5 → P6 unchanged; PB PASS-UNVERIFIED is a representation
+       difference, so it is RECORDED via `DRY-UNVERIFIED-OK`, not blocking; the FATE lines are the post-run read of what LabVIEW
+       decided. The GATE MUTATION TABLE runs as ONE small offline card beside or after the LabVIEW card, never before it: on the
+       stored graph `graph_ring_p5s01_20261009_125622.json` 6716c499, a fixed mutation list (wire dropped, wire re-sourced, node
+       moved to another diagram, tunnel renamed with owner/connectivity unchanged, uid renumbered with connectivity unchanged,
+       constant value changed) is scored against the existing gates (computation_diff, D/TD/PB, E1, invcheck); each mutation is
+       classed invariant (computation / save / safety) or representation; rows where an invariant mutation passes every gate, or
+       a representation mutation blocks, are listed. No gate is edited in this cycle; the gate changes are judged from the table.
+       P6 carries the two separate tests (frame-number gap; execution order with a test delay in 1.2: 0 normal-load loss, exact
+       overload loss count, 0 damaged rows; a discard never seen = 'not verified'); the new-skeleton comparison is after P6.
+385. **(cycle 158 judgement, hand-back 1, 2026-10-10 — PD384(a)'s address does not exist; the route is chosen)**
+     USER-RULES: U1 (relied on: ops 16/17 still join the same source face to the same `#376` input; only the op that makes the
+     join changes), U4 (unchanged); none contradicted.
+     - **Accepted (round 1, `tools/bench/cards/assign_result_158_1.json`):** 158-a1-2 PD384(b) run-closing checkpoints (stagexec
+       df82d75e, `selftest_c158_runcheck` 10/0, 200 stored plans compile equal, Executor refusal self-tested); 158-a1-3 prior-art
+       disposition filled, dry + prerun PASS with planned MAIN 674.7 (valid for THOSE stagexec bytes only). 158-a1-1 FAIL accepted
+       as a correct return: a LoopTunnel inner face (`#24360`, `#24367`) is listed in no `Diagram.Nodes[]` row
+       (`tools/bench/prep_c158_a1_1_probe.log:3-8`), so `connect_nested_v1` (Nodes[]-indexed) cannot take it as a source.
+     - **(a) PD384(a) amended — the wire-0 act is `gscript.connect_term_uid(target, sink_uid, src_uid)`** (OpConnectTermUid_v0,
+       `tools/gscript.py:5141-5163`: `Terminal.Connect Wire` by terminal uid, any owner, any diagram; already a stagexec route,
+       `tools/stagexec.py:293-330`). src = the inner face's term uid, dst = the same `#376` input term uid the wired case uses,
+       both from that op's checkpoint read (op 15 for ops 16/17). Wired face → `cfw` as before. Case/FS inner faces still stop.
+       No new op VI, no `Tunnel.Inside Terminals[]` route (the M3a-3 dead-end note, `tools/recipes/build_d1_m3a3.py:123-127`,
+       concerns FS tunnels and stays closed).
+     - **(b) Census:** the nearest measured variant is R1 (a register INNER face → a node in a case frame = ONE SelectorTunnel,
+       `ROUTE_CENSUS['connect_term_uid']['register_end_case_border']`). The fix adds a named variant for a LoopTunnel inner face
+       whose predicted delta is taken from where the dst actually sits on the sim graph (case frame → R1's delta; same diagram →
+       one Wire); it is a PREDICTION, marked unmeasured, and the scratch's census of ops 16/17 is the measurement — a mismatch is
+       a return at that op, never a retry in the card.
+     - **(c) Self-test (sim backend, act path):** ops 16/17 with the face wired → `cfw`; with wire 0 → `connect_term_uid` with the
+       face uid as src and the same dst uid; a Case and an FS inner face with wire 0 still stop; all stored plans compile equal;
+       158-a1-2's `selftest_c158_runcheck` and the suite counts unchanged.
+     - **(d) Then PD384(c) unchanged:** dry + prerun on the new bytes (MAIN > 675 ⇒ hand back, no re-cut), ONE scratch on a NEW
+       byte copy of P5-1 7f2582ae, adopt, step-2 plan not launched; PD381(f) holds (second stop at op 16/17 ⇒ hand back).
+     - **(e) Prior-art:** `connect_term_uid` is a proven op, but a LoopTunnel inner face as its source is a new use; the plan's
+       prior-art review (PD384(c)) covers it — no separate review.
+386. **(cycle 158 judgement, hand-back 2, 2026-10-10 — the scratch built the planned graph; four gates failed on convention)**
+     USER-RULES: U1 (relied on: every `#376` input keeps its S1 source terminal — 3391 'cal cluster path', 1766 'file size' —
+     and the moved sources sit in the planned case frame; nothing here changes what reaches `#376`), U13 (unchanged); none
+     contradicted. Applies steer `debate:plan-overall-02` items 4/10: BLOCK = computation / save / safety invariant, RECORD =
+     representation.
+     - **Accepted (round 2, `tools/bench/cards/assign_result_158_2.json`):** 158-a2-1 (stagexec 7a712ccb, `selftest_c158_wire0face`
+       24/0, stored plans equal); dry + prerun PASS on those bytes, planned MAIN 674.7; the scratch ran all 17 ops, E1 diff 0 at
+       every checkpoint, ops 16/17 took `connect_term_uid` (`diag_c158_a2_2_facts.md:18-21`); 158-a2-4 mutation table, 158-a2-5
+       66 descriptions. The 158-a2-3 offline recount (`diag_c158_a2_3_facts.md`) is accepted as the reading of the failure:
+       real end == sim end in topology except wire 24091's source-only stub, and real PB == sim-with-real-uids PB.
+     - **(a) PB, move into a case CREATED by this stage:** the frame tag is compared by the BOUND frame uid, never by the
+       ordinal (`vigraph.py:322` ranks by uid, so negative sim uids reverse it — the f1/f0 flip is that artefact, :126-128).
+       Contract: real PB == sim-end PB re-keyed with the run's bindings (frame-keyed) — any difference BLOCKS. A row of
+       PB(S1, real) whose only difference from S1 is the tag `@<tunnel>/f<k>` is RECORDED (not blocking) iff its source
+       terminal uid equals S1's and the tunnel's bound frame is the plan's frame for that move; any other extra/missing row
+       BLOCKS. Same rule for every later step that moves a source into a case it created.
+     - **(b) D / TD are judged pair-keyed** (`stagekit.wire_ends_pos` (source, sink) pairs, sim owners via the bindings):
+       new / lost pairs real == sim, else BLOCK. Half wires with no sink (source-only stubs) are dropped on both sides and
+       RECORDED — a wire with no sink carries nothing (wire 24091: sim keeps the stub, LabVIEW deletes it). The simulator's
+       stub-keeping is logged as a model gap (FINDING, no build now).
+     - **(c) CEN2:** the pred's `census_overall` becomes `MEASURED-SCRATCH` = the c158-a2-2 run's census
+       (`diag_c156_p5s02a_scratch.log:553-555`, the precedent `tools/bench/diag_c148_a2_4_census.py:52`); the retry's census
+       must EQUAL it, else BLOCK. The FATE of ops 16/17 gets a per-op class census line (PD385(b) measurement, owed).
+     - **(d) Mutation-table check of (a)/(b):** after the gate change, re-score the 158-a2-4 table
+       (`tools/bench/mutation_table_p5.json`): every row classed `invariant` that blocked before still blocks; rows that now
+       record are only representation rows. A newly passing invariant row = no launch, hand back.
+     - **(e) The retry:** the scratch recipe writes its OWN log (`tools/bench/diag_c158_p5s02a_scratch.log`; the fixed c156
+       LOG constant made METER read the whole file). Second run of the stage this cycle = a `retry_of` card
+       (`stage_d1_ring_p5s02a_scratch.py`, RETRY_CARD). Then PD381(e) as written: adopt, Error List, graph json, load_by_vi,
+       step-2 plan (not launched), delete failed copy 152721 cac5236b + its resume record. A FAIL on any BLOCK gate = hand back,
+       no third run.
+     - **(f) Tooling after the deliverable:** stale `stagekit.op:*` rows in fn_records (gen_capabilities --check DRIFT).
+387. **(cycle 159 judgement 03:2x, 2026-10-10 — cycle 158 hand-back 3 judged; steer `debate:c159-stuck` FOLLOWED)**
+     USER-RULES: U1 (relied on: 94ffff94 becomes the base only when every new Error List item is a connection a later P5-2
+     action re-feeds; a leftover no action re-feeds would change what reaches `#376` and goes to the user), U4, U13
+     (unchanged); none contradicted.
+     - **Accepted (round 3, `tools/bench/cards/assign_result_158_3.json`):** 158-a3-1's PD386 gate rework (no invariant row
+       weakened); the ONE retry scratch PASS 23/0 and the adoption of `claudeDev\D1_ring_p5s02a_20261010_023239.vi` 94ffff94
+       as an in-between file — NOT yet the step-2 base; review `archive/peer/2026-10-10-c158-a3-2b-el56.md` as the reading of
+       the Error List: the 11 extras are a NET count and are not attributed.
+     - **(a) No re-run, no rebuild** (steer 1): the step-1 scratch is not re-run, 94ffff94 is not rebuilt, and no expected
+       Error List is written from the 56 observed items as a block.
+     - **(b) First act = the graph read** of 94ffff94 with the prepared read-only `tools/bench/diag_c158_a3_2b_graph.py`
+       (plan 91fcfbec, prerun 15/0) + `load_by_vi` (prepared memload) in the same LabVIEW session; bed md5 unchanged after.
+       It is PD381(e)'s graph item.
+     - **(c) Offline attribution** (steer 3-4): recompute `allterms.join_wires`/`severed` from the new graph's stored
+       terminals/objs, diff with P5-1's `graph_ring_p5s01_20261009_125622.json` 6716c499, and list per Error List class
+       (no-source, LoopTunnel undirected, While-input-to-SubVI, not-connected, loose ends) the new and the resolved items.
+       Each of the 8 items of the three NEW classes gets one row: connection (source uid + terminal, every sink, frame) →
+       the `plan_ring_p5s02r_in.json` (d84634bd) A24..A80 action that re-feeds it. The net +3 of the two old classes is
+       explained by listed new/resolved pairs. A fragment whose dropped end the graph does not show is UNATTRIBUTED (a
+       narrow reporter read may fill it; screenshots are support only).
+     - **(d) Acceptance rule:** every row attributed and the net explained ⇒ 94ffff94 IS the step-2 base; its expected
+       Error List is written item by item from (c) (each item cites the action that clears it); the failed copy 152721
+       cac5236b and its resume record are deleted. Any UNATTRIBUTED row ⇒ hand back with the table (a plan error is checked
+       first); only a confirmed leftover that no later action re-feeds goes to the user (U1, steer 5).
+     - **(e) Device for retrospective-cycle158 `device-failed`** (`docs/violation-decisions.md` 2026-10-10 03:2x), offline in
+       `stage_prerun`/`stagekit` (never hooks), after the LabVIEW card and before step 2's dry: (1) the dry's final
+       `unverified N` counts every gate line it printed `UNVERIFIED-DRY`; (2) a census declaration that does not cover every
+       op of the plan, or a pred whose `census_overall` is `UNPREDICTED`, is UNPREDICTED — never a partial PASS; (3) the dry
+       runs the recipe's own PB, D, TD and CEN2 against the simulated end. Self-test: the stored c158-a2-2 inputs (census
+       declared for the Case op only, PB on stub input) make the dry report CEN2 and PB unverified or FAIL; all stored plans
+       compile equal; suite counts unchanged.
+     - **(f) Step-2 split** (steer 7, PD379(c)): step 2 = A24..A60 (F3..J, 37 actions), step 3 = A61..A80 (K3/K4, 20),
+       kept iff on the real 94ffff94 graph no group crosses the A60/A61 boundary and step 2's planned MAIN ≤ 675; else cut at
+       the last whole-group boundary that fits. Step 2 = `tools/bench/plan_ring_p5s02b.json` + recipe pair
+       `tools/recipes/stage_d1_ring_p5s02b{,_scratch}.py` (the p5s02a pair's inputs on the shared stagekit `RingSession`
+       gates, `docs/script-writing.md`), on the real graph: dry `unverified 0` under (e), prerun PASS, a predicted step-2-end
+       Error List built from (c), prior-art review. NOT launched in cycle 159; the next cycle runs its ONE scratch.
+     - **(g) Side items, after the above** (steer 6, GPT's form): the `diag_c158_a2_3_probe` result_line TypeError and the
+       `diag_c158_a3_2_pascope` 'no scope' are recorded as diagnostics with their cause line, not logged to gate_fp without
+       false-positive evidence; fp-77 (`stage_prerun.is_vi_modifying`, not a hook) is drained; hook entries stay with the
+       chat; one batch of ~60 fn descriptions last.
+PD388 onward: `docs/d1/ring-p5b.md`.

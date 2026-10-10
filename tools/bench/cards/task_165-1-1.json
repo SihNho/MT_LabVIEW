@@ -1,0 +1,69 @@
+{
+ "schema": "task/1",
+ "id": "165-1-1",
+ "kind": "build",
+ "goal": "Offline per brief_165-1-1.md (PD400): stub gates from graph 2a5fa0c4, inner-face SINK route (connect_term_uid) in stagexec+stagesim with self-test, 2 delete_wire rows in r_in.",
+ "why": "Purpose items 0-6 of assignment 165-1: compile refuses A70 at stagexec.py:1930; the route and the two stub deletes must exist before the step-5 plan is made.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_165-1-1.md", "md5": "7d445803a4ae5193e9a116948c12abcc"},
+  {"path": "docs/d1/ring-p5c.md", "md5": "7562b7803585915e273269521080b6d3"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+  {"path": "tools/bench/graph_ring_p5s02d_20261010_154830.json", "md5": "2a5fa0c40866f88111d3ab14e5f9c32d"},
+  {"path": "tools/bench/errorlist_expected_D1_ring_p5s02d_20261010_152518.json", "md5": "c74200f2d75b3139ee1f8ca477cd8470"},
+  {"path": "tools/bench/memory_model.json", "md5": "ff0fabca220686e7222cfcb27aa622cd"},
+  {"path": "tools/bench/plan_ring_p5s02r_in.json", "md5": "9dadb0c1d3faeeb52f109a0af36929b5"},
+  {"path": "tools/stagexec.py", "md5": "a4df7e15c495b9fcbcdadf0d8047bc69"},
+  {"path": "tools/stagesim.py", "md5": "95a162baec5324ff037a8d23bd7ef46d"},
+  {"path": "tools/stagekit.py", "md5": "dd57c1cac5d56b82c08c6ef9d7b1a22d"},
+  {"path": "tools/bench/diag_c164_a3_2_facts.md", "md5": "0312feb47fd796fdbda5f1e84727970e"},
+  {"path": "tools/bench/diag_c164_a3_5_facts.md", "md5": "b19262fd0b5555e98bdeb6b0ecf928e9"},
+  {"path": "tools/bench/diag_c164_p5s02d_scratch.log", "md5": "388a86d386ddc91dc23942db40916d85"}
+ ],
+ "pass": [
+  "md5 list of VI 6dcd5c3d, graph 2a5fa0c4, EL file, memory_model ff0fabca, r_in 9dadb0c1 and the located step-4 binding record (path+md5) in the facts file",
+  "Stub gates quoted from graph 2a5fa0c4: w10362 / w25232 each exactly one terminal row = inner face t8776 / t24342 of #5204 / #10404, not a source; else STOP with the fact",
+  "OK3/OK4.outer wired-source fact quoted and a connect_term_uid-from-a-wired-source precedent cited (diag_c161_p5s02b_scratch.log:97) or STOP and hand back",
+  "stagexec+stagesim route unwired While/For LoopTunnel INNER face as dst by connect_term_uid, same owner checks; only that behaviour changes; docstring names the self-test",
+  "Self-test on 2a5fa0c4: A70/A80 compile to connect_term_uid; wired face, Case-tunnel, FS-tunnel inner face and non-loop owner still stop; counts quoted",
+  "Stored p5s01a/b and p5s02a-d plans compile byte-equal before vs after the change, md5s quoted",
+  "plan_ring_p5s02r_in.json: exactly 2 added delete_wire actions (w10362 before A70, w25232 before A80), JSON compare vs 9dadb0c1, old and new md5 quoted"
+ ],
+ "outputs": [
+  "tools/stagexec.py",
+  "tools/stagesim.py",
+  "tools/bench/plan_ring_p5s02r_in.json",
+  "tools/bench/diag_c165_a1_1_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/bench/diag_c165_a1_1*",
+   "tools/bench/prep_c165_a1_1*",
+   "tools/bench/selftest_c165_innerface*",
+   "tools/bench/plan_ring_p5s02r_in.json",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/jev_*",
+   "tools/bench/cards/result_165-1-1.json"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 75
+ },
+ "advances": ["M3", "M8", "R1"],
+ "rules": [
+  "Offline only: no LabVIEW/motor/camera, no hooks or plan-doc edit; stagexec/stagesim change = inner-face sink route only",
+  "Every other inner-face case still stops; stored plans compile byte-equal",
+  "Call shared functions, never copy them (docs/script-writing.md); new shared fn: docstring naming its self-test",
+  "A pass item that cannot be met: write the fact and an open: line, return; no outer-face rewrite (rule 1a)",
+  "Hook false positive on own command text: py tools/gate_fp.py log, report; no env bypass"
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": "task/1",
+ "id": "164-a2-2",
+ "kind": "build",
+ "retry_of_card": "164-a2-1",
+ "goal": "Offline retry: plan_ring_p5s02d.json for whole groups J+K3 only (K3f/K4f inner-face sinks are unroutable); all gates quoted.",
+ "why": "164-a2-1 chose all 28 rows; SB failed on 2 UNROUTABLE rows (K3f, K4f). The longest routable whole-group prefix is J+K3.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_164-a2-2.md", "md5": "1e7512397f402d1227de709d87573551"},
+  {"path": "tools/bench/diag_c164_a2_1_facts.md", "md5": "c6aa63bef2295f97fea51a9e45263317"},
+  {"path": "tools/bench/prep_c164_a2_1_mk.py", "md5": "a2cf4394b179478800db4ce14e44b380"},
+  {"path": "tools/bench/plan_ring_p5s02d.json", "md5": "e3054ab674460ca7397cca94b639f61b"},
+  {"path": "tools/bench/plan_ring_p5s02d_jonly.json", "md5": "1152ce60a87966b060dd8fb07e40c577"},
+  {"path": "tools/bench/plan_ring_p5s02r_in.json", "md5": "4d93c82dfb10e2954196e3ee2364171b"},
+  {"path": "tools/bench/graph_ring_p5s02c_20261010_131658.json", "md5": "3d5196ab098c5fb1401037e5c3c49e2d"},
+  {"path": "tools/bench/memory_model.json", "md5": "8fb432e459d581926f541178b4f93cfd"},
+  {"path": "tools/bench/prep_plan_flow_lib.py", "md5": "34264f5eebda642dc99d5e0be49416b2"},
+  {"path": "docs/d1/ring-p5c.md", "md5": "964855504a10c9de946fefe0b308913d"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"}
+ ],
+ "pass": [
+  "Final-False e3054ab6 copied aside; prep_c164_a2_2_mk.py calls make_step_plan with groups [J,K3]",
+  "plan_ring_p5s02d.json = J+K3 (A53..A69, 17 rows), written by stagesim.simulate, REALSIM final True, 0 UNROUTABLE",
+  "Gates ROWS/SB/C/X10/X8/X17/no-split/id-range quoted PASS; MAIN per prefix quoted; STUB state quoted",
+  "K3 pass-wire op = connect_term_uid register_end_case_border quoted; op list + checkpoints",
+  "facts file; UNCHANGED md5 list"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p5s02d.json",
+  "tools/bench/plan_ring_p5s02d_all28_false.json",
+  "tools/bench/prep_c164_a2_2_mk.py",
+  "tools/bench/diag_c164_a2_2_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c164_a2_2*",
+   "tools/bench/prep_c164_a2_2*",
+   "tools/bench/plan_ring_p5s02d*",
+   "tools/bench/sim/ring_p5s02d/**",
+   "tools/bench/jev_*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/cards/result_164-a2-2.json"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 45
+ },
+ "advances": ["M3", "M8", "R1"],
+ "rules": [
+  "Offline only: no LabVIEW/motor/camera, no --launch, no hooks edit, no edit of stage tools or the flow lib",
+  "Call shared functions, never copy them (docs/script-writing.md); limit 675 kept; memory_model.json untouched",
+  "Any gate other than STUB failing for J+K3 = FAIL with the line; no other prefix or shape",
+  "Hook false positive on own command text: py tools/gate_fp.py log, report; no env bypass"
+ ]
+}

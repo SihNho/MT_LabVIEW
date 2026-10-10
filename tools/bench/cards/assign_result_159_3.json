@@ -1,0 +1,27 @@
+{
+ "schema": "assign-result/1",
+ "cycle": 159,
+ "round": 3,
+ "status": "HANDBACK",
+ "cards": ["159-c1-1", "159-e1-1", "159-g1-1", "159-f1-1", "159-f1-2"],
+ "pass_evidence": [
+  {"item": 0, "met": true, "evidence": ["tools/bench/diag_c159_c1_1_facts.md:11-16", "no group crosses A60/A61 (J A53-60, K3 A61-69) but delete+A24..A60 = MAIN 694.4 > 675 at START_ASSUMED 603.4 (kept); PD388(h) cut = A40 (end of H), 8 ops, MAIN 654.6"]},
+  {"item": 1, "met": false, "evidence": ["tools/bench/plan_ring_p5s02b.json caef7e1c (final False), tools/bench/diag_c159_c1_1_facts.md:25-26", "REALSIM refuses action 1 delete_wire w10394 (termless): stagesim.py:1424-1426; stagexec.py:2843-2851 resolves by terminals too; PD388(a) 'existing verb' premise fails"]},
+  {"item": 2, "met": false, "evidence": ["not started: the recipe pair needs a final plan (item 1) and the step split"]},
+  {"item": 3, "met": false, "evidence": ["MERGE rows with expected uid are in the plan whys (A28 w24285, A32 w24264, A35 w24312, A39 w24300; diag_c159_c1_1_facts.md:28-35)", "the prediction file is not written: waits on the final plan"]},
+  {"item": 4, "met": false, "evidence": ["not started: the step-2 action set is not decided (delete_wire route, A40 cut)"]},
+  {"item": 5, "met": false, "evidence": ["not started: the prior-art review is of the final plan"]},
+  {"item": 6, "met": true, "evidence": ["tools/bench/diag_c159_e1_1_facts.md", "gate_cen2 stagekit.py:2481-2512 judges Wire by (source,sink,frame) end pairs via cen2_wire_ends :2130 / wire_end_pairs :2096; UID-REUSE fact printed; stagekit 9cd8822e -> ac3a8f57"]},
+  {"item": 7, "met": true, "evidence": ["tools/bench/selftest_c159_cen2_ends_final.log; tools/bench/diag_c159_f1_2_vipins.log:5-13 (re-run 8/0)", "94ffff94 vs p5s02a sim end PASS (new pairs 23 == 23), old uid CEN2 11/12, one pair removed FAILS naming it, stub 24091 RECORDED, non-Wire verdict unchanged"]},
+  {"item": 8, "met": false, "evidence": ["not started: no p5s02b dry/prerun exists; stagekit is final only if the judgement session accepts OPEN 3 (mapping block into stagekit)"]},
+  {"item": 9, "met": true, "evidence": ["tools/bench/diag_c159_f1_1_facts.md", "stage_prerun pin 9decb20f->7605116f in selftest_c158_runcheck.py:152 (10/0) and selftest_c158_wire0face.py:260 (24/0); selftest_c134_2_gates D2 records(2)->records(3), 11/0", "stale pins NOT re-pinned (outside the item): selftest_c156_passwire.py:161, selftest_c155_basecase_frame.py:206, selftest_c156_b2_2_invcheck.py:101"]},
+  {"item": 10, "met": false, "evidence": ["selftest_stagekit 51/0 == last pass 51/0 (selftest_stagekit_c159_f1_1.log:79)", "selftest_c134_1_dry 9/2 vs 11/0 (c134_1_dry_c159_f1_1.log:5-6): T2a header-only md5; T2 PB fail predates today's stagekit edit, in commits 421d6108..a9d0da22 (diag_c159_f1_2_facts.md)"]},
+  {"item": 11, "met": true, "evidence": ["tools/bench/diag_c159_g1_1_facts.md", "cycle_runner.retro_undisposed (cycle_runner.py:1031) -> dispo.disposition_len = 920 (real text); nothing written; the gate no longer lists 158 (stale due entry logged 03:17)", "hook copy guard_peer.undisposed splits at the first substring match (guard_peer.py:851): logged fp-81"]},
+  {"item": 12, "met": true, "evidence": ["tools/bench/diag_c159_f1_2_vipins.log:4,13", "94ffff94, s09 eb1d0f31, P5-1a 2482fe7b, P5-1 7f2582ae unchanged before/after; no tools/hooks edit (only material_marker.log by bgrun); original VI never opened; step 2 not launched"]}
+ ],
+ "handback": {
+  "reason": "Step-2 plan cannot be final: delete_wire cannot remove termless w10394 (stagesim.py:1424-1426, stagexec.py:2843-2851), and the PD388(h) cut at A40 leaves 40 actions for step 3 (split and 6-file cap). Plan decisions, not material faults.",
+  "question": null
+ },
+ "note": "Open for judgement: (1) w10394 route: remove_bad_wires op, a stagesim/stagexec change (termless-wire delete), or carry it as owed in the Error List; (2) accept the A40 cut (step 2 = delete + A24..A40, 18 actions, MAIN 654.6) and re-plan steps 3/4 over A41..A80; (3) selftest_c134_1_dry: PB regression in 421d6108..a9d0da22 (rows 2626|Terminal|array|0-3 missing, 12 vs 16) and T2 'unverified 0' vs PD387(e) counting (stage_prerun.py:1075) - bisect or re-pin pred; T2a re-pin is header-only; (4) mapping block lives in tools/bench/prep_c159_c1_1_lib.py (self-test 3/0), belongs in stagekit; (5) the --rebase route (stage_prerun.py:4199-4248) does not map frame names, the P5-1b map route was used; (6) three stale stagekit/stage_prerun pins in other self-tests listed in item 9; (7) fp-81 queued for the chat. Items 2,3(prediction),4,5,8 follow once (1)/(2) are decided. Cards: c1-1 FAIL (explained, not retried: the retry would need a stage-tool edit outside its rules), e1-1 PASS, g1-1 PASS, f1-1 FAIL (c134_1_dry), f1-2 PASS (measure)."
+}

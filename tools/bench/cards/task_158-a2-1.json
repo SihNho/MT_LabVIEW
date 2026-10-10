@@ -1,0 +1,83 @@
+{
+ "schema": "task/1",
+ "id": "158-a2-1",
+ "kind": "build",
+ "goal": "PD385(a)(b)(c) tool fix: wire-0 While/For LoopTunnel inner face act = gscript.connect_term_uid (face uid -> same dst uid), wired stays cfw; unmeasured census variant; self-test; re-pin.",
+ "why": "Card 158-a1-1 returned correctly: a loop inner face is in no Nodes[] row, so connect_nested_v1 cannot take it. The step-1 scratch of P5-2 needs ops 16/17 to join the face to #376 after LabVIEW dropped the wire (docs/d1/ring-p5.md PD385).",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_158-a2-1.md", "md5": "5a869238ef8a01e1e8f6a8e40be2b13b"},
+  {"path": "tools/bench/diag_c158_a1_1_facts.md", "md5": "7cdd49fc3e2457a774a5c77266327122"},
+  {"path": "tools/bench/diag_c158_a1_2_facts.md", "md5": "9332866c070516b629f2c4577deff8b2"},
+  {"path": "tools/bench/diag_c157_a1_1_facts.md", "md5": "6e6377c98d18b5955cd37c7592466b54"},
+  {"path": "tools/bench/prep_c158_a1_1_probe.log", "md5": "febf8bd52f6dc4bbe3afa290f34f7cbb"},
+  {"path": "tools/bench/prep_c158_a1_1_regress.py", "md5": "11e1b767c3002ef3f351fe83ab56abc9"},
+  {"path": "tools/bench/selftest_c157_innerface.py", "md5": "b8e68843ac6d01ebb83c20f9de244195"},
+  {"path": "tools/bench/selftest_c158_runcheck.py", "md5": "baa0914383bedade3766351a4ea8a940"},
+  {"path": "tools/bench/selftest_c156_passwire.py", "md5": "6be050379771532e7915e58f3323e211"},
+  {"path": "tools/bench/selftest_c155_basecase_frame.py", "md5": "e64cd4b577edb47d0f3abc7e812ef5e6"},
+  {"path": "tools/bench/plan_ring_p5s02a.json", "md5": "4284c22a540f9e3f39c7092affe516af"},
+  {"path": "tools/stagexec.py", "md5": "df82d75eeea3447d45a17b1757198720"},
+  {"path": "tools/stagekit.py", "md5": "0d8f6d252eac3d0c28fc3a2141f54a14"},
+  {"path": "tools/stagesim.py", "md5": "eb99c6bab81633f9bdd7c10dce6bfc0a"},
+  {"path": "tools/addrcheck.py", "md5": "207beb0d09102c78b1e06d1f076eec7e"},
+  {"path": "tools/stage_prerun.py", "md5": "9decb20f6d67793abad967347e2a37ab"},
+  {"path": "tools/gscript.py", "md5": "1a80236ed35c1876c67f964c72fe820a"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+  {"path": "docs/d1/ring-p5.md", "md5": "59a0c3107f16c1259bf2bb2a01974584"}
+ ],
+ "pass": [
+  "Before-edit op lists of all stored plans stored first; after the edit all compile to the same ops; suite counts unchanged except pin updates (vs sim/ring_p5s02a_c158/before.json)",
+  "Sim act path, p5s02a ops 16/17: wired -> cfw, dst (1,1,6)/(1,1,9); wire 0 -> connect_term_uid, src = face uid, SAME dst uid; Case and FS face with wire 0 still stop with existing text",
+  "Named connect_term_uid census variant for a LoopTunnel inner face: delta from the dst's sim position, marked unmeasured in comment and op value; selftest_case_frame_c124 U01 unchanged vs before",
+  "New selftest_c158_wire0face.py PASS; checkpoint_ops(p5s02a) unchanged; c155 21/0, c156 20/0, c157 and c158_runcheck pass after re-pinning md5 strings only",
+  "New md5 of stagexec (stagekit if touched); stagesim, addrcheck, stage_prerun, gscript, hooks unchanged; no LabVIEW; diag_c158_a2_1_facts.md written (<= 45 lines, OPEN lines)"
+ ],
+ "outputs": [
+  "tools/stagexec.py",
+  "tools/bench/selftest_c158_wire0face.py",
+  "tools/bench/selftest_c157_innerface.py",
+  "tools/bench/selftest_c158_runcheck.py",
+  "tools/bench/selftest_c156_passwire.py",
+  "tools/bench/selftest_c155_basecase_frame.py",
+  "tools/bench/diag_c158_a2_1_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagexec.py",
+   "tools/stagekit.py",
+   "tools/bench/selftest_c158_*",
+   "tools/bench/selftest_c157_innerface*",
+   "tools/bench/selftest_c156_passwire*",
+   "tools/bench/selftest_c155_basecase_frame*",
+   "tools/bench/diag_c158_a2_1*",
+   "tools/bench/prep_c158_a2_1*",
+   "tools/bench/sim/ring_p5s02a_c158/**",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/jev_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 75
+ },
+ "rules": [
+  "Offline; no hook, plan, pred, licence, recipe, stagesim, addrcheck, stage_prerun or gscript edit",
+  "Rule 1a: only how tools ADDRESS a wire and what they PRINT changes; no VI content or computation",
+  "script-writing.md: one shared function, no pasted copies; docstring names its self-test",
+  "RETURN if a stored op list changes, a graph row is missing, or the variant needs a stagesim/addrcheck change",
+  "A gate refusing your own command text is a false positive: gate_fp.py log, no env bypass"
+ ],
+ "advances": ["M3", "M8", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c158_a1_1_facts.md"},
+  {"kind": "file", "name": "tools/bench/prep_c158_a1_1_regress.py"}
+ ]
+}

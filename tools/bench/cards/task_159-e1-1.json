@@ -1,0 +1,57 @@
+{
+ "schema": "task/1",
+ "id": "159-e1-1",
+ "kind": "build",
+ "goal": "PD389(b): gate_cen2 judges the Wire class by (source, sink, frame) end pairs, UID-REUSE printed; offline self-test on the 94ffff94 graph vs the p5s02a sim end.",
+ "why": "CEN2 read 11 vs 12 on a sound file because only wire uids differ (uid re-use). Judging by ends is the decided repair (PD389(b)); it is independent of the open delete_wire question, so it runs now.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_159-e1-1.md", "md5": "730ec0378d266c6148c77c517f5f460e"},
+  {"path": "docs/d1/ring-p5b.md", "md5": "8ff5f8f20370121fd22ae3cf0d2e6008"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+  {"path": "tools/bench/diag_c159_cen2_wire.md", "md5": "158a22fcbe732de7e98a07b4c7037ac9"},
+  {"path": "tools/bench/graph_ring_p5s02a_20261010_032547.json", "md5": "7ac24924f979afde964e63fb27957b45"},
+  {"path": "tools/stagekit.py", "md5": "9cd8822e7605cc6f6a1f899323c9d54b"},
+  {"path": "tools/stagesim.py", "md5": "eb99c6bab81633f9bdd7c10dce6bfc0a"},
+  {"path": "tools/stagexec.py", "md5": "7a712ccb4c1f754d8bee4557f632177f"},
+  {"path": "tools/stage_prerun.py", "md5": "7605116f1dfe1c6fd4963dbfcf259de1"}
+ ],
+ "pass": [
+  "gate_cen2 (stagekit.py:2414) compares Wire by (source, sink, frame) end pairs keyed like TD; other classes keep the uid census; UID-REUSE counts printed; sim-only source-only stub RECORDED",
+  "selftest_c159_cen2_ends.py: 94ffff94 vs p5s02a sim end PASS (old uid CEN2 still 11/12); one real pair removed FAILS naming it; stub recorded; non-Wire verdict unchanged",
+  "facts file: function/line ranges changed, self-test log + totals, stagekit md5 before 9cd8822e and after, stagesim/stagexec/stage_prerun md5 unchanged, no tools/hooks edit",
+  "94ffff94, s09 eb1d0f31, P5-1a 2482fe7b, P5-1 7f2582ae md5 unchanged; no original opened"
+ ],
+ "outputs": [
+  "tools/bench/selftest_c159_cen2_ends.py",
+  "tools/bench/diag_c159_e1_1_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagekit.py",
+   "tools/bench/selftest_c159_cen2_ends*",
+   "tools/bench/diag_c159_e1_1*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 50
+ },
+ "rules": [
+  "Offline; no tools/hooks edit; edit only stagekit.py + the new self-test; do not run selftest_stagekit/c134_1_dry",
+  "Rule 1a: no per-bead computation touched; only the gate's judgement changes",
+  "Call shared stagekit helpers, no pasted blocks; new shared function gets a docstring (docs/script-writing.md)",
+  "Do not re-pin other self-tests or re-run any dry/prerun; other cards do"
+ ],
+ "advances": ["M3", "M8", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/graph_ring_p5s02a_20261010_032547.json"},
+  {"kind": "file", "name": "tools/bench/diag_c159_cen2_wire.md"}
+ ]
+}

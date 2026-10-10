@@ -618,8 +618,23 @@ def wire_rows(st, w):
     return [r for r in st["terminals"] if w and r["wire_uid"] == w]
 
 
+def termless_wire(st, w):
+    """card 160-a1-1 (PD390(a)): True only when `w` is in the CURRENT object list as class 'Wire' AND has 0 terminal rows
+    (e.g. w10394 of 94ffff94, left by an earlier delete of its ends). Used by op_delete_wire and stagexec's delete_wire
+    executor branch. Self-test: tools/bench/selftest_c160_delwire.py."""
+    return bool(w) and not wire_rows(st, w) and any(int(o["uid"]) == w and o.get("class") == "Wire" for o in st["objs"])
+
+
 def has_source(st, w):
     return any(r["is_source"] for r in wire_rows(st, w))
+
+
+def sourceless_wire(st, w):
+    """card 160-a2-1 (docs/d1/ring-p5b.md PD391(b)): True only when `w` is in the CURRENT object list as class 'Wire' AND none
+    of its terminal rows is a source (0 rows, or sink rows only - e.g. the stubs w24264 / w24300 on the RSR inner faces of
+    94ffff94). Such a wire carries no data. Used by op_delete_wire and stagexec's delete_wire executor branch.
+    Self-test: tools/bench/selftest_c160_delwire.py (T-a, T-b)."""
+    return bool(w) and not has_source(st, w) and any(int(o["uid"]) == w and o.get("class") == "Wire" for o in st["objs"])
 
 
 def obj_class(st, uid):
@@ -1422,8 +1437,12 @@ def op_delete_wire(st, a, P, S1, labels):
             raise SimError("delete_wire at {0}: {1} wire(s) {2}".format(a["at"], len(ws), ws))
         w = ws[0]
     rows = wire_rows(st, w)
+    if not rows and termless_wire(st, w):              # card 160-a1-1 (PD390(a)): the Wire object only, nothing else
+        st["objs"] = [o for o in st["objs"] if not (int(o["uid"]) == w and o.get("class") == "Wire")]
+        return {"wire": w, "n_terminals": 0, "auto_removed_tunnels": [], "termless_wire_object": True}, []
     if not rows:
         raise SimError("delete_wire: wire {0} is not in the current graph".format(w))
+    srcless = sourceless_wire(st, w)                  # card 160-a2-1 (PD391(b)): sink rows only - the Wire object goes too
     owners = set(r["owner_uid"] for r in rows)
     for r in rows:
         r["wire_uid"] = 0
@@ -1439,6 +1458,9 @@ def op_delete_wire(st, a, P, S1, labels):
     eff = {"wire": w, "n_terminals": len(rows), "auto_removed_tunnels": dropped}
     if kept:                                          # only then: every other effect record stays byte-identical
         eff["unmeasured_unwired_tunnels"] = kept
+    if srcless:                                       # card 160-a2-1: rows stay (wire 0); a source-carrying wire is unchanged
+        st["objs"] = [o for o in st["objs"] if not (int(o["uid"]) == w and o.get("class") == "Wire")]
+        eff["sourceless_wire_object"] = True
     return eff, []
 
 

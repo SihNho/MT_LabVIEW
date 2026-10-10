@@ -1,0 +1,68 @@
+BGRUN START 2026-10-10 01:02:59 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c158-a2-2-p5s02a-loopface -TaskFile tools/bench/diag_c158_a2_2_peer_task.md
+BGRUN PID 20392
+OUTCOME: ANSWERED (402s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-10-c158-a2-2-p5s02a-loopface.md
+COST: $2.8467  in 64 / out 33007 / cache-create 168012 / cache-read 4090025  (398s, 40 turn(s))
+--- ANSWER ---
+# Review: c156 p5s02a scratch failure (`diag_c156_p5s02a_scratch.log`, segment from line 285)
+
+**Verdict: the claim is wrong on its main point.** Ops 16 and 17 did leave wires that persisted. In the run's own end read, both #376 terminals are wired, each through a new case tunnel. The PB "open pairs" are therefore a disagreement between how the gate traces sources and how it labels them on the real graph versus the simulated one. They are not unwired terminals.
+
+## 1. Strongest reason the claim is wrong
+
+The final graph read in `tools/bench/diag_c156_p5s02a_scratch.json` (the `real_end_rows` block, lines 1870–44873) shows two complete wire chains:
+
+| | outer segment | auto-made case tunnel | inner segment | sink on #376 |
+|---|---|---|---|---|
+| op 16 | loop face 24360 → w31562 (`:9985-9988`) | #31546, outer face 31559 (`:9698-9701`) | inner face 31549 → w31346 (`:9824-9827`) | 5760 'cal cluster path' (`:9761-9764`) |
+| op 17 | loop face 24367 → w31587 (`:9992-9995`) | #31557, outer face 31577 (`:9705-9708`) | inner face 31560 → w31537 (`:9831-9834`) | 5778 'file size' (`:9782-9785`) |
+
+- The op results returned those same wire uids: 31346 (`json:306`) and 31537 (`json:327`).
+- **The new tunnels are the expected kind.** The final count of new objects has 3 `SelectorTunnel` (`log:554`, `json:1708`). Per `docs/d1-loop12-17-split-plan.md:2521`, one is added each time a wire is connected into a case. Three tunnels means the element tunnel (op 15) and both new loop-face tunnels (ops 16/17). The extra 6 OuterTerminal / 10 InnerTerminal also fit: 3 case tunnels (1 outer + 2 inner each), plus the case selector, plus the two shift-register ends.
+- **NI documents this behaviour:** "Connect Wire" between terminals in different structures creates the tunnel automatically ([NI forum](https://forums.ni.com/t5/LabVIEW/LabvVIEW-Scripting-wiring-a-pass-through-tunnel-inside-a-case/td-p/3945608), [LabVIEW Wiki](https://labviewwiki.org/wiki/Node_class/Connect_Wires_method)).
+- **E1 was not blind.** `allow_either` only filters the lists of dangling terminals (`stagexec.py:973-974`). The comparison of terminal-to-terminal connections (`only_sim_edges` / `only_real_edges`, `:976-977`) is never filtered. A missing connection to 5760 at op 16 would have made the diff non-zero.
+- **Op 17's checkpoint is the end state.** No ops follow it. So E1 = 0 and PB are reading the same graph; they disagree only in what each one keys on.
+
+The one terminal on #376 that really is open is 5787 'selected path' (`json:9796-9799`). That is wire 24091, and the plan already expects it open: it is in the pred rows at `plan_ring_p5s02a_pred.json:87`.
+
+## 2. Alternative explanation of each failing gate
+
+Underneath all four: the move_in really did delete the three wires whose source was a loop tunnel's inner face. The two wires whose source was on a node (24285, 24312) kept a dangling end on the source side. That half of the claim stands.
+
+- **PB.** The source-tracing code (`vigraph._effective_sources_frame`, `vigraph.py:812-836`) adds a tag `<tunnel uid>/f<frame ordinal>` for every case tunnel the path crosses. The frame ordinal is the frame diagram's rank by uid ("ASSUMPTION F", `vigraph.py:287-291, 322`).
+  - On the real graph the path crosses 31546 / 31557, frame 31506. That frame ranks 0 because 31506 < 31517.
+  - In the simulator it crosses -44 / -49, frame -29 (`sim/ring_p5s02a/step_23_wire.json`). Sorted, -30 comes before -29, so the simulator's frame 0 gets ordinal 1. The ordering is reversed for negative uids.
+  - The 29 pred rows say these two inputs trace to the same source as S1. The real trace says they don't. That gap comes from how the trace is tagged and keyed, not from the wiring.
+  - I could not tell from reading alone which side the trace mismatch sits on: how the pred rows were made from the sim end, or the real-graph tagging. That is what test 4 checks.
+  - The same thing would also hit 'current frame data array in' (5754). It doesn't show up because 5754 is already in the pred rows, and PB compares slot sets, not the before/after values (`stagekit.py:1827`).
+- **D (21 vs 22).** This is uid bookkeeping.
+  - The simulator reuses the deleted wire uids 24330 and 24153 for the tunnels' outer segments, and keeps a dangling 24091 on the source side (`json:1813-1824`).
+  - LabVIEW deleted all three and made fresh uids for the outer segments (31562, 31587).
+  - LabVIEW then recycled 24153 for w_prog: 5704 'file progress' → #3453 now carries w24153 (`json:9740-9744`, `:9810-9813`). It also recycled 31337, which was a deleted junk Invoke node's uid (`log:457`), as the uid of the wire into 5754.
+  - So the gate's "deleted uids re-used: noted []" is itself wrong.
+- **TD.** The simulator models the uncertain wire 24091 as "the source keeps a dangling wire". LabVIEW deleted the whole wire, so loop face 25223/1 reads unwired.
+- **CEN2.** The prediction side is empty, not wrong about the drop. The pred file itself says `"census_overall": "UNPREDICTED"` and lists all 22 other actions under `census_unpredicted` (`pred.json:23-47`). The declared counts cover only the case-structure op. CEN2 would fail on any run of this plan.
+
+**Smaller point on the FATE lines.** They print `step=10`, but they are read at the op-12 checkpoint (`stagexec.py:2125, 2146-2150`). Pinning the drop on op 10 alone is an inference, not a measurement, though it is probably right since those three wires end on #376.
+
+## 3. What would falsify each
+
+- **The claim** ("no persisting wires on 5760/5778"): already falsified by `json:9761-9786` and the tunnel rows above.
+- **My PB explanation:** falsified if the offline recompute in section 4, done with the real uids put back in, still gives no rows for 376 'cal cluster path' / 'file size'. The keying would then be the same on both sides, and something else in the real trace differs.
+- **My D/TD explanation:** falsified if the `lost` / `new` sets cannot be reconciled once uids are matched by endpoints instead of by uid.
+
+## 4. Cheapest offline test (no LabVIEW)
+
+1. Build the simulated end graph frame-keyed from `step_23_wire.json` (`stagekit.pred_end_graph`), and the S1 graph with `stagekit.s1_frame_graph()`.
+2. Print `vigraph.effective_sources` for #376 'cal cluster path' and 'file size' on both.
+3. Put the real uids into the simulated state using the op-16/17 bindings from the log (sim tunnels -44/-49 → real 31546/31557, sim frames -29/-30 → real 31506/31517). Rebuild and print again.
+4. Read the result:
+   - If the tag flips (`/f1` → `/f0`, or the tunnel uid appears) and the two PB rows appear, PB is a gate artefact: frame-ordinal rank breaks with negative simulator uids, and/or the tag carries the tunnel uid.
+   - If not, the real trace differs for another reason that still needs finding. Even in that case, retrying "because the wires didn't persist" would be acting on a false premise.
+
+Also cheap, before any retry: count wires by their (source terminal, sink terminal) pairs instead of by uid. This should make D and TD match the simulator except for the 24091 dangling end.
+
+Sources:
+- [NI Community – Scripting a pass-through tunnel inside a case structure](https://forums.ni.com/t5/LabVIEW/LabvVIEW-Scripting-wiring-a-pass-through-tunnel-inside-a-case/td-p/3945608)
+- [LabVIEW Wiki – Node class / Connect Wires method](https://labviewwiki.org/wiki/Node_class/Connect_Wires_method)
+- [NI Community – Script connect existing loose wires to case tunnels](https://forums.ni.com/t5/LabVIEW/Script-connect-existing-loose-wires-to-case-tunnels/td-p/4195933)
+BGRUN END rc=0 after 403s

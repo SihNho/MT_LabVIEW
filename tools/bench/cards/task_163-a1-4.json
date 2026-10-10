@@ -1,0 +1,68 @@
+{
+ "schema": "task/1",
+ "id": "163-a1-4",
+ "kind": "build",
+ "goal": "Fix gate-fp fp-86 (stagekit PB has no class for rows an adopted earlier step wired), then re-run dry, prerun, scratch-required for step 3 (p5s02c); offline.",
+ "why": "Card 163-a1-3 stopped at DRY FAIL PB on rows #376 wired by step 2; the deliverable's own gate refuses it and every later P5 step has the same base.",
+ "retry_of_card": "163-a1-3",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_163-a1-4.md", "md5": "75393fbab3b5dd83a240e5c279103a4e"},
+  {"path": "tools/bench/diag_c163_a1_3_facts.md", "md5": "c5539bc234d7b79ae132e94259ea0863"},
+  {"path": "tools/stagekit.py", "md5": "9b8f82c1a0150bcaacaf9c56e003c335"},
+  {"path": "tools/bench/selftest_c161_pbinherit.py", "md5": "9be05189703e6d48d4664dbe7c0266cc"},
+  {"path": "tools/bench/prep_c163_a1_3_dry.log", "md5": "9ed287e29ed08b92382faea797bb837b"},
+  {"path": "tools/recipes/stage_d1_ring_p5s02c.py", "md5": "6d1d578603bddf29bda132d73b0dd3fd"},
+  {"path": "tools/recipes/stage_d1_ring_p5s02c_scratch.py", "md5": "a517557db81755f669043e224ffa659e"},
+  {"path": "tools/bench/plan_ring_p5s02c_pred.json", "md5": "fc9080368fe86801656e60fe935af2b7"},
+  {"path": "tools/bench/plan_ring_p5s02c_licence.json", "md5": "c8fdf33ae684a61e3cf0061c536a0246"},
+  {"path": "tools/bench/errorlist_predicted_D1_ring_p5s02c_end.json", "md5": "373e0bf46a25742578a4523cc45faa1d"},
+  {"path": "tools/bench/plan_ring_p5s02c.json", "md5": "930699ece36e3366e2c1a2cdf9a82c34"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"}
+ ],
+ "pass": [
+  "Part 1 measurements quoted: ctx values for the two blocked #376 sinks and which class-1/class-2 condition fails; the change is one small extension of existing PB machinery, not a second checker",
+  "Existing stagekit self-tests unchanged (counts before/after); new self-test: #376 positive plus 3 negatives (frame outside chain, source uids differ, multiplicity); stagekit md5 old -> new",
+  "hypothesis adversary review of the diff archived with disposition; only stagekit.py and self-test files edited; no hooks edit",
+  "Dry on both p5s02c recipes PASS or PASS-UNVERIFIED (CEN2 only); prerun PASS; --scratch-required exit and reason quoted; first unexpected result returned as facts"
+ ],
+ "outputs": [
+  "tools/stagekit.py",
+  "tools/bench/selftest_c163_pbchain.py",
+  "tools/bench/diag_c163_a1_4_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagekit.py",
+   "tools/bench/selftest_c161_pbinherit.py",
+   "tools/bench/selftest_c163_*",
+   "tools/bench/diag_c163_a1_4*",
+   "tools/bench/prep_c163_a1_4*",
+   "tools/bench/prep_c163_a1_3*",
+   "tools/bench/plan_ring_p5s02c_*",
+   "tools/bench/errorlist_predicted_D1_ring_p5s02c*",
+   "tools/bench/sim/ring_p5s02c/**",
+   "tools/bench/jev_*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "archive/peer/**",
+   "archive/prior-art/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 90
+ },
+ "advances": ["M3", "M8", "R1"],
+ "rules": [
+  "Offline only: no LabVIEW/motor/camera, no --launch, no --check-launch, no hooks edit",
+  "Edit only tools/stagekit.py and self-tests; no loosening of class 1 or 2; hook gates: gate_fp.py log, no bypass",
+  "Return at the first unexpected result after the fix; no second tool edit"
+ ]
+}

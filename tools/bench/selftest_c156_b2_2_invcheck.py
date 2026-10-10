@@ -10,8 +10,9 @@
 A gate whose status differs only because its file changed since the recording is DRIFT (old/new value listed, not counted as reproduced);
 a label/order/count difference or an unexplained status difference is MISMATCH (gate FAIL). FAIL case: a temp config with a wrong pin.
 Inner GATE/RESULT lines are printed with an 'inner:' prefix so only this script's own GATE and RESULT lines are top-level.
-PREDICTION: label sequence equal 60/60 and 59/59; MISMATCH 0; reproduced PASS >= 1; DRIFT includes ring-p5.md 742e54c4 -> aa238a09 (x2);
-FAIL case exact (1 pass / 1 fail, first_fail the wrong pin, exit 1); the seven stage-tool pins and the old inv file unchanged.
+PREDICTION: label sequence equal 60/60 and 59/59; MISMATCH 0; reproduced PASS >= 1; DRIFT includes ring-p5.md 742e54c4 -> the md5 on
+disk at run time (x2; card 160-f3-1, was the pin aa238a09); FAIL case exact (1 pass / 1 fail, first_fail the wrong pin, exit 1); the seven
+stage-tool pins (stagexec a4df7e15 since 161-a1-1, stagesim 95a162ba since 160-f3-1) and the old inv file unchanged.
     py tools/bgrun.py --material --max-min 5 --log tools/bench/selftest_c156_b2_2_invcheck.log -- py -u tools/bench/selftest_c156_b2_2_invcheck.py"""
 import os
 import re
@@ -80,7 +81,11 @@ snap_a = os.path.join(TMP, "snap_recorded_copy.json")
 shutil.copyfile(os.path.join(B, "diag_c156_a2_1_inv_snap.json"), snap_a)
 ga, la = replay("after", snap_a)
 drift_a = compare("after", rec_a, ga.rows)
-G("ring-p5.md drift listed (742e54c4 -> aa238a09)", any(x[0].startswith("md5 ring-p5.md") and x[2].startswith("aa238a09") for x in drift_a))
+# card 160-f3-1 (PD391(g)): the expected new ring-p5.md md5 is READ FROM DISK at run time (was the stale pin aa238a09)
+p5_now = invcheck.md5(os.path.join(ROOT, "docs", "d1", "ring-p5.md"))
+G("ring-p5.md drift listed (742e54c4 -> {0}, read from disk)".format(p5_now[:8]),
+  any(x[0].startswith("md5 ring-p5.md") and x[2].startswith(p5_now[:8]) for x in drift_a),
+  [x for x in drift_a if x[0].startswith("md5 ring-p5.md")])
 # 3. FAIL case: a deliberately wrong pin in a temp config (expected detail = stagekit's recorded md5)
 fl = []
 fcfg = dict(pins={os.path.join(ROOT, "tools", "stagekit.py"): "00000000", os.path.join(ROOT, "tools", "addrcheck.py"): "207beb0d"},
@@ -88,7 +93,7 @@ fcfg = dict(pins={os.path.join(ROOT, "tools", "stagekit.py"): "00000000", os.pat
 rc = invcheck.main_inv(["x", "before"], out=fl.append, **fcfg)
 for l in fl:
     print("  inner: " + l, flush=True)
-want = ["GATE FAIL | md5 stagekit.py == 00000000 | aec03c6c4b319e1056b6a856c5a6bd2c",
+want = ["GATE FAIL | md5 stagekit.py == 00000000 | 9b8f82c1a0150bcaacaf9c56e003c335",   # re-pinned 160-f2-1 from aec03c6c; 160-e5-1 from 1441bb4c; 161-a3-1 from 0b5bb678
         "GATE PASS | md5 addrcheck.py == 207beb0d | 207beb0d09102c78b1e06d1f076eec7e"]
 G("FAIL case: GATE lines exact", [l for l in fl if l.startswith("GATE ")] == want, [l for l in fl if l.startswith("GATE ")])
 rl = [l for l in fl if l.startswith("RESULT ")]
@@ -96,9 +101,12 @@ G("FAIL case: RESULT FAIL 1/1, first_fail the wrong pin, exit 1",
   rc == 1 and len(rl) == 1 and '"status":"FAIL"' in rl[0].replace(" ", "") and '"pass":1,"fail":1' in rl[0].replace(" ", "")
   and "md5 stagekit.py == 00000000" in rl[0], (rc, rl))
 # 4. pins of the card and the record untouched
-for rel, pin in [("tools/stagexec.py", "25a1494c"), ("tools/stagesim.py", "eb99c6ba"), ("tools/stagekit.py", "aec03c6c"),
+# re-pinned 160-f2-1 from stagexec 25a1494c, stagesim eb99c6ba, stagekit aec03c6c, stage_prerun 9decb20f;
+# re-pinned 160-f3-1 from stagexec c4a6e0b6, stagesim a3261b56 (moved by card 160-a2-1)
+# re-pinned 161-a1-1 from stagexec ddf23a31 (delete_wire = required checkpoint, PD393(a))
+for rel, pin in [("tools/stagexec.py", "a4df7e15"), ("tools/stagesim.py", "95a162ba"), ("tools/stagekit.py", "9b8f82c1"),
                  ("tools/addrcheck.py", "207beb0d"), ("tools/gscript.py", "1a80236e"), ("tools/vigraph.py", "a7eb58c7"),
-                 ("tools/stage_prerun.py", "9decb20f"), ("tools/bench/diag_c156_a2_1_inv.py", "ab4ff13c")]:
+                 ("tools/stage_prerun.py", "7605116f"), ("tools/bench/diag_c156_a2_1_inv.py", "ab4ff13c")]:
     m = invcheck.md5(os.path.join(ROOT, *rel.split("/")))
     G("pin {0} == {1}".format(rel, pin), m.startswith(pin), m)
 shutil.rmtree(TMP, ignore_errors=True)

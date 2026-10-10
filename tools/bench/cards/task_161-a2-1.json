@@ -1,0 +1,78 @@
+{
+ "schema": "task/1",
+ "id": "161-a2-1",
+ "kind": "build",
+ "goal": "Offline: one shared stagekit fn gives gate PB the case-move frames of adopted p5s01a/b, p5s02a via their run bindings, with self-tests; then recompute p5s02b pred MAIN peak on SX.checkpoint_ops.",
+ "why": "161-b1-1/b1-2 measured PB 31 rows vs pred 26: the 5 extra #376 rows are p5s02a's case move, already in the base; case_move_frames reads only the current plan. The dry refuses the launch until PB knows them (judgement PD394(a)(b)).",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_161-a2-1.md", "md5": "a4da4a6540e978f06d84da62193041d4"},
+  {"path": "tools/bench/diag_c161_b1_2_facts.md", "md5": "306c466ef7ef23200f1509e941387c96"},
+  {"path": "tools/bench/diag_c161_b1_1_facts.md", "md5": "f2676d1d97334d8e809d984719649237"},
+  {"path": "tools/bench/diag_c161_b1_2_measure.json", "md5": "729a272ff56c8953bafc0b9ad6a9698b"},
+  {"path": "docs/d1/ring-p5b.md", "md5": "217ef1ea28e0f6bd2a0196f2e6dd56a2"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+  {"path": "tools/stagekit.py", "md5": "0b5bb678169d659feed7408648a63354"},
+  {"path": "tools/stagesim.py", "md5": "95a162baec5324ff037a8d23bd7ef46d"},
+  {"path": "tools/stagexec.py", "md5": "a4df7e15c495b9fcbcdadf0d8047bc69"},
+  {"path": "tools/stage_prerun.py", "md5": "7605116f1dfe1c6fd4963dbfcf259de1"},
+  {"path": "tools/bench/plan_ring_p5s02b.json", "md5": "f4520b101baad70f065ba5d6c9d14925"},
+  {"path": "tools/bench/plan_ring_p5s02b_pred.json", "md5": "187294099b3d8ced0e1c0b29b7c3a959"},
+  {"path": "tools/bench/plan_ring_p5s02b_licence.json", "md5": "f61a2514c47913557531c9862018b850"},
+  {"path": "tools/bench/errorlist_predicted_D1_ring_p5s02b_end.json", "md5": "79ec32079ceee2b99dac24e554d86856"},
+  {"path": "tools/bench/prep_c156_a1_1_lib.py", "md5": "fc6ce5f6f5094b15fc0e78229946e723"},
+  {"path": "tools/bench/prep_c160_c3_1_pred.py", "md5": "773c7db16619e6ede2f27fa7172d9c36"}
+ ],
+ "pass": [
+  "Binding records of p5s01a, p5s01b, p5s02a located and quoted file:line; a step without a record = STOP and report (hand-back)",
+  "ONE shared stagekit function (docstring naming its self-test) gives PB the inherited case-move frames; PB extended, not duplicated; call sites quoted",
+  "selftest_c161_pbinherit: p5s02b sim end -> 5 #376 rows RECORDED, pairs_extra_left []; changed source uid / foreign frame BLOCK; stored p5s01a/b, p5s02a PB results unchanged; counts",
+  "Pin sweep of stagekit-pinning self-tests BEFORE editing, re-pin only differing md5, counts before/after; delckpt 11/0, s4 24/0, invcheck 20/0, c157 13/0",
+  "Pred MAIN peak via SX.checkpoint_ops (lib calls shared rule); MAIN vs 675 quoted (>675 = hand back); new pred md5 + cause; plan f4520b10, stagesim, stagexec, stage_prerun unchanged"
+ ],
+ "outputs": [
+  "tools/bench/diag_c161_a2_1_facts.md",
+  "tools/bench/selftest_c161_pbinherit.py"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagekit.py",
+   "tools/bench/selftest_c161_pbinherit*",
+   "tools/bench/selftest_c1*",
+   "tools/bench/prep_c156_a1_1_lib.py",
+   "tools/bench/prep_c160_c3_1_*",
+   "tools/bench/prep_c160_b3_1_mk.py",
+   "tools/bench/plan_ring_p5s02b_pred.json",
+   "tools/bench/plan_ring_p5s02b_licence.json",
+   "tools/bench/errorlist_predicted_D1_ring_p5s02b_end.json",
+   "tools/bench/diag_c161_a2_1*",
+   "tools/bench/prep_c161_a2_1*",
+   "docs/toolkit-capabilities.md",
+   "docs/fn_descriptions.json",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/jev_*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 70
+ },
+ "rules": [
+  "Offline; no LabVIEW process; no --launch; no tools/hooks edit; no env bypass",
+  "Do not widen the rule: no open_rows for the 5 rows, no change to the pred maker's non-frame cdiff, no gate loosened",
+  "A shared function is CALLED, never pasted (docs/script-writing.md); extend pb_check, do not write a second PB",
+  "Plan f4520b10, end graph and predicted Error List items unchanged; MAIN > 675 or a missing binding record = hand back",
+  "Hook false positive: py tools/gate_fp.py log, report; never edit a hook"
+ ],
+ "advances": ["M3", "M8", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p5s02b.json"}
+ ]
+}

@@ -1,0 +1,73 @@
+{
+  "schema": "task/1",
+  "id": "161-b1-1",
+  "kind": "build",
+  "goal": "Re-make p5s02b checkpoint-set files on stagexec a4df7e15 (ops 1,4,8 added); dry both recipes past ops 5/9, prerun (MAIN<=675), check-launch, scratch-required, hash 4 VIs. Not launched.",
+  "why": "PD393(b)(c): the offline gates for the ONE step-2 scratch; c160 dry stopped at UNROUTABLE ops 5/9, fixed by 161-a1-1.",
+  "inputs": [
+    {"path": "tools/bench/cards/brief_161-b1-1.md", "md5": "4214b83fd846ee556d3e08dc2331b84e"},
+    {"path": "docs/d1/ring-p5b.md", "md5": "f6da5fdf3bc4bc41becc7fff58488a5f"},
+    {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+    {"path": "tools/bench/diag_c161_a1_1_facts.md", "md5": "dee47a733c02d0e0d73ef5cb1595c7cf"},
+    {"path": "tools/bench/diag_c161_a1_2_facts.md", "md5": "abc011fb863e33ead69ea32ac65d6279"},
+    {"path": "tools/bench/diag_c160_c3_3_facts.md", "md5": "a4b06cecfe5c5ada4f187e00f3168046"},
+    {"path": "tools/bench/plan_ring_p5s02b.json", "md5": "f4520b101baad70f065ba5d6c9d14925"},
+    {"path": "tools/bench/plan_ring_p5s02b_pred.json", "md5": "48b50b295fc636bd464754613a0e051e"},
+    {"path": "tools/stagexec.py", "md5": "a4df7e15c495b9fcbcdadf0d8047bc69"},
+    {"path": "tools/stagekit.py", "md5": "0b5bb678169d659feed7408648a63354"},
+    {"path": "tools/stagesim.py", "md5": "95a162baec5324ff037a8d23bd7ef46d"},
+    {"path": "tools/stage_prerun.py", "md5": "7605116f1dfe1c6fd4963dbfcf259de1"}
+  ],
+  "pass": [
+    "makers re-pinned to stagexec a4df7e15 and re-run; each changed md5 (pred, licence, EL, recipes) named with a diff showing the cause = checkpoint set only; plan f4520b10 unchanged",
+    "dry of p5s02b recipe and _scratch: result word, unverified count + labels quoted; runs past ops 5 and 9; PASS-UNVERIFIED only with CEN2 (census UNPREDICTED) as the single item",
+    "prerun quoted with rc (X10 read-only MAIN <= 675 incl. the 3 extra reads, limit unchanged; X14, X17, X8), --check-launch rc, --scratch-required exit code (expect 3) + reason line",
+    "four VIs hashed by hashlib: s09 eb1d0f31, P5-1a 2482fe7b, P5-1 7f2582ae, p5s02a 94ffff94 - equal/unequal quoted",
+    "md5 unchanged: stagesim, stagexec a4df7e15, stagekit 0b5bb678, stage_prerun, plan f4520b10; no --launch, no LabVIEW, no tools/hooks edit"
+  ],
+  "outputs": [
+    "tools/bench/diag_c161_b1_1_facts.md"
+  ],
+  "flags": {
+    "labview": "none",
+    "gui": false,
+    "hardware": "none",
+    "run_vi": false,
+    "write": [
+      "tools/bench/prep_c160_c3_1*",
+      "tools/bench/prep_c160_c3_3*",
+      "tools/bench/prep_c160_b3_1_mk*",
+      "tools/bench/prep_c161_b1_1*",
+      "tools/bench/plan_ring_p5s02b_pred.json",
+      "tools/bench/plan_ring_p5s02b_licence.json",
+      "tools/bench/errorlist_predicted_D1_ring_p5s02b*",
+      "tools/bench/sim/ring_p5s02b/**",
+      "tools/recipes/stage_d1_ring_p5s02b.py",
+      "tools/recipes/stage_d1_ring_p5s02b_scratch.py",
+      "tools/bench/diag_c161_b1_1*",
+      "tools/bench/prerun_records.jsonl",
+      "tools/bench/gate_fp_queue.jsonl",
+      "tools/bench/jev_*"
+    ],
+    "status_edit": false,
+    "git_commit": false,
+    "peers": []
+  },
+  "budget": {
+    "failures": 2,
+    "minutes": 75
+  },
+  "rules": [
+    "Offline; NO --launch; no LabVIEW process; no tools/*.py edit; no tools/hooks edit; no env bypass",
+    "Recipe text changes only the checkpoint set, diff quoted; none if RingSession.CHECKPOINTS supplies it",
+    "Report unverified count as stated; no census samples, no loosened gate; MAIN > 675 = stop and report",
+    "Rule 1a: plan actions, end graph and predicted Error List items must not change",
+    "VIs are read as bytes only (hashlib); never opened in LabVIEW",
+    "Hook false positive: py tools/gate_fp.py log, report; never edit a hook"
+  ],
+  "advances": ["M3", "M8", "R1"],
+  "requires": [
+    {"kind": "file", "name": "tools/bench/plan_ring_p5s02b.json"},
+    {"kind": "file", "name": "tools/recipes/stage_d1_ring_p5s02b.py"}
+  ]
+}

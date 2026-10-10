@@ -1,0 +1,44 @@
+{
+ "schema": "task/1",
+ "id": "164-a2-4",
+ "kind": "read-log",
+ "goal": "Read-only: sinks/source of w23519, w23460, w23489 on graph 3d5196ab; what was attached to #10171 when delete_object passed in P4; what produced error 1055; A53..A60 order.",
+ "why": "164-a2-3 prior-art review (priorart log lines 12-26) says J deletes #23042/#23501 with wires 23519/23460 still attached; its discriminating test is a graph read.",
+ "inputs": [
+  {"path": "tools/bench/graph_ring_p5s02c_20261010_131658.json", "md5": "3d5196ab098c5fb1401037e5c3c49e2d"},
+  {"path": "tools/bench/plan_ring_p5s02d.json", "md5": "872822f34540998acde238144b9be61a"},
+  {"path": "tools/bench/diag_c140_2_facts.md", "md5": "bce99441702238deb421d64374aee317"},
+  {"path": "tools/bench/diag_c140_3_facts.md", "md5": "11cd5a1f0cca498068ab189b139fc350"},
+  {"path": "docs/d1/ring-p4.md", "md5": "980e34ce95be37093fa9b82c4f597aa9"},
+  {"path": "tools/bench/prep_c164_a2_3_priorart.log", "md5": "6b258036b76d5c01464d58bc9a687b85"}
+ ],
+ "pass": [
+  "For w23519, w23460, w23489: source owner/terminal and every sink owner/terminal from the graph; whether each lies on #23042 or #23501",
+  "Whether the source of w23460 has any sink outside #23501",
+  "diag_c140_2_facts.md:26 and diag_c140_3_facts.md:14,22: which wires were attached to #10171 when delete_object #10171 passed; ring-p4.md:393-399: what produced error 1055",
+  "Plan rows A53..A60: action id, op, target in order; facts only, no proposal"
+ ],
+ "outputs": [
+  "tools/bench/diag_c164_a2_4_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c164_a2_4*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 1,
+  "minutes": 20
+ },
+ "advances": ["M3", "M8", "R1"],
+ "rules": [
+  "Read-only: no LabVIEW, no edit of any file except the facts file; report facts and an OPEN: line, no decision"
+ ]
+}

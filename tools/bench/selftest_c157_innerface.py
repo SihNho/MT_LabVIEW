@@ -23,8 +23,9 @@ PREDICTION (gates):
         w24285 src 24190 src_wire 24285 | w24312 src 24288 src_wire 24312 | w24330 src 24360 src_wire 0; sinks 5772 / 5787 /
         5778 / 5683 / 5782 / 5760 with sink_wire == the step_10 sim value (0); none for steps 11/12; status/first_fail equal
         to the unpatched dry_run's; ops 16/17 ran on the zeroed read and routed 'cfw'.
- K1/K2  RingSession(p5s02a inputs).CHECKPOINTS == checkpoint_ops == (0, 1,3,6,8,9,10,11,12,15,16,17); no recipe assigns CHECKPOINTS.
- P      pins: stagesim eb99c6ba, addrcheck 207beb0d, plan 4284c22a, step_15 b7da7fa7 unchanged.
+ K1/K2  RingSession(p5s02a inputs).CHECKPOINTS == checkpoint_ops == (0, 1,3,6,8,9,12,15,16,17) (card 158-a1-2 rule: the run-closing
+        move_in only; was 10,11,12); no recipe assigns CHECKPOINTS.
+ P      pins: stagesim 95a162ba, addrcheck 207beb0d, plan 4284c22a, step_15 b7da7fa7 unchanged.
 Usage: py tools/bgrun.py --material --max-min 10 --log tools/bench/selftest_c157_innerface.log -- py -u tools/bench/selftest_c157_innerface.py"""
 import glob
 import hashlib
@@ -68,7 +69,7 @@ OPS = SX.compile_plan(P)
 STEPS = dict((int(s["n"]), os.path.join(ROOT, s["path"])) for s in P["finalized"]["step_files"])
 state = lambda n: jl(STEPS[n])["state"]                                            # noqa: E731
 end = lambda e: int(e["term_uid"]) if isinstance(e, dict) and e.get("term_uid") is not None else None   # noqa: E731
-PINS = {"tools/stagesim.py": "eb99c6ba", "tools/addrcheck.py": "207beb0d", "tools/bench/plan_ring_p5s02a.json": "4284c22a",
+PINS = {"tools/stagesim.py": "95a162ba", "tools/addrcheck.py": "207beb0d", "tools/bench/plan_ring_p5s02a.json": "4284c22a",
         "tools/bench/sim/ring_p5s02a/step_15_tunnel.json": "b7da7fa7"}
 
 print("---------- (i) wire-0 inner face of a While-loop tunnel routes as wired", flush=True)
@@ -160,7 +161,7 @@ print("FACT op 10-12 acts {0}; unpatched {1} {2}".format([OPS[k - 1]["acts"] for
 print("---------- (iv) checkpoints", flush=True)
 rs = K.RingSession(PLAN, os.path.join(HERE, "plan_ring_p5s02a_pred.json"), os.path.join(HERE, "plan_ring_p5s02a_licence.json"),
                    os.path.join(HERE, "prep_c156_a1_1_session.json"))
-want_cp = (0, 1, 3, 6, 8, 9, 10, 11, 12, 15, 16, 17)
+want_cp = (0, 1, 3, 6, 8, 9, 12, 15, 16, 17)   # card 158-a1-2 (PD384(b)): run-closing move_in only (was ..9, 10, 11, 12..)
 gate("K1 RingSession(p5s02a).CHECKPOINTS == checkpoint_ops(ops) == {0}".format(want_cp),
      tuple(rs.CHECKPOINTS) == SX.checkpoint_ops(OPS) == want_cp, rs.CHECKPOINTS)
 hits = [p for p in glob.glob(os.path.join(ROOT, "tools", "recipes", "*.py"))

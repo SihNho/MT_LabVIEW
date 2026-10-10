@@ -1,0 +1,60 @@
+{
+ "schema": "task/1",
+ "id": "159-a4-1",
+ "kind": "build",
+ "goal": "PD387(e): repair the dry in stage_prerun/stagekit (count all UNVERIFIED-DRY, partial census = UNPREDICTED, run PB/D/TD/CEN2 on the sim end) with self-test; then drain fp-77 (is_vi_modifying).",
+ "why": "Retrospective 158 device-failed: the dry passed CEN2 and PB it had not verified. Step 2's dry must print unverified 0 only when it did verify; fp-77 is the same file.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_159-a4-1.md", "md5": "c624c177b19a61fa0694557f495f46cc"},
+  {"path": "docs/violation-decisions.md", "md5": "88e1dd38c223f48879ffed4bae7f8078"},
+  {"path": "tools/stage_prerun.py", "md5": "9decb20f6d67793abad967347e2a37ab"},
+  {"path": "tools/stagekit.py", "md5": "07f9e35fb23598ba7ee910875e52b95b"},
+  {"path": "tools/stagesim.py", "md5": "eb99c6bab81633f9bdd7c10dce6bfc0a"},
+  {"path": "tools/stagexec.py", "md5": "7a712ccb4c1f754d8bee4557f632177f"},
+  {"path": "tools/bench/diag_c158_a2_2_dry.log", "md5": "ae9c4d64843f393fd9ed3c74d9cdcdb5"},
+  {"path": "tools/bench/diag_c158_a2_2_scr_dry.log", "md5": "81ef40d0758bbf301dcceca6c66e7223"},
+  {"path": "tools/bench/diag_c158_a2_2_prerun.log", "md5": "d4b548c77d23e0af28f2d1f00c4e28e1"},
+  {"path": "tools/bench/diag_c158_a2_2_scr_prerun.log", "md5": "0f20126aae726f3992b1c3239b996779"},
+  {"path": "tools/bench/diag_c158_a2_2_checklaunch.py", "md5": "b144b58198c7564bcb4bd960e8f137cd"},
+  {"path": "tools/bench/diag_c158_a2_2_facts.md", "md5": "6376951c564cb0e9a8f5ddfb496fcb89"},
+  {"path": "tools/gate_fp.py", "md5": "1f427fb5b1735584c19a699c2314b826"}
+ ],
+ "pass": [
+  "Dry final unverified N counts every UNVERIFIED-DRY line; census declaration not covering every plan op, or census_overall UNPREDICTED, is UNPREDICTED; dry runs PB/D/TD/CEN2 on the simulated end",
+  "Self-test on stored c158-a2-2 inputs: the repaired dry reports CEN2 and PB unverified or FAIL and counts both; a fully declared plan prints unverified 0; stored plans compile equal",
+  "Suites selftest_stagekit, selftest_t7_ring, selftest_c134_1_dry and the c158 wire0face/runcheck/gates386 selftests: counts before == after, quoted",
+  "fp-77: cause line in is_vi_modifying quoted; import-only self-test not refused, a real modifying script still refused (both self-tested); fp-77 drained with note, or left open with OPEN reason",
+  "No hook edit, no edit of vigraph/errorlist_check/addrcheck; tools/bench/diag_c159_a4_1_facts.md written (<= 40 lines)"
+ ],
+ "outputs": [
+  "tools/stage_prerun.py",
+  "tools/stagekit.py",
+  "tools/bench/selftest_c159_a4_1.py",
+  "tools/bench/diag_c159_a4_1_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stage_prerun.py",
+   "tools/stagekit.py",
+   "tools/bench/selftest_c159_a4_1*",
+   "tools/bench/diag_c159_a4_1*",
+   "tools/bench/gate_fp_queue.jsonl"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "rules": [
+  "Offline, no LabVIEW, no hooks edit; never weaken a check for a real modifying script or an unverified gate",
+  "No copies (docs/script-writing.md); do not edit vigraph/errorlist_check/addrcheck (card 159-a3-1 reads them)"
+ ],
+ "advances": ["M3", "M8"]
+}

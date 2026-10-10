@@ -1,0 +1,27 @@
+{
+ "schema": "verdict/1",
+ "id": "retrospective-cycle158",
+ "verdict": "refuted",
+ "alternative": "Round 2's gate failures were unforeseeable gate-convention issues, discoverable only after a live run, so the scratch was the cheapest probe.",
+ "discriminating_test": "Run pb_check(S1, sim_end, sim_end) and compare the pred's declared census against the plan's 17 ops on the 00:48 inputs: if PB shows the 2 #376 rows and Wire 1 vs 12, it was knowable offline (diag_c158_a2_3_facts.md:18,31 says yes).",
+ "violations": [
+  {
+   "slug": "device-failed",
+   "loss_min": 40,
+   "loss_usd": null,
+   "evidence": "tools/bench/diag_c158_a2_2_dry.log:70"
+  }
+ ],
+ "sources": [
+  "tools/bench/diag_c158_a2_2_dry.log:70",
+  "tools/bench/diag_c158_a2_2_dry.log:78",
+  "tools/bench/diag_c156_p5s02a_scratch.log:553",
+  "tools/bench/diag_c156_p5s02a_scratch.log:559",
+  "tools/bench/diag_c158_a2_3_facts.md:18",
+  "tools/bench/diag_c158_a2_3_facts.md:35",
+  "docs/violation-decisions.md:1850",
+  "tools/bench/cycle_runner_main_20261009_2252.log:20",
+  "tools/bench/cards/assign_result_158_3.json:30"
+ ],
+ "note": "Device = 2026-10-02 10:10 dry-UNVERIFIED/census-UNPREDICTED rule: CEN2 partial declaration escaped the UNPREDICTED path and the unverified count; PB was waved through via --unverified-card though offline-computable. Window spans cycles 156-158."
+}

@@ -1,34 +1,40 @@
 {
  "schema": "next/1",
- "cycle": 157,
- "act": "PD381: tool fix first (launch refused without it): wire-0 loop inner-face route, FATE lines, move_in checkpoints -> ONE scratch on a copy of P5-1 -> adopt D1_ring_p5s02a_* -> step-2 plan",
+ "cycle": 165,
+ "act": "Round 3/3 (PD402): PRIME skip fix first (plan cannot finalize, stagexec.py:2620-2642) + self-test -> step-5 plan K3f K4 K4f on 2a5fa0c4 -> gates -> ONE scratch on copy of 6dcd5c3d -> adopt -> tooling",
  "task_kind": "build",
  "plan": {
-  "path": "docs/d1/ring-p5.md",
-  "md5": "27bbd99f16a69acb403c7f1ca6318761"
+  "path": "docs/d1/ring-p5c.md",
+  "md5": "ffb92f59acef4c1539f59acd61e59072"
  },
  "pass": [
-  "PD381(b): stagexec/stagesim/addrcheck route a While/For LoopTunnel INNER face with wire 0 via the owner loop's body diagram; Case/FS inner faces still stop",
-  "PD381(b) self-test: ops 16 and 17 of plan_ring_p5s02a give cfw with the same dst both wired and with wire 0; existing stagexec/stagesim self-tests pass",
-  "PD381(b) regression: plan_ring_p5s01a, p5s01b and p5s02a compile to the same ops as before the edit",
-  "PD381(c): after each move_in op a FATE line per sim-ambiguous wire (live wire uid or 0 on source term and moved sink term, from that op's checkpoint read); self-tested",
-  "PD381(d): RingSession CHECKPOINTS includes every move_in op; self-test: p5s02a = [1,3,6,8,9,15,16,17] + 10,11,12; X10 re-run, planned MAIN <= 675 (else re-cut per PD379(c))",
-  "PD381(e): dry + prerun PASS on plan_ring_p5s02a.json with the new tool bytes; scratch card carries DRY-UNVERIFIED-OK naming PB if the dry shows PB PASS-UNVERIFIED",
-  "PD381(e): ONE scratch on a NEW byte copy of D1_ring_p5s01_20261009_124542.vi (7f2582ae): all ops, E1 diff 0 at every checkpoint, FATE lines for ops 10-12 quoted",
-  "PD381(e): adopted claudeDev D1_ring_p5s02a_<ts>.vi (in-between) with md5, full Error List per class, graph json + md5; LabVIEW verified gone",
-  "PD381(e): load_by_vi entry for the adopted file (tools/bench/memory_model.json may be written for that entry only)",
-  "PD381(e): P5-2 step-2 plan made on the adopted file's real graph; dry + prerun + prior-art PASS; NOT launched",
-  "PD380(d): after adoption, failed work copy D1_ring_p5s02a_20261009_152721.vi (cac5236b) and its resume record deleted",
-  "PD381(f): a second stop at op 16/17 = no retry in the card, hand back (this item is then met by that hand-back)",
-  "PD381(e): fp-76 closed with tools/gate_fp.py close as gate-correct (card omission), citing its own why",
-  "STATUS CARRY, after the LabVIEW cards: one offline batch of ~60 one-line descriptions in docs/fn_descriptions.json, each read from the code",
-  "s09 eb1d0f31, P5-1a 2482fe7b and P5-1 7f2582ae unchanged on disk; no tools/hooks edit; original VI never opened"
+  "Met by 165-1-1 / 165-2-1, cite only (PD401, PD402): diag_c165_a1_1_facts.md:8-45; diag_c165_a2_1_facts.md hashes 23/0 + c127 precedent; result_160-c3-2.json PASS",
+  "Re-hash stagexec 6ea6637f, r_in 0b895983, VI 6dcd5c3d, graph 2a5fa0c4 before the edit; any drift = hand back",
+  "PD402(b): PRIME skips ONLY a LoopTunnel inner-face sink whose base wire = wire_uid of an EARLIER checkpointed delete_wire; skip logged (end, wire, op)",
+  "Every other end primed as before; new stagexec md5 quoted",
+  "Self-test on 2a5fa0c4: r_in step-5 plan finalizes in SB REALSIM, route PASS, 0 UNROUTABLE; non-collect PRIME does not raise for t8776/t24342",
+  "Negatives still refuse: n1 no delete_wire, n2 delete of another wire, n3 delete_wire after the connect, n4 wired SelectorTunnel / FS inner face",
+  "Six stored plans (p5s01a/b, p5s02a-d) compile + dry byte-equal; c157/c158/c165 innerface, stagesim, stagexec self-tests green (counts quoted)",
+  "plan_ring_p5s02e.json re-made on 2a5fa0c4 (overwrites 20bde81a), new:* from diag_c164_p5s02d_scratch.log; K3f+K4+K4f, MAIN <= 675 quoted; final True",
+  "Every delete_wire a checkpoint; A70/A80 predicted per PD401(b): census in [{}, {'Wire': 1}], face on OK3 / OK4.outer net, Is Broken? False",
+  "stagesim end graph: w10362 / w25232 absent; t8776 / t24342 on the OK3 / OK4.outer nets, quoted",
+  "Recipe pair = step-4 recipe inputs on the shared stagekit gates; dry both PASS or PASS-UNVERIFIED (CEN2 only); PB rows quoted; PB block = hand back",
+  "prerun PASS; --check-launch PASS (CEN2-only unverified allowed); --scratch-required exit quoted",
+  "Predicted step-5 Error List from c74200f2 (step-4 expected): items cited to actions, rest UNPREDICTED; file + md5",
+  "Prior-art review of step-5 plan incl. PRIME change: novel + disposition (flags.peers include priorart), or released by FIXED:/REFUTED: lines",
+  "ONE scratch on a NEW byte copy of 6dcd5c3d: peak <= 675, every BLOCK gate PASS, PRIME skip lines for t8776/t24342 quoted; else RETURN, no 2nd run",
+  "Scratch per stub-delete + connect pair: PD401(b) facts quoted (wire 0 after delete, census, face on OK net, not broken, EL delta); other = RETURN",
+  "On PASS adopt claudeDev D1_ring_p5_<ts>.vi if A80 reached (P5 final, 6 of 6), else D1_ring_p5s02e_<ts>.vi; md5",
+  "Adopted file: graph read + md5; t8776 / t24342 real sources vs stagesim prediction; full Error List vs prediction item by item",
+  "memory_model.json: ONLY one load_by_vi entry for the adopted md5 (MB line cited); other keys equal, fail_above_mb 680",
+  "Measured census written into the step-5 pred by a script citing the graph reads; census keys only; md5s",
+  "AFTER the LabVIEW card: PD397(e) PB tightening + self-test (3 negatives); stored p5s02c/d + step-5 PB inputs still RECORD every row; fp-86 drained",
+  "E5 + reuse detectors judge a deleted node by identity (class, owner, owner uid, pos) in the shared module; self-test, planted survivor caught; fp-87/88 drained",
+  "Gate-run suites re-pinned once (names listed); one fn-descriptions batch (~60) into docs/fn_descriptions.json",
+  "Originals not opened; eb1d0f31, 7f2582ae, 94ffff94, f9ae7751, 564d8cbe, 6dcd5c3d unchanged; LabVIEW closed and verified gone"
  ],
  "blocked_by": null,
  "stop_requested": false,
- "advances": [
-  "M3",
-  "R1"
- ],
- "note": "assign_result_156_2 accepted (all 10 items). PD381: E-B is the working cause; the fix handles both outcomes and FATE lines measure it. Tools come first because PD380(b) refuses the scratch without them. gate-fp DUE: all open entries are hooks (chat)."
+ "advances": ["M3", "M8", "R1"],
+ "note": "Hand-back 2 judged (PD402): 165-2-1 items 0-3 accepted; SB refusal = base PRIME pass on stub-holding inner faces before the plan's own deletes. Last round (3/3). A80 reached -> cycle 166 = P6 run."
 }

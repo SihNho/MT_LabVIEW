@@ -1,0 +1,24 @@
+{"schema":"result/1","id":"160-b3-1","status":"PASS","gates":{"pass":19,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+{"path":"tools/bench/prep_c160_b3_1_mk.py","md5":"c0a012ce4a24b55d9d6bedab037cdcae"},
+{"path":"tools/bench/prep_c160_b3_1_mk.log","md5":"646eda5f634af73ac9fa61fa86842a02"},
+{"path":"tools/bench/prep_c160_b3_1_session.json","md5":"e52798990ee33799d8bbd50a6c1290b6"},
+{"path":"tools/bench/plan_ring_p5s02b_in2.json","md5":"927b805c90d3aa2507aa682bc54db17c"},
+{"path":"tools/bench/plan_ring_p5s02b.json","md5":"f4520b101baad70f065ba5d6c9d14925"},
+{"path":"tools/bench/plan_ring_p5s02b_b1.json","md5":"09ebc7a6c08f466997ba472ec0c64109"},
+{"path":"tools/bench/diag_c160_b3_1_facts.md","md5":"e38a4f74fd60a2cbe97825268906fe98"}],
+"facts":[
+"prep_c160_b3_1_mk.log:110-111 RESULT 19/0, BGRUN END rc=0 after 37s; no LabVIEW, no tool/hook edit; U pins unchanged (log:109)",
+"log:95-96 plan_ring_p5s02b.json final True on 94ffff94, 20/20 steps, failed None, 0 PROVISIONAL, route check PASS, 0 UNROUTABLE",
+"log:85-94 routes: k1/k4/k8 delete_wire (dw_a13/dw_go/dw_ho); k5,k9 connect_term_uid (t_go, t_ho groups); k2,k3,k7 cfw; k6,k10 case_frame_wire",
+"log:24-26 stubs read from graph rows: t24139 -> w24264, t24235 -> w24300, both sourceless; dw_go/dw_ho inserted before group tunnels t_go/t_ho",
+"log:32 IN2 = input + 2 deletes only, A32/A39 why replaced; log:20 ROWS delete+apply_map(A24..A40) == input (18)",
+"log:97-102 MERGE-END t24190->[24285], t24288->[24312]; STUB-END t24139/t24235 carry new sim wires with a source row, stub Wire objs gone",
+"log:103,105 compile 10 ops {delete_wire 3, tunnel 3, connect_term_uid 2 (register_end_case_border), case_frame_wire 2}, checkpoints [0,2,3,5,7,9,10]",
+"Stale b1 expectation changed: prep_c160_b1_1_mk.py:125-126 '8 ops / [0,2,3,4,6,7,8]' -> 10 ops (+2 deletes, t_go/t_ho now connect_term_uid)",
+"log:104-106 X10 START_ASSUMED 603.4, Executor peak 652.3, MAIN 657.4 <= 675; X8 clean, X17 clean (log:107-108)"],
+"open":[
+"Delete-row insertion in prep_c160_b3_1_mk.py repeats selftest_c160_regface.py:70-79 logic; no shared fn exists, tools/ outside write globs - extract to stagekit in a tooling card?",
+"dw_go/dw_ho sit before the group tunnel (A30/A37 positions), following the brief's selftest order, not literally 'before A32/A39' as the card goal words it - accept?"],
+"cost":{"usd":null,"minutes":5,"labview_runs":0},
+"note":"Report: tools/bench/diag_c160_b3_1_facts.md. Offline only."}

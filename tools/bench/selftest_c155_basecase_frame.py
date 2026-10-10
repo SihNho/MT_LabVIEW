@@ -25,7 +25,8 @@ PREDICTION (gates):
  C  (c) frame 'False' on the base case is still refused by compile and by resolve_addr (no name inference).
  D  (d) plan-made cases unchanged: plan_ring_p5s01.json and plan_ring_p5s01a.json compile EQUAL to the before-list
    (tools/bench/prep_c155_a1_1_compile_before.json, written before the edit); case_frame_of on a plan-made case unchanged.
- P  pins: stagekit aec03c6c, stage_prerun 9decb20f, addrcheck 207beb0d, gscript 1a80236e, vigraph a7eb58c7.
+ P  pins: stagekit 0b5bb678, stage_prerun 7605116f, addrcheck 207beb0d, gscript 1a80236e, vigraph a7eb58c7
+   (re-pinned 160-f2-1 from stagekit 07f9e35f, stage_prerun 9decb20f).
 Usage: py tools/bench/selftest_c155_basecase_frame.py"""
 import ast
 import copy
@@ -203,7 +204,7 @@ gate("D3 case_frame_of / case_frame_names on a plan-made case: names from case_f
      SS.case_frame_of(sp, 6) == (4, 1, "True") and SS.case_frame_names(sp, 4) == [["False", 5], ["True", 6]]
      and SS.case_frame_of(dict(sp, case_frames={}), 6) == (4, 1, "#6"))
 # ---- pins
-pins = {"stagekit.py": "0d8f6d25", "stage_prerun.py": "9decb20f", "addrcheck.py": "207beb0d", "gscript.py": "1a80236e",
+pins = {"stagekit.py": "9b8f82c1", "stage_prerun.py": "7605116f", "addrcheck.py": "207beb0d", "gscript.py": "1a80236e",
         "vigraph.py": "a7eb58c7"}
 got = dict((k, SK.md5(os.path.join(ROOT, "tools", k))[:8]) for k in pins)
 gate("P1 protected pins unchanged", got == pins, got)

@@ -1,0 +1,24 @@
+{"schema":"result/1","id":"163-a1-4","status":"PASS","gates":{"pass":4,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+ {"path":"tools/stagekit.py","md5":"dd57c1cac5d56b82c08c6ef9d7b1a22d"},
+ {"path":"tools/bench/selftest_c163_pbchain.py","md5":"6f08767523b2d8c5e0fcafa6e56ed591"},
+ {"path":"tools/bench/diag_c163_a1_4_facts.md","md5":null},
+ {"path":"tools/bench/diag_c163_a1_4_ctx.py","md5":"f56e31a259b0dec2aa321a7a5097b15a"},
+ {"path":"archive/peer/2026-10-10-c163-a1-4-pbchain.md","md5":null}],
+"facts":[
+ "Measured: both #376 rows R0==end True; class 1 fails on S1 uid multiset x2 + frame 31517 not inherited; class 2 fails (i) no connect of this plan (diag_c163_a1_4_ctx.log:9-14)",
+ "Fix: pb_inherit_ctx collects adopted plans' wire actions + tunnels (stagekit.py:2078-2083); pb_inherited_row class 3 = class 2 carried, (i)=base PB==end (stagekit.py:2127-2150)",
+ "stagekit 9b8f82c1 -> dd57c1ca; selftest_c163_pbchain 10/0 incl. 6 negatives and A2 = old verdict reproduced (diag_c163_a1_4_st_c163_pbchain.log)",
+ "Unchanged PASS: c161_pbinherit 10/0, c158_gates386 16/0, c158_runcheck 10/0, t6_poskey 43/0, t7_ring 35/0, c160_stagemap 5/0 (diag_c163_a1_4_st_*.log)",
+ "Stagekit md5 PIN gates now fail: c160_delwire P0/V1, c161_delckpt P, c155_basecase_frame P1 - not re-pinned, outside write globs (diag_c163_a1_4_facts.md:27-28)",
+ "Pre-existing, not stagekit: c147_b1_2 P0 stagexec pin, c159_a4_1 G1 stagexec pin, c155_gatefp73 G1/G5 (stage_prerun only) (diag_c163_a1_4_facts.md:29-30)",
+ "Peer hypothesis ANSWERED: no wrong row in step-3 data, classes 1/2 not loosened; 3 objections recorded, none applied (archive/peer/2026-10-10-c163-a1-4-pbchain.md:61-112)",
+ "DRY main + scratch: PASS-UNVERIFIED CEN2 only, #376 t0/t1 RECORD class 3, rc 0 (prep_c163_a1_4_dry.log:61, prep_c163_a1_4_scr_dry.log:84)",
+ "PRERUN PASS 16/0 both: X10 658.3<=675, X14 12/15, X17, X8 PASS (prep_c163_a1_4_prerun.log:63-87; prep_c163_a1_4_scr_prerun.log:110)",
+ "--scratch-required rc 3: CENSUS-UNPREDICTED rows [1..12], scratch run must measure census (prep_c163_a1_4_scrreq.log:3); pred/licence/EL reused unchanged"],
+"open":[
+ "Re-pin stagekit dd57c1ca in selftest_c160_delwire / c161_delckpt / c155_basecase_frame, prep_c163_a1_3_pred/_md5 PINS, and open cards 160-c3-2 / 161-b3-1?",
+ "Accept the review's tightening of class 3 (provenance: adopted scratch log RECORD PB <sink> with after==after0; per-frame coverage instead of multiplicity)?",
+ "Next: scratch launch card naming DRY-UNVERIFIED-OK: CEN2 new-object census (163-a1-3 commands in diag_c163_a1_3_facts.md)."],
+"cost":{"usd":null,"minutes":26,"labview_runs":0},
+"note":"Offline only; LabVIEW never launched. fp-86 left in gate_fp_queue.jsonl unchanged (drained by the tooling batch). No hooks, stagexec, stagesim, stage_prerun, stage_shared edit."}

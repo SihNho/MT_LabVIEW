@@ -1,0 +1,64 @@
+BGRUN START 2026-10-10 09:12:43 limit 300.0 min: claude.exe -p --model claude-sonnet-5-5 --effort high --output-format json --permission-mode acceptEdits --max-budget-usd 90.00 CARD tools/bench/cards/assign_161_2.json
+
+You are the ASSIGNMENT session of one cycle of this project (card chat-A1, user 2026-10-04). You were spawned by
+`tools/cycle_runner.py` after the judgement session set the cycle's PURPOSE; when you end your turn the process ends.
+Nobody is watching. The first line of this prompt is `CARD tools/bench/cards/assign_<N>_<k>.json` (`assign/1`): the
+purpose (act, pass items, plan, goal ids), your caps, your state file and the path you must write your result to.
+
+## Read, in this order, and nothing else
+0. The `assign/1` card. If `handback_in` is set, the previous round handed back: read that `handback/1` record — the
+   judgement session has since revised the purpose; do not repeat what it refused.
+1. `CLAUDE.md` (the standing rules bind you), `STATUS.md` (lock, rig-state banner — never infer the rig state).
+2. The plan file named in the purpose, only the sections the purpose names. Not `archive/`, not whole logs.
+3. `docs/script-writing.md` (user 2026-10-09) — before writing any brief that asks for a script. Briefs ask for CALLS
+   to shared functions, never "copy the s06 pair"; if the function does not exist yet, the first card extracts it into
+   `tools/stagekit.py` (or the module that owns the topic) with a self-test, then the recipe card uses it.
+
+## What you do: turn the purpose into cards, until every pass item is met
+- Dispatch with the Agent tool, `subagent_type` `material` (Opus 5.5 high), ONE-LINE prompt `CARD <task/1 path>`.
+  Write each card with `py tools/protocol.py new task --id <N>-a<k>-<seq>`, fill goal, inputs (md5), pass, outputs,
+  **flags** (labview / gui / hardware / run_vi / write globs / status_edit / git_commit / peers), budget, rules,
+  `requires`, and **`advances`/`unblocks` copied from the purpose**; then `py tools/protocol.py validate <card>` and
+  `py tools/protocol.py requires <card>`. A brief states the MEASUREMENT, never a result-dependent action.
+- Keep `write` globs NARROW: never the plan file, CLAUDE.md, docs/user-rules.md, Requests.md, `.claude/**`,
+  `tools/hooks/**`, `tools/bench/memory_model.json` — unless the purpose's act/pass names that path. Such a card is a
+  plan / rule / memory-limit change, which is the judgement session's, and the hook hands it back.
+- Read each `result/1` (`status`, `first_fail`, `blocked_by`, the Jev-ladder row in `facts`); never infer from wording.
+- **Retry once, escalate on the existing ladder.** A FAIL the classifiers explain (soft LOG-only gate, address/format
+  mismatch, Error List by-design) or whose Jev row says `our-script-bug` / `already-reviewed-class`: re-issue it as a
+  new card with `retry_of_card: <old id>` applying that NEXT-ACTION. A FAIL with its failure budget spent or its
+  minutes exceeded: `escalation: 1` to `material-opus-max`, then `escalation: 2` to `material-fable-low` (same goal,
+  pass, flags). A REPEATED TOOL FUNCTION is a scratch-VI verification card at the same rung, not an escalation
+  (`guard_session` refuses the escalation). An UNEXPLAINED FAIL gets ONE retry; if that retry fails too, the hook
+  hands the purpose back.
+- **Deliverable first (user 2026-10-08):** dispatch the purpose's LabVIEW deliverable card (build / scratch / adopt)
+  before any tooling card (gate-fp drain, suite re-runs, regression proofs); tooling cards run after it returns. Only a
+  gate that refuses the deliverable's own launch is fixed first. A gate false positive in `tools/hooks/**` is never a
+  card: log it with `tools/gate_fp.py log` and go on — the chat drains hooks between runs.
+- **Pipeline:** at most 2 cards live, at most ONE with `flags.labview` != "none"; an offline prep card may run beside
+  a LabVIEW card (two Agent calls in one message). No gate-tool edit beside a LabVIEW card.
+- Dispatch in the foreground and wait for every agent you started before ending your turn. Never end a message
+  expecting to be resumed. Do not run `retrospective.py`, do not write `tools/bench/next.json` or STATUS.md's NEXT —
+  those are the judgement session's and the runner's.
+- A question only the user can answer: do NOT decide it and do not add it to decisions_pending yourself — hand back.
+
+## HAND-BACK is mechanical — obey it
+`tools/hooks/guard_session.py` → `tools/hooks/guard_assign.py` refuses a dispatch with `HANDBACK REQUIRED (<trigger>)`
+when: (a) an unexplained FAIL repeats after its one retry; (b) the same failure class appears twice; (c) a card leaves
+the purpose (plan file, memory limit, user rule, goal ids outside the purpose); (d) a user question appears
+(decisions_pending grew, or a card is BLOCKED on the user); or a cap is reached (time / USD from the card, runaway
+backstop of cards). After that refusal every further dispatch is refused: write the result and end your turn. The
+runner re-checks all of it after you exit, so a PURPOSE_MET you write while a trigger stands is overridden.
+Hand back yourself, too, whenever continuing would need a decision that is not in the purpose.
+
+## Your output — `assign-result/1`, written to the card's `result` path, then validated
+`{"schema":"assign-result/1","cycle":N,"round":k,"status":"PURPOSE_MET"|"HANDBACK","cards":["<card ids>"],
+"pass_evidence":[{"item":0,"met":true,"evidence":["tools/bench/cards/result_<id>.json","<file:line>"]}, ...],
+"handback":null | {"reason":"<one line>","question":null},"note":""}` — `item` is the 0-based index of the purpose's
+`pass` list; PURPOSE_MET needs one `met: true` row with evidence for EVERY pass item, or the runner turns it into a
+hand-back. Check it with `py tools/protocol.py validate <path>`, then end your turn with a one-line summary.
+
+BGRUN PID 17548
+[claude-code:unrecognized_model] {"model":"claude-sonnet-5-5","query_source":"sdk"}
+{"duration_api_ms":344719,"stop_reason":"end_turn","session_id":"4aff079a-118c-4c22-bfcb-0db212f55888","total_cost_usd":3.7724706,"usage":{"input_tokens":48,"cache_creation_input_tokens":123589,"cache_read_input_tokens":3072825,"output_tokens":15215,"output_tokens_details":{"thinking_tokens":2174},"server_tool_use":{"web_search_requests":0,"web_fetch_requests":0},"service_tier":"standard","cache_creation":{"ephemeral_1h_input_tokens":123589,"ephemeral_5m_input_tokens":0},"inference_geo":"global","iterations":[{"input_tokens":2,"output_tokens":476,"cache_read_input_tokens":152690,"cache_creation_input_tokens":311,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":311},"type":"message"}],"speed":"standard"},"modelUsage":{"claude-sonnet-5-5":{"inputTokens":48,"outputTokens":15215,"cacheReadInputTokens":3072825,"cacheCreationInputTokens":123589,"webSearchRequests":0,"costUSD":1.907769,"contextWindow":200000,"maxOutputTokens":128000,"thinkingTokens":2174,"canonicalModel":"claude-sonnet-5-5","provider":"firstParty","costBasis":"unknown"},"claude-opus-5-5[1m]":{"inputTokens":52,"outputTokens":23902,"cacheReadInputTokens":3039818,"cacheCreationInputTokens":155698,"webSearchRequests":0,"costUSD":1.8647016,"contextWindow":1000000,"maxOutputTokens":128000,"thinkingTokens":8573,"canonicalModel":"claude-opus-5-5","provider":"firstParty","costBasis":"list"}},"permission_denials":[{"tool_name":"Bash","tool_use_id":"toolu_01W5WiL63SUc1Z3qHQrVizoG","tool_input":{"command":"cd \"G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop\" && py tools/protocol.py new task --id 161-a2-1 2>&1 | head -30; md5sum docs/script-writing.md docs/d1/ring-p5b.md tools/stagekit.py tools/stagesim.py tools/stagexec.py tools/stage_prerun.py tools/bench/diag_c161_b1_2_facts.md tools/bench/diag_c161_b1_1_facts.md tools/bench/plan_ring_p5s02b.json tools/bench/plan_ring_p5s02b_pred.json tools/bench/prep_c156_a1_1_lib.py tools/bench/prep_c160_c3_1_pred.py tools/bench/diag_c161_b1_2_measure.json tools/bench/prep_c161_b1_2_measure.py","description":"Create new task card template and hash inputs"}},{"tool_name":"Bash","tool_use_id":"toolu_01RNvL4QBcc9bShR9BTFUdTH","tool_input":{"command":"cd \"G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop\" && for s in p5s01a p5s01b p5s02a p5s02b; do echo \"== $s\"; py -c \"\nimport json,sys\np=json.load(open('tools/bench/plan_ring_$s.json'))\nprint('keys',list(p.keys())[:30])\nfor a in p.get('actions',[]):\n    if a.get('op') in ('create','move_in') : print({k:a[k] for k in a if k in ('id','op','class','as','nodes','dest_diagram','owner','diagram')})\n\"; done; for f in diag_c154_p5s01a_scratch diag_c155_p5s01b_scratch diag_c158_p5s02a_scratch; do py -c \"\nimport json\nd=json.load(open('tools/bench/$f.json'))\nprint('$f', type(d).__name__, list(d.keys())[:40] if isinstance(d,dict) else len(d))\nsx=d.get('stagexec') if isinstance(d,dict) else None\nprint(' stagexec', type(sx).__name__, len(sx or []), (sx or [None])[0] if sx else None)\n\"; done","description":"Inspect plans case moves and scratch json structure"}},{"tool_name":"Bash","tool_use_id":"toolu_01KBM4BFPQHWNeNvaypimJWR","tool_input":{"command":"cd \"G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop\" && py tools/bgrun.py --material --max-min 3 --log tools/bench/prep_c161_a2_1_probe.log -- py -u tools/bench/prep_c161_a2_1_probe.py; cut -c1-500 tools/bench/prep_c161_a2_1_probe.log","timeout":240000,"description":"Run the probe under bgrun and show output"}},{"tool_name":"Bash","tool_use_id":"toolu_01TAQMe3aGGAXAnre9NinxPv","tool_input":{"command":"cd \"G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop\" && grep -n \"SIM_END\\|def sim_end\\|class RingSession\\|def __init__\\|def gate_pb\\|pb_386(\\|pb_check(\\|pb_check_bound(\\|case_move_frames(\" tools/stagekit.py tools/stage_prerun.py tools/stagexec.py tools/stagesim.py tools/recipes/*.py tools/bench/*.py 2>/dev/null | grep -v \"^tools/bench/sim\" | head -60","description":"Find PB call sites and RingSession"}}],"terminal_reason":"completed","fast_mode_state":"off","fast_mode_disabled_reason":"sdk_opt_in_required","subagent_stats":{"spawned":1,"requested":{"background":0,"foreground":1,"unset":0},"started_in_background":0,"max_depth":1,"spawned_by_subagents":0,"completed":1,"failed":0,"killed":{"parent":0,"user":0,"system":0},"refused":{"depth_limit":0,"concurrency_limit":0,"budget":0},"by_type":{"material":1}},"is_error":false,"num_turns":35,"subtype":"success","api_error_status":null,"result":"Handed back: only 2 of the 5 `#376` rows match a frame inherited from an adopted step, which is the purpose's stop condition. The result file (`assign_result_161_2.json`) validates. I made no stagekit edit and ran no LabVIEW.\n\n- **Matched:** \"cal cluster path\" and \"file size\" come from p5s02a's case move. Binding records exist for p5s01a, p5s01b and p5s02a (`adopted_scratch.jsonl:9-11`), and the only inherited case-move frames are `{376, 3052, 3453: [31506]}`, all from p5s02a.\n- **Not matched:** \"selected path\", \"error in\" and \"total data array in\" are unwired at step 0. p5s02b wires them itself, through its own new `CQ7` tunnels. \"error in\" and \"total data array in\" also reach frame 31517, which no adopted plan moved a node into, and their S1 source uids are doubled.\n- **Correction to round 1:** the earlier note that the rows are \"unchanged by every action\" is wrong for those three.\n- **Open for judgement:** how to license those three rows (this plan's tunnel frames, `open_rows`, or a plan defect), and whether a doubled-source route is computation-preserving under rule 1a.\n- **Not run:** the pred MAIN recompute (PD394(b)) is independent of PB and could be re-issued as its own card.\n\nNext is a judgement decision on the three rows.","ttft_ms":6740,"type":"result","duration_ms":414704,"uuid":"31f6f6bb-c74c-406e-b4ba-b97910dbf4c8","ttft_stream_ms":6418,"time_to_request_ms":3075,"first_content_frame_ms":6418,"queued_turn_count":0,"result_index":0}
+BGRUN END rc=0 after 418s

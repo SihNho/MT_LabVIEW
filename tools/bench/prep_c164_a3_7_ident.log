@@ -1,0 +1,34 @@
+BGRUN START 2026-10-10 16:01:37 limit 3.0 min: py -u tools/bench/prep_c164_a3_7_ident.py
+BGRUN PID 9764
+  FACT base graph_ring_p5s02c_20261010_131658.json objs 10821 rows 6203; adopted graph_ring_p5s02d_20261010_154830.json objs 10840 rows 6213
+  FACT plan deleted_nodes [23042, 23501] (diag_c164_a3_5_graph_plan.json:33-36); made [12169, 12170, 31756, 31764, 31773, 31803, 31807]
+  IDENT #23042: base (class, owner, owner_uid, pos) ('Comparison', 'Diagram', 23405, (15713, 30518)) | adopted at uid None rows [] | adopted objects with base identity [] (made among them []) | same class+pos any owner [] | IDENTITY GONE yes
+  IDENT #23501: base (class, owner, owner_uid, pos) ('LoopTunnel', 'WhileLoop', 23041, (15675, 11867)) | adopted at uid ('ParameterTerminal', 'Comparison', (), (5478, 11923)) rows [{'term_uid': 23501, 'term_name': 'y', 'owner_uid': 12170, 'owner_class': 'Comparison', 'wire_uid': 31744, 'term_class': 'ParameterTerminal'}] | adopted objects with base identity [] (made among them []) | same class+pos any owner [] | IDENTITY GONE yes
+  REUSE term uid 23481: base rows [(23042, 'Comparison', 'x', 'ParameterTerminal', 23460)] obj ('ParameterTerminal', 'Comparison', (15713, 30518)) | adopted rows [(12170, 'Comparison', 'x = y?', 'ParameterTerminal', 31749)] obj ('ParameterTerminal', 'Comparison', (5488, 11913)) | base owner identity gone True
+  REUSE term uid 23501: base rows [] obj ('LoopTunnel', 'WhileLoop', (15675, 11867)) | adopted rows [(12170, 'Comparison', 'y', 'ParameterTerminal', 31744)] obj ('ParameterTerminal', 'Comparison', (5478, 11923)) | base owner identity gone None
+  FACT LoopTunnel uid set: base 147 adopted 146; base-adopted [23501]; adopted-base []
+  FACT LoopTunnel identity set: base-adopted ["('LoopTunnel', 'WhileLoop', 23041, (15675, 11867))"]; adopted-base []
+  GATE PASS  I1 every plan-deleted node IDENTITY GONE in the adopted graph (class, owner, owner uid, pos)  {23042: True, 23501: True}
+  GATE PASS  I2 LoopTunnel identities base-adopted == {#23501's}, adopted-base empty  (1, 0)
+  QUOTE graph.log [(308, '  PASS  G1 graph: rows > 0, every Diagram owner resolved')]
+  GATE PASS  S1 graph gate G1 PASS  [(308, '  PASS  G1 graph: rows > 0, every Diagram owner resolved')]
+  QUOTE graph.log [(309, "  PASS  G2 loop body owned by the While; While on an FS frame  (('WhileLoop', 637), ('FlatSequenceFrame', 0))")]
+  GATE PASS  S1 graph gate G2 PASS  [(309, "  PASS  G2 loop body owned by the While; While on an FS frame  (('WhileLoop', 637), ('FlatSequenceFrame', 0))")]
+  QUOTE graph.log [(310, "  PASS  G3 case frames owned by the case  [(27219, ('CaseStructure', 22694)), (27232, ('CaseStructure', 22694))]")]
+  GATE PASS  S1 graph gate G3 PASS  [(310, "  PASS  G3 case frames owned by the case  [(27219, ('CaseStructure', 22694)), (27232, ('CaseStructure', 22694))]")]
+  QUOTE graph.log [(311, "  PASS  FS1 every FlatSequence read (23), each has >= 1 frame, no frame in two FS  {'681': [3628, 81548, 113, 124, 5031, 3121, 1817, 4866, 686, 759], '2499': [18402, 32410, 33688], '12938': [12960, 13236, 14840, 15041, 19687, 19887, 20261, 21134, 25769, 26117]")]
+  GATE PASS  S1 graph gate FS1 PASS  [(311, "  PASS  FS1 every FlatSequence read (23), each has >= 1 frame, no frame in two FS  {'681': [3628, 81548, 113, 124, 5031, 3121, 1817, 4866, 686, 759], '2499': [18402, 32410, 33688], '12938': [12960, 13236, 14840, 15041, 19687, 19887, 20261, 21134, 25769, 26117]")]
+  QUOTE graph.log [(313, '  PASS  B gate B scoped: 7 UNMEASURED FS border tunnel(s) listed, none used (no plan named)')]
+  GATE PASS  S1 graph gate B PASS  [(313, '  PASS  B gate B scoped: 7 UNMEASURED FS border tunnel(s) listed, none used (no plan named)')]
+  QUOTE graph.log [(314, '  PASS  X input md5 unchanged  6dcd5c3d506f69947a5ce259ccbe2221')]
+  GATE PASS  S1 graph gate X PASS  [(314, '  PASS  X input md5 unchanged  6dcd5c3d506f69947a5ce259ccbe2221')]
+  GATE PASS  S2 no graph gate other than E5 failed  []
+  QUOTE el.log [(89, 'RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":11,"fail":0},"first_fail":null,"artefacts":[{"path":"tools\\\\bench\\\\errorlist_D1_ring_p5s02d_20261010_152518_20261010_153416.json","md5":"7450dd98bcd4c57d56c0e7aedec63857"}],"card":"164-3-5","labv'), (88, 'items 53 / window N 53 ; show-error fronted 53 ; extra 0 ; missing 0 ; errors [] ; handles 37245 -> 31292 ; bed md5 unchanged True ; 707.0 s')]
+  QUOTE elexp.log [(6, 'FACT compare(read, predicted 2c1edf78): extra [] | missing []'), (5, "GATE PASS | S predicted step-4 end md5 2c1edf78, p5s02c read md5 8789ed58 | ('2c1edf78384931639d603bc75b9e0bb3', '8789ed580388642544cf5bee68091154')")]
+  GATE PASS  S3 Error List 53 == window 53, RESULT PASS, == prediction 2c1edf78 (extra [] missing [])  ([(89, 'RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":11,"fail":0},"first_fail":null,"artefacts":[{"path":"tools\\\\bench\\\\errorlist_D1_ring_p5s02d_20261010_152518_20261010_153416.json","md5":"7450dd98bcd4c57d56c0e7aedec63857"}],"card":"164-3-5","labv'), (88, 'items 53 / window N 53 ; show-error fronted 53 ; extra 0 ; missing 0 ; errors [] ; handles 37245 -> 31292 ; bed md5 unchanged True ; 707.0 s')], [(6, 'FACT compare(read, predicted 2c1edf78): extra [] | missing []'), (5, "GATE PASS | S predicted step-4 end md5 2c1edf78, p5s02c read md5 8789ed58 | ('2c1edf78384931639d603bc75b9e0bb3', '8789ed580388642544cf5bee68091154')")])
+  GATE PASS  S4 w23460 absent in the adopted graph (0 rows, no object)  (0, False)
+  FACT w23519 adopted: sources [8494], sinks [7606, 23241, 23450]
+  GATE PASS  S5 w23519 source t8494, real sinks == prediction {t23450, t23241, t7606}  ([8494], [7606, 23241, 23450])
+  FACT STRUCTURAL CONDITION HOLDS
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":12,"fail":0},"first_fail":null,"artefacts":[],"card":"164-3-7","labview":"none"}
+BGRUN END rc=0 after 1s

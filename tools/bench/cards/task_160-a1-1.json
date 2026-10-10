@@ -1,0 +1,64 @@
+{
+ "schema": "task/1",
+ "id": "160-a1-1",
+ "kind": "build",
+ "goal": "PD390(a)(b): one termless-Wire branch in stagesim.op_delete_wire and stagexec delete_wire, self-tested on the 94ffff94 graph; re-run three suites.",
+ "why": "Cycle 159 stopped because delete_wire resolves by terminals and cannot remove the termless wire w10394; step 2's first action is that delete. This branch is the deliverable that unblocks the p5s02b plan.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_160-a1-1.md", "md5": "d29f71c775e7c47d47550af628754fd6"},
+  {"path": "docs/d1/ring-p5b.md", "md5": "b9646fde47e344996ca0d73e911104e1"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+  {"path": "tools/bench/graph_ring_p5s02a_20261010_032547.json", "md5": "7ac24924f979afde964e63fb27957b45"},
+  {"path": "tools/stagesim.py", "md5": "eb99c6bab81633f9bdd7c10dce6bfc0a"},
+  {"path": "tools/stagexec.py", "md5": "7a712ccb4c1f754d8bee4557f632177f"},
+  {"path": "tools/stagekit.py", "md5": "ac3a8f5778c88c30168af4422f683f6c"},
+  {"path": "tools/stage_prerun.py", "md5": "7605116f1dfe1c6fd4963dbfcf259de1"},
+  {"path": "tools/addrcheck.py", "md5": "207beb0d09102c78b1e06d1f076eec7e"},
+  {"path": "tools/vigraph.py", "md5": "a7eb58c7e35a134f93df168ea4cdea80"},
+  {"path": "tools/bench/diag_c159_c1_1_facts.md", "md5": "d8ccd976d2334bbff85b07b38ee680b3"}
+ ],
+ "pass": [
+  "stagesim.op_delete_wire and stagexec delete_wire: ONE new branch each, only for a Wire uid with 0 terminal rows; live act = stagekit.delete_wire uid path; no remove_bad_wires; file:line quoted",
+  "selftest_c160_delwire on the 94ffff94 graph: T1 w10394 deleted, rest unchanged; T2 absent refused; T3 non-Wire; T4 Wire with terminals old path; T5 already-gone not counted; RESULT n/0",
+  "selftest_c159_cen2_ends 8/0, selftest_c158_runcheck 10/0, selftest_c158_wire0face 24/0 re-run on the new bytes (stagesim/stagexec pins moved only), result lines quoted",
+  "md5 after: stagekit ac3a8f57, stage_prerun 7605116f, addrcheck 207beb0d, vigraph a7eb58c7 unchanged; VIs 94ffff94/eb1d0f31/2482fe7b/7f2582ae unchanged; tools/hooks untouched"
+ ],
+ "outputs": [
+  "tools/bench/selftest_c160_delwire.py",
+  "tools/bench/selftest_c160_delwire.log",
+  "tools/bench/diag_c160_a1_1_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagesim.py",
+   "tools/stagexec.py",
+   "tools/bench/selftest_c160_delwire*",
+   "tools/bench/selftest_c158_runcheck*",
+   "tools/bench/selftest_c158_wire0face*",
+   "tools/bench/selftest_c159_cen2_ends*",
+   "tools/bench/diag_c160_a1_1*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "rules": [
+  "Offline; no LabVIEW process; no tools/hooks edit; edit only stagesim.py and stagexec.py among the tools",
+  "New branch only for a Wire with 0 terminal rows; every other path stays the old logic (rule 1a)",
+  "No remove_bad_wires; 'already gone' is never a successful delete; T1 cannot pass => FAIL, no fallback (PD390e)",
+  "Call shared functions, no pasted blocks; a new function has a docstring naming its self-test",
+  "A suite count that differs from its last pass is a FAIL, not a re-pin"
+ ],
+ "advances": ["M3", "M8", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/graph_ring_p5s02a_20261010_032547.json"}
+ ]
+}

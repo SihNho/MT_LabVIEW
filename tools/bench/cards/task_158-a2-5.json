@@ -1,0 +1,54 @@
+{
+ "schema": "task/1",
+ "id": "158-a2-5",
+ "kind": "build",
+ "goal": "Offline: add ~60 verified one-line descriptions of undocumented shared-tool functions to docs/fn_descriptions.json (stage toolchain first); no .py edit.",
+ "why": "Carry item chat-T8: undocumented functions show as (undocumented) in the capabilities index; docstrings would shift file:line citations, so descriptions live in the json.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_158-a2-5.md", "md5": "e3b8cf978c9bdf57b83c04dd3ee0429b"},
+  {"path": "docs/fn_descriptions.json", "md5": "e97f4b018ee7371a168fef48b2e3786b"},
+  {"path": "tools/gen_capabilities.py", "md5": "78e9c328657bbd7165cce62c7f9369c4"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"}
+ ],
+ "pass": [
+  "docs/fn_descriptions.json parses; item count rises by about 60; no existing entry changed or removed; each new entry read from the function's code",
+  "gen_capabilities and doc_lint run; L12 clean for the new keys; any tracked file they rewrite is named",
+  "diag_c158_a2_5_facts.md (<= 25 lines): counts before/after by module, md5 before/after, 3 sample entries with code lines, OPEN for skipped functions; no .py edited; no LabVIEW"
+ ],
+ "outputs": [
+  "docs/fn_descriptions.json",
+  "tools/bench/diag_c158_a2_5_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "docs/fn_descriptions.json",
+   "docs/toolkit-capabilities.md",
+   "tools/bench/capabilities_*",
+   "tools/bench/diag_c158_a2_5*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/jev_*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "advances": ["M8"],
+ "requires": [
+  {"kind": "file", "name": "docs/fn_descriptions.json"},
+  {"kind": "file", "name": "tools/gen_capabilities.py"}
+ ],
+ "rules": [
+  "No .py, hook, recipe, plan or gate edit; descriptions go only in docs/fn_descriptions.json",
+  "Each description is read from the function's code; no entry is a guess from the name",
+  "Do not change or remove an existing entry",
+  "A gate refusing your own command text is a false positive: gate_fp.py log, no env bypass"
+ ]
+}

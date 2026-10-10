@@ -1,0 +1,18 @@
+BGRUN START 2026-10-10 14:05:48 limit 3.0 min: py -u tools/bench/prep_c164_a2_1_cmp.py
+BGRUN PID 23040
+GATE PASS | PIN pre164 d84634bd, both164 4c8d3645 | ('d84634bdbe0f4f94669d2443af116b8e', '4c8d3645435308b89853488bb0bb5a70')
+FACT MD5 plan_ring_p5s02r_in.json 4c8d3645 -> 4d93c82dfb10e2954196e3ee2364171b
+GATE PASS | TOP pre164: top-level non-action content equal | 
+GATE PASS | IDS pre164: same action ids in order (80) | 
+FACT RAW pre164 -> new: [('A69', 'w_k3pass', '/dst', 'new:OK3.inner', None), ('A69', 'w_k3pass', '/dst/frame', None, 'True'), ('A69', 'w_k3pass', '/dst/side', None, 'inner'), ('A69', 'w_k3pass', '/dst/uid', None, 'new:OK3'), ('A69', 'w_k3pass', '/src', 'new:IK3.inner', None), ('A69', 'w_k3pass', '/src/side', None, 'inner'), ('A69', 'w_k3pass', '/src/uid', None, 'new:IK3'), ('A79', 'w_k4pass', '/dst', 'new:OK4.inner', None), ('A79', 'w_k4pass', '/dst/frame', None, 'True'), ('A79', 'w_k4pass', '/dst/side', None, 'inner'), ('A79', 'w_k4pass', '/dst/uid', None, 'new:OK4'), ('A79', 'w_k4pass', '/src', 'new:IK4.inner', None), ('A79', 'w_k4pass', '/src/side', None, 'inner'), ('A79', 'w_k4pass', '/src/uid', None, 'new:IK4')]
+FACT NORM pre164 -> new: [('A69', 'w_k3pass', '/dst/frame', None, 'True'), ('A79', 'w_k4pass', '/dst/frame', None, 'True')]
+GATE PASS | CMP pre164 -> new: normalised diff == exactly [('A69', 'w_k3pass', '/dst/frame', None, 'True'), ('A79', 'w_k4pass', '/dst/frame', None, 'True')] | [('A69', 'w_k3pass', '/dst/frame', None, 'True'), ('A79', 'w_k4pass', '/dst/frame', None, 'True')]
+GATE PASS | TOP both164: top-level non-action content equal | 
+GATE PASS | IDS both164: same action ids in order (80) | 
+FACT RAW both164 -> new: [('A69', 'w_k3pass', '/src/frame', 'True', None), ('A79', 'w_k4pass', '/src/frame', 'True', None)]
+FACT NORM both164 -> new: [('A69', 'w_k3pass', '/src/frame', 'True', None), ('A79', 'w_k4pass', '/src/frame', 'True', None)]
+GATE PASS | CMP both164 -> new: normalised diff == exactly [('A69', 'w_k3pass', '/src/frame', 'True', None), ('A79', 'w_k4pass', '/src/frame', 'True', None)] | [('A69', 'w_k3pass', '/src/frame', 'True', None), ('A79', 'w_k4pass', '/src/frame', 'True', None)]
+GATE PASS | RAW both164 -> new: raw leaf diff == the same 2 removed keys | [('A69', 'w_k3pass', '/src/frame', 'True', None), ('A79', 'w_k4pass', '/src/frame', 'True', None)]
+FACT ENDS w_k3pass {'uid': 'new:IK3', 'side': 'inner'} -> {'uid': 'new:OK3', 'side': 'inner', 'frame': 'True'}; w_k4pass {'uid': 'new:IK4', 'side': 'inner'} -> {'uid': 'new:OK4', 'side': 'inner', 'frame': 'True'}
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":8,"fail":0},"first_fail":null,"artefacts":[],"card":"164-a2-1","labview":"none"}
+BGRUN END rc=0 after 1s

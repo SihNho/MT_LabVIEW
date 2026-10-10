@@ -1,0 +1,17 @@
+ATTACK this claim about a failed prediction in tools/bench/diag_c164_a3_5_mkgraph.py (log tools/bench/diag_c164_a3_5_mkgraph.log, card 164-3-5).
+
+Context: the helper is OFFLINE (no LabVIEW). It writes the decision-row plan for a read-only graph read of an adopted LabVIEW VI. Its gate W predicted
+len(term_identity.new) == 7, where term_identity comes from tools/bench/diag_c164_p5s02d_scratch.json (written by the PASSED scratch run,
+tools/bench/diag_c164_p5s02d_scratch.log RESULT PASS 21/0 at :269). Measured: term_identity.new = 9 wires [12150, 23519, 31712, 31744, 31749, 31792,
+31818, 31825, 31884]; CENSUS-ALL new uids by class says Wire 7 (log :223); the D gate PASSED with 8 new (source, sink) pairs (log :220).
+The same helper for the previous step (tools/bench/diag_c163_a2_2_mkgraph.py:71) predicted 6 and saw 6, matching CENSUS-ALL Wire 6 there.
+
+CLAIM: this is a prediction error in MY helper, not a defect in the VI or the scratch: term_identity.new is the set of wire uids whose (source, sink)
+identity is new after the run, which includes OLD wire uids that were re-ended by this step (23519 lost one sink to wire_remove_loose_ends at op 5;
+12150 and 31712 are pre-existing uids that gained or lost an end), so it need not equal the count of new Wire uids. In step 3 it equalled 6 only
+because no old wire was re-ended. Fix: gate W on the D gate (8 pairs) and record len(new) as measured (>= 7), then continue.
+
+Find the code that builds term_identity["new"] (tools/stagekit.py, search term_identity) and check whether it really includes re-ended old uids.
+Give: the strongest reason the claim is wrong; an alternative explanation (e.g. a wire that should have been deleted survived, or a duplicate wire
+was created); what would falsify it; the cheapest discriminating test (which uids to look up in tools/bench/graph_ring_p5s02c_20261010_131658.json,
+the base graph, and in tools/bench/plan_ring_p5s02d.json).

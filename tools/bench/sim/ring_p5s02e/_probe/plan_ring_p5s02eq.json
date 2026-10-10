@@ -1,0 +1,445 @@
+{
+ "schema": "stageplan/1",
+ "context": {
+  "s1_key": "D1_s1_copy"
+ },
+ "stage": "ring_p5s02eq",
+ "goal": "card 165-2-1 PROBE (fact only): step-5 rows K3f K4 K4f on 6dcd5c3d",
+ "base": {
+  "path": "tools/bench/graph_ring_p5s02d_20261010_154830.json",
+  "md5": "2a5fa0c40866f88111d3ab14e5f9c32d"
+ },
+ "actions": [
+  {
+   "op": "delete_wire",
+   "id": "dw_10362",
+   "wire_uid": 10362,
+   "why": "PD400(a): sink-only stub w10362 on the INNER face t8776 of LoopTunnel #5204 (one terminal row, no source; graph 2a5fa0c4) - removed BEFORE w_k3f (checkpoint, PD393(a))"
+  },
+  {
+   "op": "wire",
+   "id": "w_k3f",
+   "src": {
+    "uid": 31803,
+    "term": "outer"
+   },
+   "dst": {
+    "uid": 5204,
+    "term_uid": 8776
+   },
+   "why": "PD379(b) #6384/#2048 take the value that reaches R.inner"
+  },
+  {
+   "op": "add_shift_reg",
+   "id": "sr_k4",
+   "loop": 23041,
+   "body": 23405,
+   "parent": 686,
+   "as": "SK4",
+   "why": "PD379(b) NEW SR for t4"
+  },
+  {
+   "op": "create",
+   "id": "c_k4i",
+   "class": "DigitalNumericConstant",
+   "diagram": 686,
+   "as": "KI4",
+   "prim": "const_donor",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorSRInit_v0.vi",
+    "uid": 248
+   },
+   "terminals": [
+    {
+     "name": "",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "PD379(b) SR init = the type's default (I32 0 donor as P5-1 c_k0; type OPEN)"
+  },
+  {
+   "op": "wire",
+   "id": "w_k4i",
+   "src": "new:KI4.value",
+   "dst": "new:SK4L.outer",
+   "why": "PD379(b)"
+  },
+  {
+   "op": "tunnel",
+   "id": "t_k4o",
+   "loop": 31308,
+   "body": 31506,
+   "parent": 23405,
+   "dir": "out",
+   "as": "OK4",
+   "why": "PD379(b) case out-tunnel, #376 side = not-timed-out frame"
+  },
+  {
+   "op": "wire",
+   "id": "w_k4out",
+   "src": {
+    "uid": 376,
+    "term": "file number to append out",
+    "term_uid": 5739
+   },
+   "dst": "new:OK4.inner",
+   "why": "PD379(b)"
+  },
+  {
+   "op": "wire",
+   "id": "w_k4r",
+   "src": "new:OK4.outer",
+   "dst": "new:SK4R.inner",
+   "why": "PD379(b)"
+  },
+  {
+   "op": "tunnel",
+   "id": "t_k4i",
+   "loop": 31308,
+   "body": 31517,
+   "parent": 23405,
+   "dir": "in",
+   "as": "IK4",
+   "why": "PD379(b) case in-tunnel, pass side = timed-out frame"
+  },
+  {
+   "op": "wire",
+   "id": "w_k4l",
+   "src": "new:SK4L.inner",
+   "dst": "new:IK4.outer",
+   "why": "PD379(b)"
+  },
+  {
+   "op": "wire",
+   "id": "w_k4pass",
+   "src": {
+    "uid": "new:IK4",
+    "side": "inner"
+   },
+   "dst": {
+    "uid": "new:OK4",
+    "side": "inner",
+    "frame": "#31517"
+   },
+   "why": "PD379(b) the pass wire in the timed-out frame = the in-tunnel's one out-wire"
+  },
+  {
+   "op": "delete_wire",
+   "id": "dw_25232",
+   "wire_uid": 25232,
+   "why": "PD400(a): sink-only stub w25232 on the INNER face t24342 of LoopTunnel #10404 (one terminal row, no source; graph 2a5fa0c4) - removed BEFORE w_k4f (checkpoint, PD393(a))"
+  },
+  {
+   "op": "wire",
+   "id": "w_k4f",
+   "src": "new:OK4.outer",
+   "dst": {
+    "uid": 10404,
+    "term_uid": 24342
+   },
+   "why": "PD379(b) #6384/#2048 take the value that reaches R.inner"
+  }
+ ],
+ "final": false,
+ "finalized": {
+  "base": {
+   "path": "tools/bench/graph_ring_p5s02d_20261010_154830.json",
+   "md5": "2a5fa0c40866f88111d3ab14e5f9c32d"
+  },
+  "plan_in": {
+   "path": "tools/bench/sim/ring_p5s02e/_probe/plan_ring_p5s02eq_in.json",
+   "md5": "a97de1b2394b2a1f58b38af2df36043e"
+  },
+  "last_step": {
+   "path": "tools/bench/sim/ring_p5s02e/_probe/ring_p5s02eq/step_13_wire.json",
+   "md5": "6a2e376e669b3e81f05104ce86dd1e22"
+  },
+  "summary": {
+   "path": "tools/bench/sim/ring_p5s02e/_probe/ring_p5s02eq/summary.json",
+   "md5": "d1218f2f469c7a70e495ed8871d8d014"
+  },
+  "end_cdiff_rows": [
+   "10068|ParameterTerminal|x|0",
+   "10150|ParameterTerminal|x|0",
+   "10382|ParameterTerminal|x|0",
+   "10757|Terminal|array|0",
+   "11261|Terminal|array|0",
+   "11261|Terminal|element|0",
+   "11529|ParameterTerminal|x|0",
+   "2048|Terminal|array|0",
+   "2048|Terminal|length|0",
+   "2626|Terminal|array|0",
+   "2626|Terminal|element|0",
+   "2626|Terminal|element|1",
+   "2626|Terminal|element|2",
+   "28083|Terminal|Magnet position|0",
+   "29240|ParameterTerminal|x|0",
+   "29625|Terminal|array|0",
+   "376|Terminal|current frame data array in|0",
+   "376|Terminal|frame index|0",
+   "5058|Terminal|Bead is good? array in|0",
+   "5058|Terminal|Image In|0",
+   "5058|Terminal|pos in cal image in|0",
+   "5058|Terminal|x,y,z array|0",
+   "6384|Terminal|actual # data points|0",
+   "6384|Terminal|error in|0",
+   "6384|Terminal|file # to append|0",
+   "8634|Terminal|array|0"
+  ],
+  "failed": null,
+  "first_divergent": {
+   "n": 0,
+   "op": "base",
+   "id": null,
+   "rows_from_here": 26
+  },
+  "open_rows": [],
+  "open_rows_match": false,
+  "open_rows_match_legacy": false,
+  "open_rows_classed": {
+   "ok": false,
+   "want": [],
+   "c4_n": 0,
+   "c4_keys": 0,
+   "c4_bad": [],
+   "unclassed": []
+  },
+  "cdiff_inputs": {
+   "labels": "node_labels_default",
+   "labels_n": 626,
+   "fs_pairs": "state",
+   "fs_pairs_n": 576
+  },
+  "step_files": [
+   {
+    "n": 0,
+    "op": "base",
+    "path": "tools/bench/sim/ring_p5s02e/_probe/ring_p5s02eq/step_00_base.json",
+    "md5": "332dd68a4baf540ef535c21da07d1e8a"
+   },
+   {
+    "n": 1,
+    "op": "delete_wire",
+    "path": "tools/bench/sim/ring_p5s02e/_probe/ring_p5s02eq/step_01_delete_wire.json",
+    "md5": "2094ab0342d53cef396496370d3899e4"
+   },
+   {
+    "n": 2,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02e/_probe/ring_p5s02eq/step_02_wire.json",
+    "md5": "4a215c83d11936ef21aeb8f0d71b4d7f"
+   },
+   {
+    "n": 3,
+    "op": "add_shift_reg",
+    "path": "tools/bench/sim/ring_p5s02e/_probe/ring_p5s02eq/step_03_add_shift_reg.json",
+    "md5": "4ebca1787ff8cd70a49d9e8716acc149"
+   },
+   {
+    "n": 4,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p5s02e/_probe/ring_p5s02eq/step_04_create.json",
+    "md5": "c70c5f0c2b545b6f166baf9f7ef90899"
+   },
+   {
+    "n": 5,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02e/_probe/ring_p5s02eq/step_05_wire.json",
+    "md5": "90807dc98e059cd037c76f8966e0a5fd"
+   },
+   {
+    "n": 6,
+    "op": "tunnel",
+    "path": "tools/bench/sim/ring_p5s02e/_probe/ring_p5s02eq/step_06_tunnel.json",
+    "md5": "e5f4e3fc628469b4f23277671bd031e3"
+   },
+   {
+    "n": 7,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02e/_probe/ring_p5s02eq/step_07_wire.json",
+    "md5": "10991df20d672f76714474d73745785f"
+   },
+   {
+    "n": 8,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02e/_probe/ring_p5s02eq/step_08_wire.json",
+    "md5": "cae6aeed8448c379badb385f47b19177"
+   },
+   {
+    "n": 9,
+    "op": "tunnel",
+    "path": "tools/bench/sim/ring_p5s02e/_probe/ring_p5s02eq/step_09_tunnel.json",
+    "md5": "f66e28909b0a87e8d7e777de7d65d68c"
+   },
+   {
+    "n": 10,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02e/_probe/ring_p5s02eq/step_10_wire.json",
+    "md5": "42e85e1da422485dad752f9f35496162"
+   },
+   {
+    "n": 11,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02e/_probe/ring_p5s02eq/step_11_wire.json",
+    "md5": "0e3626ffec7ea519fcb743e6fbcd4ca3"
+   },
+   {
+    "n": 12,
+    "op": "delete_wire",
+    "path": "tools/bench/sim/ring_p5s02e/_probe/ring_p5s02eq/step_12_delete_wire.json",
+    "md5": "ddb7a1ff1658d013a3cd6a9f0aa929c8"
+   },
+   {
+    "n": 13,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02e/_probe/ring_p5s02eq/step_13_wire.json",
+    "md5": "6a2e376e669b3e81f05104ce86dd1e22"
+   }
+  ],
+  "undecided": 0,
+  "at": "2026-10-10 17:04:12",
+  "fs_routes": {},
+  "addr_pos": [
+   {
+    "n": 2,
+    "addr": "{\"term\":\"outer\",\"uid\":31803}",
+    "source": true,
+    "owner": 31803,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": "file progress"
+   },
+   {
+    "n": 2,
+    "addr": "{\"term_uid\":8776,\"uid\":5204}",
+    "source": false,
+    "owner": 5204,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": "file progress"
+   },
+   {
+    "n": 5,
+    "addr": "new:KI4.value",
+    "source": true,
+    "owner": -7,
+    "index": 0,
+    "class": "Terminal",
+    "name": ""
+   },
+   {
+    "n": 5,
+    "addr": "new:SK4L.outer",
+    "source": false,
+    "owner": -2,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 7,
+    "addr": "{\"term\":\"file number to append out\",\"term_uid\":5739,\"uid\":376}",
+    "source": true,
+    "owner": 376,
+    "index": 4,
+    "class": "Terminal",
+    "name": "file number to append out"
+   },
+   {
+    "n": 7,
+    "addr": "new:OK4.inner",
+    "source": false,
+    "owner": -10,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 8,
+    "addr": "new:OK4.outer",
+    "source": true,
+    "owner": -10,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 8,
+    "addr": "new:SK4R.inner",
+    "source": false,
+    "owner": -1,
+    "index": 0,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 10,
+    "addr": "new:SK4L.inner",
+    "source": true,
+    "owner": -2,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 10,
+    "addr": "new:IK4.outer",
+    "source": false,
+    "owner": -16,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 11,
+    "addr": "{\"side\":\"inner\",\"uid\":\"new:IK4\"}",
+    "source": true,
+    "owner": -16,
+    "index": 2,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 11,
+    "addr": "{\"frame\":\"#31517\",\"side\":\"inner\",\"uid\":\"new:OK4\"}",
+    "source": false,
+    "owner": -10,
+    "index": 2,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 13,
+    "addr": "new:OK4.outer",
+    "source": true,
+    "owner": -10,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 13,
+    "addr": "{\"term_uid\":24342,\"uid\":10404}",
+    "source": false,
+    "owner": 10404,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": "file number to append out"
+   }
+  ],
+  "fs_border_gate": {
+   "status": "PASS",
+   "unmeasured": [
+    14430,
+    31050,
+    34409,
+    34489,
+    43605,
+    44160,
+    44164
+   ],
+   "used": {}
+  }
+ }
+}

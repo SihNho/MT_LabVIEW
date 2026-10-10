@@ -1,0 +1,55 @@
+BGRUN START 2026-10-10 14:29:00 limit 20.0 min: py -u tools/prior_art_review.py --plan-file tools/bench/prep_c164_a2_3_priorart_plan.md --slug priorart-c164-a2-3-p5s02d --trigger new-op --recipe tools/recipes/stage_d1_ring_p5s02d_scratch.py --recipe tools/recipes/stage_d1_ring_p5s02d.py
+BGRUN PID 3216
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-c164-a2-3-p5s02d.txt (90001 chars)
+   review card tools\bench\cards\review_priorart-priorart-c164-a2-3-p5s02d.json
+OUTCOME: ANSWERED (129s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-10-10-priorart-priorart-c164-a2-3-p5s02d.md
+COST: $1.3870  in 20 / out 7264 / cache-create 126458 / cache-read 1149743  (126s, 14 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-priorart-c164-a2-3-p5s02d verdict=settled-already -> tools\bench\cards\verdict_priorart-priorart-c164-a2-3-p5s02d.json
+--- ANSWER ---
+**Verdict: not novel.** Group J's deletion step has been done here before. Groups J and K3 compile on tools the project already has, and none of the user's rules is broken.
+
+## PART A — direction
+- **A1 SETTLED ALREADY: how to delete a scaffold stop.**
+  - P4 session 1 removed loop 1.2's scaffold stop the same way. It deleted the stop-to-cond wire w23310, then the Comparison #10171 `x = y?`, then routed a new stop onto the existing cond.
+    - Sources: `docs/d1/ring-p4.md:340-343` (PD317(a), 2026-10-02), `tools/bench/diag_c140_2_facts.md:26`, `tools/bench/diag_c140_3_facts.md:14,22`. The scratch ran 19/0 and the D gate showed "lost 2 = w23255, w23310".
+  - That attempt failed first, with error 1055. Deleting the node left its tunnel→Comparison input wire with no sink, and the follow-up cleanup op (`wire_remove_loose_ends`) then failed on that wire.
+    - Sources: `docs/d1/ring-p4.md:393-399` (PD321).
+  - The settled form, PD321(b) and PD323(a) (`docs/d1/ring-p4b.md:23-24`):
+    - first `delete_wire` every wire whose only other end is the node;
+    - then `delete_object`;
+    - and gate on "that wire's sink set ⊆ the node's terminals".
+  - This plan does not follow it:
+    - J deletes only w23489, the Comparison's output to cond (`tools/bench/diag_c164_a1_1_facts.md:34`).
+    - It then `delete_object`s #23042 and the in-tunnel #23501 while wires 23519 and 23460 are still attached. The brief itself says so: "the sim shows wires 23460 / 23519 on it before the delete".
+    - P4 did something different. It deleted the tunnel→Comparison wire w23255 first, after a gate, and kept the tunnel #23417.
+  - What LabVIEW does to 23519, and to the outer wire 23460, has not been measured. If 23460's source has other sinks, removing the tunnel cuts a branch. The plan names A54/A55 as UNPREDICTED instead of predicting them.
+  - To release: add `delete_wire` rows for 23519, and for 23460 if its sinks are only #23501, each with PD321(b)'s sink-subset gate. Or show in writing why deleting the tunnel object is safe for these wires.
+- **A3 CONTRADICTED.**
+  - `docs/d1/ring-p5c.md:57` says "`delete_object` has no passing launch yet".
+  - Against it:
+    - `diag_c140_2_facts.md:26` shows op 2 `delete_object` Comparison #10171 returned err '' with the node count going 664→663.
+    - `diag_c140_3_facts.md:14,22` shows `p4_do_10171` in a scratch run that passed 19/0.
+    - PD323(a) then used `delete_object` on 5 more nodes during P4, and P4 was adopted through s09.
+  - The proven-pattern count, and the reason this review was owed, rest on that false premise. The tunnel deletion (#23501) is the part that is actually new.
+- **A2:** nothing refuted. **A4:** PD321/PD323 and `diag_c140_2/3_facts.md` were not cited for question (a).
+
+## PART B — artefact
+- **(b) Local read + Equal? into an existing cond (`stop` route):**
+  - `stagexec.base_cond` → compile kind `stop` was built and self-tested in P4: `docs/d1/ring-p4.md:340-342`, `selftest_c139_5_stop.py` 13/0.
+  - The 1.2 stop reading `StopAll` by local followed `docs/d1/ring-p4.md:80-83`.
+  - The plan reuses these helpers (route k8 `stop`, k4 `local_read`), so this is reuse, not duplication.
+- **(c) SOURCE end on a base node terminal (#376 'file progress'):** I found no record either way.
+- **(d) Stopping 1.7 on the counter:** nothing duplicates it. P5-1 built only the `records final` indicator and the local write. The stop is assigned to P5-2 by PD374(c) and `docs/d1/ring-p5.md:44-61`. The other loops' scaffold stops were deliberately left out of P4 (`docs/d1/ring-p4.md:82-83`).
+- **Not in this plan:** the K3f/K4f stub wires w10362 and w25232 still need a `delete_wire` in whichever step takes those groups (`diag_c164_a1_1_facts.md:36,42`).
+
+## PART C — user rules
+No contradiction. The stop reads a published counter by local variable (U4), and nothing touches the camera, serial or the per-bead maths.
+
+PRIOR-ART: settled-already
+PRIOR-ART: contradicted
+
+VERDICT {"schema":"verdict/1","id":"priorart-priorart-c164-a2-3-p5s02d","verdict":"settled-already","alternative":"Follow PD321(b)/PD323(a): delete_wire 23519 (and 23460 if its sinks are only #23501) under the sink-subset gate before delete_object #23042/#23501; correct ring-p5c.md:57 (delete_object passed in P4 s01, diag_c140_3_facts.md:14,22).","discriminating_test":"On graph 3d5196ab list sinks of w23519 and w23460: if 23460 has a sink outside #23501, deleting the tunnel cuts a live branch; then compare predicted D-gate lost-wire set with the stagesim end graph.","violations":[],"sources":["docs/d1/ring-p4.md:393-399","docs/d1/ring-p4b.md:23-24","docs/d1/ring-p4.md:340-343","tools/bench/diag_c140_2_facts.md:26","tools/bench/diag_c140_3_facts.md:14","docs/d1/ring-p5c.md:57","tools/bench/diag_c164_a1_1_facts.md:34"],"note":"Stop route, local read and counter stop are correct reuse (PD317(a), PD374(c)); no user-rule contradiction. Only the delete order and the 'no passing launch' premise are flagged."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-c164-a2-3-p5s02d.md
+   STOP RECORD armed: tools/recipes/stage_d1_ring_p5s02d_scratch.py sha ca0c1bde684c verdict settled-already, contradicted -> launching it is refused until a FIXED:/REFUTED: line releases it
+   STOP RECORD armed: tools/recipes/stage_d1_ring_p5s02d.py sha c9377ad5eeb1 verdict settled-already, contradicted -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 132s

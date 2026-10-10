@@ -1,0 +1,61 @@
+{
+  "schema": "task/1",
+  "id": "161-b1-2",
+  "kind": "diagnose",
+  "retry_of_card": "161-b1-1",
+  "goal": "Offline: measure why gate PB sees 31 rows on p5s02b (sim end = real end) vs the pred's 26 / plan's 24 open pairs; report the symmetric difference and the 5 pairs on #376. No edits.",
+  "why": "161-b1-1's dry now passes ops 5/9 and fails at PB, first time PB runs on p5s02b; plan defect, pred defect or PB keying defect is undecided and must be measured before any retry.",
+  "inputs": [
+    {"path": "tools/bench/cards/brief_161-b1-2.md", "md5": "6f3d331e3213ad32aa64ffbedc808b00"},
+    {"path": "tools/bench/diag_c161_b1_1_facts.md", "md5": "f2676d1d97334d8e809d984719649237"},
+    {"path": "tools/bench/prep_c161_b1_1_dry.log", "md5": "bf13edd766cea611a8dd1019d67077cd"},
+    {"path": "docs/d1/ring-p5b.md", "md5": "f6da5fdf3bc4bc41becc7fff58488a5f"},
+    {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+    {"path": "tools/bench/plan_ring_p5s02b.json", "md5": "f4520b101baad70f065ba5d6c9d14925"},
+    {"path": "tools/bench/plan_ring_p5s02b_pred.json", "md5": "187294099b3d8ced0e1c0b29b7c3a959"},
+    {"path": "tools/stagekit.py", "md5": "0b5bb678169d659feed7408648a63354"},
+    {"path": "tools/stagesim.py", "md5": "95a162baec5324ff037a8d23bd7ef46d"},
+    {"path": "tools/stagexec.py", "md5": "a4df7e15c495b9fcbcdadf0d8047bc69"}
+  ],
+  "pass": [
+    "PB gate definitions quoted with file:line: what computes the sim-end rows, the pred rows/slots and the plan's open (node, term) pairs",
+    "the 31 rows vs the pred's 26 rows listed with the same key; both one-sided sets printed (rows only in 31, rows only in 26)",
+    "the 5 pairs_extra_left on #376: plan action ids touching each, present in S1 or not; doubled source uids 3934/4965 explained from the graph as measured or marked not measured",
+    "answer yes/no: pred differs from the sim end by exactly those 5 pairs; old-checkpoint-set comparison measured or 'not measured'",
+    "md5 unchanged: stagesim, stagexec, stagekit, stage_prerun, plan f4520b10, pred 18729409; no edit outside diag_c161_b1_2*"
+  ],
+  "outputs": [
+    "tools/bench/diag_c161_b1_2_facts.md"
+  ],
+  "flags": {
+    "labview": "none",
+    "gui": false,
+    "hardware": "none",
+    "run_vi": false,
+    "write": [
+      "tools/bench/diag_c161_b1_2*",
+      "tools/bench/prep_c161_b1_2*",
+      "tools/bench/gate_fp_queue.jsonl",
+      "tools/bench/jev_*"
+    ],
+    "status_edit": false,
+    "git_commit": false,
+    "peers": []
+  },
+  "budget": {
+    "failures": 2,
+    "minutes": 40
+  },
+  "rules": [
+    "Offline measurement; no LabVIEW process; no --launch; no tools/hooks edit; no env bypass",
+    "Edit no tool, recipe, plan, pred, licence or EL file; scratch scripts only as prep_c161_b1_2*",
+    "Report facts and an OPEN line; do not propose the fix or decide plan/pred/PB changes",
+    "Rule 1a: plan actions, end graph and predicted Error List items are not touched",
+    "Hook false positive: py tools/gate_fp.py log, report; never edit a hook"
+  ],
+  "advances": ["M3", "M8", "R1"],
+  "requires": [
+    {"kind": "file", "name": "tools/bench/prep_c161_b1_1_dry.log"},
+    {"kind": "file", "name": "tools/bench/plan_ring_p5s02b.json"}
+  ]
+}

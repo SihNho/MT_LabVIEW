@@ -1,0 +1,17 @@
+BGRUN START 2026-10-10 05:52:07 limit 5.0 min: py -u tools/bench/selftest_c159_cen2_ends.py
+BGRUN PID 20820
+  PASS  P0 input pins (real graph, base graph, plan, sim end, pred, pre-edit stagekit)  {'tools/bench/graph_ring_p5s02a_20261010_032547.json': '7ac24924', 'tools/bench/graph_ring_p5s01_20261009_125622.json': '6716c499', 'tools/bench/plan_ring_p5s02a.json': '4284c22a', 'tools/bench/sim/ring_p5s02a/step_23_wire.json': 'b1892ad9', 'tools/bench/plan_ring_p5s02a_pred.json': 'ed84b5fd', 'tools/bench/selftest_c159_cen2_ends_stagekit_9cd8822e.txt': '9cd8822e'}
+  PASS  V0 claudeDev VI pins before (94ffff94, s09, P5-1a, P5-1)  {'p5s02a_20261010_023239': '94ffff94', 'p4s09_20261009_060515': 'eb1d0f31', 'p5s01a_20261009_101219': '2482fe7b', 'p5s01_20261009_124542': '7f2582ae'}
+FACT C1 new gate detail: {"measured": {"InnerTerminal": 10, "Wire": 12, "ParameterTerminal": 13, "OuterTerminal": 6, "Diagram": 2, "Function": 2, "SelectorTunnel": 3, "CaseStructure": 1, "DigitalNumericConstant": 1, "RightShiftRegister": 1, "Terminal": 1, "LeftShiftRegister": 1, "Tunnel": 1}, "declared": {"CaseStructure": 1, "Diagram": 2, "DigitalNumericConstant": 1, "Function": 2, "InnerTerminal": 10, "LeftShiftRegister": 1, "OuterTerminal": 6, "ParameterTerminal": 13, "RightShiftRegister": 1, "SelectorTunnel": 3, "Terminal": 1, "Tunnel": 1, "Wire": 12}, "diff (measured, declared)": {}, "judged by ends (PD389(b))": {"Wire": {"new_pairs_sim": 23, "new_pairs_real": 23, "only_sim": [], "only_real": [], "uid_counts (c0->c1, declared, sim)": [12, 12, 11], "key": "(source, sink, frame): base term uid on its base owner class / ('new', owner class); base frame / 'new' (PD389(b))"}}}
+FACT C1 pre-edit gate on the same data: ok True diff {}
+FACT C1 UID-REUSE CEN2 Wire by uid: 12 new uid(s) c0->c1, declared 12, sim end 11; by ends new pairs sim 23 / real 23 - the Wire verdict is the end pairs (PD389(b)) | RECORD CEN2 source-only stub (no sink, in no end pair; PD386(b) / PD389(b)) wire 24091 sources [25235] - sim only
+  PASS  C1 end-pair CEN2 PASS on 94ffff94 vs the p5s02a sim end (new pairs sim 23 == real 23); old uid CEN2 Wire sim 11 / real 12 (want 11 / 12)  CEN2 new-object census (classes of the pred) == plan_ring_p5s02a_pred.json census
+  PASS  C2 one real pair removed (wire 31587 sink row, 1 row(s)) -> FAIL naming exactly it: removed [(24367, ('new', 'SelectorTunnel'), 23405)]; only_sim [(24367, ('new', 'SelectorTunnel'), 23405)]  
+  PASS  C3 sim-only source-only stub 24091 RECORDED (FACT line), not counted: stubs {'sim_only': [{'wire': 24091, 'sources': [25235]}], 'real_only': [], 'both': 4}; CEN2 C1 PASS True  ['RECORD CEN2 source-only stub (no sink, in no end pair; PD386(b) / PD389(b)) wire 24091 sources [25235] - sim only']
+  PASS  C4 pred as is: non-Wire diff new {} == pre-edit {}; verdict new True / pre-edit without Wire True  
+  PASS  C4 SelectorTunnel+1: non-Wire diff new {'SelectorTunnel': (3, 4)} == pre-edit {'SelectorTunnel': (3, 4)}; verdict new False / pre-edit without Wire False  
+  PASS  V1 claudeDev VI pins after == before  {'p5s02a_20261010_023239': '94ffff94', 'p4s09_20261009_060515': 'eb1d0f31', 'p5s01a_20261009_101219': '2482fe7b', 'p5s01_20261009_124542': '7f2582ae'}
+FACT md5 stagekit 1441bb4c stagesim a3261b56 stagexec c4a6e0b6 stage_prerun 7605116f; temp C:\Users\KimLab\AppData\Local\Temp\c159_e1_1_2etyy4tw
+=== TOTALS 8 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":8,"fail":0},"first_fail":null,"artefacts":[],"card":"160-b1-1","labview":"none"}
+BGRUN END rc=0 after 12s

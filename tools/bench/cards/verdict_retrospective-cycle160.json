@@ -1,0 +1,30 @@
+{
+ "schema": "verdict/1",
+ "id": "retrospective-cycle160",
+ "verdict": "refuted",
+ "alternative": "The dry blocker (stale read after non-checkpoint delete_wire, stagexec.py:2198/2674-2687) would have cost the cycle anyway; the L0 detour only moved its discovery from 07:08 to 08:18.",
+ "discriminating_test": "Add connect_term_uid to RETRY_KINDS (or checkpoints 4,8) on a copy and re-run stage_prerun --dry on stage_d1_ring_p5s02b: if it passes in one card, the 70 min (and round 3) were the recoverable loss.",
+ "violations": [
+  {
+   "slug": "wrong-ordering",
+   "loss_min": 70,
+   "loss_usd": null,
+   "evidence": "tools/bench/prep_c160_c3_1_dry.log:17"
+  },
+  {
+   "slug": "device-failed",
+   "loss_min": 0,
+   "loss_usd": null,
+   "evidence": "tools/bench/diag_c159_g1_1_facts.md:8"
+  }
+ ],
+ "sources": [
+  "tools/bench/prep_c160_c3_3_dry.log:49",
+  "tools/bench/cards/assign_result_160_2.json:26",
+  "tools/bench/cycle_runner.log:1605",
+  "tools/stagexec.py:2198",
+  "tools/hooks/guard_peer.py:851",
+  "docs/violation-decisions.md:1965"
+ ],
+ "note": "Window spans cycles 159 and 160 (cycle_runner.log:1566-1611); cycle 159 never got its own retrospective (cycle_runner.log:1578). Device = 2026-10-08 20:50 shared disposition parser, not applied at guard_peer."
+}

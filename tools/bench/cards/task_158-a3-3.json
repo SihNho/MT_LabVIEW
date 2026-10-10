@@ -1,0 +1,75 @@
+{
+ "schema": "task/1",
+ "id": "158-a3-3",
+ "kind": "build",
+ "goal": "Attribute the 11 new Error List items of adopted D1_ring_p5s02a_20261010_023239.vi (A/B/C); if no C row: expected EL file, graph json, load_by_vi, delete failed copy.",
+ "why": "158-a3-2b adopted 94ffff94 (scratch PASS, E1 diff 0) but the final Error List is 56 vs 45; the review says an unfed remnant would be a rule-1a change. Step 2 needs an accepted base.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_158-a3-3.md", "md5": "2ab53b4991d2216c1a0a8c73ebbb5867"},
+  {"path": "tools/bench/diag_c158_a3_2b_facts.md", "md5": "25d8f853f97c004fd3b3da24f425fa90"},
+  {"path": "archive/peer/2026-10-10-c158-a3-2b-el56.md", "md5": "11535ae59914bad32b6bb02f1377542d"},
+  {"path": "tools/bench/errorlist_D1_ring_p5s02a_20261010_023239_20261010_024108.json", "md5": "25d6084b2c2988338659758c1315a3fb"},
+  {"path": "tools/bench/errorlist_expected_D1_ring_p5s01_20261009_124542.json", "md5": "ffc4cf666d84bbd30e167dcfe21c5569"},
+  {"path": "tools/bench/diag_c158_a3_2b_el.log", "md5": "68b0183593561baeeab4bbece1de9c0c"},
+  {"path": "tools/bench/diag_c158_p5s02a_scratch.log", "md5": "6a18fd61213bcecacbab7398145f02f1"},
+  {"path": "tools/bench/plan_ring_p5s02r_in.json", "md5": "d84634bdbe0f4f94669d2443af116b8e"},
+  {"path": "tools/bench/plan_ring_p5s02a.json", "md5": "4284c22a540f9e3f39c7092affe516af"},
+  {"path": "tools/bench/adopted_scratch.jsonl", "md5": "83e74ded10cd826e445a1dc4581f03a9"},
+  {"path": "tools/bench/memory_model.json", "md5": "c87d170a8370c4b5dcf77d1aa6738aed"},
+  {"path": "tools/bench/diag_c158_a3_2b_elexp.py", "md5": "ff0bee345331c85b031f0e3c36cd1201"},
+  {"path": "tools/bench/diag_c158_a3_2b_graph.py", "md5": "c4a0ef66eef1050cf0afe5ecd3988feb"},
+  {"path": "tools/bench/diag_c158_a3_2b_graph_plan.json", "md5": "91fcfbecb484f9098d04d746cad71f5d"},
+  {"path": "tools/bench/diag_c158_a3_2b_memload.py", "md5": "0a0745db30f267225d8ec63523301d4f"},
+  {"path": "tools/bench/diag_c158_a3_2b_delete.py", "md5": "15351096cbc8b7aa7fe63d4063f84e83"},
+  {"path": "tools/bench/diag_c158_a3_2b_nodes.py", "md5": "39934fbc25e2e61d2e4a29bb3624d736"},
+  {"path": "tools/bench/cards/brief_156-a2-1.md", "md5": "8374ab576d977ef10dde8d3157dd8412"},
+  {"path": "docs/d1/ring-p5.md", "md5": "0f9ac5b0ca552148d0c2ea0b9b179fa4"}
+ ],
+ "pass": [
+  "Table of the 11 new EL items: text, owner uid, creating op, class A (re-fed by named later action) / B (representation, cited) / C (unattributed); a row you cannot place is C",
+  "Any C row = RETURN FAIL with the C rows, steps 2-4 not run. No C row: expected EL file errorlist_expected_D1_ring_p5s02a_20261010_023239.json written + md5",
+  "No C row: graph json graph_ring_p5s02a_20261010_023239.json + md5 from a fresh instance; load_by_vi entry only (diff quoted); handles flat; LabVIEW closed and verified gone",
+  "No C row: failed copy D1_ring_p5s02a_20261009_152721.vi (cac5236b) and its resume record deleted; invariants md5 before = after (s09, P5-1a, P5-1, adopted 94ffff94)"
+ ],
+ "outputs": [
+  "tools/bench/diag_c158_a3_3_facts.md",
+  "tools/bench/errorlist_expected_D1_ring_p5s02a_20261010_023239.json",
+  "tools/bench/graph_ring_p5s02a_20261010_023239.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c158_a3_3*",
+   "tools/bench/graph_ring_p5s02a_*",
+   "tools/bench/errorlist_*p5s02a*",
+   "tools/bench/adopted_scratch.jsonl",
+   "tools/bench/memory_model.json",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/jev_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "D1_ring_p5s02a_20261010_023239.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "tools/errorlist_check.py"}
+ ],
+ "rules": [
+  "No scratch run, no re-adopt, no step-2 plan or recipe in this card",
+  "Any C row stops steps 2-4: RETURN with the rows",
+  "No recipe, plan, pred, licence, stage-tool or hook edit; no original opened",
+  "memory_model.json: add ONLY the load_by_vi entry for the adopted file",
+  "Delete the failed copy only if no C row; delete nothing else"
+ ]
+}

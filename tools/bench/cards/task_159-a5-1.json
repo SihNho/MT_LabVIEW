@@ -1,0 +1,54 @@
+{
+ "schema": "task/1",
+ "id": "159-a5-1",
+ "kind": "build",
+ "goal": "Offline: add ~60 verified one-line descriptions of undocumented shared-tool functions to docs/fn_descriptions.json (stagexec/stagesim/vigraph first); no .py edit.",
+ "why": "Carry item chat-T8: undocumented functions show as (undocumented) in the capabilities index; descriptions live in the json so file:line citations do not shift.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_159-a5-1.md", "md5": "a6ada9d0e6d5539eb40d45d6d4dbb46a"},
+  {"path": "docs/fn_descriptions.json", "md5": "c54377eabbdbb8afa79e4e4c1ec42206"},
+  {"path": "tools/gen_capabilities.py", "md5": "78e9c328657bbd7165cce62c7f9369c4"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+  {"path": "tools/bench/diag_c158_a2_5_facts.md", "md5": "3e87f771ad85f173e3c21b8f429d1788"}
+ ],
+ "pass": [
+  "fn_descriptions.json parses; count rises by about 60; no existing entry changed or removed; each new entry read from the function's code; none for stage_prerun or stagekit",
+  "gen_capabilities and doc_lint run; L12 clean for the new keys; any tracked file they rewrite is named",
+  "diag_c159_a5_1_facts.md (<= 25 lines): counts before/after by module, md5 before/after, 3 sample entries with code lines, OPEN for skipped functions; no .py edited; no LabVIEW"
+ ],
+ "outputs": [
+  "docs/fn_descriptions.json",
+  "tools/bench/diag_c159_a5_1_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "docs/fn_descriptions.json",
+   "docs/toolkit-capabilities.md",
+   "tools/bench/capabilities_*",
+   "tools/bench/diag_c159_a5_1*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/jev_*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "advances": ["M8"],
+ "requires": [
+  {"kind": "file", "name": "docs/fn_descriptions.json"},
+  {"kind": "file", "name": "tools/gen_capabilities.py"}
+ ],
+ "rules": [
+  "No .py, hook, recipe, plan or gate edit; descriptions only in docs/fn_descriptions.json",
+  "Each description is read from the function's code; no guess from the name",
+  "Do not change or remove an existing entry"
+ ]
+}

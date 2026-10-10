@@ -1,0 +1,41 @@
+BGRUN START 2026-10-10 12:29:23 limit 10.0 min: py -u tools/bench/selftest_c160_delwire.py
+BGRUN PID 26680
+  FAIL  P0 pins (graph, pre-edit stagesim/stagexec copies, stagekit, stage_prerun, addrcheck, vigraph)  {'tools/bench/graph_ring_p5s02a_20261010_032547.json': '7ac24924', 'tools/bench/selftest_c160_delwire_stagesim_eb99c6ba.txt': 'eb99c6ba', 'tools/bench/selftest_c160_delwire_stagexec_7a712ccb.txt': '7a712ccb', 'tools/stagekit.py': 'dd57c1ca', 'tools/stage_prerun.py': '7605116f', 'tools/addrcheck.py': '207beb0d', 'tools/vigraph.py': 'a7eb58c7', 'tools/bench/selftest_c160_delwire_stagesim_a3261b56.txt': 'a3261b56', 'tools/bench/selftest_c160_delwire_stagexec_c4a6e0b6.txt': 'c4a6e0b6'}
+  PASS  V0 claudeDev VI pins before (94ffff94, s09, P5-1a, P5-1)  {'p5s02a_20261010_023239': '94ffff94', 'p4s09_20261009_060515': 'eb1d0f31', 'p5s01a_20261009_101219': '2482fe7b', 'p5s01_20261009_124542': '7f2582ae'}
+  PASS  T1a w10394 in the base objects as Wire with 0 terminal rows; termless_wire True  [{'uid': 10394, 'class': 'Wire', 'pos': [20277, -28433], 'owner': 'Diagram'}]
+FACT T1 sim effect {'wire': 10394, 'n_terminals': 0, 'auto_removed_tunnels': [], 'termless_wire_object': True} err None
+  PASS  T1b simulator deletes it: rows identical True, end pairs identical True, census diff {10394: 'Wire'} (want {10394: 'Wire'})  
+FACT T1 compile [{'kind': 'delete_wire', 'acts': [1]}]; executor result {'err': None, 's': 0.0} err None; Stage.delete_wire calls [(10394, 'stagexec')]
+  PASS  T1c compile_plan -> one delete_wire op; executor -> LVBackend.delete_wire -> Stage.delete_wire(10394, 'stagexec') once (uid path)  ([{'kind': 'delete_wire', 'acts': [1]}], [(10394, 'stagexec')], {'err': None, 's': 0.0}, None)
+  PASS  T1d dry SimBackend applies it: object gone, rows unchanged (None)  ['delete_wire']
+FACT T1 pre-edit: sim err 'delete_wire: wire 10394 is not in the current graph'; executor err 'delete_wire w10394: its 0 terminals sit on 0 live wires []'
+  PASS  T1e pre-edit tools refuse it (the c159 block): sim 'not in the current graph', executor ExecStop, no Stage call  ('delete_wire: wire 10394 is not in the current graph', 'delete_wire w10394: its 0 terminals sit on 0 live wires []')
+FACT T2 absent uid 99999999: sim 'delete_wire: wire 99999999 is not in the current graph' / pre 'delete_wire: wire 99999999 is not in the current graph'; executor 'delete_wire w99999999: its 0 terminals sit on 0 live wires []' / pre 'delete_wire w99999999: its 0 terminals sit on 0 live wires []'
+  PASS  T2 absent uid refused, same as pre-edit (sim + executor), no Stage call  
+FACT T3 non-Wire uid 26582 (SubVI, owns 10 rows, carries 0): sim 'delete_wire: wire 26582 is not in the current graph' / pre 'delete_wire: wire 26582 is not in the current graph'; executor 'delete_wire w26582: its 0 terminals sit on 0 live wires []' / pre 'delete_wire w26582: its 0 terminals sit on 0 live wires []'
+  PASS  T3 non-Wire uid refused, same as pre-edit (sim + executor), termless_wire False, no Stage call  
+FACT T4 Wire 32594 (2 rows): sim effect {'wire': 32594, 'n_terminals': 2, 'auto_removed_tunnels': []} / pre {'wire': 32594, 'n_terminals': 2, 'auto_removed_tunnels': []}; executor calls [(32594, 'stagexec')] / pre [(32594, 'stagexec')]
+  PASS  T4 Wire with terminal rows keeps the old path: effect + state == pre-edit, executor call == pre-edit, termless_wire False  ({'wire': 32594, 'n_terminals': 2, 'auto_removed_tunnels': []}, [(32594, 'stagexec')])
+FACT T5 second delete of w10394: sim 'delete_wire: wire 10394 is not in the current graph'; executor 'delete_wire w10394: its 0 terminals sit on 0 live wires []'; still in base objs True
+  PASS  T5 already deleted earlier in the plan: branch not taken, refused (sim + executor), not counted, no Stage call  
+FACT TA sink rows from the graph: {24264: [24139], 24300: [24235]}
+FACT TA sim effects [{'wire': 10394, 'n_terminals': 0, 'auto_removed_tunnels': [], 'termless_wire_object': True}, {'wire': 24264, 'n_terminals': 1, 'auto_removed_tunnels': [], 'sourceless_wire_object': True}, {'wire': 24300, 'n_terminals': 1, 'auto_removed_tunnels': [], 'sourceless_wire_object': True}] errs [None, None, None]; executor calls [([(10394, 'stagexec')], None), ([(24264, 'stagexec')], None), ([(24300, 'stagexec')], None)]
+  PASS  TA1 sim deletes w10394, w24264, w24300: no error, the three Wire objects gone, census diff == the three wires ({10394: 'Wire', 24300: 'Wire', 24264: 'Wire'})  ({10394: False, 24264: False, 24300: False}, [{'wire': 10394, 'n_terminals': 0, 'auto_removed_tunnels': [], 'termless_wire_object': True}, {'wire': 24264, 'n_terminals': 1, 'auto_removed_tunnels': [], 'sourceless_wire_object': True}, {'wire': 24300, 'n_terminals': 1, 'auto_removed_tunnels': [], 'sourceless_wire_object': True}])
+FACT TA2 checks {'sinks_wire0': True, 'n_rows': True, 'other_rows': True, 'pairs_removed_eq_stub_pairs': True, 'pairs_added': {}, 'stubs_same': True, 'other_keys': []}; end pairs removed {(None, 24139, 23405): 1, (None, 24235, 23405): 1}
+  PASS  TA2 t24139 / t24235 kept with wire 0; every other row and state key unchanged; end pairs lose ONLY the two (None, sink, frame) stub pairs  [(24139, 0), (24235, 0)]
+  PASS  TA3 executor: one uid call each, in order - Stage.delete_wire(10394), (24264), (24300) - no ExecStop  [([(10394, 'stagexec')], None), ([(24264, 'stagexec')], None), ([(24300, 'stagexec')], None)]
+  PASS  TA4 dry SimBackend: w24264 object gone, t24139 wire 0, other rows unchanged (None)  ['delete_wire']
+FACT TA5 second delete of w24264: sim 'delete_wire: wire 24264 is not in the current graph'; executor 'delete_wire w24264: its 0 terminals sit on 0 live wires []'; calls []
+  PASS  TA5 a second delete of w24264 in the same plan is refused (sim + executor), not counted, no Stage call  
+FACT TB w24285 rows [(24190, True)]: sim {'wire': 24285, 'n_terminals': 1, 'auto_removed_tunnels': []} / pre {'wire': 24285, 'n_terminals': 1, 'auto_removed_tunnels': []}; executor [(24285, 'stagexec')] / pre [(24285, 'stagexec')]
+  PASS  TB w24285 (a source row: [(24190, True)]) takes the OLD path: effect + state == a3261b56, executor call == c4a6e0b6, sourceless_wire False  ({'wire': 24285, 'n_terminals': 1, 'auto_removed_tunnels': []}, [(24285, 'stagexec')])
+FACT TB w32594 rows [(31498, True), (3869, False)]: sim {'wire': 32594, 'n_terminals': 2, 'auto_removed_tunnels': []} / pre {'wire': 32594, 'n_terminals': 2, 'auto_removed_tunnels': []}; executor [(32594, 'stagexec')] / pre [(32594, 'stagexec')]
+  PASS  TB w32594 (a source row: [(31498, True), (3869, False)]) takes the OLD path: effect + state == a3261b56, executor call == c4a6e0b6, sourceless_wire False  ({'wire': 32594, 'n_terminals': 2, 'auto_removed_tunnels': []}, [(32594, 'stagexec')])
+FACT TC pre-edit (a3261b56) delete of w24264: effect {'wire': 24264, 'n_terminals': 1, 'auto_removed_tunnels': []}; Wire object left in objs True; pre-edit termless_wire after True
+  PASS  TC the pre-edit simulator unwired t24139 but LEFT w24264 in objs (termless afterwards) - the gap this branch closes  
+  FAIL  V1 claudeDev VI pins after == before; tool pins after == P0; temp removed  {'p5s02a_20261010_023239': '94ffff94', 'p4s09_20261009_060515': 'eb1d0f31', 'p5s01a_20261009_101219': '2482fe7b', 'p5s01_20261009_124542': '7f2582ae'}
+FACT md5 stagesim 95a162baec5324ff037a8d23bd7ef46d stagexec a4df7e15c495b9fcbcdadf0d8047bc69 stagekit dd57c1cac5d56b82c08c6ef9d7b1a22d stage_prerun 7605116f1dfe1c6fd4963dbfcf259de1
+=== TOTALS 18 pass / 2 fail
+RESULT 18/2
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":18,"fail":2},"first_fail":"P0 pins (graph, pre-edit stagesim/stagexec copies, stagekit, stage_prerun, addrcheck, vigraph)","artefacts":[],"card":"163-a1-4","labview":"none"}
+BGRUN END rc=1 after 5s

@@ -1,0 +1,61 @@
+{
+ "schema": "task/1",
+ "id": "158-a2-4",
+ "kind": "diagnose",
+ "goal": "Offline: gate mutation table on stored graph 6716c499 (6 mutation kinds x >=3 targets) scored by calling existing gates; rows classed invariant vs representation; gaps listed; no gate edited.",
+ "why": "Steer debate:plan-overall-02 (PD384(d)): which gates block computation/save/safety changes and which block mere representation differences must be measured before any gate is changed.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_158-a2-4.md", "md5": "eed311fdb6e1cb6bf1f80dc5c63d043c"},
+  {"path": "tools/bench/graph_ring_p5s01_20261009_125622.json", "md5": "6716c49948f097b8ac0e1780930bfab1"},
+  {"path": "tools/bench/diag_c158_a2_3_facts.md", "md5": "a33be02778249a0bf8106164942840d1"},
+  {"path": "tools/bench/diag_c158_a2_3_measure.py", "md5": "d5622cec8c2b639ff6df531ed3b7a2f4"},
+  {"path": "tools/stagekit.py", "md5": "0d8f6d252eac3d0c28fc3a2141f54a14"},
+  {"path": "tools/stagexec.py", "md5": "7a712ccb4c1f754d8bee4557f632177f"},
+  {"path": "tools/stagesim.py", "md5": "eb99c6bab81633f9bdd7c10dce6bfc0a"},
+  {"path": "tools/vigraph.py", "md5": "a7eb58c7e35a134f93df168ea4cdea80"},
+  {"path": "tools/addrcheck.py", "md5": "207beb0d09102c78b1e06d1f076eec7e"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+  {"path": "docs/d1/ring-p5.md", "md5": "59a0c3107f16c1259bf2bb2a01974584"}
+ ],
+ "pass": [
+  "tools/bench/mutation_table_p5.md/.json: 6 mutation kinds x >=3 targets each, applied in memory to graph 6716c499, each scored by calling the existing gates (uncallable gates listed with file:line)",
+  "Each row classed invariant (computation/save/safety) or representation by one stated rule; both lists given: invariant rows passing every gate, representation rows that block",
+  "diag_c158_a2_4_facts.md (<= 30 lines): counts per class and gate, md5 of table files, graph 6716c499 md5 unchanged, OPEN lines; no gate, tool, recipe or hook edited; no LabVIEW"
+ ],
+ "outputs": [
+  "tools/bench/mutation_table_p5.md",
+  "tools/bench/mutation_table_p5.json",
+  "tools/bench/diag_c158_a2_4_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/mutation_table_p5.*",
+   "tools/bench/diag_c158_a2_4*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/jev_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "advances": ["M3", "M8"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/graph_ring_p5s01_20261009_125622.json"},
+  {"kind": "file", "name": "tools/bench/diag_c158_a2_3_measure.py"}
+ ],
+ "rules": [
+  "Offline measurement only; no gate, tool, recipe, plan, pred, licence or hook edit",
+  "Mutate copies in memory; never write the stored graph",
+  "Call existing gate functions; do not copy them (script-writing.md)",
+  "A gate refusing your own command text is a false positive: gate_fp.py log, no env bypass"
+ ]
+}

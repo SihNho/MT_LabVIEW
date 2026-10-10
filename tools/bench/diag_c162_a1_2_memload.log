@@ -1,0 +1,17 @@
+BGRUN START 2026-10-10 11:22:13 limit 2.0 min: py -u tools/bench/diag_c162_a1_2_memload.py
+BGRUN PID 26204
+GATE PASS | M exactly one 'MEM after load' line in the graph log | [(24, '  FACT  MEM after load: 601.2 MB private; handles 45640')]
+GATE PASS | K md5 f9ae7751 not yet a load_by_vi key | ['4dfa44aac8fb32f706b3eb792ee7d3cc', '9d7bf28738b7c154280e5e7c2c9d4961', '6cc6922192b3e330f163561bb95a8115', '49cf7f770fc331e06607687af640ad5e', '395118775a52bc90073f4449b99f899d', '95e408ff14a406edd3f16b32ba7324f1', '3f9ac26b69179eb53c202d90407ce7ee', '569ffbf51eb6051bf0fdb58946f9bb02', 'b3f86b322292a6ec6c67976a589b5b06', 'f99e8414a2081538552e26ba24ee713d', 'eb1d0f3107bbba49c9ae67a47c0ee50f', '2482fe7bf3426e18b0801c77ec629073', '7f2582ae54dc5bc42c3df0bdf3c72d2e', '94ffff9413599d5153a5e6fb409294ab']
+GATE PASS | D flattened key-by-key diff: only the 3 leaves of load_by_vi/f9ae7751 added | {'added': ['/load_by_vi/f9ae77513a0188f0d88652a44267b1dd/cite', '/load_by_vi/f9ae77513a0188f0d88652a44267b1dd/value', '/load_by_vi/f9ae77513a0188f0d88652a44267b1dd/vi'], 'removed': [], 'changed': []}
+GATE PASS | FA fail_above_mb 680.0 in old and new; memstop_mb, formula, start_mb equal | ({'value': 680.0, 'cite': 'PD328(a) docs/d1/tooling.md (user 2026-10-03 "메모리 낮추고": 690 -> 680 after chat-M2 measured LabVIEW error 2 at 704.8 MB private, tools/bench/diag_chat_m1_mem.log:170-173); was 690 = PD275(b) docs/d1/tooling.md:79-82. THE ONE SOURCE of the X10 fail threshold: stagexec.X10_FAIL_MB and stage_prerun.X10_FAIL_MB read it'}, {'value': 680.0, 'cite': 'PD328(a) docs/d1/tooling.md (user 2026-10-03 "메모리 낮추고": 690 -> 680 after chat-M2 measured LabVIEW error 2 at 704.8 MB private, tools/bench/diag_chat_m1_mem.log:170-173); was 690 = PD275(b) docs/d1/tooling.md:79-82. THE ONE SOURCE of the X10 fail threshold: stagexec.X10_FAIL_MB and stage_prerun.X10_FAIL_MB read it'})
+GATE PASS | F re-dump of the OLD object reproduces the old file byte for byte (so only the new entry's lines differ) | 
+GATE PASS | T text diff = inserted lines + the previous last entry's closing brace gaining its comma (JSON syntax) | ['+  },', '+  "f9ae77513a0188f0d88652a44267b1dd": {', '+   "value": 601.2,', '+   "vi": "claudeDev\\\\D1_ring_p5s02b_20261010_105511.vi (P5-2 step 2 ADOPTED in-between file = the scratch work copy, card 162-a1-2; PD354(a), PD390(f), PD391(e))",', '+   "cite": "tools/bench/diag_c162_a1_2_graph.log:24 (MEM after load: 601.2 MB private)"']
+DIFF +  },
+DIFF +  "f9ae77513a0188f0d88652a44267b1dd": {
+DIFF +   "value": 601.2,
+DIFF +   "vi": "claudeDev\\D1_ring_p5s02b_20261010_105511.vi (P5-2 step 2 ADOPTED in-between file = the scratch work copy, card 162-a1-2; PD354(a), PD390(f), PD391(e))",
+DIFF +   "cite": "tools/bench/diag_c162_a1_2_graph.log:24 (MEM after load: 601.2 MB private)"
+FACT memory_model.json md5 5b87de43b3b3653c9ed1d9a576ddd167 -> def9e640dec21836bdaab6f3e93e53dd; added key load_by_vi/f9ae77513a0188f0d88652a44267b1dd value 601.2 (cite log :24)
+FACT calibration (no coefficient changed): metered scratch start 615.4 MB (scratch log :54) vs pred start 599.7 (d 15.7); last-segment peak 657.1 MB (:145) vs X10 656.2 (d 0.9); sum peak_mb 657.1
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":6,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/bench/memory_model.json","md5":"def9e640dec21836bdaab6f3e93e53dd"}],"card":"162-a1-2","labview":"build"}
+BGRUN END rc=0 after 1s

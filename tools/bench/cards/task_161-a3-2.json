@@ -1,0 +1,74 @@
+{
+ "schema": "task/1",
+ "id": "161-a3-2",
+ "kind": "build",
+ "retry_of_card": "161-a3-1",
+ "goal": "Offline: finish PD394(b) - new X10 record on the shared checkpoint rule (gate stays ==, limit 675), re-make the p5s02b pred, restate lib T3 and delckpt D2/P for the same cause.",
+ "why": "161-a3-1 built PB classes 1/2 (10/0) but the pred maker's X10 equality gate pins session numbers made on the old BIND rule (MAIN 657.4); on the shared rule MAIN is 665.0 <= 675, so the maker stops.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_161-a3-2.md", "md5": "6b184a4ecc9cd0d22ad82724ccfadb4f"},
+  {"path": "tools/bench/diag_c161_a3_1_facts.md", "md5": "67684a29bb278c5122e5f29d3c270d3d"},
+  {"path": "docs/d1/ring-p5b.md", "md5": "93dcb778db320dbecc813cd8e156cb1c"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+  {"path": "tools/stagekit.py", "md5": "9b8f82c1a0150bcaacaf9c56e003c335"},
+  {"path": "tools/bench/prep_c156_a1_1_lib.py", "md5": "5ade19fe8c219293ffbdc3fc357d0c58"},
+  {"path": "tools/bench/prep_c160_c3_1_pred.py", "md5": "fd94f035f49a4d22c49e40933a3545a7"},
+  {"path": "tools/bench/prep_c160_b3_1_session.json", "md5": "e52798990ee33799d8bbd50a6c1290b6"},
+  {"path": "tools/bench/selftest_c161_pbinherit.py", "md5": "9be05189703e6d48d4664dbe7c0266cc"},
+  {"path": "tools/bench/plan_ring_p5s02b_pred.json", "md5": "187294099b3d8ced0e1c0b29b7c3a959"},
+  {"path": "tools/bench/plan_ring_p5s02b.json", "md5": "f4520b101baad70f065ba5d6c9d14925"},
+  {"path": "tools/bench/plan_ring_p5s02b_licence.json", "md5": "f61a2514c47913557531c9862018b850"},
+  {"path": "tools/bench/errorlist_predicted_D1_ring_p5s02b_end.json", "md5": "79ec32079ceee2b99dac24e554d86856"}
+ ],
+ "pass": [
+  "New record prep_c161_a3_2_x10.json (shared-rule exec_peak/main, rule fn, md5 pins, old 652.3/657.4, cause) made by a script that calls the lib; old b3-1 session file untouched",
+  "prep_c160_c3_1_pred X10 gate keeps == and <= 675, compares to the new record; its line quoted; MAIN vs 675 quoted (>675 = hand back)",
+  "Pred re-made: new md5 + diff of moved keys (checkpoint set only); plan f4520b10, stagesim, stagexec, stage_prerun, EL 79ec3207 md5 unchanged; licence/EL makers run only if inputs moved",
+  "lib --selftest T3 and selftest_c161_delckpt D2/P restated by reading the record or the shared rule; delckpt 11/0; counts quoted",
+  "Re-run counts quoted: pbinherit 10/0, s4 24/0, invcheck 20/0, c157 13/0, c3_1_md5, and every self-test pinning the old pred md5 (list before editing)"
+ ],
+ "outputs": [
+  "tools/bench/diag_c161_a3_2_facts.md",
+  "tools/bench/prep_c161_a3_2_x10.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/selftest_c161_delckpt*",
+   "tools/bench/selftest_c1*",
+   "tools/bench/prep_c156_a1_1_lib.py",
+   "tools/bench/prep_c160_c3_1_*",
+   "tools/bench/plan_ring_p5s02b_pred.json",
+   "tools/bench/plan_ring_p5s02b_licence.json",
+   "tools/bench/errorlist_predicted_D1_ring_p5s02b_end.json",
+   "tools/bench/diag_c161_a3_2*",
+   "tools/bench/prep_c161_a3_2*",
+   "docs/toolkit-capabilities.md",
+   "docs/fn_descriptions.json",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/jev_*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 45
+ },
+ "rules": [
+  "Offline; no LabVIEW; no --launch; no tools/hooks edit; no env bypass",
+  "Gate stays an equality; limit 675 unchanged; no old record edited",
+  "Do not touch pb_* code or selftest_c161_pbinherit",
+  "Plan f4520b10 and predicted EL unchanged; MAIN > 675 = hand back",
+  "Hook false positive: py tools/gate_fp.py log; never edit a hook"
+ ],
+ "advances": ["M3", "M8", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p5s02b.json"}
+ ]
+}

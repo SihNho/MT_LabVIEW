@@ -1,0 +1,70 @@
+{
+ "schema": "task/1",
+ "id": "164-a1-1",
+ "kind": "build",
+ "goal": "Offline: hash inputs, add 4 frame keys on A69/A79 (PD397(b)), make plan_ring_p5s02d.json on graph 3d5196ab = longest whole-group prefix of J K3 K3f K4 K4f, X10 MAIN <= 675, rows <= 40.",
+ "why": "Step 3 (564d8cbe) is adopted; PD397(c) gives step 4 a mechanical memory rule. The plan is the input of every later card of this assignment.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_164-a1-1.md", "md5": "13cb0a85e644c5f30ba803ec462bc640"},
+  {"path": "docs/d1/ring-p5c.md", "md5": "70fe6983a94a4ae6d652df27060590fe"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+  {"path": "tools/bench/plan_ring_p5s02r_in.json", "md5": "d84634bdbe0f4f94669d2443af116b8e"},
+  {"path": "tools/bench/graph_ring_p5s02c_20261010_131658.json", "md5": "3d5196ab098c5fb1401037e5c3c49e2d"},
+  {"path": "tools/bench/memory_model.json", "md5": "8fb432e459d581926f541178b4f93cfd"},
+  {"path": "tools/bench/errorlist_expected_D1_ring_p5s02c_20261010_125755.json", "md5": "26d45c71638b97ca17165c378ca64040"},
+  {"path": "tools/stage_shared.py", "md5": "b688edd471ec0075918ce544c9413b06"},
+  {"path": "tools/stagekit.py", "md5": "dd57c1cac5d56b82c08c6ef9d7b1a22d"},
+  {"path": "tools/stagexec.py", "md5": "a4df7e15c495b9fcbcdadf0d8047bc69"},
+  {"path": "tools/stagesim.py", "md5": "95a162baec5324ff037a8d23bd7ef46d"},
+  {"path": "tools/stage_prerun.py", "md5": "7605116f1dfe1c6fd4963dbfcf259de1"},
+  {"path": "tools/bench/prep_c163_a1_1_mk.py", "md5": "b6ea142991ced859f2610b927efe9807"},
+  {"path": "tools/bench/plan_ring_p5s02c.json", "md5": "930699ece36e3366e2c1a2cdf9a82c34"},
+  {"path": "tools/bench/plan_ring_p5s02c_pred.json", "md5": "721b9546578c6ae0ba9d62f944fa8aa3"},
+  {"path": "tools/bench/diag_c163_a3_1_facts.md", "md5": "568381e7fadb166cadae14110e724a17"},
+  {"path": "tools/bench/adopted_scratch.jsonl", "md5": "332e9ca6a535519b14be5f7cf3051d52"}
+ ],
+ "pass": [
+  "Inputs hashed first (hashlib) and quoted vs the judgement-time values; any mismatch explained before the next act",
+  "plan_ring_p5s02r_in.json: A69 w_k3pass + A79 w_k4pass gain \"frame\": \"True\" on src and dst; JSON compare = exactly those 4 added keys; old -> new md5; byte copy of the old file kept",
+  "plan_ring_p5s02d.json written by stagesim.simulate on 3d5196ab: final True, failed None, 0 PROVISIONAL, 0 UNROUTABLE; ROWS/SB/C/X8/X17 quoted PASS; route rows quoted",
+  "X10 MAIN + rows quoted for EVERY prefix tried (START = stage_prerun.x10_start(564d8cbe), called); plan = longest whole-group prefix with MAIN <= 675, rows <= 40; J alone > 675 = FAIL",
+  "new:CQ7 'True' frame uid quoted with the step-3 binding record file:line; compile ops + checkpoints of the group-J delete_object rows quoted",
+  "No tool edit; UNCHANGED md5 list; facts file written"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p5s02r_in.json",
+  "tools/bench/plan_ring_p5s02r_in_pre164.json",
+  "tools/bench/plan_ring_p5s02d.json",
+  "tools/bench/diag_c164_a1_1_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c164_a1_1*",
+   "tools/bench/prep_c164_a1_1*",
+   "tools/bench/prep_plan_flow_lib.py",
+   "tools/bench/plan_ring_p5s02d*",
+   "tools/bench/plan_ring_p5s02r_in*.json",
+   "tools/bench/sim/ring_p5s02d/**",
+   "tools/bench/jev_*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "advances": ["M3", "M8", "R1"],
+ "rules": [
+  "Offline only: no LabVIEW, motor or camera; no hooks edit; no edit of the stage tools (stagekit/exec/sim/prerun/shared)",
+  "Call shared functions, never copy them (docs/script-writing.md); no group split; limit 675 kept; never retype a uid",
+  "Hook false positive on own command text: py tools/gate_fp.py log, report; no env bypass"
+ ]
+}

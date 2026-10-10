@@ -1,0 +1,24 @@
+{"schema":"result/1","id":"159-b1-1","status":"PASS","gates":{"pass":5,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+{"path":"tools/bench/errorlist_expected_D1_ring_p5s02a_20261010_023239.json","md5":"1fd016bfec093c8bf488cc31d325d2fb"},
+{"path":"tools/bench/diag_c159_cen2_wire.md","md5":"158a22fcbe732de7e98a07b4c7037ac9"},
+{"path":"tools/bench/diag_c159_b1_1_facts.md","md5":"7cb23a6a5a0f4dbd8ea9bd5c53911fc4"},
+{"path":"tools/bench/diag_c159_b1_1.py","md5":"58dc18de236b58a6e63129b4fdfa2ddc"},
+{"path":"tools/bench/diag_c159_b1_1_raw.json","md5":"9156fe394e84a8d77826fa59c9a2687f"}],
+"facts":[
+"CEN2 extra is NOT w10394: real new Wire uids 12 vs sim 11; diffs real-only 31587 (A22) + 31562 (A19), sim-only -37 (A14); uid identity, not topology (diag_c159_cen2_wire.md:7-8)",
+"+1 = LabVIEW deleted P5-1 wire 24153 and made 31587 for 24367->SelectorTunnel #31557 (frame 23405); sim kept uid 24153; 24330 is a swap, net 0 (diag_c159_cen2_wire.md:22-24)",
+"Topology equal except a sim-only source-only stub 24091 on #25223 25235 that LabVIEW removed; termless 10394 is old uid, in both censuses (diag_c159_cen2_wire.md:25-28)",
+"Expected list: 56 rows; compare() extra 0 missing 0; standing 45, action 10, delete_wire 1, unattributed 0 (diag_c159_b1_1_final.log:12-13)",
+"Predicted totals: after step 2 = 51, after step 3 = 45 (removal only, MERGE assumed per PD388(c)) (diag_c159_b1_1_final.log:16)",
+"Per action: delete_wire 10394, A28, A35, A32, A39 at step 2 (1 each); A70 x3, A80 x3 at step 3 (diag_c159_b1_1_final.log:15)",
+"Class sets >1 item are paired item<->object BY COUNT (no uid route); per-class counts exact (diag_c159_b1_1_facts.md:20)",
+"Deleted claudeDev D1_ring_p5s02a_20261009_152721.vi md5 cac5236b171aab9d82283d7dff9611ef + tools/bench/resume/resume_plan_ring_p5s02a_20261009_153334.json (diag_c159_b1_1.log:28-29)",
+"VI md5 before==after: 94ffff94, s09 eb1d0f31, P5-1a 2482fe7b, P5-1 7f2582ae; stagesim/stagekit/vigraph/addrcheck/plan pins unchanged; no hooks edit (diag_c159_b1_1_final.log:5,30)",
+"Script RESULT FAIL 10/1 is its own C3 prediction (one real-only, none sim-only) failing = the hand-back finding; first run's key compared created-terminal names, fixed (diag_c159_b1_1_pre.log:26)"],
+"open":[
+"PD388(b): the extra is not the remnant w10394 but a wire-uid identity difference (LabVIEW re-creates A22's wire, the sim re-uses 24153) - brief says hand back; how should CEN2 / stagesim treat uid re-use?",
+"Should stagesim drop the source-only stub left on a tunnel source whose only wire was cut (24091 on 25235), as LabVIEW does?",
+"Step-2/3 predicted totals 51/45 count base-item removal only; new items raised by step-2 actions (and the MERGE assumption) are unmeasured."],
+"cost":{"usd":null,"minutes":16,"labview_runs":0},
+"note":"Offline only. Card pass criteria 5/5 met; the CEN2 finding triggers the brief's hand-back. creation_map/plan_ring_p5s02a_4284c22a_20261009_152941.jsonl also names 152721 and was kept (not a resume record)."}

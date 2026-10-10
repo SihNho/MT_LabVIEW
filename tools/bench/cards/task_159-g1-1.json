@@ -1,0 +1,46 @@
+{
+ "schema": "task/1",
+ "id": "159-g1-1",
+ "kind": "build",
+ "goal": "PD389(f): check with the gate's shared parser whether the cycle-158 retrospective still reads as the placeholder; write the disposition only if it does; record the verdict.",
+ "why": "The retro-undisposed gate is due; line 517 of the retrospective already has text, so the parser decides whether anything must be written. Independent of the open delete_wire question.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_159-g1-1.md", "md5": "7f00994a6b072cc6668797626233f714"},
+  {"path": "docs/d1/ring-p5b.md", "md5": "8ff5f8f20370121fd22ae3cf0d2e6008"},
+  {"path": "archive/peer/2026-10-10-retrospective-cycle158.md", "md5": "11405824c37a35f7dbda22d0107313ac"}
+ ],
+ "pass": [
+  "the gate's shared parser function (file:line) called on the cycle-158 retrospective; verdict placeholder|real text and the section line range quoted in the facts file",
+  "disposition written under '## What was done with it' only if the verdict was placeholder, then parser re-run and new verdict quoted; else nothing written and said so",
+  "facts file states whether the gate still lists cycle 158 as due; no other archive/docs file modified; no tools edit"
+ ],
+ "outputs": [
+  "tools/bench/diag_c159_g1_1_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "archive/peer/2026-10-10-retrospective-cycle158.md",
+   "tools/bench/diag_c159_g1_1*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 20
+ },
+ "rules": [
+  "Offline; call the gate's shared parser, do not re-implement it; no tools or tools/hooks edit",
+  "Write the disposition only on a placeholder verdict, from the round results and PD388/PD389",
+  "Do not run retrospective.py and do not touch STATUS NEXT or next.json"
+ ],
+ "advances": ["M3"],
+ "requires": [
+  {"kind": "file", "name": "archive/peer/2026-10-10-retrospective-cycle158.md"}
+ ]
+}

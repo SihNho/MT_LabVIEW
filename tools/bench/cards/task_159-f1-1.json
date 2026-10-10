@@ -1,0 +1,59 @@
+{
+ "schema": "task/1",
+ "id": "159-f1-1",
+ "kind": "build",
+ "goal": "PD388(f)/PD389(e): re-pin runcheck/wire0face to the final stage_prerun (+stagekit) md5 and selftest_c134_2_gates D2 to dry_rule 3; run selftest_stagekit + c134_1_dry, counts vs last pass.",
+ "why": "Dry repair, DRY_RULE bump and the end-pair CEN2 changed tool bytes; suites pinned to old bytes would fail on the pin alone. Their counts vs the last passing logs show the edits broke nothing.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_159-f1-1.md", "md5": "ea4910ee0b4b8807ea151bc67ad0b674"},
+  {"path": "docs/d1/ring-p5b.md", "md5": "8ff5f8f20370121fd22ae3cf0d2e6008"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+  {"path": "tools/bench/diag_c159_e1_1_facts.md", "md5": "06287c10dbc65972d99b0830d1a8073d"},
+  {"path": "tools/bench/selftest_c158_runcheck.py", "md5": "baa0914383bedade3766351a4ea8a940"},
+  {"path": "tools/bench/selftest_c158_wire0face.py", "md5": "37f2cced2cd7a545be38159861c2fec4"},
+  {"path": "tools/bench/selftest_c134_2_gates.py", "md5": "f388b7ac38231c8b94fc83a5e9e3a816"},
+  {"path": "tools/stagekit.py", "md5": "ac3a8f5778c88c30168af4422f683f6c"},
+  {"path": "tools/stage_prerun.py", "md5": "7605116f1dfe1c6fd4963dbfcf259de1"}
+ ],
+ "pass": [
+  "runcheck + wire0face pins of stage_prerun (and stagekit if pinned) re-pinned to the current md5; c134_2_gates D2 re-pinned to dry_rule 3; old/new lines quoted; the three suites green with totals",
+  "selftest_stagekit and selftest_c134_1_dry run under bgrun; totals now vs the last passing log quoted; equal or the differing case names listed",
+  "any other self-test failing on the stagekit pin alone LISTED (name, line), not re-pinned; md5 of stagekit/stage_prerun/stagesim/stagexec after",
+  "94ffff94, s09 eb1d0f31, P5-1a 2482fe7b, P5-1 7f2582ae unchanged; no tools/hooks edit; no stage-tool edit; no LabVIEW process started"
+ ],
+ "outputs": [
+  "tools/bench/diag_c159_f1_1_facts.md"
+ ],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/selftest_c158_runcheck.py",
+   "tools/bench/selftest_c158_wire0face.py",
+   "tools/bench/selftest_c134_2_gates.py",
+   "tools/bench/selftest_stagekit*.log",
+   "tools/bench/selftest_c134_1_dry*.log",
+   "tools/bench/diag_c159_f1_1*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 50
+ },
+ "rules": [
+  "Edit only the three re-pin self-tests; no stage-tool or tools/hooks edit; run the two read-flag suites unedited",
+  "A suite failure that is not the pin: report case names and the log line, do not fix a stage tool",
+  "Run the suites under bgrun with a deadline; no LabVIEW process is started by them",
+  "Rule 1a: no per-bead computation touched"
+ ],
+ "advances": ["M3", "M8"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/selftest_stagekit.log"},
+  {"kind": "file", "name": "tools/bench/selftest_c134_1_dry.log"}
+ ]
+}

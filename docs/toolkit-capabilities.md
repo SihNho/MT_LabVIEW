@@ -867,7 +867,7 @@ so out loud — as a gate, with a cheap test scheduled before the work that depe
 
 ## Scripting functions - generated from code (card chat-F2)
 
-Outcome of every call: `ok | no_output | failed | timed_out` (tools/fncontract.py). Contract column = the declared postconditions `[measure, on_fail]` or `none - <reason>`. Record = tools/bench/fn_records/ (fresh-pass only while the function's source md5 equals the record's). 152 rows; records: fresh-fail 3, fresh-pass 59, none 66, planned 24.
+Outcome of every call: `ok | no_output | failed | timed_out` (tools/fncontract.py). Contract column = the declared postconditions `[measure, on_fail]` or `none - <reason>`. Record = tools/bench/fn_records/ (fresh-pass only while the function's source md5 equals the record's). 152 rows; records: fresh-fail 3, fresh-pass 54, none 66, planned 24, stale 5.
 
 | function | arguments | outcome contract | record | source |
 |---|---|---|---|---|
@@ -989,40 +989,40 @@ Outcome of every call: `ok | no_output | failed | timed_out` (tools/fncontract.p
 | `recipes.build_opconnectnested_v1.connect_nested_v1` | target, sink_diag, sink_node, sink_term, src_diag, src_node, src_term, labels | recipe function - outcome via the Stage._op verb that calls it | fresh-pass | tools/recipes/build_opconnectnested_v1.py:418 |
 | `recipes.build_opfsinnertunnelconnect_v0.del_node` | target, cls, uid, tag='' | recipe function - outcome via the Stage._op verb that calls it | fresh-pass | tools/recipes/build_opfsinnertunnelconnect_v0.py:346 |
 | `recipes.build_opfsinnertunnelconnect_v0.del_wire` | target, wire_uid, tag='' | recipe function - outcome via the Stage._op verb that calls it | fresh-pass | tools/recipes/build_opfsinnertunnelconnect_v0.py:336 |
-| `stagekit.op:add_shift_reg` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.add_shift_reg) | fresh-pass | tools/stagekit.py:767 |
-| `stagekit.op:case_frame_wire` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.case_frame_wire) | planned | tools/stagexec.py:3439 |
-| `stagekit.op:case_in` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.case_in) | planned | tools/stagexec.py:3172 |
-| `stagekit.op:case_wired` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.case_wired) | planned | tools/stagexec.py:3172 |
-| `stagekit.op:connect` | (Stage._op verb) | none - gscript.connect_nested_v2 raises at entry (its op VI was never built); the live route is op:connect_nested_v1 | planned | tools/stagekit.py:704 |
-| `stagekit.op:connect_from_wire` | (Stage._op verb) | none at this level - recipes.build_opconnectfromwire_v0.connect_from_wire returns its readout; LVBackend._cfw stops on its err / wire delta | fresh-pass | tools/stagekit.py:711 |
-| `stagekit.op:connect_nested_v1` | (Stage._op verb) | none at this level - recipes.build_opconnectnested_v1.connect_nested_v1 returns (wire delta, ExecState, err); LVBackend.connect stops on err | fresh-pass | tools/stagekit.py:1086 |
-| `stagekit.op:connect_term_uid` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.connect_term_uid) | fresh-pass | tools/stagexec.py:3465 |
-| `stagekit.op:connect_terminals` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.connect_terminals) | planned | tools/stagekit.py:1086 |
-| `stagekit.op:copy_in` | (Stage._op verb) | none at this level - the copied object is bound by stagexec's next read (bind_new) | planned | tools/stagekit.py:910 |
-| `stagekit.op:create_const_on_term` | (Stage._op verb) | none at this level - OpCreateConstOnTerm_v0's readout; bound by the next read | fresh-pass | tools/stagekit.py:964 |
-| `stagekit.op:create_local_read` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.create_local_read) | fresh-pass | tools/stagekit.py:779 |
-| `stagekit.op:create_local_write` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.create_local_write) | fresh-pass | tools/stagekit.py:802 |
-| `stagekit.op:create_primitive_nested` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.create_primitive_nested) | fresh-pass | tools/stagexec.py:3172 |
-| `stagekit.op:delete_object` | (Stage._op verb) | removed == 1 [inline, raise] | fresh-pass | tools/stagekit.py:685 |
-| `stagekit.op:delete_wire` | (Stage._op verb) | found == 1 [inline, raise] | fresh-pass | tools/stagekit.py:672 |
-| `stagekit.op:drop_subvi` | (Stage._op verb) | none at this level - stagexec create 'subvi' measures the SubVI uid diff | fresh-pass | tools/stagexec.py:3172 |
-| `stagekit.op:fs_add_frame` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.fs_add_frame) | planned | tools/stagexec.py:3172 |
-| `stagekit.op:indicator_nested` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.create_indicator_nested) | fresh-pass | tools/stagexec.py:3172 |
-| `stagekit.op:indicator_on_const` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.create_indicator_on_const) | fresh-pass | tools/stagexec.py:3172 |
-| `stagekit.op:loop_in` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.loop_in) | fresh-pass | tools/stagexec.py:3172 |
-| `stagekit.op:move_in` | (Stage._op verb) | none at this level - recipes.build_d1_v0.move_in; the new owner is read by stagexec's step diff | fresh-pass | tools/stagekit.py:698 |
-| `stagekit.op:queue_node` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.queue_node) | planned | tools/stagexec.py:3172 |
-| `stagekit.op:set_index_mode` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.set_index_mode) | planned | tools/stagexec.py:3506 |
-| `stagekit.op:stop_from_node` | (Stage._op verb) | none - OpStopFromNode_v0's error string is returned; the step diff checks the new wire | fresh-pass | tools/stagexec.py:3388 |
-| `stagekit.op:struct_copy_nested` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.struct_copy_nested) | fresh-pass | tools/stagexec.py:3172 |
-| `stagekit.op:wire_const` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.wire_const) | planned | tools/stagexec.py:3039 |
-| `stagekit.op:wire_const_sr` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.wire_const_sr) | fresh-pass | tools/stagexec.py:3039 |
-| `stagekit.op:wire_control` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.wire_control) | fresh-pass | tools/stagexec.py:3039 |
-| `stagekit.op:wire_ctlsink` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.wire_ctlsink) | fresh-pass | tools/stagexec.py:3039 |
-| `stagekit.op:wire_indicators` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.wire_indicators) | fresh-fail | tools/stagekit.py:758 |
-| `stagekit.op:wire_remove_loose_ends` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.wire_remove_loose_ends) | fresh-pass | tools/stagexec.py:3489 |
-| `stagekit.op:wire_sr` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.wire_sr) | fresh-pass | tools/stagekit.py:773 |
-| `stagekit.op:wire_tunouter` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.wire_tunouter) | planned | tools/stagexec.py:3039 |
+| `stagekit.op:add_shift_reg` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.add_shift_reg) | fresh-pass | tools/stagekit.py:782 |
+| `stagekit.op:case_frame_wire` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.case_frame_wire) | planned | tools/stagexec.py:3623 |
+| `stagekit.op:case_in` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.case_in) | planned | tools/stagexec.py:3353 |
+| `stagekit.op:case_wired` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.case_wired) | planned | tools/stagexec.py:3353 |
+| `stagekit.op:connect` | (Stage._op verb) | none - gscript.connect_nested_v2 raises at entry (its op VI was never built); the live route is op:connect_nested_v1 | planned | tools/stagekit.py:719 |
+| `stagekit.op:connect_from_wire` | (Stage._op verb) | none at this level - recipes.build_opconnectfromwire_v0.connect_from_wire returns its readout; LVBackend._cfw stops on its err / wire delta | fresh-pass | tools/stagekit.py:726 |
+| `stagekit.op:connect_nested_v1` | (Stage._op verb) | none at this level - recipes.build_opconnectnested_v1.connect_nested_v1 returns (wire delta, ExecState, err); LVBackend.connect stops on err | stale | tools/stagekit.py:1101 |
+| `stagekit.op:connect_term_uid` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.connect_term_uid) | stale | tools/stagexec.py:3649 |
+| `stagekit.op:connect_terminals` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.connect_terminals) | planned | tools/stagekit.py:1101 |
+| `stagekit.op:copy_in` | (Stage._op verb) | none at this level - the copied object is bound by stagexec's next read (bind_new) | planned | tools/stagekit.py:925 |
+| `stagekit.op:create_const_on_term` | (Stage._op verb) | none at this level - OpCreateConstOnTerm_v0's readout; bound by the next read | fresh-pass | tools/stagekit.py:979 |
+| `stagekit.op:create_local_read` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.create_local_read) | fresh-pass | tools/stagekit.py:794 |
+| `stagekit.op:create_local_write` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.create_local_write) | fresh-pass | tools/stagekit.py:817 |
+| `stagekit.op:create_primitive_nested` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.create_primitive_nested) | fresh-pass | tools/stagexec.py:3353 |
+| `stagekit.op:delete_object` | (Stage._op verb) | removed == 1 [inline, raise] | fresh-pass | tools/stagekit.py:700 |
+| `stagekit.op:delete_wire` | (Stage._op verb) | found == 1 [inline, raise] | fresh-pass | tools/stagekit.py:687 |
+| `stagekit.op:drop_subvi` | (Stage._op verb) | none at this level - stagexec create 'subvi' measures the SubVI uid diff | fresh-pass | tools/stagexec.py:3353 |
+| `stagekit.op:fs_add_frame` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.fs_add_frame) | planned | tools/stagexec.py:3353 |
+| `stagekit.op:indicator_nested` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.create_indicator_nested) | fresh-pass | tools/stagexec.py:3353 |
+| `stagekit.op:indicator_on_const` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.create_indicator_on_const) | fresh-pass | tools/stagexec.py:3353 |
+| `stagekit.op:loop_in` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.loop_in) | fresh-pass | tools/stagexec.py:3353 |
+| `stagekit.op:move_in` | (Stage._op verb) | none at this level - recipes.build_d1_v0.move_in; the new owner is read by stagexec's step diff | fresh-pass | tools/stagekit.py:713 |
+| `stagekit.op:queue_node` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.queue_node) | planned | tools/stagexec.py:3353 |
+| `stagekit.op:set_index_mode` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.set_index_mode) | planned | tools/stagexec.py:3709 |
+| `stagekit.op:stop_from_node` | (Stage._op verb) | none - OpStopFromNode_v0's error string is returned; the step diff checks the new wire | fresh-pass | tools/stagexec.py:3569 |
+| `stagekit.op:struct_copy_nested` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.struct_copy_nested) | fresh-pass | tools/stagexec.py:3353 |
+| `stagekit.op:wire_const` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.wire_const) | planned | tools/stagexec.py:3216 |
+| `stagekit.op:wire_const_sr` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.wire_const_sr) | stale | tools/stagexec.py:3216 |
+| `stagekit.op:wire_control` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.wire_control) | stale | tools/stagexec.py:3216 |
+| `stagekit.op:wire_ctlsink` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.wire_ctlsink) | stale | tools/stagexec.py:3216 |
+| `stagekit.op:wire_indicators` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.wire_indicators) | fresh-fail | tools/stagekit.py:773 |
+| `stagekit.op:wire_remove_loose_ends` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.wire_remove_loose_ends) | fresh-pass | tools/stagexec.py:3692 |
+| `stagekit.op:wire_sr` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.wire_sr) | fresh-pass | tools/stagekit.py:788 |
+| `stagekit.op:wire_tunouter` | (Stage._op verb) | none at this level - measured by the gscript function it calls (row gscript.wire_tunouter) | planned | tools/stagexec.py:3216 |
 
 <!-- GENERATED fn-table END -->
 
@@ -1030,32 +1030,34 @@ Outcome of every call: `ok | no_output | failed | timed_out` (tools/fncontract.p
 
 ## Every public function of the shared tools files - generated from code (card chat-T7)
 
-A file is SHARED when at least one OTHER file under tools/ imports it (import graph, measured at generation; cache tools/bench/capabilities_shared.json). Look here before writing any logic (docs/script-writing.md rule 8). 193 files, 2478 functions: 1317 described by a docstring, 119 by docs/fn_descriptions.json (existing functions, card chat-T8), 1042 undocumented (per file in the table below). Regenerated at every cycle end and when a shared file is written.
+A file is SHARED when at least one OTHER file under tools/ imports it (import graph, measured at generation; cache tools/bench/capabilities_shared.json). Look here before writing any logic (docs/script-writing.md rule 8). 205 files, 2597 functions: 1405 described by a docstring, 304 by docs/fn_descriptions.json (existing functions, card chat-T8), 888 undocumented (per file in the table below). Regenerated at every cycle end and when a shared file is written.
 
 | file | kind | imported by | functions | side file | undocumented |
 |---|---|---|---|---|---|
-| [`tools/addrcheck.py`](#tools-addrcheck-py) | shared module | 13 | 17 | 1 | 0 |
-| [`tools/allterms.py`](#tools-allterms-py) | shared module | 71 | 5 | 1 | 0 |
+| [`tools/addrcheck.py`](#tools-addrcheck-py) | shared module | 14 | 17 | 1 | 0 |
+| [`tools/allterms.py`](#tools-allterms-py) | shared module | 73 | 5 | 1 | 0 |
 | [`tools/audit_cycle.py`](#tools-audit-cycle-py) | shared module | 8 | 15 | 3 | 0 |
 | [`tools/bgrun.py`](#tools-bgrun-py) | shared module | 1 | 4 | 1 | 0 |
 | [`tools/bgrun_reap.py`](#tools-bgrun-reap-py) | shared module | 3 | 5 | 2 | 0 |
 | [`tools/card_clock.py`](#tools-card-clock-py) | shared module | 3 | 4 | 3 | 0 |
-| [`tools/census_predict.py`](#tools-census-predict-py) | shared module | 43 | 7 | 4 | 0 |
-| [`tools/cycle_runner.py`](#tools-cycle-runner-py) | shared module | 14 | 51 | 19 | 0 |
-| [`tools/dispo.py`](#tools-dispo-py) | shared module | 3 | 3 | 0 | 0 |
+| [`tools/census_predict.py`](#tools-census-predict-py) | shared module | 46 | 7 | 4 | 0 |
+| [`tools/cycle_runner.py`](#tools-cycle-runner-py) | shared module | 15 | 53 | 19 | 0 |
+| [`tools/debate_loop.py`](#tools-debate-loop-py) | shared module | 1 | 10 | 0 | 0 |
+| [`tools/debate_relay.py`](#tools-debate-relay-py) | shared module | 2 | 12 | 0 | 8 |
+| [`tools/dispo.py`](#tools-dispo-py) | shared module | 4 | 3 | 0 | 0 |
 | [`tools/doc_lint.py`](#tools-doc-lint-py) | shared module | 8 | 24 | 14 | 0 |
-| [`tools/elrule.py`](#tools-elrule-py) | shared module | 27 | 10 | 1 | 0 |
-| [`tools/errorlist_check.py`](#tools-errorlist-check-py) | shared module | 66 | 24 | 10 | 0 |
-| [`tools/fn_records.py`](#tools-fn-records-py) | shared module | 5 | 19 | 9 | 0 |
+| [`tools/elrule.py`](#tools-elrule-py) | shared module | 34 | 10 | 1 | 0 |
+| [`tools/errorlist_check.py`](#tools-errorlist-check-py) | shared module | 75 | 24 | 10 | 0 |
+| [`tools/fn_records.py`](#tools-fn-records-py) | shared module | 6 | 19 | 9 | 0 |
 | [`tools/fncontract.py`](#tools-fncontract-py) | shared module | 6 | 20 | 3 | 0 |
 | [`tools/gate_fp.py`](#tools-gate-fp-py) | shared module | 8 | 10 | 3 | 0 |
 | [`tools/gateclass.py`](#tools-gateclass-py) | shared module | 13 | 14 | 3 | 0 |
-| [`tools/gen_capabilities.py`](#tools-gen-capabilities-py) | shared module | 3 | 21 | 0 | 0 |
+| [`tools/gen_capabilities.py`](#tools-gen-capabilities-py) | shared module | 7 | 21 | 0 | 0 |
 | [`tools/gscript.py`](#tools-gscript-py) | shared module | 653 | 135 | 9 | 0 |
 | [`tools/hash_probe.py`](#tools-hash-probe-py) | shared module | 64 | 2 | 2 | 0 |
-| [`tools/invcheck.py`](#tools-invcheck-py) | shared module | 2 | 7 | 0 | 0 |
+| [`tools/invcheck.py`](#tools-invcheck-py) | shared module | 9 | 7 | 0 | 0 |
 | [`tools/jev.py`](#tools-jev-py) | shared module | 33 | 10 | 2 | 0 |
-| [`tools/jev_candidates.py`](#tools-jev-candidates-py) | shared module | 106 | 15 | 3 | 0 |
+| [`tools/jev_candidates.py`](#tools-jev-candidates-py) | shared module | 107 | 15 | 3 | 0 |
 | [`tools/jev_chain.py`](#tools-jev-chain-py) | shared module | 1 | 8 | 5 | 0 |
 | [`tools/jev_contradict.py`](#tools-jev-contradict-py) | shared module | 3 | 4 | 1 | 0 |
 | [`tools/jev_device_value.py`](#tools-jev-device-value-py) | shared module | 2 | 4 | 4 | 0 |
@@ -1067,26 +1069,27 @@ A file is SHARED when at least one OTHER file under tools/ imports it (import gr
 | [`tools/launchunit.py`](#tools-launchunit-py) | shared module | 7 | 10 | 0 | 0 |
 | [`tools/lint.py`](#tools-lint-py) | shared module | 1 | 8 | 2 | 0 |
 | [`tools/logclass.py`](#tools-logclass-py) | shared module | 17 | 9 | 0 | 0 |
-| [`tools/lv_errorlist.py`](#tools-lv-errorlist-py) | shared module | 5 | 25 | 0 | 12 |
+| [`tools/lv_errorlist.py`](#tools-lv-errorlist-py) | shared module | 5 | 25 | 12 | 0 |
 | [`tools/lvclick.py`](#tools-lvclick-py) | shared module | 4 | 18 | 0 | 10 |
 | [`tools/motor_gate.py`](#tools-motor-gate-py) | shared module | 3 | 21 | 0 | 9 |
-| [`tools/outcome_review.py`](#tools-outcome-review-py) | shared module | 2 | 6 | 0 | 3 |
+| [`tools/outcome_review.py`](#tools-outcome-review-py) | shared module | 3 | 6 | 0 | 3 |
 | [`tools/prior_art_review.py`](#tools-prior-art-review-py) | shared module | 2 | 7 | 0 | 2 |
-| [`tools/priorart_diff.py`](#tools-priorart-diff-py) | shared module | 5 | 8 | 0 | 5 |
-| [`tools/protocol.py`](#tools-protocol-py) | shared module | 593 | 60 | 0 | 14 |
+| [`tools/priorart_diff.py`](#tools-priorart-diff-py) | shared module | 8 | 8 | 0 | 5 |
+| [`tools/protocol.py`](#tools-protocol-py) | shared module | 661 | 63 | 14 | 0 |
 | [`tools/retro_due.py`](#tools-retro-due-py) | shared module | 2 | 6 | 0 | 2 |
 | [`tools/retrospective.py`](#tools-retrospective-py) | shared module | 2 | 8 | 0 | 2 |
-| [`tools/run_mode.py`](#tools-run-mode-py) | shared module | 1 | 3 | 0 | 3 |
-| [`tools/scope_header.py`](#tools-scope-header-py) | shared module | 13 | 21 | 0 | 8 |
-| [`tools/stage_prerun.py`](#tools-stage-prerun-py) | shared module | 191 | 124 | 1 | 28 |
-| [`tools/stagekit.py`](#tools-stagekit-py) | shared module | 280 | 113 | 0 | 10 |
-| [`tools/stagesim.py`](#tools-stagesim-py) | shared module | 175 | 66 | 1 | 24 |
-| [`tools/stagexec.py`](#tools-stagexec-py) | shared module | 336 | 177 | 1 | 60 |
-| [`tools/stop_record.py`](#tools-stop-record-py) | shared module | 27 | 19 | 0 | 2 |
-| [`tools/vigraph.py`](#tools-vigraph-py) | shared module | 160 | 22 | 0 | 4 |
+| [`tools/run_mode.py`](#tools-run-mode-py) | shared module | 1 | 3 | 3 | 0 |
+| [`tools/scope_header.py`](#tools-scope-header-py) | shared module | 13 | 21 | 8 | 0 |
+| [`tools/stage_prerun.py`](#tools-stage-prerun-py) | shared module | 230 | 127 | 29 | 0 |
+| [`tools/stage_shared.py`](#tools-stage-shared-py) | shared module | 20 | 3 | 0 | 0 |
+| [`tools/stagekit.py`](#tools-stagekit-py) | shared module | 327 | 143 | 10 | 0 |
+| [`tools/stagesim.py`](#tools-stagesim-py) | shared module | 193 | 68 | 25 | 0 |
+| [`tools/stagexec.py`](#tools-stagexec-py) | shared module | 386 | 190 | 61 | 0 |
+| [`tools/stop_record.py`](#tools-stop-record-py) | shared module | 31 | 19 | 0 | 2 |
+| [`tools/vigraph.py`](#tools-vigraph-py) | shared module | 171 | 22 | 4 | 0 |
 | [`tools/violations.py`](#tools-violations-py) | shared module | 2 | 5 | 0 | 2 |
-| [`tools/wiki_build.py`](#tools-wiki-build-py) | shared module | 85 | 11 | 0 | 5 |
-| [`tools/bench/bench_prep.py`](#tools-bench-bench-prep-py) | shared file in the bench folder (move to tools/ later) | 294 | 5 | 0 | 4 |
+| [`tools/wiki_build.py`](#tools-wiki-build-py) | shared module | 89 | 11 | 0 | 5 |
+| [`tools/bench/bench_prep.py`](#tools-bench-bench-prep-py) | shared file in the bench folder (move to tools/ later) | 298 | 5 | 0 | 4 |
 | [`tools/bench/build_opstopmode_v0.py`](#tools-bench-build-opstopmode-v0-py) | shared file in the bench folder (move to tools/ later) | 2 | 24 | 0 | 23 |
 | [`tools/bench/build_ringpickslot_v2.py`](#tools-bench-build-ringpickslot-v2-py) | shared file in the bench folder (move to tools/ later) | 1 | 13 | 0 | 13 |
 | [`tools/bench/c131_2_reach.py`](#tools-bench-c131-2-reach-py) | shared file in the bench folder (move to tools/ later) | 2 | 1 | 0 | 0 |
@@ -1105,6 +1108,7 @@ A file is SHARED when at least one OTHER file under tools/ imports it (import gr
 | [`tools/bench/diag_c138_6_run.py`](#tools-bench-diag-c138-6-run-py) | shared file in the bench folder (move to tools/ later) | 6 | 11 | 0 | 11 |
 | [`tools/bench/diag_c153_b2_1_rescore.py`](#tools-bench-diag-c153-b2-1-rescore-py) | shared file in the bench folder (move to tools/ later) | 1 | 4 | 0 | 4 |
 | [`tools/bench/diag_c156_b2_2_inv_c156a21.py`](#tools-bench-diag-c156-b2-2-inv-c156a21-py) | shared file in the bench folder (move to tools/ later) | 1 | 0 | 0 | 0 |
+| [`tools/bench/diag_c159_f1_2_t2.py`](#tools-bench-diag-c159-f1-2-t2-py) | shared file in the bench folder (move to tools/ later) | 1 | 8 | 0 | 8 |
 | [`tools/bench/diag_c61_localdir_write2.py`](#tools-bench-diag-c61-localdir-write2-py) | shared file in the bench folder (move to tools/ later) | 1 | 23 | 0 | 17 |
 | [`tools/bench/diag_c81_uidref.py`](#tools-bench-diag-c81-uidref-py) | shared file in the bench folder (move to tools/ later) | 1 | 18 | 0 | 16 |
 | [`tools/bench/diag_c83_connect2x2.py`](#tools-bench-diag-c83-connect2x2-py) | shared file in the bench folder (move to tools/ later) | 2 | 26 | 0 | 19 |
@@ -1120,7 +1124,7 @@ A file is SHARED when at least one OTHER file under tools/ imports it (import gr
 | [`tools/bench/diag_queue_donor.py`](#tools-bench-diag-queue-donor-py) | shared file in the bench folder (move to tools/ later) | 1 | 8 | 0 | 7 |
 | [`tools/bench/diag_queue_donor2.py`](#tools-bench-diag-queue-donor2-py) | shared file in the bench folder (move to tools/ later) | 3 | 13 | 0 | 8 |
 | [`tools/bench/diag_replay_gbtest.py`](#tools-bench-diag-replay-gbtest-py) | shared file in the bench folder (move to tools/ later) | 1 | 6 | 0 | 6 |
-| [`tools/bench/diag_replay_lib.py`](#tools-bench-diag-replay-lib-py) | shared file in the bench folder (move to tools/ later) | 9 | 19 | 0 | 12 |
+| [`tools/bench/diag_replay_lib.py`](#tools-bench-diag-replay-lib-py) | shared file in the bench folder (move to tools/ later) | 9 | 19 | 12 | 0 |
 | [`tools/bench/diag_s2_scaffold.py`](#tools-bench-diag-s2-scaffold-py) | shared file in the bench folder (move to tools/ later) | 75 | 15 | 0 | 10 |
 | [`tools/bench/diag_s3b_l0_localname_v2.py`](#tools-bench-diag-s3b-l0-localname-v2-py) | shared file in the bench folder (move to tools/ later) | 1 | 23 | 0 | 15 |
 | [`tools/bench/diag_tunnelsource_onehop.py`](#tools-bench-diag-tunnelsource-onehop-py) | shared file in the bench folder (move to tools/ later) | 5 | 12 | 0 | 7 |
@@ -1135,13 +1139,13 @@ A file is SHARED when at least one OTHER file under tools/ imports it (import gr
 | [`tools/bench/imaqdx_limits.py`](#tools-bench-imaqdx-limits-py) | shared file in the bench folder (move to tools/ later) | 14 | 5 | 0 | 4 |
 | [`tools/bench/jev_device_value_labels.py`](#tools-bench-jev-device-value-labels-py) | shared file in the bench folder (move to tools/ later) | 1 | 2 | 0 | 2 |
 | [`tools/bench/jev_discharge_trial.py`](#tools-bench-jev-discharge-trial-py) | shared file in the bench folder (move to tools/ later) | 2 | 4 | 0 | 4 |
-| [`tools/bench/jev_gate.py`](#tools-bench-jev-gate-py) | shared file in the bench folder (move to tools/ later) | 16 | 20 | 0 | 3 |
+| [`tools/bench/jev_gate.py`](#tools-bench-jev-gate-py) | shared file in the bench folder (move to tools/ later) | 16 | 20 | 3 | 0 |
 | [`tools/bench/jev_gaterow_q.py`](#tools-bench-jev-gaterow-q-py) | shared file in the bench folder (move to tools/ later) | 3 | 2 | 0 | 0 |
 | [`tools/bench/jev_next_q.py`](#tools-bench-jev-next-q-py) | shared file in the bench folder (move to tools/ later) | 3 | 0 | 0 | 0 |
 | [`tools/bench/jev_priorart_trial.py`](#tools-bench-jev-priorart-trial-py) | shared file in the bench folder (move to tools/ later) | 1 | 1 | 0 | 1 |
 | [`tools/bench/jev_triage_q.py`](#tools-bench-jev-triage-q-py) | shared file in the bench folder (move to tools/ later) | 2 | 0 | 0 | 0 |
 | [`tools/bench/jev_wave2a_trials.py`](#tools-bench-jev-wave2a-trials-py) | shared file in the bench folder (move to tools/ later) | 1 | 8 | 0 | 7 |
-| [`tools/bench/k_contract_79.py`](#tools-bench-k-contract-79-py) | shared file in the bench folder (move to tools/ later) | 37 | 2 | 0 | 2 |
+| [`tools/bench/k_contract_79.py`](#tools-bench-k-contract-79-py) | shared file in the bench folder (move to tools/ later) | 41 | 2 | 0 | 2 |
 | [`tools/bench/launch_p3b2_c135.py`](#tools-bench-launch-p3b2-c135-py) | shared file in the bench folder (move to tools/ later) | 4 | 14 | 0 | 12 |
 | [`tools/bench/launch_p3b2_c135_graph.py`](#tools-bench-launch-p3b2-c135-graph-py) | shared file in the bench folder (move to tools/ later) | 1 | 1 | 0 | 1 |
 | [`tools/bench/launch_p3b2_resume_c135_compare.py`](#tools-bench-launch-p3b2-resume-c135-compare-py) | shared file in the bench folder (move to tools/ later) | 3 | 3 | 0 | 1 |
@@ -1149,9 +1153,13 @@ A file is SHARED when at least one OTHER file under tools/ imports it (import gr
 | [`tools/bench/m8b_replay_compare.py`](#tools-bench-m8b-replay-compare-py) | shared file in the bench folder (move to tools/ later) | 1 | 3 | 0 | 3 |
 | [`tools/bench/opmodels_lib.py`](#tools-bench-opmodels-lib-py) | shared file in the bench folder (move to tools/ later) | 3 | 6 | 0 | 3 |
 | [`tools/bench/prep_c143_3_elrule.py`](#tools-bench-prep-c143-3-elrule-py) | shared file in the bench folder (move to tools/ later) | 11 | 0 | 0 | 0 |
-| [`tools/bench/prep_c156_a1_1_lib.py`](#tools-bench-prep-c156-a1-1-lib-py) | shared file in the bench folder (move to tools/ later) | 5 | 6 | 0 | 1 |
-| [`tools/bench/prep_c156_a1_2_lib.py`](#tools-bench-prep-c156-a1-2-lib-py) | shared file in the bench folder (move to tools/ later) | 4 | 8 | 0 | 0 |
+| [`tools/bench/prep_c156_a1_1_lib.py`](#tools-bench-prep-c156-a1-1-lib-py) | shared file in the bench folder (move to tools/ later) | 41 | 6 | 0 | 1 |
+| [`tools/bench/prep_c156_a1_2_lib.py`](#tools-bench-prep-c156-a1-2-lib-py) | shared file in the bench folder (move to tools/ later) | 7 | 8 | 0 | 0 |
+| [`tools/bench/prep_c159_c1_1_lib.py`](#tools-bench-prep-c159-c1-1-lib-py) | shared file in the bench folder (move to tools/ later) | 3 | 6 | 0 | 0 |
+| [`tools/bench/prep_c164_a2_3_lib.py`](#tools-bench-prep-c164-a2-3-lib-py) | shared file in the bench folder (move to tools/ later) | 19 | 9 | 0 | 2 |
+| [`tools/bench/prep_plan_flow_lib.py`](#tools-bench-prep-plan-flow-lib-py) | shared file in the bench folder (move to tools/ later) | 12 | 3 | 0 | 0 |
 | [`tools/bench/s1_subvi_paths.py`](#tools-bench-s1-subvi-paths-py) | shared file in the bench folder (move to tools/ later) | 2 | 7 | 0 | 6 |
+| [`tools/bench/selftest_assign_flow.py`](#tools-bench-selftest-assign-flow-py) | shared file in the bench folder (move to tools/ later) | 1 | 11 | 0 | 9 |
 | [`tools/bench/selftest_c153_poskey_convert.py`](#tools-bench-selftest-c153-poskey-convert-py) | shared file in the bench folder (move to tools/ later) | 3 | 6 | 0 | 0 |
 | [`tools/bench/selftest_guard_peer_jev.py`](#tools-bench-selftest-guard-peer-jev-py) | shared file in the bench folder (move to tools/ later) | 1 | 5 | 0 | 3 |
 | [`tools/bench/selftest_guard_peer_ladder.py`](#tools-bench-selftest-guard-peer-ladder-py) | shared file in the bench folder (move to tools/ later) | 1 | 6 | 0 | 4 |
@@ -1163,9 +1171,9 @@ A file is SHARED when at least one OTHER file under tools/ imports it (import gr
 | [`tools/bench/verify_d1_s2.py`](#tools-bench-verify-d1-s2-py) | shared file in the bench folder (move to tools/ later) | 1 | 9 | 0 | 6 |
 | [`tools/recipes/build_d1_m3a1.py`](#tools-recipes-build-d1-m3a1-py) | recipe imported by another file | 25 | 46 | 0 | 23 |
 | [`tools/recipes/build_d1_m3a3b_d3.py`](#tools-recipes-build-d1-m3a3b-d3-py) | recipe imported by another file | 4 | 21 | 0 | 17 |
-| [`tools/recipes/build_d1_v0.py`](#tools-recipes-build-d1-v0-py) | recipe imported by another file | 177 | 24 | 0 | 16 |
+| [`tools/recipes/build_d1_v0.py`](#tools-recipes-build-d1-v0-py) | recipe imported by another file | 181 | 24 | 0 | 16 |
 | [`tools/recipes/build_opcaseframes_v0.py`](#tools-recipes-build-opcaseframes-v0-py) | recipe imported by another file | 1 | 5 | 0 | 4 |
-| [`tools/recipes/build_opconnectfromwire_v0.py`](#tools-recipes-build-opconnectfromwire-v0-py) | recipe imported by another file | 54 | 12 | 0 | 10 |
+| [`tools/recipes/build_opconnectfromwire_v0.py`](#tools-recipes-build-opconnectfromwire-v0-py) | recipe imported by another file | 55 | 12 | 0 | 10 |
 | [`tools/recipes/build_opconnectnested_v1.py`](#tools-recipes-build-opconnectnested-v1-py) | recipe imported by another file | 72 | 16 | 0 | 12 |
 | [`tools/recipes/build_opconstvalue_v1.py`](#tools-recipes-build-opconstvalue-v1-py) | recipe imported by another file | 59 | 6 | 0 | 5 |
 | [`tools/recipes/build_opconstvalue_v1b.py`](#tools-recipes-build-opconstvalue-v1b-py) | recipe imported by another file | 5 | 3 | 0 | 2 |
@@ -1216,21 +1224,25 @@ A file is SHARED when at least one OTHER file under tools/ imports it (import gr
 | [`tools/recipes/stage_d1_ring_p5s01b.py`](#tools-recipes-stage-d1-ring-p5s01b-py) | recipe imported by another file | 1 | 1 | 0 | 1 |
 | [`tools/recipes/stage_d1_ring_p5s02.py`](#tools-recipes-stage-d1-ring-p5s02-py) | recipe imported by another file | 1 | 1 | 0 | 1 |
 | [`tools/recipes/stage_d1_ring_p5s02a.py`](#tools-recipes-stage-d1-ring-p5s02a-py) | recipe imported by another file | 1 | 1 | 0 | 1 |
+| [`tools/recipes/stage_d1_ring_p5s02b.py`](#tools-recipes-stage-d1-ring-p5s02b-py) | recipe imported by another file | 1 | 1 | 0 | 1 |
+| [`tools/recipes/stage_d1_ring_p5s02c.py`](#tools-recipes-stage-d1-ring-p5s02c-py) | recipe imported by another file | 1 | 1 | 0 | 1 |
+| [`tools/recipes/stage_d1_ring_p5s02d.py`](#tools-recipes-stage-d1-ring-p5s02d-py) | recipe imported by another file | 1 | 1 | 0 | 1 |
+| [`tools/recipes/stage_d1_ring_p5s02e.py`](#tools-recipes-stage-d1-ring-p5s02e-py) | recipe imported by another file | 1 | 1 | 0 | 1 |
 | [`tools/recipes/stage_d1_s1.py`](#tools-recipes-stage-d1-s1-py) | recipe imported by another file | 4 | 19 | 0 | 4 |
 | [`tools/recipes/stage_d1_s3_focus.py`](#tools-recipes-stage-d1-s3-focus-py) | recipe imported by another file | 1 | 22 | 0 | 15 |
 | [`tools/recipes/stage_template_ring.py`](#tools-recipes-stage-template-ring-py) | recipe imported by another file | 1 | 1 | 0 | 1 |
-| [`tools/hooks/guard_assign.py`](#tools-hooks-guard-assign-py) | hook - reference | 4 | 17 | 0 | 8 |
+| [`tools/hooks/guard_assign.py`](#tools-hooks-guard-assign-py) | hook - reference | 6 | 17 | 0 | 8 |
 | [`tools/hooks/guard_bash.py`](#tools-hooks-guard-bash-py) | hook - reference | 13 | 12 | 0 | 0 |
 | [`tools/hooks/guard_card.py`](#tools-hooks-guard-card-py) | hook - reference | 4 | 4 | 0 | 2 |
-| [`tools/hooks/guard_cycle.py`](#tools-hooks-guard-cycle-py) | hook - reference | 25 | 14 | 0 | 3 |
-| [`tools/hooks/guard_peer.py`](#tools-hooks-guard-peer-py) | hook - reference | 25 | 27 | 0 | 4 |
-| [`tools/hooks/guard_session.py`](#tools-hooks-guard-session-py) | hook - reference | 6 | 18 | 0 | 7 |
-| [`tools/hooks/guard_write.py`](#tools-hooks-guard-write-py) | hook - reference | 4 | 8 | 0 | 4 |
+| [`tools/hooks/guard_cycle.py`](#tools-hooks-guard-cycle-py) | hook - reference | 29 | 14 | 0 | 3 |
+| [`tools/hooks/guard_peer.py`](#tools-hooks-guard-peer-py) | hook - reference | 27 | 27 | 0 | 4 |
+| [`tools/hooks/guard_session.py`](#tools-hooks-guard-session-py) | hook - reference | 6 | 18 | 7 | 0 |
+| [`tools/hooks/guard_write.py`](#tools-hooks-guard-write-py) | hook - reference | 6 | 8 | 0 | 4 |
 | [`tools/hooks/report_gate.py`](#tools-hooks-report-gate-py) | hook - reference | 2 | 8 | 0 | 5 |
 
 ### tools/addrcheck.py
 
-shared module; imported by 13 file(s): `tools/bench/diag_c151_a1_1_fs.py`, `tools/bench/diag_c152_b3_1_fs.py`, `tools/bench/diag_c154_a3_3_nodes.py`, `tools/bench/diag_c155_a3_2_nodes.py`, `tools/bench/jev_addr_measure_s5.py`, `tools/bench/prep_c150_a2_4_stage_prerun_before.py` ...
+shared module; imported by 14 file(s): `tools/bench/diag_c151_a1_1_fs.py`, `tools/bench/diag_c152_b3_1_fs.py`, `tools/bench/diag_c154_a3_3_nodes.py`, `tools/bench/diag_c155_a3_2_nodes.py`, `tools/bench/diag_c158_a3_2b_nodes.py`, `tools/bench/jev_addr_measure_s5.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -1254,7 +1266,7 @@ shared module; imported by 13 file(s): `tools/bench/diag_c151_a1_1_fs.py`, `tool
 
 ### tools/allterms.py
 
-shared module; imported by 71 file(s): `tools/bench/allterms_s4.py`, `tools/bench/allterms_v1_check.py`, `tools/bench/diag_c100_6_maxmin.py`, `tools/bench/diag_c103_wait_donor.py`, `tools/bench/diag_c111_b1_errorlist.py`, `tools/bench/diag_c112b_opuid.py` ...
+shared module; imported by 73 file(s): `tools/bench/allterms_s4.py`, `tools/bench/allterms_v1_check.py`, `tools/bench/diag_c100_6_maxmin.py`, `tools/bench/diag_c103_wait_donor.py`, `tools/bench/diag_c111_b1_errorlist.py`, `tools/bench/diag_c112b_opuid.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -1322,7 +1334,7 @@ shared module; imported by 3 file(s): `tools/bench/selftest_c153_cardclock_quote
 
 ### tools/census_predict.py
 
-shared module; imported by 43 file(s): `tools/bench/diag_c133_1_pred_p3b2.py`, `tools/bench/diag_c133_5_pred_p3b2b.py`, `tools/bench/diag_c134_1_finalize_b.py`, `tools/bench/plan_ring_p3b_split.py`, `tools/bench/plan_ring_p3b_split_p3b2.py`, `tools/bench/prep_c139_5_mkv13.py` ...
+shared module; imported by 46 file(s): `tools/bench/diag_c133_1_pred_p3b2.py`, `tools/bench/diag_c133_5_pred_p3b2b.py`, `tools/bench/diag_c134_1_finalize_b.py`, `tools/bench/plan_ring_p3b_split.py`, `tools/bench/plan_ring_p3b_split_p3b2.py`, `tools/bench/prep_c139_5_mkv13.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -1336,65 +1348,103 @@ shared module; imported by 43 file(s): `tools/bench/diag_c133_1_pred_p3b2.py`, `
 
 ### tools/cycle_runner.py
 
-shared module; imported by 14 file(s): `tools/bench/selftest_bgrun_reap.py`, `tools/bench/selftest_c108e_tools.py`, `tools/bench/selftest_chat_p1.py`, `tools/bench/selftest_cycle_runner.py`, `tools/bench/selftest_cycle_runner_ladder.py`, `tools/bench/selftest_cycle_runner_retro.py` ...
+shared module; imported by 15 file(s): `tools/bench/diag_c159_g1_1_check.py`, `tools/bench/selftest_bgrun_reap.py`, `tools/bench/selftest_c108e_tools.py`, `tools/bench/selftest_chat_p1.py`, `tools/bench/selftest_cycle_runner.py`, `tools/bench/selftest_cycle_runner_ladder.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
-| `spawn_env` | extra=None | Copy of os.environ for a spawned session: drops the inherited role variables (CYCLE_ROLE, ASSIGN_STATE, ASSIGN_RESULT, PURPOSE_PHASE, HANDBACK_RECORD), adds SPAWN_ENV_EXTRA, then 'extra'. Returns d... | side file | - | 108 |
-| `read` | p | Text of file p (utf-8, errors replaced); '' when it cannot be opened. Returns str. | side file | - | 117 |
-| `stop_marker` | status_text | The user's handle on the loop. 'STOP' at the start of a line in the head of the file, or a STOP heading. | docstring | - | 125 |
-| `next_section` | status_text | Body of the '## NEXT' section of STATUS text (up to the next '## ' heading), stripped; '' when there is none. Returns str. | side file | - | 135 |
-| `next_last_line` | status_text | Last non-blank line of the NEXT section, cut to 160 chars; '(no NEXT section)' when the section is empty or absent. Returns str. | side file | - | 140 |
-| `session_cmd` | a, prompt, model=None, effort=None | The command bgrun will run: one headless judgement session, or the dry-run stand-in. | docstring | - | 145 |
-| `result_json` | log_text | The '--output-format json' envelope out of a bgrun log, or None. | docstring | - | 157 |
-| `limit_wait_s` | log_text, now=None | Seconds to sleep for a usage limit (renewal + 2 min), or None when this is not a limit message. | docstring | - | 173 |
-| `log_line` | path, text | Appends text plus a newline to the log at path (creating its folder; an OSError is ignored) and prints the text. Returns None. | side file | - | 199 |
-| `last_cycle_number` | runner_log | Highest N among the 'CYCLE N /' lines of the runner log; 0 when there are none. Returns int. | side file | - | 209 |
-| `judge_ab_effort` | n, mode, now=None | (effort / None, why). mode on/off/auto; auto = on before JUDGE_AB_UNTIL. | docstring | - | 275 |
-| `judge_choice` | level, ff_recipe, ff_rung, base_model, base_effort | (rank, model, effort): the higher of the judgement-ladder level and the firefighter rung, capped at JUDGE_TOP. | docstring | - | 284 |
-| `judge_ladder_step` | level, next_moved, slugs, delivered | -> (new_level, reason, stop). Pure; the caller persists and logs. | docstring | - | 296 |
-| `retro_files_in_window` | peer_dir, t_start, t_end | card chat-P1 2b: the retrospective archives CREATED inside the window (same stamp rule as retro_slugs_in_window). | docstring | - | 314 |
-| `retro_slugs_in_window` | peer_dir, t_start, t_end | VIOLATION slugs from retrospective files CREATED inside the cycle window (creation time, as failed_recipes). | docstring | - | 332 |
-| `goalmap_done` | path | Set of milestone ids whose status is 'done' in the goal-map JSON at path; empty set when the file is absent or unreadable. Returns set. | side file | - | 352 |
-| `delivered_in_window` | cards_dir, t_start, t_end, done_before, goalmap_path | '' or a short description: a PASS result/1 card with artefacts written in the window, or a milestone newly done. | docstring | - | 360 |
-| `judge_state_load` | bench | Reads <bench>/judge_ladder.json. Returns (level clamped to 0..JUDGE_TOP, reason); (0, 'start') when the file is absent or malformed. | side file | - | 385 |
-| `judge_state_save` | bench, level, reason, n | Writes {level, reason (300 chars), after_cycle n, at now} to <bench>/judge_ladder.json; any failure is swallowed. Returns None. | side file | - | 393 |
-| `add_judge_decision` | n, reason, blocks, path | One open decisions-pending/1 item for a judgement ladder exhausted at its top rung. (id, None) / (None, why). | docstring | - | 402 |
-| `command_identity` | cmd | The SCRIPT identity of a bgrun command: every '.py' path in it, basename, '_vN' stripped, lower-cased, joined | docstring | - | 424 |
-| `newest_run_passed` | bench, identity, since_mtime, skip_names=() | True when the NEWEST bgrun run of 'identity' (any log in bench with mtime >= since_mtime, by START time then | docstring | - | 435 |
-| `failed_recipes` | bench, t_start, t_end | Recipe basenames whose bgrun log (mtime inside [t_start, t_end]) ended rc!=0 or TIMEOUT - unless the NEWEST | docstring | - | 468 |
-| `git_commit_cycle` | n, runner_log | Commit everything the cycle left in the tree (2026-09-24: cycles 68/69 ended with 129 uncommitted files; | docstring | - | 560 |
-| `capabilities_hook` | n, runner_log, doc=None, timeout=300, gen=None | Card chat-T7 item 6(c) (user 2026-10-09 "전부 적용"): at every cycle end, BEFORE the git commit, regenerate the function table + | docstring | selftest_t7_capabilities.py | 584 |
-| `land_retrospective` | bench, runner_log | A retrospective the session started but did not finish is RE-RUN by the runner, synchronously. | docstring | - | 611 |
-| `retro_fallback` | n, t_start, a, bench, runner_log | card chat-P1 item 2b (user 2026-09-28): the session runs its retrospective only when tools/retro_due.py says it | docstring | - | 644 |
-| `motor_limits_hook` | phase, n, a, bench, runner_log, status_text | User, 2026-09-23 ("훅으로 묶어서 매 사이클마다 시작할때는 묶고, 종료시에는 풀고. 그 다음 각 싸이클 시작 및 종료 | docstring | - | 686 |
-| `labview_close_hook` | n, a, bench, runner_log, status_text | User 2026-09-24 ("사이클 종료하고서는 제대로 LabVIEW 끄는것 잊지 말것, 특히 카메라가 계속 Acquisition 하면 기계에 | docstring | - | 777 |
-| `bgrun_reap_hook` | n, bench, runner_log | Card 92-4 (retrospective-cycle90 'device-failed', threshold 1): at every cycle end, close the record of any | docstring | - | 816 |
-| `errorlist_hook` | n, a, bench, runner_log, status_text | User decision 5, 2026-09-24 ("사이클 시작하기 전에 LabVIEW 컴파일 에러 창은 반드시 확인해야할듯"): before every | docstring | - | 836 |
-| `gates_due` | bench, peer_dir, next_card | [{gate, due, detail}] - every guard_cycle 'due' check, measured at cycle start. 'due' None = the check errored. | docstring | - | 987 |
-| `retro_undisposed` | peer_dir | Path of the newest archived retrospective whose disposition is missing, empty or still the placeholder, else None | docstring | - | 1036 |
-| `retro_undisposed_item` | n, peer_dir, runner_log | The 'retro-undisposed' gates_due item ({gate, due: True, detail}) when retro_undisposed() names a file, else None; | docstring | - | 1060 |
-| `gates_due_hook` | n, a, bench, runner_log | Cycle start: gates_due(), then a DUE outcome review is RUN before the session spawns (not in dry runs unless the | docstring | - | 1079 |
-| `write_cycle_card` | bench, n, status_text, model, effort, ff_recipe, motor_verdict, a, errorlist=None, steer=None, note=None, gates=None | C1: '<bench>/cards/cycle_<n>.json', validated against docs/protocol/cycle.json. Returns (path, None) or | docstring | - | 1122 |
-| `next_json_reading` | bench | (md5 / 'absent', card / None, why / None) of '<bench>/next.json' - the ONE reading the runner uses. | docstring | - | 1172 |
-| `note_in_status` | status_path, reason | APPEND a stop notice; never rewrite STATUS.md - it is the user's file and the next session's cold start. | docstring | - | 1177 |
-| `Heartbeat` | (class) | Runner heartbeat state (current cycle, phase, cycles done, summed cost); emit() writes the HEARTBEAT line to the runner log, rewrites heartbeat_latest.md and raises a toast. | side file | - | 1197 |
-| `Heartbeat.begin` | n | Marks cycle n as running and stamps its start time. Returns None. | side file | - | 1205 |
-| `Heartbeat.cycle_end` | n, rc, cost | Counts one finished cycle, adds its cost (a '$x' string; an unparseable one is ignored), sets the phase to 'ended HH:MM (exit rc, cost)' and emits a cycle-end heartbeat. Returns None. | side file | - | 1208 |
-| `Heartbeat.emit` | kind | Writes one 'HEARTBEAT / ...' line (cycle, last result card, hook states, open decisions, deliverables, next act) to the runner log, rewrites heartbeat_latest.md, raises a toast; an error becomes a ... | side file | - | 1273 |
-| `Heartbeat.final` |  | Emits the 'final' heartbeat once; later calls do nothing. Returns None. | side file | - | 1333 |
-| `run_session` | a, cmd, log, env, n, status_path, runner_log, tag | ONE session under bgrun, with the usage-limit / API-5xx rerun rule (CLAUDE.md usage-limit protocol: rerun, don't | docstring | - | 1347 |
-| `newest_assign_result` | cards_dir | Path of the most recently modified assign_result_*.json in cards_dir, or None when there is none. | side file | - | 1418 |
-| `purpose_from_next` | card | The assignment card's purpose dict from a next.json card: act and pass items (each cut to 200 chars), plan {path, md5} or None, advances, unblocks, task_kind, note. Returns dict. | side file | - | 1423 |
-| `write_assign_card` | cards_dir, n, k, purpose, next_md5, cfg, state_path, result_path, handback_in | Builds and validates an assign/1 card (cycle, round, purpose, next_md5, caps from cfg, state / result / handback paths, ASSIGN_AGENTS) and writes cards_dir/assign_<n>_<k>.json. Returns (path, None)... | side file | - | 1431 |
-| `write_handback` | cards_dir, n, k, trigger, detail, st_path, result_path, next_md5, usd, minutes | Writes cards_dir/handback_<n>_<k>.json (handback/1: trigger, detail, the assignment state's card rows, result path, next_md5, cost, minutes); a record that fails validation is replaced by a minimal... | side file | - | 1447 |
-| `assign_cmd` | a, cfg, prompt | The assignment session's command (the bgrun-wrapped part), or None = skip (a dry run without a stand-in). | docstring | - | 1464 |
-| `assignment_rounds` | a, n, bench, runner_log, status_path, judge_prompt, model, effort, judge_rc, next_md5_cycle_start | The purpose flow after the cycle's first judgement session. -> {'outcome', 'rounds', 'cost'}. Never raises into | docstring | - | 1473 |
-| `main` |  | CLI entry of the cycle runner: parses the run options (caps, budget, models, flow, self-test switches), reads the prompt file, creates a Heartbeat and runs _loop; the final heartbeat is always emit... | side file | - | 1589 |
+| `spawn_env` | extra=None | Copy of os.environ for a spawned session: drops the inherited role variables (CYCLE_ROLE, ASSIGN_STATE, ASSIGN_RESULT, PURPOSE_PHASE, HANDBACK_RECORD), adds SPAWN_ENV_EXTRA, then 'extra'. Returns d... | side file | - | 114 |
+| `read` | p | Text of file p (utf-8, errors replaced); '' when it cannot be opened. Returns str. | side file | - | 123 |
+| `stop_marker` | status_text | The user's handle on the loop. 'STOP' at the start of a line in the head of the file, or a STOP heading. | docstring | - | 131 |
+| `next_section` | status_text | Body of the '## NEXT' section of STATUS text (up to the next '## ' heading), stripped; '' when there is none. Returns str. | side file | - | 141 |
+| `next_last_line` | status_text | Last non-blank line of the NEXT section, cut to 160 chars; '(no NEXT section)' when the section is empty or absent. Returns str. | side file | - | 146 |
+| `session_cmd` | a, prompt, model=None, effort=None | The command bgrun will run: one headless judgement session, or the dry-run stand-in. | docstring | - | 151 |
+| `result_json` | log_text | The '--output-format json' envelope out of a bgrun log, or None. | docstring | - | 163 |
+| `limit_wait_s` | log_text, now=None | Seconds to sleep for a usage limit (renewal + 2 min), or None when this is not a limit message. | docstring | - | 179 |
+| `log_line` | path, text | Appends text plus a newline to the log at path (creating its folder; an OSError is ignored) and prints the text. Returns None. | side file | - | 205 |
+| `last_cycle_number` | runner_log | Highest N among the 'CYCLE N /' lines of the runner log; 0 when there are none. Returns int. | side file | - | 215 |
+| `judge_ab_effort` | n, mode, now=None | (effort / None, why). mode on/off/auto; auto = on before JUDGE_AB_UNTIL. | docstring | - | 281 |
+| `judge_choice` | level, ff_recipe, ff_rung, base_model, base_effort | (rank, model, effort): the higher of the judgement-ladder level and the firefighter rung, capped at JUDGE_TOP. | docstring | - | 290 |
+| `judge_ladder_step` | level, next_moved, slugs, delivered | -> (new_level, reason, stop). Pure; the caller persists and logs. | docstring | - | 302 |
+| `retro_files_in_window` | peer_dir, t_start, t_end | card chat-P1 2b: the retrospective archives CREATED inside the window (same stamp rule as retro_slugs_in_window). | docstring | - | 320 |
+| `retro_slugs_in_window` | peer_dir, t_start, t_end | VIOLATION slugs from retrospective files CREATED inside the cycle window (creation time, as failed_recipes). | docstring | - | 338 |
+| `goalmap_done` | path | Set of milestone ids whose status is 'done' in the goal-map JSON at path; empty set when the file is absent or unreadable. Returns set. | side file | - | 358 |
+| `delivered_in_window` | cards_dir, t_start, t_end, done_before, goalmap_path | '' or a short description: a PASS result/1 card with artefacts written in the window, or a milestone newly done. | docstring | - | 366 |
+| `judge_state_load` | bench | Reads <bench>/judge_ladder.json. Returns (level clamped to 0..JUDGE_TOP, reason); (0, 'start') when the file is absent or malformed. | side file | - | 391 |
+| `judge_state_save` | bench, level, reason, n | Writes {level, reason (300 chars), after_cycle n, at now} to <bench>/judge_ladder.json; any failure is swallowed. Returns None. | side file | - | 399 |
+| `add_judge_decision` | n, reason, blocks, path | One open decisions-pending/1 item for a judgement ladder exhausted at its top rung. (id, None) / (None, why). | docstring | - | 408 |
+| `command_identity` | cmd | The SCRIPT identity of a bgrun command: every '.py' path in it, basename, '_vN' stripped, lower-cased, joined | docstring | - | 419 |
+| `newest_run_passed` | bench, identity, since_mtime, skip_names=() | True when the NEWEST bgrun run of 'identity' (any log in bench with mtime >= since_mtime, by START time then | docstring | - | 430 |
+| `failed_recipes` | bench, t_start, t_end | Recipe basenames whose bgrun log (mtime inside [t_start, t_end]) ended rc!=0 or TIMEOUT - unless the NEWEST | docstring | - | 463 |
+| `git_commit_cycle` | n, runner_log | Commit everything the cycle left in the tree (2026-09-24: cycles 68/69 ended with 129 uncommitted files; | docstring | - | 555 |
+| `capabilities_hook` | n, runner_log, doc=None, timeout=300, gen=None | Card chat-T7 item 6(c) (user 2026-10-09 "전부 적용"): at every cycle end, BEFORE the git commit, regenerate the function table + | docstring | selftest_t7_capabilities.py | 581 |
+| `land_retrospective` | bench, runner_log | A retrospective the session started but did not finish is RE-RUN by the runner, synchronously. | docstring | - | 608 |
+| `retro_fallback` | n, t_start, a, bench, runner_log | card chat-P1 item 2b (user 2026-09-28): the session runs its retrospective only when tools/retro_due.py says it | docstring | - | 641 |
+| `motor_limits_hook` | phase, n, a, bench, runner_log, status_text | User, 2026-09-23 ("훅으로 묶어서 매 사이클마다 시작할때는 묶고, 종료시에는 풀고. 그 다음 각 싸이클 시작 및 종료 | docstring | - | 683 |
+| `labview_close_hook` | n, a, bench, runner_log, status_text | User 2026-09-24 ("사이클 종료하고서는 제대로 LabVIEW 끄는것 잊지 말것, 특히 카메라가 계속 Acquisition 하면 기계에 | docstring | - | 774 |
+| `bgrun_reap_hook` | n, bench, runner_log | Card 92-4 (retrospective-cycle90 'device-failed', threshold 1): at every cycle end, close the record of any | docstring | - | 813 |
+| `errorlist_hook` | n, a, bench, runner_log, status_text | User decision 5, 2026-09-24 ("사이클 시작하기 전에 LabVIEW 컴파일 에러 창은 반드시 확인해야할듯"): before every | docstring | - | 833 |
+| `gates_due` | bench, peer_dir, next_card | [{gate, due, detail}] - every guard_cycle 'due' check, measured at cycle start. 'due' None = the check errored. | docstring | - | 984 |
+| `retro_undisposed` | peer_dir | Path of the newest archived retrospective whose disposition is missing, empty or still the placeholder, else None | docstring | - | 1033 |
+| `retro_undisposed_item` | n, peer_dir, runner_log | The 'retro-undisposed' gates_due item ({gate, due: True, detail}) when retro_undisposed() names a file, else None; | docstring | - | 1057 |
+| `first_fail_line` | path | '<log name>: <first failing line>' of a failed bgrun log (GATE_FAIL_RE, else the BGRUN END/TIMEOUT line). | docstring | - | 1080 |
+| `debate_hook` | kind, n, a, bench, runner_log, why='', fail_lines=() | Run ONE discussion of 'kind' ('outcome' / 'stuck') before cycle n and apply its result. Dry runs dispatch it | docstring | - | 1088 |
+| `gates_due_hook` | n, a, bench, runner_log, defer=None, out=None | Cycle start: gates_due(), then a DUE outcome review is RUN before the session spawns - as a Claude-GPT | docstring | - | 1115 |
+| `write_cycle_card` | bench, n, status_text, model, effort, ff_recipe, motor_verdict, a, errorlist=None, steer=None, note=None, gates=None | C1: '<bench>/cards/cycle_<n>.json', validated against docs/protocol/cycle.json. Returns (path, None) or | docstring | - | 1181 |
+| `next_json_reading` | bench | (md5 / 'absent', card / None, why / None) of '<bench>/next.json' - the ONE reading the runner uses. | docstring | - | 1231 |
+| `note_in_status` | status_path, reason | APPEND a stop notice; never rewrite STATUS.md - it is the user's file and the next session's cold start. | docstring | - | 1236 |
+| `Heartbeat` | (class) | Runner heartbeat state (current cycle, phase, cycles done, summed cost); emit() writes the HEARTBEAT line to the runner log, rewrites heartbeat_latest.md and raises a toast. | side file | - | 1256 |
+| `Heartbeat.begin` | n | Marks cycle n as running and stamps its start time. Returns None. | side file | - | 1265 |
+| `Heartbeat.cycle_end` | n, rc, cost | Counts one finished cycle, adds its cost (a '$x' string; an unparseable one is ignored), sets the phase to 'ended HH:MM (exit rc, cost)' and emits a cycle-end heartbeat. Returns None. | side file | - | 1268 |
+| `Heartbeat.emit` | kind | Writes one 'HEARTBEAT / ...' line (cycle, last result card, hook states, open decisions, deliverables, next act) to the runner log, rewrites heartbeat_latest.md, raises a toast; an error becomes a ... | side file | - | 1333 |
+| `Heartbeat.final` |  | Emits the 'final' heartbeat once; later calls do nothing. Returns None. | side file | - | 1395 |
+| `run_session` | a, cmd, log, env, n, status_path, runner_log, tag | ONE session under bgrun, with the usage-limit / API-5xx rerun rule (CLAUDE.md usage-limit protocol: rerun, don't | docstring | - | 1409 |
+| `newest_assign_result` | cards_dir | Path of the most recently modified assign_result_*.json in cards_dir, or None when there is none. | side file | - | 1480 |
+| `purpose_from_next` | card | The assignment card's purpose dict from a next.json card: act and pass items (each cut to 200 chars), plan {path, md5} or None, advances, unblocks, task_kind, note. Returns dict. | side file | - | 1485 |
+| `write_assign_card` | cards_dir, n, k, purpose, next_md5, cfg, state_path, result_path, handback_in | Builds and validates an assign/1 card (cycle, round, purpose, next_md5, caps from cfg, state / result / handback paths, ASSIGN_AGENTS) and writes cards_dir/assign_<n>_<k>.json. Returns (path, None)... | side file | - | 1493 |
+| `write_handback` | cards_dir, n, k, trigger, detail, st_path, result_path, next_md5, usd, minutes | Writes cards_dir/handback_<n>_<k>.json (handback/1: trigger, detail, the assignment state's card rows, result path, next_md5, cost, minutes); a record that fails validation is replaced by a minimal... | side file | - | 1509 |
+| `assign_cmd` | a, cfg, prompt | The assignment session's command (the bgrun-wrapped part), or None = skip (a dry run without a stand-in). | docstring | - | 1526 |
+| `assignment_rounds` | a, n, bench, runner_log, status_path, judge_prompt, model, effort, judge_rc, next_md5_cycle_start | The purpose flow after the cycle's first judgement session. -> {'outcome', 'rounds', 'cost'}. Never raises into | docstring | - | 1535 |
+| `main` |  | CLI entry of the cycle runner: parses the run options (caps, budget, models, flow, self-test switches), reads the prompt file, creates a Heartbeat and runs _loop; the final heartbeat is always emit... | side file | - | 1651 |
+
+### tools/debate_loop.py
+
+shared module; imported by 1 file(s): `tools/cycle_runner.py`
+
+| function | arguments | what it does | from | self-test | line |
+|---|---|---|---|---|---|
+| `slug_for` | n, kind, bench | 'c<n>-<kind>', with -2, -3 ... when that discussion dir already holds a relay state (a cycle number re-used | docstring | - | 68 |
+| `runner_env` | base=None | The child env a discussion needs outside the app (as tools/debate_start.ps1 sets it): the Claude MSIX | docstring | - | 79 |
+| `refresh_gpt_worktree` |  | The GPT speaker reads the code from the sibling worktree V6_debate (debate_relay --codex-cwd default): bring it | docstring | - | 96 |
+| `cycle_lines` | runner_log, cycles, limit=90 | The runner-log lines that belong to the given cycle numbers (CYCLE / NEXT / ASSIGN / HANDBACK* / STEER / | docstring | - | 112 |
+| `outcome_topic` | n, bench, runner_log, peer_dir, goalmap_path, status_path, cycles_back=CYCLES_BACK | The outcome discussion's topic (Korean; first line = doc title): goal, what the last 'cycles_back' cycles | docstring | - | 171 |
+| `stuck_topic` | n, why, bench, runner_log, status_path, fail_lines=(), cycles_back=2 | The stuck discussion's topic (Korean; first line = doc title): why the runner called it (HANDBACK-LIMIT / the | docstring | - | 218 |
+| `run_discussion` | kind, n, topic_text, bench, log, max_min=DEADLINE_MIN, max_rounds=MAX_ROUNDS, stub=False, stub_secs=0.0, doc='google'... | Run ONE discussion synchronously: topic -> <bench>/debate/<slug>/topic_in.md, then 'debate_gdoc.py run --auto-end' | docstring | - | 262 |
+| `archive_outcome` | res, n, peer_dir | Write '<peer_dir>/<date>-outcome-review-debate-c<n>.md' so outcome_review.is_due() (and guard_cycle's outcome | docstring | - | 348 |
+| `apply` | res, kind, n, bench, goalmap_path, peer_dir, log | Turn a finished discussion into the existing channels: steer/1 (protocol.steer_from_debate -> write_steer in | docstring | - | 381 |
+| `selftest` |  | L1 topics carry the sources; L2 stub discussion -> summary, DEBATE line; L3 apply -> valid steer/1 + decisions + | docstring | - | 424 |
+
+### tools/debate_relay.py
+
+shared module; imported by 2 file(s): `tools/debate_gdoc.py`, `tools/debate_loop.py`
+
+| function | arguments | what it does | from | self-test | line |
+|---|---|---|---|---|---|
+| `codex_js` |  | Newest codex.js: the Claude app's MSIX copy (updated there 2026-10-09 to 0.162.0, the first build that accepts | docstring | - | 53 |
+| `run_killable` | cmd, cwd, stdin_text, env, stop_path, timeout=1200 | Run cmd; poll stop_path every second and kill the whole process tree when it appears. -> (rc, out, err, stopped) | docstring | - | 70 |
+| `say_claude` | st, a, prompt, stop | (undocumented) | - | - | 92 |
+| `say_gpt` | st, a, prompt, stop | (undocumented) | - | - | 110 |
+| `say_stub` | st, a, prompt, stop, name | (undocumented) | - | - | 144 |
+| `state_of` | msg | (undocumented) | - | - | 162 |
+| `summary` | d | The discussion's end state from <d>/state.json (rounds or turns mode): {rounds, converged, agreed (both sides' | docstring | selftest_rounds | 184 |
+| `step` | a | (undocumented) | - | - | 217 |
+| `round_` | a | Both speakers write AT THE SAME TIME (user 2026-10-09: "같은 단계에서 서로에게 질문하고 피드백하며 수렴"): | docstring | - | 292 |
+| `selftest_rounds` |  | (undocumented) | - | - | 376 |
+| `selftest` |  | (undocumented) | - | - | 415 |
+| `main` | argv=None | (undocumented) | - | - | 453 |
 
 ### tools/dispo.py
 
-shared module; imported by 3 file(s): `tools/audit_cycle.py`, `tools/bench/selftest_c150_a3_3.py`, `tools/cycle_runner.py`
+shared module; imported by 4 file(s): `tools/audit_cycle.py`, `tools/bench/diag_c159_g1_1_check.py`, `tools/bench/selftest_c150_a3_3.py`, `tools/cycle_runner.py`
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -1435,7 +1485,7 @@ shared module; imported by 8 file(s): `tools/audit_cycle.py`, `tools/bench/selft
 
 ### tools/elrule.py
 
-shared module; imported by 27 file(s): `tools/bench/diag_c149_a1_2_eladv.py`, `tools/bench/diag_c150_a3_2_elexp.py`, `tools/bench/diag_c151_a1_1_elexp.py`, `tools/bench/diag_c152_b3_1_elexp.py`, `tools/bench/diag_c154_a3_3_elexp.py`, `tools/bench/diag_c155_a3_2_elexp.py` ...
+shared module; imported by 34 file(s): `tools/bench/diag_c149_a1_2_eladv.py`, `tools/bench/diag_c150_a3_2_elexp.py`, `tools/bench/diag_c151_a1_1_elexp.py`, `tools/bench/diag_c152_b3_1_elexp.py`, `tools/bench/diag_c154_a3_3_elexp.py`, `tools/bench/diag_c155_a3_2_elexp.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -1452,7 +1502,7 @@ shared module; imported by 27 file(s): `tools/bench/diag_c149_a1_2_eladv.py`, `t
 
 ### tools/errorlist_check.py
 
-shared module; imported by 66 file(s): `tools/bench/c109_errorlist_reverdict.py`, `tools/bench/c87_errorlist_reverdict.py`, `tools/bench/c88_reverdict.py`, `tools/bench/diag_c109c_errorlist.py`, `tools/bench/diag_c110_errorlist.py`, `tools/bench/diag_c110d_elcounts.py` ...
+shared module; imported by 75 file(s): `tools/bench/c109_errorlist_reverdict.py`, `tools/bench/c87_errorlist_reverdict.py`, `tools/bench/c88_reverdict.py`, `tools/bench/diag_c109c_errorlist.py`, `tools/bench/diag_c110_errorlist.py`, `tools/bench/diag_c110d_elcounts.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -1483,7 +1533,7 @@ shared module; imported by 66 file(s): `tools/bench/c109_errorlist_reverdict.py`
 
 ### tools/fn_records.py
 
-shared module; imported by 5 file(s): `tools/bench/fntest_lib.py`, `tools/bench/prep_c150_a2_4_stage_prerun_before.py`, `tools/bench/selftest_fn_f2.py`, `tools/gen_capabilities.py`, `tools/stage_prerun.py`
+shared module; imported by 6 file(s): `tools/bench/fntest_lib.py`, `tools/bench/prep_c150_a2_4_stage_prerun_before.py`, `tools/bench/selftest_c159_b2_1.py`, `tools/bench/selftest_fn_f2.py`, `tools/gen_capabilities.py`, `tools/stage_prerun.py`
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -1574,7 +1624,7 @@ shared module; imported by 13 file(s): `tools/bench/prep_c150_a2_4_stage_prerun_
 
 ### tools/gen_capabilities.py
 
-shared module; imported by 3 file(s): `tools/bench/selftest_fn_f2.py`, `tools/bench/selftest_t7_capabilities.py`, `tools/doc_lint.py`
+shared module; imported by 7 file(s): `tools/bench/diag_c158_a2_5_check.py`, `tools/bench/diag_c158_a2_5_list.py`, `tools/bench/diag_c159_a5_1_check.py`, `tools/bench/diag_c160_h1_1_check.py`, `tools/bench/selftest_fn_f2.py`, `tools/bench/selftest_t7_capabilities.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -1753,7 +1803,7 @@ shared module; imported by 64 file(s): `tools/bench/c52_astcheck.py`, `tools/ben
 
 ### tools/invcheck.py
 
-shared module; imported by 2 file(s): `tools/bench/diag_c156_b2_2_inv_c156a21.py`, `tools/bench/selftest_c156_b2_2_invcheck.py`
+shared module; imported by 9 file(s): `tools/bench/diag_c156_b2_2_inv_c156a21.py`, `tools/bench/diag_c159_b1_1.py`, `tools/bench/prep_c162_a2_1_pinsweep.py`, `tools/bench/prep_c162_a2_2_check.py`, `tools/bench/prep_c162_a2_3_copies.py`, `tools/bench/prep_c162_a2_3_equiv.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -1784,7 +1834,7 @@ shared module; imported by 33 file(s): `tools/addrcheck.py`, `tools/audit_cycle.
 
 ### tools/jev_candidates.py
 
-shared module; imported by 106 file(s): `tools/bench/c73_l7r_live.py`, `tools/bench/cdiff_blindspot_74.py`, `tools/bench/cdiff_frame_80_probe.py`, `tools/bench/ct23541_facts_80.py`, `tools/bench/dedupe_check_s2b.py`, `tools/bench/diag_c104_e3.py` ...
+shared module; imported by 107 file(s): `tools/bench/c73_l7r_live.py`, `tools/bench/cdiff_blindspot_74.py`, `tools/bench/cdiff_frame_80_probe.py`, `tools/bench/ct23541_facts_80.py`, `tools/bench/dedupe_check_s2b.py`, `tools/bench/diag_c104_e3.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -1966,31 +2016,31 @@ shared module; imported by 5 file(s): `tools/bench/diag_c100_verbs_build.py`, `t
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
-| `lv_pid` |  | (undocumented) | - | - | 87 |
+| `lv_pid` |  | PID of the first LabVIEW.exe in tasklist's CSV output, None when none runs (the visible-window PID set it also collects is not used). Returns int or None. | side file | - | 87 |
 | `top_windows` | pid=None | [(hwnd, title, class, (l,t,r,b))] for every visible top-level window (of 'pid' if given). | docstring | - | 106 |
 | `child_windows` | hwnd | Win32 CHILD hwnds - the measurement of whether the dialog is owner-drawn (no children). | docstring | - | 127 |
-| `UIA` | (class) | (undocumented) | - | - | 147 |
-| `UIA.from_hwnd` | hwnd | (undocumented) | - | - | 156 |
-| `UIA.focused` |  | (undocumented) | - | - | 159 |
-| `UIA.value` | el | (undocumented) | - | - | 172 |
-| `UIA.text` | el | (undocumented) | - | - | 179 |
-| `UIA.legacy` | el | (undocumented) | - | - | 186 |
-| `UIA.selected` | el | (undocumented) | - | - | 199 |
-| `UIA.select` | el | (undocumented) | - | - | 206 |
-| `UIA.set_focus` | el | (undocumented) | - | - | 213 |
+| `UIA` | (class) | UI Automation client: CoInitialize, loads UIAutomationCore.dll through comtypes, creates CUIAutomation as IUIAutomation and keeps its RawViewWalker; its methods read or act on elements through UIA ... | side file | - | 147 |
+| `UIA.from_hwnd` | hwnd | UIA element of window handle hwnd (IUIAutomation.ElementFromHandle). Returns the element. | side file | - | 156 |
+| `UIA.focused` |  | The element with keyboard focus (GetFocusedElement); None when that raises. Returns element or None. | side file | - | 159 |
+| `UIA.value` | el | CurrentValue of el's Value pattern; None when the pattern is absent or the read raises. Returns str or None. | side file | - | 172 |
+| `UIA.text` | el | Whole text of el's Text pattern (DocumentRange.GetText(-1)); None when the pattern is absent or the read raises. Returns str or None. | side file | - | 179 |
+| `UIA.legacy` | el | el's LegacyIAccessible properties as {name, value, role, state, childid, defaultaction, description} (None for each failed read); None when the pattern is absent. Returns dict or None. | side file | - | 186 |
+| `UIA.selected` | el | CurrentIsSelected of el's SelectionItem pattern; None when the pattern is absent or the read raises. Returns bool or None. | side file | - | 199 |
+| `UIA.select` | el | Calls Select() on el's SelectionItem pattern. Returns True, or False when el has no such pattern. | side file | - | 206 |
+| `UIA.set_focus` | el | Calls el.SetFocus(). Returns True, or False when it raises. | side file | - | 213 |
 | `UIA.node` | el | One element as a plain dict - everything we can read about it. | docstring | - | 220 |
 | `UIA.tree` | el, depth=0, maxdepth=14, out=None, path='0' | Full RawView tree as a flat list of dicts with a path - scroll cannot hide a row. | docstring | - | 237 |
 | `msaa_rows` | hwnd, max_children=400 | [{childid, name, value, role, role_name, state, rect}] for hwnd's client object. [] if none. | docstring | - | 269 |
 | `shot` | tag, acts | Full-screen capture. Read-only, needs no gate. Returns (path, md5). | docstring | - | 334 |
 | `ensure_foreground` | wtitle, hwnd, acts, tag | The dialog must BE the foreground before any keystroke; SendKeys goes to whatever is. | docstring | - | 387 |
-| `send_keys` | key, acts, tag, wait_ms=900 | (undocumented) | - | - | 409 |
+| `send_keys` | key, acts, tag, wait_ms=900 | Sends key through gscript._lv_gui (action keys, WaitMs wait_ms, Exception Approved with the error-list EVIDENCE) and appends {act 'keys', key, tag, out} to acts. Returns lv_gui's output text. | side file | - | 409 |
 | `ocr_engine` |  | (callable, name). RapidOCR if installed, else Windows.Media.Ocr, else (None, 'unavailable'). | docstring | - | 430 |
 | `ocr_lines` | img, scale=3, invert=False, pad=10 | [(text, conf, y0, y1, x0)] in the ORIGINAL image's coordinates. [] when no engine. | docstring | - | 479 |
 | `layout` | img | LOCATE the dialog's parts ON THE CAPTURE (never from remembered offsets). | docstring | - | 511 |
 | `read_by_capture` | R, wtitle, acts, log, max_steps=None, hwnd=None, on_item=None | METHOD B. Walk the list one row at a time; each step: capture -> LOCATE the highlighted row by | docstring | - | 585 |
 | `read` | vi_path, out_json=None, maxdepth=14, dump_tree=True, log=print, on_item=None, max_steps=None | Open the Error List for 'vi_path' (already in memory), read every item, close it. | docstring | - | 798 |
 | `refine_rows` | R, log=print | Re-read each row from the capture in which it is NOT highlighted. OFFLINE - no LabVIEW. | docstring | - | 1088 |
-| `main` |  | (undocumented) | - | - | 1163 |
+| `main` |  | CLI <vi> [out.json]: opens the VI's panel, reads its Error List with read(vi, out) (default out tools/bench/errorlist_<stem>_<date>.json), prints method, uia_items_exposed, n_reported, item_count; ... | side file | - | 1163 |
 
 ### tools/lvclick.py
 
@@ -2047,7 +2097,7 @@ shared module; imported by 3 file(s): `tools/bench/selftest_motor_fail_exit.py`,
 
 ### tools/outcome_review.py
 
-shared module; imported by 2 file(s): `tools/bench/selftest_item34.py`, `tools/cycle_runner.py`
+shared module; imported by 3 file(s): `tools/bench/selftest_item34.py`, `tools/cycle_runner.py`, `tools/debate_loop.py`
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -2074,7 +2124,7 @@ shared module; imported by 2 file(s): `tools/bench/selftest_chat_p2.py`, `tools/
 
 ### tools/priorart_diff.py
 
-shared module; imported by 5 file(s): `tools/bench/diag_c147_c3_3_proven.py`, `tools/bench/diag_c148_a2_2_gate.py`, `tools/bench/selftest_c_e3.py`, `tools/hooks/guard_cycle.py`, `tools/prior_art_review.py`
+shared module; imported by 8 file(s): `tools/bench/diag_c147_c3_3_proven.py`, `tools/bench/diag_c148_a2_2_gate.py`, `tools/bench/diag_c158_a3_2_pascope.py`, `tools/bench/diag_c163_a2_1_pa.py`, `tools/bench/prep_c164_a2_3_pa.py`, `tools/bench/selftest_c_e3.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -2089,45 +2139,45 @@ shared module; imported by 5 file(s): `tools/bench/diag_c147_c3_3_proven.py`, `t
 
 ### tools/protocol.py
 
-shared module; imported by 593 file(s): `tools/audit_cycle.py`, `tools/bench/build_op_const_loopterm_77.py`, `tools/bench/build_op_termtype.py`, `tools/bench/build_opstopmode_v0.py`, `tools/bench/build_opwiringrules_v0.py`, `tools/bench/c109_errorlist_reverdict.py` ...
+shared module; imported by 661 file(s): `tools/audit_cycle.py`, `tools/bench/build_op_const_loopterm_77.py`, `tools/bench/build_op_termtype.py`, `tools/bench/build_opstopmode_v0.py`, `tools/bench/build_opwiringrules_v0.py`, `tools/bench/c109_errorlist_reverdict.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
 | `schema_path` | schema_name | 'task/1' -> docs/protocol/task.json ; a later 'task/2' -> docs/protocol/task.v2.json. | docstring | - | 80 |
-| `load_schema` | schema_name | (undocumented) | - | - | 92 |
+| `load_schema` | schema_name | The JSON schema of a '<name>/<version>' schema name (schema_path), read once and cached; raises ValueError when the file is missing. Returns dict. | side file | - | 92 |
 | `goal_ids` | path=GOALMAP | The ids a card may cite (requirements + milestones), or None when the goal map is absent/unreadable. | docstring | - | 173 |
 | `machine_view` | doc, schema_name=None | A deep copy of 'doc' without the fields its schema marks "x-prose": true. schema_name: 'stageplan' or | docstring | - | 211 |
 | `prose_fields` | schema_name | Dotted paths of every x-prose field of a schema (definitions included) - for the self-test and the docs. | docstring | - | 225 |
 | `validate_obj` | obj, goal_ids=None | (True, 'OK <schema>') or (False, '<one-line reason>'). 'goal_ids': when given, every advances/unblocks/blocks | docstring | - | 247 |
-| `load_card` | path, goal_ids=None | (undocumented) | - | - | 272 |
+| `load_card` | path, goal_ids=None | Reads a JSON card file and validates it (validate_obj, goal-map ids when goal_ids is given); raises ValueError when not JSON or invalid. Returns the card dict. | side file | - | 272 |
 | `result_line` | d | The one-line text form. Validated; ASCII-escaped so a cp949 console can always print it. | docstring | - | 285 |
-| `make_result` | n_pass, n_fail, first_fail=None, artefacts=(), status=None | (undocumented) | - | - | 302 |
-| `all_result_lines` | text | (undocumented) | - | - | 314 |
+| `make_result` | n_pass, n_fail, first_fail=None, artefacts=(), status=None | A result-line/1 dict: status (given, else PASS when n_fail == 0 and no first_fail, else FAIL), gates {pass, fail}, first_fail cut to 200 chars, artefacts. Returns dict (result_line validates it). | side file | - | 302 |
+| `all_result_lines` | text | Every 'RESULT {...}' line of text, parsed; a line that is not JSON or not a valid result-line/1 becomes a FAIL record naming it malformed. Returns list of dicts. | side file | - | 314 |
 | `parse_result_line` | text | The LAST 'RESULT {...}' line of 'text' as a dict, or None when there is none. A malformed one is a FAIL. | docstring | - | 329 |
 | `result_failed` | d | A RESULT line fails unless its status is PASS or SKIP AND gates.fail == 0. SKIP (card 108-5, review | docstring | - | 335 |
 | `stop_kind_of` | exc_or_text | 'memstop' / 'execstop' / 'exception' for an exception object (by class name) or its text. | docstring | - | 358 |
 | `stop_line` | kind, message, **extra | The one-line STOP text: 'STOP {json}' (ASCII-escaped, like result_line). kind in STOP_KINDS. | docstring | - | 369 |
 | `all_stop_lines` | text | Every 'STOP {json}' line of 'text' as a dict (file order). A STOP line that is not valid stop-line/1 JSON still | docstring | - | 382 |
 | `segments` | text | [(start_epoch_or_None, command_line, segment_text)] - one per 'BGRUN START', in file order. | docstring | - | 398 |
-| `last_segment` | text | (undocumented) | - | - | 412 |
+| `last_segment` | text | The last bgrun run of a log text (segments(): one per BGRUN START). Returns (start epoch or None, start line, segment text); (None, '', text) when there is no BGRUN START. | side file | - | 412 |
 | `run_verdict` | segment | C6 verdict of ONE run. failed = any RESULT line fails, or the process ended rc!=0, or TIMEOUT. | docstring | - | 417 |
-| `is_legacy` | start_ts, mtime=None | (undocumented) | - | - | 438 |
+| `is_legacy` | start_ts, mtime=None | True when the run's start time (else mtime) is before SWITCH_TS (2026-09-24 18:25, bgrun stopped scanning bodies); False when both are None. Returns bool. | side file | - | 438 |
 | `log_verdict` | text, legacy_re=None, mtime=None | Verdict of the LAST run in a (possibly appended) log. Pre-switch runs without a RESULT line keep the caller's | docstring | - | 443 |
 | `first_fail_signature` | segment, legacy_re=None, start_ts=None | For cycle_runner's SAME-MISTAKE trigger: the raw first-failure text of ONE run segment, or None. | docstring | - | 463 |
 | `stagekit_result_from_gates` | segment | REPLAY ONLY: what stagekit's RESULT line would have been, from its '=== GATES: n pass / m fail' line. | docstring | - | 479 |
 | `offline_selftest` | path, cmd | True when 'path' (a launched script) is an OFFLINE_SELFTESTS entry and every command-position occurrence of it in | docstring | - | 535 |
 | `lv_script` | path, cmd, src=None | The check_command / soft-alert notion of a LabVIEW-touching launched script: a recipe, or a script whose code | docstring | - | 557 |
-| `path_in_globs` | path, globs | (undocumented) | - | - | 608 |
+| `path_in_globs` | path, globs | True when path matches a write glob: absolute globs against the absolute path, relative globs against the path relative to the project root (a path outside the root never matches a relative glob). ... | side file | - | 608 |
 | `file_lock` | (class) | card chat-P1 item 1(a)/(b): a cross-process lock FILE around a read-modify-write (os.open O_CREAT/O_EXCL, retry | docstring | - | 621 |
 | `write_release` | review, kind, slug, cite_path, cite_line, what, now=None | card chat-S5 (PD337(d)): write ONE release/1 record + its legacy line into a review file, VALIDATED FIRST. | docstring | - | 699 |
 | `read_releases` | body | [release/1 dict] from the 'RELEASE {...}' lines of a review body (old reviews: [] - their FIXED:/REFUTED: lines | docstring | - | 743 |
 | `input_md5_changes` | card | card chat-S5 (PD337(e)): ['<path>: card <md5> != disk <md5>' / '<path>: missing'] for every task/1 input that names | docstring | - | 757 |
 | `bind` | agent_id, agent_type, card_path, goals='default' | Record the binding. Returns (ok, message). The card must be a VALID task/1. | docstring | - | 781 |
-| `binding` | agent_id | (undocumented) | - | - | 814 |
+| `binding` | agent_id | The active.json record for agent_id (what bind() stored for that agent), None when unbound or the file is unreadable. Returns dict or None. | side file | - | 814 |
 | `code_only` | src | The source with COMMENTS and DOCSTRINGS (any bare string statement) blanked, so the flag detectors see calls, | docstring | - | 829 |
 | `peer_role_of` | cmd | The review role a command dispatches, or None. peer.ps1: -Role wins, else -Kind (fact/prose), else a | docstring | - | 887 |
 | `src_features` | src | {'save','gui','run'} for ONE script's source, from its CALLS (judgement 2026-09-24, card chat-B4): a string | docstring | - | 922 |
-| `requires_path` | card_id, cards_dir=None | (undocumented) | - | - | 977 |
+| `requires_path` | card_id, cards_dir=None | Path of a card's requires record: <cards_dir or CARDS_DIR>/requires_<card_id>.json. Returns str. | side file | - | 977 |
 | `check_requires` | card | {ok, missing, found} for the card's 'requires' (OFFLINE: file system + JSON, never LabVIEW). | docstring | - | 1046 |
 | `requires_refusal` | card, cmd, scripts | None, or why a bgrun / LabVIEW launch is refused under a card that declares 'requires' (argv + card). | docstring | - | 1055 |
 | `soft_alert_refusal` | card, cmd, scripts, srcs=None, now=None | None, or the refusal for a NEW bgrun launch of a recipe/diagnostic under a card bound > SOFT_ALERT_MIN ago. | docstring | - | 1121 |
@@ -2139,20 +2189,23 @@ shared module; imported by 593 file(s): `tools/audit_cycle.py`, `tools/bench/bui
 | `log_owner` | log_path, text=None, max_age_s=None | card chat-E3 (fp-36): the card that launched 'log_path''s LAST run - the 'card' field of its last RESULT line | docstring | - | 1315 |
 | `launch_card_env` | log_path | {CARD_ID, CARD_LABVIEW} for a bgrun child, from the ledger row the PreToolUse hook wrote for this --log (the | docstring | - | 1354 |
 | `review_card` | role, rid, claim, predicted='', observed='', ruled_out=(), attachments=(), note='' | Build + validate a review/1 card; returns the dict. 'attachments' = paths (md5 filled in when the file exists). | docstring | - | 1383 |
-| `write_review_card` | d | (undocumented) | - | - | 1401 |
+| `write_review_card` | d | Writes review card d to CARDS_DIR/review_<id>.json (UTF-8, indent 1), creating the folder. Returns the path. | side file | - | 1401 |
 | `render_review` | card | The review/1 card as the text block peer.ps1 puts in front of the task, plus the verdict/1 contract. | docstring | - | 1409 |
-| `verdict_contract` | card | (undocumented) | - | - | 1425 |
+| `verdict_contract` | card | The VERDICT CONTRACT text appended to a review prompt: the answer's last line must be one single-line 'VERDICT {verdict/1}' with this card's id and the role's allowed verdicts (ROLE_VERDICTS). Retu... | side file | - | 1425 |
 | `parse_verdict` | text, want_id=None | (dict, None) for the LAST valid 'VERDICT {...}' line of the answer, else (None, reason). | docstring | - | 1436 |
 | `next_state` | path=NEXT_JSON | (md5_of_bytes / 'absent', card / None, reason / None) - the runner's and next_gate's single reading. | docstring | - | 1459 |
-| `open_decisions` | path=DECISIONS | (undocumented) | - | - | 1470 |
+| `open_decisions` | path=DECISIONS | Items of decisions_pending.json (path) whose status is 'open'; [] when the file is missing or invalid. Returns list. | side file | - | 1470 |
 | `outcome_slugs` | md_text | The OUTCOME-VIOLATION slugs of an archived outcome review's ANSWER (after '## Answer', before '## What was | docstring | - | 1498 |
 | `current_cycle` | cards_dir=CARDS_DIR | The highest n of 'cycle_<n>.json' in the cards dir (0 when none). | docstring | - | 1509 |
-| `steer_for` | latest, previous, cycle, goalmap_path=GOALMAP | (steer/1 card / None, why). A card only when a slug appears in BOTH reviews (a REPEATED verdict). | docstring | - | 1522 |
-| `write_steer` | card, cards_dir=CARDS_DIR | (undocumented) | - | - | 1550 |
-| `active_steer` | cards_dir=CARDS_DIR, state_path=STEER_STATE | (path, card) of the newest VALID steer card that is not closed (followed / stopped) in the state file, or | docstring | - | 1574 |
-| `steer_after_cycle` | steer_path, steer_card, next_card, n, state_path=STEER_STATE | Read the judgement's answer (next/1 'steer') to the steer carried in cycle n. Returns (action, detail): | docstring | - | 1598 |
-| `add_steer_decision` | steer_card, n, refusals, path=DECISIONS | Append ONE open decisions-pending/1 item for a steer refused twice; validate the whole file before writing. | docstring | - | 1628 |
-| `main` | argv=None | (undocumented) | - | - | 1788 |
+| `goalmap_ids` | goalmap_path=GOALMAP | (active milestone ids, open/moving requirement ids, not-done milestone ids, all known ids / None) of | docstring | tools/debate_loop.py selftest | 1522 |
+| `steer_for` | latest, previous, cycle, goalmap_path=GOALMAP | (steer/1 card / None, why). A card only when a slug appears in BOTH reviews (a REPEATED verdict). | docstring | - | 1539 |
+| `steer_from_debate` | summary, cycle, kind, slug, evidence, goalmap_path=GOALMAP | (steer/1 card / None, why) from a Claude-GPT discussion's summary (card chat-D2, user 2026-10-09 "둘 다 넣자"): | docstring | tools/debate_loop.py selftest | 1563 |
+| `write_steer` | card, cards_dir=CARDS_DIR | Writes a steer card to <cards_dir>/steer_<cycle>.json (UTF-8, indent 1), creating the folder. Returns the path. | side file | - | 1592 |
+| `active_steer` | cards_dir=CARDS_DIR, state_path=STEER_STATE | (path, card) of the newest VALID steer card that is not closed (followed / stopped) in the state file, or | docstring | - | 1616 |
+| `steer_after_cycle` | steer_path, steer_card, next_card, n, state_path=STEER_STATE | Read the judgement's answer (next/1 'steer') to the steer carried in cycle n. Returns (action, detail): | docstring | - | 1640 |
+| `add_decision` | question, options, by, blocks=(), recommendation=None, path=DECISIONS, skip_if_open=False | Append ONE open decisions-pending/1 item (id D-<today>-NN), validate the whole file, then write it. Returns | docstring | - | 1670 |
+| `add_steer_decision` | steer_card, n, refusals, path=DECISIONS | Append ONE open decisions-pending/1 item for a steer refused twice; validate the whole file before writing. | docstring | - | 1695 |
+| `main` | argv=None | CLI: bind, parse-verdict, render-review, validate, new, result-line, verdict, requires (their _cmd_* handlers) and release (write_release); no command prints help. Returns the exit code (2 = no com... | side file | - | 1843 |
 
 ### tools/retro_due.py
 
@@ -2188,9 +2241,9 @@ shared module; imported by 1 file(s): `tools/hooks/guard_session.py`
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
-| `config` |  | (undocumented) | - | - | 27 |
-| `effective` | now=None | (undocumented) | - | - | 35 |
-| `write` | weekly_pct | (undocumented) | - | - | 51 |
+| `config` |  | tools/bench/run_mode_config.json merged over DEFAULT_CONFIG (threshold_pct 50, stale_min 90, disabled False); the defaults alone when unreadable. Returns dict. | side file | - | 27 |
+| `effective` | now=None | (mode, reason): 'performance' when the config is disabled; 'economy' when the mode file is unreadable or older than stale_min; else by weekly_pct <= threshold_pct. Returns tuple. | side file | - | 35 |
+| `write` | weekly_pct | Writes run_mode.json (mode from weekly_pct vs threshold_pct, atomic replace) and appends a RUN-MODE line to run_mode.log, noting a change. Returns (mode, previous mode or None). | side file | - | 51 |
 
 ### tools/scope_header.py
 
@@ -2199,161 +2252,174 @@ shared module; imported by 13 file(s): `tools/bench/diag_c146_a1_1_repro.py`, `t
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
 | `parse_bytes` | b | (header dict / None, error / None). Error = the block exists but is invalid; (None, None) = no block. | docstring | - | 101 |
-| `read` | path | (undocumented) | - | - | 129 |
+| `read` | path | Parses a file's scope header block (parse_bytes). Returns (header dict / None, error / None); error 'unreadable: ...' on OSError. | side file | - | 129 |
 | `canonical_bytes` | b | The bytes without the header block - exactly the file before the migration added it (see module doc). | docstring | - | 137 |
-| `canonical_sha256` | path | (undocumented) | - | - | 158 |
-| `canonical_md5` | path | (undocumented) | - | - | 162 |
-| `render` | labview, hardware, offline_args=(), evidence=None, nl='\n' | (undocumented) | - | - | 166 |
+| `canonical_sha256` | path | SHA-256 hex of a file; a .py/.ps1 is hashed without its scope header block (canonical_bytes). Returns str. | side file | - | 158 |
+| `canonical_md5` | path | MD5 hex of a file; a .py/.ps1 is hashed without its scope header block (canonical_bytes). Returns str. | side file | - | 162 |
+| `render` | labview, hardware, offline_args=(), evidence=None, nl='\n' | The header block text: '# ---', '# labview: x', '# hardware: y', optional '# offline-args: ...' and '# evidence: ...', '# ---', joined by nl with a final nl. Returns str. | side file | - | 166 |
 | `append_block` | b, block_text | The file bytes with the block appended so that canonical_bytes() gives 'b' back exactly. | docstring | - | 176 |
 | `honesty` | path, h, src=None | Problems with a DECLARED header against the code (an empty list = honest). Only 'labview: none' (and | docstring | - | 264 |
 | `compile_error` | path, src=None | None, or the syntax/parse error text. .py: compile() in memory; .ps1: the PowerShell parser (one process). | docstring | - | 342 |
 | `infer` | path, src=None | The migration's scope for an existing script. labview: none when nothing in its import closure reaches LabVIEW | docstring | - | 368 |
-| `in_tools` | p | (undocumented) | - | - | 426 |
+| `in_tools` | p | True when path (quotes stripped, relative paths taken from the project root) lies under tools/. Returns bool. | side file | - | 426 |
 | `launches` | cmd | [(script abs path, argv tokens after it)] for every script RUN by 'cmd': a .py in command position of a | docstring | - | 449 |
 | `effective` | h, argv | (labview, hardware) for ONE run: offline-args present in its argv -> ('none', 'none'). | docstring | - | 494 |
 | `launch_scope` | cmd, extra=() | [(path, labview, hardware, problem/None)] for every tools/ script 'cmd' runs. problem: missing/invalid header, | docstring | - | 501 |
 | `check_launch` | flags, cmd, extra=() | None, or the refusal: a run whose declared scope exceeds the card's flags, a header missing/invalid, a compile | docstring | - | 543 |
 | `offline_run` | cmd | True when 'cmd' runs at least one tools/ script and EVERY tools/ script it runs is effectively labview none | docstring | - | 562 |
-| `all_scripts` |  | (undocumented) | - | - | 579 |
+| `all_scripts` |  | Every .py / .ps1 file under tools/ (skipping __pycache__ and .git), sorted absolute paths. Returns list. | side file | - | 579 |
 | `tracked_scripts` |  | git-tracked tools scripts only: an untracked file belongs to a card still writing it (chat-A1 runs beside | docstring | - | 611 |
-| `migrate` | apply=False, paths=None | (undocumented) | - | - | 620 |
+| `migrate` | apply=False, paths=None | For each script (default: git-tracked tools scripts) with no header: appends the KNOWN or inferred block with canonical bytes unchanged (asserted), written (mtime kept) only when apply; NO_TOUCH sk... | side file | - | 620 |
 | `rescope` | apply=False | fp-40: re-infer every MIGRATION-written header (a tail block with no offline-args/evidence, not KNOWN, not | docstring | - | 647 |
-| `main` | argv=None | (undocumented) | - | - | 680 |
+| `main` | argv=None | CLI: check <file> (header, error, honesty, compile as JSON), infer <file>, launch <cmd>, rescope [--apply], migrate [--apply] [--summary] (counts + INVALID / motor / camera rows); -h prints usage. ... | side file | - | 680 |
 
 ### tools/stage_prerun.py
 
-shared module; imported by 191 file(s): `tools/bench/c88_reverdict.py`, `tools/bench/diag_c101b_syntax.py`, `tools/bench/diag_c103d_jevfix.py`, `tools/bench/diag_c103d_launch.py`, `tools/bench/diag_c104_launch.py`, `tools/bench/diag_c104d_launch.py` ...
+shared module; imported by 230 file(s): `tools/bench/c88_reverdict.py`, `tools/bench/diag_c101b_syntax.py`, `tools/bench/diag_c103d_jevfix.py`, `tools/bench/diag_c103d_launch.py`, `tools/bench/diag_c104_launch.py`, `tools/bench/diag_c104d_launch.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
 | `sha256` | path | SHA-256 hex digest of a file; a .py/.ps1 is hashed WITHOUT its scope header block (scope_header.canonical_bytes) so records written before the header migration still match. Returns the hex string. | side file | - | 138 |
-| `md5` | path | (undocumented) | - | - | 151 |
-| `rel` | p | (undocumented) | - | - | 158 |
+| `md5` | path | MD5 hex digest of the whole file at path, read in binary (no scope-header stripping, unlike sha256). Returns str. | side file | - | 151 |
+| `rel` | p | Path p made absolute, then relative to the project ROOT with forward slashes; on another drive (ValueError) the absolute path with forward slashes. Returns str. | side file | - | 158 |
 | `GraphShapeError` | (class) | A graph JSON that is not the terminal-list shape OfflineGraph reads. | docstring | - | 177 |
 | `graph_shape_error` | d | None when 'd' is the terminal-list graph ({md5, terminals:[...], objs:[...]} with the row fields the readers | docstring | - | 181 |
 | `plan_base_graphs` | recipe | card 106-5 (PD219(c)): [(path, md5 pin or None)] of the base graph every plan the recipe names records | docstring | - | 204 |
 | `find_graph` | input_md5, plan_graphs=() | The terminal-list graph (graph_shape_error None; card 95-1) whose top-level 'md5' is 'input_md5': | docstring | - | 226 |
 | `OfflineGraph` | (class) | The readers stagekit addresses with, answered from one graph JSON ({vi, md5, terminals, objs}). Any other | docstring | - | 277 |
-| `OfflineGraph.G` |  | (undocumented) | - | - | 303 |
-| `OfflineGraph.report_all` | _t, cls | (undocumented) | - | - | 310 |
-| `OfflineGraph.uids` | _t, cls | (undocumented) | - | - | 317 |
-| `OfflineGraph.count` | _t, cls | (undocumented) | - | - | 320 |
+| `OfflineGraph.G` |  | Lazily builds, once, the jev_candidates graph of this file's terminals and objs (jev_candidates.from_parts, named by the file's basename) and caches it in _G. Returns that graph. | side file | - | 303 |
+| `OfflineGraph.report_all` | _t, cls | gscript.report_all stand-in: for 'Diagram' one {i, uid, class, pos [0,0], owner ''} per diagram (TopLevelDiagram first); for 'GObject' every obj, else the objs of that class, each copied with its i... | side file | - | 310 |
+| `OfflineGraph.uids` | _t, cls | Set of the int uids of the rows report_all(_t, cls) returns. Returns set. | side file | - | 317 |
+| `OfflineGraph.count` | _t, cls | Number of rows report_all(_t, cls) returns. Returns int. | side file | - | 320 |
 | `OfflineGraph.nodes_in` | di | Nodes whose terminals sit on diagram 'di', plus EVERY structure (a structure's own diagram is not in the | docstring | - | 323 |
-| `OfflineGraph.node_labels` | _t, di, *a, **k | (undocumented) | - | - | 331 |
+| `OfflineGraph.node_labels` | _t, di, *a, **k | gscript.node_labels stand-in: one {uid, label ''} per node nodes_in(di) lists for diagram index di (labels are not in the graph JSON). Returns list of dicts. | side file | - | 331 |
 | `OfflineGraph.term_rows` | uid | (rows, how). A structure's terminal list = the OUTER terminals of its border tunnels (jev_candidates | docstring | - | 334 |
-| `OfflineGraph.node_terms_uid` | _t, di, ni | (undocumented) | - | - | 345 |
-| `OfflineGraph.read_terms` | *_a, **_k | (undocumented) | - | - | 354 |
-| `OfflineGraph.read_live` | _path, fs_pairs=None, fs_uids=None | (undocumented) | - | - | 357 |
-| `DryState` | (class) | (undocumented) | - | - | 369 |
+| `OfflineGraph.node_terms_uid` | _t, di, ni | gscript.node_terms_uid stand-in: the ni-th node of nodes_in(di) and its term_rows as {i, name, is_source, wire, has_wire, node_uid, uid}; (0, []) when ni is out of range. Returns (uid, rows). | side file | - | 345 |
+| `OfflineGraph.read_terms` | *_a, **_k | allterms.read_terms stand-in: copies of every terminal row of the graph JSON and a read time of 0.0. Returns (list of dicts, 0.0). | side file | - | 354 |
+| `OfflineGraph.read_live` | _path, fs_pairs=None, fs_uids=None | wiki_build.read_live stand-in: {terminals, objs (copies), wires (allterms.join_wires over the Wire objs, [] if that raises), fs_tunnel_pairs (fs_pairs or []), secs all 0.0}; fs_uids is ignored. Ret... | side file | - | 357 |
+| `DryState` | (class) | The dry run's mutable record (module instance D, reset by D.__init__() in main): taint counters, first mutating call, calls, graph with path and error, input md5/VI, Stage ops, addresses, Jev inten... | side file | - | 369 |
 | `Fake` | (class) | The permissive stand-in for anything the stub cannot know. Every use is counted (taint). | docstring | - | 400 |
 | `provisional_dry_graph` | recipe | card 132-1 (gate-fp fp-21, PD275(e)): (path / None, error / None). A recipe whose plan base is PROVISIONAL (base = | docstring | - | 514 |
 | `waiting_reason` | recipe, tr | card chat-E3 (brief item 4): the WAITING text when a dry on a PROVISIONAL base (provisional_dry_graph) failed ONLY | docstring | - | 548 |
 | `waiting_prerun` | pr | True when every FAILING prerun gate is one that follows from a WAITING dry (X1 dry, X5 executed-ops cascade, X10 | docstring | - | 577 |
-| `dry_read_only` | recipe | (undocumented) | - | - | 592 |
+| `dry_read_only` | recipe | True when the recipe file exists and its VI-modifying stagekit calls (vi_modifying_calls) are non-empty and all in DRY_READONLY_VERBS (discard_work only); False on any exception. Returns bool. | side file | - | 592 |
 | `fake_gscript` |  | A module named 'gscript': gscript.py's TOP-LEVEL constant assignments evaluated one by one (os / str only), | docstring | - | 630 |
-| `fake_com` |  | (undocumented) | - | - | 660 |
-| `wrap_module` | mod | Every function DEFINED in 'mod' -> a stub (a LabVIEW-touching fleet module loaded through K.mod). | docstring | - | 675 |
-| `install` | graph_override=None | (undocumented) | - | - | 693 |
-| `patch_stagekit` |  | (undocumented) | - | - | 748 |
-| `dry` | recipe, graph=None | Run in THIS process (the caller is a fresh process: '--dry' / '--prerun'). Returns the trace dict. | docstring | - | 965 |
-| `plan_files` | recipe | (plan paths, every .json the recipe names). A plan = a named .json with a 'decisions' list of id+action rows, | docstring | - | 1039 |
-| `stageplan_check` | path | (ok, detail, plan/None, compiled ops/None) for a stageplan/1 a recipe names (card 79-6). ok only when | docstring | - | 1081 |
-| `control_path_lint` | plan, base=None | List of refusals (empty = the plan passes). 'base' = (cls, terms) for tests; else read from plan['base']. | docstring | - | 1168 |
-| `pb_licences` | plan_path, bench=None | {node uid: licence file} from every pb-licence/1 file under tools/bench whose 'plan' names plan_path. | docstring | - | 1279 |
-| `buildarray_open_sibling` | plan, base=None, licences=None | -> [{row, node, wired, open, licensed}] : every 'wire' action whose dst is an INPUT of a Build Array node while | docstring | - | 1300 |
-| `recreated_wire_refs` | plan, base=None | -> (recreated, flags). recreated = [{wire, row, idx}]: every 'wire' action whose dst is a face of a tunnel an | docstring | - | 1360 |
-| `replay_sample` | model_path, sample, models | -> (outcome, mismatches, detail): outcome 'PASS' / 'FAIL' / 'ERROR'; mismatches [(field, measured, simulated)]. | docstring | - | 1505 |
-| `stagesim_tun1` |  | (undocumented) | - | - | 1625 |
-| `replay_delete_sample` | model_path, sample, models, disable=() | -> (outcome, mismatches, detail) for one delete_object / delete_wire / remove_bad_wires sample (card 115-2 R0). | docstring | - | 1634 |
-| `opmodel_conformance` | ops=None, model_dir=None, disable=(), log=None | X13 core. ops = the stageplan ops to check (None = every model file in model_dir). disable: ('cfw_border_rule',) | docstring | - | 1664 |
-| `plan_ops` | plan | (undocumented) | - | - | 1714 |
-| `x13_gate` | plans | (ok, detail, warns) over stageplan/1 dicts: the union of their ops, one conformance run. | docstring | - | 1718 |
-| `addr_offline` | OG, end, is_source | None if addressable offline, else the reason. Unwired terminals: owner node -> terminal list -> uid echo. | docstring | - | 1795 |
-| `lint` | recipe, OG | (undocumented) | - | - | 1824 |
-| `recipe_dispatches_rows` | recipe | card 110-7 (F1, decided by judgement): True when the recipe's AST CALLS stagekit.run_rows / from_decision (as an | docstring | - | 1845 |
-| `verb_preconditions` | plans, sps, work, move_dst, stop_after=None, from_step=None, rows_dispatched=True | X9 (retrospective-cycle102 'wrong-ordering'): every op / row the run DISPATCHES whose verb holds a precondition on | docstring | - | 1863 |
-| `meter_records` | recipe, log_dir=None | X10's evidence: every run log of THIS recipe that carries a recorded per-op meter (stagexec.Meter's METER lines), | docstring | - | 1897 |
-| `mem_margin` | recipe, stop_after=None, from_step=None, log_dir=None, records=None, margin_mb=None | X10 (retrospective-cycle103 'inference-over-measurement'; PD216(f): 103-2 r1 crossed MEMSTOP 700 at 703.8 MB): the | docstring | - | 1933 |
-| `X10Probe` | (class) | card 130-1: raised by the Executor capture in probe mode (D.x10_probe) - not an Exception, so stagekit.run's | docstring | - | 1969 |
-| `load_memory_model` | path=None | (undocumented) | - | - | 1974 |
-| `x10_capture_executors` |  | card 130-1: wrap stagexec.Executor.__init__ for the dry run - record plan path, compiled op kinds, checkpoints, | docstring | - | 1982 |
-| `executor_stops` | executors | card 130-5 (PD268(b)): one FAIL text per Executor whose run() ended before its window's last op, or that was built | docstring | - | 2045 |
-| `x10_start` | vi_md5, model=None | card 133-3 (PD283(b)(e)): (start_mb, cite) of a run whose INPUT VI has a measured load: load_by_vi[md5] + op0_read_mb | docstring | - | 2061 |
-| `x10_plan_start` | plan_path, model=None | card 133-3: the measured start of the Executor run of 'plan_path': its (finalized) base graph's 'md5' = the input | docstring | - | 2073 |
-| `x10_base_provisional` | plan_path | card 141-1: True when the plan's top-level base is provisional (a simulated graph, no measured VI load). | docstring | - | 2087 |
-| `x10_model_peak` | kinds, checkpoints, stop_after=None, from_step=None, model=None, start_mb=None, partial=None | card 130-1 (PD267(b)): the predicted private-MB peak of ONE Executor run. N = ops dispatched (from_step+1 .. | docstring | - | 2096 |
-| `x10_readonly` | recipe, trace | card 132-4 (PD277(a)): (ok, detail). ok True iff the dry trace shows no Executor, no Stage._op, no mutating stub | docstring | - | 2136 |
-| `x10_source_reads` | recipe, names=X10_SRC_READS | card 138-2 (PD299(b)): the recipe's whole-VI reads counted from its SOURCE. Returns {"reads": n / None (None = some | docstring | - | 2206 |
-| `x10_reads_line` | src, dry_n=None | card 138-2: one printable line - source count (+ sites), dry count, unbounded sites. | docstring | - | 2341 |
-| `x10_edit` | recipe, trace, model | card 136-2 (fp-33): (run dict / None, why / None). why None = not an edit trace (no ops: the caller's text stands). | docstring | - | 2350 |
-| `fntest_release` | path | card chat-F3 (fp-42): (declared, ok, why list). declared False = no FNTEST literal (the caller's rules stand). | docstring | - | 2415 |
-| `x10_probe_release` | recipe, trace | card chat-M2 (fp-35): (declared, ok, detail). declared False = no X10_PROBE literal (the caller's rules stand). | docstring | - | 2485 |
-| `x10_gate` | recipe, executors, stop_after=None, from_step=None, model=None, trace=None | card 130-1 (PD267(b)): (ok, detail dict). ok False = a predicted peak > fail_above_mb, or UNMEASURED (no Executor | docstring | - | 2548 |
-| `x10_probe` | recipe, graph=None | card 130-1 self-test helper: dry-run the recipe only up to its first Executor (probe) and return the records. | docstring | - | 2626 |
-| `x5_count` | verbs, rows, spc, stop_after=None, from_step=None | X5 (moved out of prerun unchanged, card 115-3 F1): (ok, detail). Wire-making verbs the dry run executed == | docstring | - | 2642 |
-| `census_check` | plan_path, pred_path=None, samples_path=None | -> None (no prediction file beside the plan) or {'plan', 'pred', 'overall', 'fails': [(cls, derived, declared)], | docstring | - | 2690 |
-| `census_gate` | plan_paths, pred_override=None, samples_path=None, out=print | (ok, detail, lines). ok False only on a derived != declared class (CENSUS FAIL). Prints one line per plan: | docstring | - | 2709 |
-| `census_unpredicted` | recipe | card 123-7: the stageplans a recipe names whose census is CENSUS-UNPREDICTED (for --scratch-required). | docstring | - | 2738 |
-| `x16_in_scope` | a | True for a create action with a declared 'terminals' list that is not a const_donor constant nor a Local. | docstring | - | 2769 |
-| `termclass_undeclared` | plan | X16 core: [{action, terminal}] for every in-scope create action's declared 'terminals' entry with no term_class. | docstring | - | 2775 |
-| `x16_gate` | plans | (ok, detail) of X16 over loaded stageplan dicts. | docstring | - | 2787 |
-| `prim_donor_labels` | path=None | {uid: label} of the original main VI (main_vi_node_labels.json: 'diagrams' lists + 'explicit' / 'implicit' maps). | docstring | - | 2817 |
-| `prim_donor_check` | plan, labels=None, registry=None, base_uids=None | X17 core: [{action, why}] for every create action with a non-const_donor 'prim' whose donor label is not the prim, is | docstring | - | 2832 |
-| `x17_gate` | plans, labels=None | (ok, detail) of X17 (card 141-1) over loaded stageplan dicts. | docstring | - | 2876 |
-| `prerun` | recipe, graph=None, stop_after=None, from_step=None | card 103-2 (PD216(b)): stop_after=k (the recipe's own '--stop-after k', PART-A mode) makes X5 expect only the | docstring | - | 2888 |
-| `x14_advisory` | recipe, n_rows, log=None | card chat-P1 item 4 (user 2026-09-28; docs/d1-loop12-17-split-plan.md Pre-decided 'rows per step'): rows per | docstring | - | 3078 |
-| `result_first` | first, warn | card 106-5 (PD219(c)): the RESULT line's first_fail carrying the X10 WARN (result-line/1 has no other free-text | docstring | - | 3094 |
-| `plan_md5s` | recipe | (undocumented) | - | - | 3107 |
-| `write_record` | kind, recipe, status, first_fail, extra=None | (undocumented) | - | - | 3114 |
-| `launched_stage_scripts` | cmd | argv only: every 'tools/recipes/stage_*.py' a command RUNS - a python token followed (past flags) by that | docstring | - | 3125 |
-| `vi_modifying_calls` | path | [] or the sorted MODIFY_VERBS names the file calls, when it imports stagekit (ast; never text search). | docstring | - | 3161 |
-| `is_vi_modifying` | path | card chat-N1 (2): True iff the .py imports stagekit AND calls a name in MODIFY_VERBS. | docstring | - | 3187 |
-| `launched_vi_modifying` | cmd | argv only: launched .py scripts that are NOT tools/recipes/stage_*.py but is_vi_modifying() -> gated alike. | docstring | - | 3192 |
-| `launched_py` | cmd | argv only: every script path a python token RUNS (past interpreter flags), directly or after bgrun's '--'. | docstring | - | 3198 |
-| `launched_plan_runs` | cmd | argv only (card chat-S3): every 'tools/stagexec.py run <plan.json>' a command RUNS -> [(stagexec path, plan | docstring | - | 3215 |
-| `plan_record` | kind, plan, status, first_fail, extra=None | A dry/prerun record for a stagexec PLAN: script = tools/stagexec.py (its sha256), plan_md5s = {plan: md5}. | docstring | - | 3239 |
-| `is_stageplan` | path | (undocumented) | - | - | 3252 |
-| `read_records` |  | (undocumented) | - | - | 3259 |
-| `is_prerun_segment` | start_line | True when this bgrun START line runs tools/stage_prerun.py itself (a dry/prerun/check, never a stage run). | docstring | - | 3286 |
-| `last_failed_run_after` | script, t_min | Newest failing bgrun run of 'script' in a log modified after t_min (protocol.run_verdict). | docstring | - | 3292 |
-| `unverified_card_names` | cmd | ([label prefixes], why/None) from the task/1 card named by '--unverified-card <path>' in the command. | docstring | - | 3343 |
-| `stage_key` | script | (undocumented) | - | - | 3363 |
-| `cycle_key` | now=None | 'cycle <n>' from the newest tools/bench/cards/cycle_<n>.json written in the last CYCLE_FRESH_S, else | docstring | - | 3367 |
-| `read_stage_runs` |  | (undocumented) | - | - | 3387 |
-| `retry_card` | cmd, key, used | (card id, None) when the command carries a valid judgement card for ONE more run of 'key', else (None, why). | docstring | - | 3401 |
-| `offline_run_of` | cmd, s | card 148-a1-1 (fp-52, fp-58): True when 'cmd' runs script 's' in a mode its OWN scope header declares offline | docstring | - | 3420 |
-| `check_cap` | cmd, s, runs, ck | (allow, why, card id/None) for ONE stage script against RETRY_CAP in cycle 'ck'. | docstring | - | 3436 |
-| `pattern_signature` | recipe | sorted list - see the block comment. [] when the recipe cannot be read. | docstring | - | 3508 |
-| `proven_pattern` | recipe, runs=None, recs=None | (proven: bool, stages: [stage keys whose clean run covers this signature], signature: [..]). | docstring | - | 3545 |
-| `new_structure_classes` | recipe, runs=None, recs=None, sig=None | card chat-P2 item 1 (user 2026-09-28): the STRUCTURE elements of this recipe's signature ('op:<kind>' and | docstring | - | 3566 |
-| `provisional_plans` | s, plan=None | [(plan path, sim_of)] for every stageplan this unit would run whose base is provisional. | docstring | - | 3615 |
-| `plan_named_uids` | plan | Every positive int the plan's actions, open rows or bindings name (stagexec._ints_in over those keys) - the uids a | docstring | - | 3645 |
-| `address_report` | plan, log=print, advise=True | card chat-S5 (PD337(a)): tier (a) over a stageplan against its base graph's terminal table (finalized.base, else base) | docstring | - | 3656 |
-| `negative_uids_left` | plan | card chat-S5 (PD337(d)): every negative uid still in a plan's MACHINE fields - the "no negative uid left" check of a | docstring | - | 3676 |
-| `read_creation_map` | path | (header, {"obj"/"diag"/"term": {sim id: entry}}, steps {k: diff n}) of ONE creation-map/1 file (stagexec | docstring | - | 3711 |
-| `load_creation_map` | sim_of, graph_doc, explicit=None, cmap_dir=None, log=print | (map / None, why, meta) - the creation map of the run that SAVED stage N's artefact (the real graph). 'explicit' = a | docstring | - | 3737 |
-| `rebind` | before, prov, real, prov_doc=None, real_doc=None, before_doc=None, info=None, named=None, cmap=None | (M: {negative uid -> real uid} / None, why). See the block comment, step 2. | docstring | - | 3776 |
-| `carry_fs` | prov_doc, real_doc, before_doc, M, info=None | card 132-6 (PD279(b), docs/d1/ring-p3b.md:95-100): (augmented real doc / None, why). The provisional base (stagesim's | docstring | - | 4158 |
-| `rebase` | plan_path, graph_path, log=print, simulate=True, out_root=None, model_dir=None, creation_map=None, cmap_dir=None | (ok, detail) - see the block comment. Writes the rebased plan to plan_path only when every check passes. | docstring | - | 4257 |
-| `record_stage_run` | s, ck, card_id, cmd, by=COUNTED_BY, extra=None | (undocumented) | - | - | 4486 |
-| `record_started` | cmdline, log=None, pid=None | Called by tools/bgrun.py right after its child STARTED (Popen returned). Appends one COUNTED line per stage | docstring | - | 4495 |
-| `unit_key` | path | Stage key of a script OR a stagexec plan: basename, lower case, '_vN' stripped (stage_key for .py). | docstring | - | 4541 |
-| `failure_function` | seg | The scripting function a failed run died in, from that run's own segment (see the block comment), or None. | docstring | - | 4546 |
-| `stage_run_segments` | key, now=None | [(start_ts, failed, function)] of every bgrun run of stage 'key' in LOG_DIR within SCRATCH_WINDOW_S, oldest | docstring | - | 4564 |
-| `scratch_pass_after` | function, t_after | Newest scratch_verify PASS record for 'function' newer than t_after: its path, or None. | docstring | - | 4595 |
-| `fn_record_gate` | unit | card chat-F2 (user 2026-10-06): (allow, why) from tools/fn_records.launch_gate - every function the unit uses | docstring | - | 4618 |
-| `check_scratch` | unit, now=None | (allow, why) - refuse a stage run whose last two runs failed on the same function with no newer scratch PASS. | docstring | - | 4638 |
-| `function_of_text` | text | The scripting function a first_fail / fact string names: '<module>.<fn>' / 'stagexec.op:<kind>' / 'op:<OpName>'. | docstring | - | 4672 |
-| `escalation_route` | card, cards_dir=None, now=None | ('scratch-verify', function, evidence) or ('escalate', None, why) for an ESCALATION card ('retry_of_card' set). | docstring | - | 4709 |
-| `scratch_requirement` | recipe, runs=None, recs=None, now=None | (required: bool, why: str, proven_stages: [..]) - see the block comment. | docstring | - | 4761 |
-| `scratch_skip_log` | line | (undocumented) | - | - | 4792 |
-| `adopted_record` | script, pm | card chat-S4 A: stagexec.adopted_launch over ADOPT_LOG (None when nothing is adopted or stagexec cannot load). | docstring | - | 4804 |
-| `check_launch` | cmd | (allow, why). Refuses a stage-recipe launch without a dry PASS and a prerun PASS for its CURRENT sha256 and | docstring | - | 4815 |
-| `main` | argv=None | (undocumented) | - | - | 4935 |
+| `fake_com` |  | Stub modules for pythoncom, win32com, win32com.client, win32com.client.dynamic, win32api, win32gui and win32con: every non-dunder attribute is a _stub; the submodules are linked as attributes. Retu... | side file | - | 660 |
+| `wrap_module` | mod | Every function DEFINED in 'mod' -> a stub (a LabVIEW-touching fleet module loaded through K.mod). | docstring | - | 678 |
+| `install` | graph_override=None | Dry-run setup: fake COM and gscript into sys.modules, tools, recipes and bench on sys.path, subprocess and os.system refused, writes/copies/moves/deletes outside %TEMP% sent to SINK or dropped (log... | side file | - | 696 |
+| `patch_stagekit` |  | Imports stagekit under the fakes and rebinds it for a dry: offline-graph read_terms/read_live, Jev decide/check stubs, logged candidates, K.mod wrapping non-PURE_MODS, dry Stage init/gate/_op/addre... | side file | - | 751 |
+| `dry_unverified_labels` | lines | card 159-a4-1 (PD387(e)): the gate labels a dry's output lines leave unverified - every 'UNVERIFIED-DRY' / 'UNVERIFIED' / | docstring | selftest_c159_a4_1.py | 955 |
+| `merge_unverified` | have, labels | card 159-a4-1: 'have' (D.unverified) + every label of 'labels' not already there (same label, or one is a prefix of the | docstring | - | 971 |
+| `dry` | recipe, graph=None | Run in THIS process (the caller is a fresh process: '--dry' / '--prerun'). Returns the trace dict. | docstring | - | 1014 |
+| `plan_files` | recipe | (plan paths, every .json the recipe names). A plan = a named .json with a 'decisions' list of id+action rows, | docstring | - | 1100 |
+| `stageplan_check` | path | (ok, detail, plan/None, compiled ops/None) for a stageplan/1 a recipe names (card 79-6). ok only when | docstring | - | 1142 |
+| `control_path_lint` | plan, base=None | List of refusals (empty = the plan passes). 'base' = (cls, terms) for tests; else read from plan['base']. | docstring | - | 1229 |
+| `pb_licences` | plan_path, bench=None | {node uid: licence file} from every pb-licence/1 file under tools/bench whose 'plan' names plan_path. | docstring | - | 1340 |
+| `buildarray_open_sibling` | plan, base=None, licences=None | -> [{row, node, wired, open, licensed}] : every 'wire' action whose dst is an INPUT of a Build Array node while | docstring | - | 1361 |
+| `recreated_wire_refs` | plan, base=None | -> (recreated, flags). recreated = [{wire, row, idx}]: every 'wire' action whose dst is a face of a tunnel an | docstring | - | 1421 |
+| `replay_sample` | model_path, sample, models | -> (outcome, mismatches, detail): outcome 'PASS' / 'FAIL' / 'ERROR'; mismatches [(field, measured, simulated)]. | docstring | - | 1566 |
+| `stagesim_tun1` |  | stagesim.TUN_FLIP as a tuple (the single-object tunnel classes LoopTunnel, Tunnel, SelectorTunnel). Returns tuple. | side file | - | 1686 |
+| `replay_delete_sample` | model_path, sample, models, disable=() | -> (outcome, mismatches, detail) for one delete_object / delete_wire / remove_bad_wires sample (card 115-2 R0). | docstring | - | 1695 |
+| `opmodel_conformance` | ops=None, model_dir=None, disable=(), log=None | X13 core. ops = the stageplan ops to check (None = every model file in model_dir). disable: ('cfw_border_rule',) | docstring | - | 1725 |
+| `plan_ops` | plan | Sorted distinct op names (as str) of the dict entries of plan['actions'] that carry an op. Returns list. | side file | - | 1775 |
+| `x13_gate` | plans | (ok, detail, warns) over stageplan/1 dicts: the union of their ops, one conformance run. | docstring | - | 1779 |
+| `addr_offline` | OG, end, is_source | None if addressable offline, else the reason. Unwired terminals: owner node -> terminal list -> uid echo. | docstring | - | 1856 |
+| `lint` | recipe, OG | Scans the recipe's AST for int literals >= 100 that are uids in OG.cls, and non-docstring string literals equal to a terminal name (>= 2 chars) of one of those uids. Returns (sorted [(uid, line)], ... | side file | - | 1885 |
+| `recipe_dispatches_rows` | recipe | card 110-7 (F1, decided by judgement): True when the recipe's AST CALLS stagekit.run_rows / from_decision (as an | docstring | - | 1906 |
+| `verb_preconditions` | plans, sps, work, move_dst, stop_after=None, from_step=None, rows_dispatched=True | X9 (retrospective-cycle102 'wrong-ordering'): every op / row the run DISPATCHES whose verb holds a precondition on | docstring | - | 1924 |
+| `meter_records` | recipe, log_dir=None | X10's evidence: every run log of THIS recipe that carries a recorded per-op meter (stagexec.Meter's METER lines), | docstring | - | 1958 |
+| `mem_margin` | recipe, stop_after=None, from_step=None, log_dir=None, records=None, margin_mb=None | X10 (retrospective-cycle103 'inference-over-measurement'; PD216(f): 103-2 r1 crossed MEMSTOP 700 at 703.8 MB): the | docstring | - | 1994 |
+| `X10Probe` | (class) | card 130-1: raised by the Executor capture in probe mode (D.x10_probe) - not an Exception, so stagekit.run's | docstring | - | 2030 |
+| `load_memory_model` | path=None | Loads memory_model.json (path or MEMORY_MODEL) and requires start_mb, read_mb, edit_mb, other_mb, final_read_mb and fail_above_mb each as {value: number, cite: non-empty}, else ValueError. Returns ... | side file | - | 2035 |
+| `x10_capture_executors` |  | card 130-1: wrap stagexec.Executor.__init__ for the dry run - record plan path, compiled op kinds, checkpoints, | docstring | - | 2043 |
+| `executor_stops` | executors | card 130-5 (PD268(b)): one FAIL text per Executor whose run() ended before its window's last op, or that was built | docstring | - | 2106 |
+| `x10_start` | vi_md5, model=None | card 133-3 (PD283(b)(e)): (start_mb, cite) of a run whose INPUT VI has a measured load: load_by_vi[md5] + op0_read_mb | docstring | - | 2122 |
+| `x10_plan_start` | plan_path, model=None | card 133-3: the measured start of the Executor run of 'plan_path': its (finalized) base graph's 'md5' = the input | docstring | - | 2134 |
+| `x10_base_provisional` | plan_path | card 141-1: True when the plan's top-level base is provisional (a simulated graph, no measured VI load). | docstring | - | 2148 |
+| `x10_model_peak` | kinds, checkpoints, stop_after=None, from_step=None, model=None, start_mb=None, partial=None | card 130-1 (PD267(b)): the predicted private-MB peak of ONE Executor run. N = ops dispatched (from_step+1 .. | docstring | - | 2157 |
+| `x10_readonly` | recipe, trace | card 132-4 (PD277(a)): (ok, detail). ok True iff the dry trace shows no Executor, no Stage._op, no mutating stub | docstring | - | 2197 |
+| `x10_source_reads` | recipe, names=X10_SRC_READS | card 138-2 (PD299(b)): the recipe's whole-VI reads counted from its SOURCE. Returns {"reads": n / None (None = some | docstring | - | 2267 |
+| `x10_reads_line` | src, dry_n=None | card 138-2: one printable line - source count (+ sites), dry count, unbounded sites. | docstring | - | 2402 |
+| `x10_edit` | recipe, trace, model | card 136-2 (fp-33): (run dict / None, why / None). why None = not an edit trace (no ops: the caller's text stands). | docstring | - | 2411 |
+| `fntest_release` | path | card chat-F3 (fp-42): (declared, ok, why list). declared False = no FNTEST literal (the caller's rules stand). | docstring | - | 2476 |
+| `x10_probe_release` | recipe, trace | card chat-M2 (fp-35): (declared, ok, detail). declared False = no X10_PROBE literal (the caller's rules stand). | docstring | - | 2546 |
+| `x10_gate` | recipe, executors, stop_after=None, from_step=None, model=None, trace=None | card 130-1 (PD267(b)): (ok, detail dict). ok False = a predicted peak > fail_above_mb, or UNMEASURED (no Executor | docstring | - | 2609 |
+| `x10_probe` | recipe, graph=None | card 130-1 self-test helper: dry-run the recipe only up to its first Executor (probe) and return the records. | docstring | - | 2687 |
+| `x5_count` | verbs, rows, spc, stop_after=None, from_step=None | X5 (moved out of prerun unchanged, card 115-3 F1): (ok, detail). Wire-making verbs the dry run executed == | docstring | - | 2703 |
+| `census_check` | plan_path, pred_path=None, samples_path=None | -> None (no prediction file beside the plan) or {'plan', 'pred', 'overall', 'fails': [(cls, derived, declared)], | docstring | - | 2751 |
+| `census_gate` | plan_paths, pred_override=None, samples_path=None, out=print | (ok, detail, lines). ok False only on a derived != declared class (CENSUS FAIL). Prints one line per plan: | docstring | - | 2770 |
+| `census_unpredicted` | recipe | card 123-7: the stageplans a recipe names whose census is CENSUS-UNPREDICTED (for --scratch-required). | docstring | - | 2799 |
+| `x16_in_scope` | a | True for a create action with a declared 'terminals' list that is not a const_donor constant nor a Local. | docstring | - | 2830 |
+| `termclass_undeclared` | plan | X16 core: [{action, terminal}] for every in-scope create action's declared 'terminals' entry with no term_class. | docstring | - | 2836 |
+| `x16_gate` | plans | (ok, detail) of X16 over loaded stageplan dicts. | docstring | - | 2848 |
+| `prim_donor_labels` | path=None | {uid: label} of the original main VI (main_vi_node_labels.json: 'diagrams' lists + 'explicit' / 'implicit' maps). | docstring | - | 2878 |
+| `prim_donor_check` | plan, labels=None, registry=None, base_uids=None | X17 core: [{action, why}] for every create action with a non-const_donor 'prim' whose donor label is not the prim, is | docstring | - | 2893 |
+| `x17_gate` | plans, labels=None | (ok, detail) of X17 (card 141-1) over loaded stageplan dicts. | docstring | - | 2937 |
+| `prerun` | recipe, graph=None, stop_after=None, from_step=None | card 103-2 (PD216(b)): stop_after=k (the recipe's own '--stop-after k', PART-A mode) makes X5 expect only the | docstring | - | 2949 |
+| `x14_advisory` | recipe, n_rows, log=None | card chat-P1 item 4 (user 2026-09-28; docs/d1-loop12-17-split-plan.md Pre-decided 'rows per step'): rows per | docstring | - | 3139 |
+| `result_first` | first, warn | card 106-5 (PD219(c)): the RESULT line's first_fail carrying the X10 WARN (result-line/1 has no other free-text | docstring | - | 3155 |
+| `plan_md5s` | recipe | {rel path: md5} of every plan file plan_files(recipe) finds; {} when that raises. Returns dict. | side file | - | 3168 |
+| `write_record` | kind, recipe, status, first_fail, extra=None | Appends one JSON line to RECORDS (prerun_records.jsonl): t, iso, kind, script, sha256, plan_md5s, status, first_fail, plus extra; a 'dry' record gets dry_rule = DRY_RULE when absent. Returns the re... | side file | - | 3175 |
+| `launched_stage_scripts` | cmd | argv only: every 'tools/recipes/stage_*.py' a command RUNS - a python token followed (past flags) by that | docstring | - | 3186 |
+| `vi_modifying_calls` | path | [] or the sorted MODIFY_VERBS names the file calls, when it imports stagekit (ast; never text search). | docstring | - | 3222 |
+| `offline_override_delegations` | tree | card 159-a4-1 (fp-77): {id(ast.Call)} of every parent delegation inside an override method of a class derived ONLY from | docstring | selftest_c159_a4_1.py | 3261 |
+| `is_vi_modifying` | path | card chat-N1 (2): True iff the .py imports stagekit AND calls a name in MODIFY_VERBS. | docstring | - | 3283 |
+| `launched_vi_modifying` | cmd | argv only: launched .py scripts that are NOT tools/recipes/stage_*.py but is_vi_modifying() -> gated alike. | docstring | - | 3288 |
+| `launched_py` | cmd | argv only: every script path a python token RUNS (past interpreter flags), directly or after bgrun's '--'. | docstring | - | 3294 |
+| `launched_plan_runs` | cmd | argv only (card chat-S3): every 'tools/stagexec.py run <plan.json>' a command RUNS -> [(stagexec path, plan | docstring | - | 3311 |
+| `plan_record` | kind, plan, status, first_fail, extra=None | A dry/prerun record for a stagexec PLAN: script = tools/stagexec.py (its sha256), plan_md5s = {plan: md5}. | docstring | - | 3335 |
+| `is_stageplan` | path | True when path ends in .json and loads as JSON whose schema is 'stageplan/1'; False on any error. Returns bool. | side file | - | 3348 |
+| `read_records` |  | Every parseable JSON line of RECORDS (bad lines skipped; [] when the file cannot be opened). Returns list. | side file | - | 3355 |
+| `is_prerun_segment` | start_line | True when this bgrun START line runs tools/stage_prerun.py itself (a dry/prerun/check, never a stage run). | docstring | - | 3382 |
+| `last_failed_run_after` | script, t_min | Newest failing bgrun run of 'script' in a log modified after t_min (protocol.run_verdict). | docstring | - | 3388 |
+| `unverified_card_names` | cmd | ([label prefixes], why/None) from the task/1 card named by '--unverified-card <path>' in the command. | docstring | - | 3439 |
+| `stage_key` | script | Lower-cased basename of the script with a '_v<digits>' suffix before .py removed (stage_x_v3.py -> stage_x.py): the key the retry cap counts by. Returns str. | side file | - | 3459 |
+| `cycle_key` | now=None | 'cycle <n>' from the newest tools/bench/cards/cycle_<n>.json written in the last CYCLE_FRESH_S, else | docstring | - | 3463 |
+| `read_stage_runs` |  | Every parseable JSON line of STAGE_RUNS (env STAGE_RUNS or tools/bench/stage_runs.jsonl; bad lines skipped, [] when unreadable). Returns list. | side file | - | 3483 |
+| `retry_card` | cmd, key, used | (card id, None) when the command carries a valid judgement card for ONE more run of 'key', else (None, why). | docstring | - | 3497 |
+| `offline_run_of` | cmd, s | card 148-a1-1 (fp-52, fp-58): True when 'cmd' runs script 's' in a mode its OWN scope header declares offline | docstring | - | 3516 |
+| `check_cap` | cmd, s, runs, ck | (allow, why, card id/None) for ONE stage script against RETRY_CAP in cycle 'ck'. | docstring | - | 3532 |
+| `pattern_signature` | recipe | sorted list - see the block comment. [] when the recipe cannot be read. | docstring | - | 3604 |
+| `proven_pattern` | recipe, runs=None, recs=None | (proven: bool, stages: [stage keys whose clean run covers this signature], signature: [..]). | docstring | - | 3641 |
+| `new_structure_classes` | recipe, runs=None, recs=None, sig=None | card chat-P2 item 1 (user 2026-09-28): the STRUCTURE elements of this recipe's signature ('op:<kind>' and | docstring | - | 3662 |
+| `provisional_plans` | s, plan=None | [(plan path, sim_of)] for every stageplan this unit would run whose base is provisional. | docstring | - | 3711 |
+| `plan_named_uids` | plan | Every positive int the plan's actions, open rows or bindings name (stagexec._ints_in over those keys) - the uids a | docstring | - | 3741 |
+| `address_report` | plan, log=print, advise=True | card chat-S5 (PD337(a)): tier (a) over a stageplan against its base graph's terminal table (finalized.base, else base) | docstring | - | 3752 |
+| `negative_uids_left` | plan | card chat-S5 (PD337(d)): every negative uid still in a plan's MACHINE fields - the "no negative uid left" check of a | docstring | - | 3772 |
+| `read_creation_map` | path | (header, {"obj"/"diag"/"term": {sim id: entry}}, steps {k: diff n}) of ONE creation-map/1 file (stagexec | docstring | - | 3807 |
+| `load_creation_map` | sim_of, graph_doc, explicit=None, cmap_dir=None, log=print | (map / None, why, meta) - the creation map of the run that SAVED stage N's artefact (the real graph). 'explicit' = a | docstring | - | 3833 |
+| `rebind` | before, prov, real, prov_doc=None, real_doc=None, before_doc=None, info=None, named=None, cmap=None | (M: {negative uid -> real uid} / None, why). See the block comment, step 2. | docstring | - | 3872 |
+| `carry_fs` | prov_doc, real_doc, before_doc, M, info=None | card 132-6 (PD279(b), docs/d1/ring-p3b.md:95-100): (augmented real doc / None, why). The provisional base (stagesim's | docstring | - | 4254 |
+| `rebase` | plan_path, graph_path, log=print, simulate=True, out_root=None, model_dir=None, creation_map=None, cmap_dir=None | (ok, detail) - see the block comment. Writes the rebased plan to plan_path only when every check passes. | docstring | - | 4353 |
+| `record_stage_run` | s, ck, card_id, cmd, by=COUNTED_BY, extra=None | Appends one run record to STAGE_RUNS: t, iso, cycle ck, stage (stage_key), script, sha256, card id, cap RETRY_CAP, by (default 'bgrun') plus extra; cmd is not stored. Returns the record dict. | side file | - | 4582 |
+| `record_started` | cmdline, log=None, pid=None | Called by tools/bgrun.py right after its child STARTED (Popen returned). Appends one COUNTED line per stage | docstring | - | 4591 |
+| `unit_key` | path | Stage key of a script OR a stagexec plan: basename, lower case, '_vN' stripped (stage_key for .py). | docstring | - | 4637 |
+| `failure_function` | seg | The scripting function a failed run died in, from that run's own segment (see the block comment), or None. | docstring | - | 4642 |
+| `stage_run_segments` | key, now=None | [(start_ts, failed, function)] of every bgrun run of stage 'key' in LOG_DIR within SCRATCH_WINDOW_S, oldest | docstring | - | 4660 |
+| `scratch_pass_after` | function, t_after | Newest scratch_verify PASS record for 'function' newer than t_after: its path, or None. | docstring | - | 4691 |
+| `fn_record_gate` | unit | card chat-F2 (user 2026-10-06): (allow, why) from tools/fn_records.launch_gate - every function the unit uses | docstring | - | 4714 |
+| `check_scratch` | unit, now=None | (allow, why) - refuse a stage run whose last two runs failed on the same function with no newer scratch PASS. | docstring | - | 4734 |
+| `function_of_text` | text | The scripting function a first_fail / fact string names: '<module>.<fn>' / 'stagexec.op:<kind>' / 'op:<OpName>'. | docstring | - | 4768 |
+| `escalation_route` | card, cards_dir=None, now=None | ('scratch-verify', function, evidence) or ('escalate', None, why) for an ESCALATION card ('retry_of_card' set). | docstring | - | 4805 |
+| `scratch_requirement` | recipe, runs=None, recs=None, now=None | (required: bool, why: str, proven_stages: [..]) - see the block comment. | docstring | - | 4857 |
+| `scratch_skip_log` | line | Writes line to stderr and appends it to SKIP_LOG (env SCRATCH_SKIP_LOG, default tools/bench/jev_gate.log); an OSError on the append is ignored. Returns None. | side file | - | 4888 |
+| `adopted_record` | script, pm | card chat-S4 A: stagexec.adopted_launch over ADOPT_LOG (None when nothing is adopted or stagexec cannot load). | docstring | - | 4900 |
+| `check_launch` | cmd | (allow, why). Refuses a stage-recipe launch without a dry PASS and a prerun PASS for its CURRENT sha256 and | docstring | - | 4911 |
+| `main` | argv=None | CLI: --selftest-control-lint, --control-lint, --opmodel-conformance, --buildarray-check, --rebase, --check-launch or --scratch-required run that check; else --dry/--prerun of a recipe or a stagepla... | side file | - | 5031 |
+
+### tools/stage_shared.py
+
+shared module; imported by 20 file(s): `tools/bench/prep_c150_a3_1_licence.py`, `tools/bench/prep_c150_a3_6_licence.py`, `tools/bench/prep_c152_b2_1_licence.py`, `tools/bench/prep_c154_a3_2b_licence.py`, `tools/bench/prep_c154_a3_2b_pred.py`, `tools/bench/prep_c155_a2_1_licence.py` ...
+
+| function | arguments | what it does | from | self-test | line |
+|---|---|---|---|---|---|
+| `base_sink_renames` | actions, base_terms, why_fmt | Licence rename table (PD365(d)): returns (ren, own, wr) - ren = [{"node", "term_uids", "why"}] per BASE owner whose SINK terminal a plan | docstring | selftest_c162_stage_shared.py | 14 |
+| `checkpoint_step_table` | ops, cps, sfn, actions=None | E1 checkpoint table: returns [{"op", "kind", "action", ["ids",] "step_file", "md5"}] for each checkpoint op number k in 'cps' (0 = base), | docstring | selftest_c162_stage_shared.py | 31 |
+| `insert_stub_deletes` | actions, wire_by_id, why | Returns a new action list = 'actions' with a row {"op": "delete_wire", "id": "dw_" + id[2:], "wire_uid": wire_by_id[id], "why": why} inserted | docstring | selftest_c162_stage_shared.py | 47 |
 
 ### tools/stagekit.py
 
-shared module; imported by 280 file(s): `tools/bench/allterms_s1.py`, `tools/bench/allterms_s2.py`, `tools/bench/allterms_s3.py`, `tools/bench/allterms_s4.py`, `tools/bench/allterms_v1.py`, `tools/bench/build_kswap_88.py` ...
+shared module; imported by 327 file(s): `tools/bench/allterms_s1.py`, `tools/bench/allterms_s2.py`, `tools/bench/allterms_s3.py`, `tools/bench/allterms_s4.py`, `tools/bench/allterms_v1.py`, `tools/bench/build_kswap_88.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -2363,374 +2429,419 @@ shared module; imported by 280 file(s): `tools/bench/allterms_s1.py`, `tools/ben
 | `private_bytes` |  | LabVIEW's private bytes - the COMPANION of the handle count, which is blind to VI Server refnums | docstring | - | 203 |
 | `mod` | name | Lazy import of a heavy fleet module, so a no-LabVIEW self-test can import stagekit. | docstring | - | 218 |
 | `Stage` | (class) | One build/diagnostic stage: pin, copy, edit, gate, save, clean up, report. | docstring | - | 229 |
-| `Stage.head` | text | (undocumented) | - | - | 264 |
-| `Stage.gate` | label, ok, detail='', fatal=False, kind=None | (undocumented) | - | - | 267 |
-| `Stage.fact` | line | (undocumented) | - | - | 287 |
+| `Stage.head` | text | Prints a section header line '---------- <text>' (ASCII-safe, flushed). Returns None. | side file | - | 264 |
+| `Stage.gate` | label, ok, detail='', fatal=False, kind=None | Records one gate: a failing label that gateclass.classify_gate rules LOG-only is printed SOFT, logged to gate_soft_log.jsonl and returns True; otherwise the label goes to passes / fails with a PASS... | side file | - | 267 |
+| `Stage.fact` | line | Appends line to the stage's facts and prints it as '  FACT  <line>'. Returns the line. | side file | - | 287 |
 | `Stage.row` | label, observed, expected=None | A NON-GATE record. Deliberately NOT at the start of the line, so a row reporting an expected | docstring | - | 292 |
 | `Stage.census_snapshot` | target=None | {uid: class} of every GObject of 'target' (default the work copy) - ONE report_all run. {} in a dry run. | docstring | - | 301 |
-| `Stage.census_gate` | label, before, after, declared | Compare the measured NEW-object census (after - before, by class) with 'declared' {class: n} (e.g. the plan's | docstring | - | 307 |
-| `Stage.safe` | label, fn, default=None | (undocumented) | - | - | 336 |
-| `Stage.left_s` |  | (undocumented) | - | - | 345 |
-| `Stage.dump` |  | (undocumented) | - | - | 348 |
-| `Stage.summary` |  | (undocumented) | - | - | 357 |
-| `Stage.file_facts` | tag, path | (undocumented) | - | - | 371 |
-| `Stage.pin_check` | when | Every md5 pin, reported one per line. Returns True iff all hold. | docstring | - | 382 |
-| `Stage.restart` |  | Standing restart authority (CLAUDE.md 3). diag_s2_scaffold.fresh:155. | docstring | - | 394 |
-| `Stage.start` |  | FILES ONLY -> restart -> Preload the ORIGINAL read-only -> the dated WORK copy -> open it. | docstring | - | 407 |
-| `Stage.es` | tag, target=None | One ExecState reading, appended to the timeline. RECORDED; a criterion only where a gate says | docstring | - | 463 |
-| `Stage.count` | cls, target=None | (undocumented) | - | - | 473 |
-| `Stage.census` | classes=CENSUS_CLASSES, tag='', target=None | A class census by NAME, never by index - the numbers a stage's counts gate on. | docstring | - | 476 |
-| `Stage.uid_index` | cls, uid, target=None | The traverse index of 'uid' RE-READ at the call site - never cached across a mutation (34(h)). | docstring | - | 488 |
-| `Stage.wired_terminals` | uid, hints=(), target=None, tag='' | Every terminal row of node #uid with its wire - 'build_d1_m3a1.node_view':572, which finds the | docstring | - | 493 |
-| `Stage.net_sources` | wire_uid, n=8, target=None, tag='' | THE OWNER-IDENTITY READING (build_d1_m3a3b_d3.py:589-600). 'OpWireSource_v5' is WIRE-addressed - | docstring | - | 503 |
-| `Stage.broken_wire_count` | target=None, allow_mutation=False, tag='' | THE DIAGRAM-WIDE BROKEN-WIRE COUNT (build_d1_m3a3b_d3.bad_wire_count:265). ⚠️ IT MUTATES - | docstring | - | 528 |
-| `Stage.scratch` | suffix, source=None | A dated scratch COPY (unique per run, deleted by 'close()') - the only surface a mutating | docstring | - | 545 |
-| `Stage.drop_scratch` | path, tag='H4' | Close and DELETE one scratch now (a diagnostic that runs several cells must not hold them all | docstring | - | 559 |
-| `Stage.discard_work` |  | THIS STAGE SAVES NOTHING: the dated work copy is treated as a scratch, so 'close()' deletes it | docstring | - | 577 |
-| `Stage.plan_rows` | rows, tag='' | DECLARE this stage's planned re-wiring rows: (source uid/terminal) -> (sink uid/terminal). | docstring | - | 587 |
-| `Stage.node_mark` | tag='' | The Node census BEFORE a mutation - 'junk_purge()' diffs against the last mark. | docstring | - | 652 |
-| `Stage.junk_purge` | tag='', hints=() | THE MEASURED PURGE (build_opfsinnertunnelconnect_v0.purge_junk:288): the OpConnect* family mints | docstring | - | 659 |
-| `Stage.delete_wire` | wire_uid, tag='' | build_opfsinnertunnelconnect_v0.del_wire:336 - by uid, via the LIVE traverse order. | docstring | - | 672 |
-| `Stage.delete_object` | cls, uid, tag='' | build_opfsinnertunnelconnect_v0.del_node:346 - uid -> live index -> 'g.delete_object'. | docstring | - | 685 |
-| `Stage.move_in` | uid, dest_diagram_index, position | build_d1_v0.move_in:318 - move an object INTO a nested diagram by uid. | docstring | - | 698 |
-| `Stage.connect` | sink_diag, sink_node, sink_term, src_diag, src_node, src_term, labels=None | gscript.connect_nested_v2:2965 = 'OpConnectNested_v2' - the nested-diagram writer. | docstring | - | 704 |
-| `Stage.connect_from_wire` | sink_diag, sink_node, sink_term, wire_uid, wire_term_index, labels=None | 'OpConnectFromWire_v0' - the only writer whose SOURCE need not be a node | docstring | - | 711 |
-| `Stage.fs_inner_tunnel_connect` | fsit_uid, sink_diag, sink_node, sink_term, auto_route=None, target=None, op=None | 'OpFsInnerTunnelConnect_v1' (build_d1_m3a3b_d3.fsit_call:279, the POISONED caller of Pre-decided | docstring | - | 724 |
-| `Stage.fs_inner_tunnel_read` | fsit_uid, target=None, tag='' | 'OpFsInnerTunnelTerm_v0' - the FSIT's two faces, read-only (build_d1_m3a3b_d3.fsit_read:342). | docstring | - | 751 |
-| `Stage.wire_indicators` | node_index, src_terms, indicator_names, diagram_index=0, node_class='SubVI' | gscript.wire_indicators:1786 - branch a node's outputs onto front-panel indicators. | docstring | - | 758 |
-| `Stage.add_shift_reg` | loop_index, y_position=120, class_name='WhileLoop' | gscript.add_shift_reg:687. | docstring | - | 767 |
-| `Stage.wire_sr` | variant, loop_index, reg_index, **kw | gscript.wire_sr:737. | docstring | - | 773 |
-| `Stage.create_local_read` | label, panel_index=None, tag='' | The BUILT local-variable creator. Its measured implementation lives in the diagnostics that | docstring | - | 779 |
-| `Stage.create_local_write` | label, panel_index=None, dest_diagram_uid=None, position=(40, 40), tag='' | The WRITE twin of create_local_read (card 100-2 V5): 'gscript.create_local_write' = OpCreateLocalRead_v0 | docstring | - | 802 |
-| `Stage.expect_is_broken_false` | label, reconnect, wire_uid=None | 42(b): THE ORDERED SECOND PASS. The acceptance is asserted on a SEPARATE, idempotent re-connect, | docstring | - | 817 |
-| `Stage.address` | end, is_source, objs=None | A terminal named by (node uid, terminal name, frame diagram uid) -> the LIVE index triple | docstring | - | 844 |
-| `Stage.resolve` | v | '$name' / '$name.key' -> self.sym; '$wire_of:<uid>:<term i>' -> that terminal's LIVE wire uid (read now, | docstring | - | 893 |
-| `Stage.copy_in` | cls, uid, dest_diagram_uid, position, tag='' | COPY a primitive that already exists on the donor into Diagram #dest by 'OpMoveByIndex_v0' (the op of | docstring | - | 910 |
-| `Stage.add_sr_row` | ex, tag='' | 'add_shift_reg' on the loop named by uid, then the register PAIR read back by index: {right, left, k, | docstring | - | 944 |
-| `Stage.const_row` | ex, tag='' | 'OpCreateConstOnTerm_v0' ('build_opcreateconstonterm_v0.create_const_on_term':364): a constant TYPED BY | docstring | - | 964 |
-| `Stage.cfw_second_pass` | src_uid, dst | 42(b)'s ordered idempotent second pass through 'OpConnectFromWire_v0', usable for ANY new wire whose sink | docstring | - | 979 |
-| `Stage.live_graph` | path, retired_rights=(), extra_rights=None | The step-4 graph of a LIVE file (stage_d1_m3a4.py:104-110's recipe): wiki_build.read_live + the bed's | docstring | - | 997 |
-| `Stage.rule_check` | d | PRE-DECIDED 143: the op the row names must be the op 'jev_pairs.op_rule' names for its classes, unless | docstring | - | 1013 |
-| `Stage.from_decision` | record, tag='fd' | PLAN STEP 6 / Pre-decided 142-143: execute a decision record (tools/jev_pairs.write_record shape). | docstring | - | 1025 |
-| `Stage.save_route` | exec_state, broken_ok | WHICH SAVE ROUTE, as a pure function so it is self-testable without LabVIEW. | docstring | - | 1178 |
-| `Stage.save` | broken_ok=False, cold_check=True | ONE save of the work copy, by the route 'save_route' picks. Records md5, size and version bytes; | docstring | - | 1189 |
-| `Stage.close` | expect_files=None | HYGIENE: panels closed, refs opened == closed, scratches deleted, the input's md5 unchanged, | docstring | - | 1228 |
-| `fixtures_check` | bad_md5s=(), before_listing=None | REVIEW c68-h6 (archive/peer/2026-09-24-c68-h6-fixture-listing.md §1/§4, accepted): after a run that swapped | docstring | - | 1282 |
-| `match_term_uid` | term_uid, all_rows, node_rows, is_source | Pre-decided 173 (cycle 71): a terminal addressed by its TERMINAL UID after its first resolution, because a | docstring | - | 1304 |
-| `uid_edges` | G, kinds=('wire', 'fs') | A graph's edges keyed by TERMINAL UID, not by name (review archive/peer/2026-09-24-c68-m4a-p6b-rename.md §4, | docstring | - | 1327 |
-| `term_key` | r | A terminal row's identity: (term uid, owner uid, term name). | docstring | - | 1357 |
-| `wire_keys` | rows | {(wire uid, frozenset of its SOURCE rows' term_key)} over the wired rows. A recycled wire uid on a new source is a | docstring | - | 1362 |
-| `term_identity_gates` | base, sim, real, renames=None, bind=None | TD / unwired / D of a stage's end (base = graph rows before, sim = the simulated end rows, real = the read-back end | docstring | - | 1376 |
-| `term_identity_names` | base, sim, real | card 141-3 (PD325(b)) as it stood until card chat-T6 - identity (term uid, owner uid, NAME), wires (wire uid, source | docstring | - | 1386 |
-| `wire_ends_pos` | rows, ob=None, tb=None | {wire uid: (frozenset of source position keys, frozenset of sink position keys)} - a wire as its two ends. | docstring | - | 1439 |
-| `kept_nodes` | B, gone=() | The BASE nodes that keep at least one base position key (not all in 'gone'). Only these nodes' positions are compared | docstring | selftest_t6_poskey | 1449 |
-| `term_identity_pos` | base, sim, real, bind=None, renames=None | TD / unwired / D on position keys (block comment above). Returns the keys term_identity_gates always returned - | docstring | - | 1464 |
-| `licence_renames` | lic | {(term uid, owner uid): (from, to)} from a pb-licence/1 dict's 'renames' list ([{node, term_uids, from?, to?}]); | docstring | - | 1510 |
-| `pb_rename_rows` | base, sim, real, renames=None, bind=None | (rows, restored, unlicensed) for PB's build4 - card chat-T6 (docs/d1/result-gates.md): every real row on a KEPT BASE node (kept_nodes) | docstring | - | 1523 |
-| `d4_load` | path | The D4 JSON ({s1: {path, md5}, scope_nodes}) plus 'scope' (set), 's1_md5_got' and 'names' = {node: {name: | docstring | - | 1555 |
-| `d4_ok` | node, name, d4 | D4's one test: the node is in scope and S1's graph has a terminal of that name on it. | docstring | - | 1573 |
-| `d4_e1` | diffs, info, d4 | (ok, accepted, bad) over [(checkpoint k, stagexec.compare dict)]; 'info' = {term uid: (owner uid, name)}. | docstring | - | 1578 |
-| `d4_pb` | got, want, real_end, sim_end, d4 | (ok, closed, grown, bad) at PB. got / want = sets of (node, sink name) of cdiff(S1, real end) / the plan's | docstring | - | 1603 |
-| `d4_form` | real_end, d4 | FACTS ONLY: {scope node: 'equal to S1' / 'real-only {..} S1-only {..}'} comparing the real end's name counts on | docstring | - | 1627 |
-| `fixture_listing` |  | (undocumented) | - | - | 1645 |
-| `unload_donor` | path=None | Card 97-5 (judgement c97): after the copy_in calls, drop the donor (default 'g.MOVE_SRC') from LabVIEW's memory | docstring | - | 1649 |
-| `run` | fn, stage | The standard main(): run 'fn(stage)', never let an exception skip the hygiene tail. | docstring | - | 1674 |
-| `jload` | *parts | json.load of os.path.join(*parts) (utf-8) - the recipes' 'J' helper. Returns the parsed object. | docstring | - | 1705 |
-| `pure` | name | A NO-LabVIEW module (stagexec, stagesim, vigraph, jev_candidates, elrule) imported DIRECTLY, as the recipes import it - not | docstring | - | 1711 |
-| `pos_slot_table` | G | {term key: (node, index in the node's READ order, term class, is_source)} of a vigraph graph - the same key as | docstring | selftest_c153_poskey_convert.py | 1724 |
-| `pos_name_free` | P, s | One effective source ('<key>' or '<key>@<tunnel>/f<n>+...') -> (its position in table P, frame tag); an unknown key | docstring | selftest_c153_poskey_convert.py | 1737 |
-| `pos_slots` | G, nodes, V=None | {sink key: ((node, index, class), frozenset of name-free effective sources)} for the input terminals of 'nodes' in | docstring | selftest_c153_poskey_convert.py | 1748 |
-| `pos_convert` | rows, SA, SB | Name-keyed cdiff sink strings -> POSITION rows [{sink, slot, name_a, name_b, before, after[, passthrough]}], sorted by | docstring | selftest_c153_poskey_convert.py | 1759 |
-| `pos_convert_open_rows` | plan_open_rows, old_rows, new_rows | A plan's open_rows [{node, term}] with every row dropped whose (node, name) pair the old -> new row conversion removed | docstring | selftest_c153_poskey_convert.py | 1782 |
-| `s1_frame_graph` | labels=None | S1's FRAME-KEYED vigraph graph (the wiki S1 terminals + the newest graph_objs_s1 / graph_loops_s1 reads), as every ring | docstring | selftest_t7_ring.py | 1790 |
-| `pred_end_graph` | L, labels, fs_pairs | The FRAME-KEYED vigraph graph of a plan's simulated end state L (its terminals, objs, loops) - the graph a pred's cdiff rows | docstring | selftest_t7_ring.py | 1799 |
-| `pb_check` | S1f, G1, Gpred, pred_rows, open_rows, unlicensed=(), V=None | PB by POSITION (card chat-T7, fp-70): cdiff(S1f, G1 = the REAL end) (vigraph.computation_diff_frame) against the pred's cdiff | docstring | selftest_t7_ring | 1806 |
-| `sink_gate_spec` | e, actions, base, sim_end | One sink-gate census row (prep_*_session.json 'sink_gate_census', needs_sink_gate) -> its declared sink gate spec | docstring | selftest_t7_ring.py | 1836 |
-| `sink_gate_read` | e, d, x, rows, n_actions | (ok, detail) for the deferred op error on sink d['sink'] (stage_d1_ring_p5s01a.py:90-117 sg_read, unchanged): (a) the indicator | docstring | selftest_t7_ring.py | 1861 |
-| `sink_gate_backend_class` |  | stagexec.LVBackend subclass that KEEPS its last whole-VI read in 'last_terms' (no extra read; LVBackend.read is called exactly | docstring | - | 1893 |
-| `RingSession` | (class) | The inputs of one ring stage session and the gates its body runs - stage_d1_ring_p5s01a.py:31-191 as calls. A recipe builds | docstring | selftest_t7_ring.py | 1908 |
-| `RingSession.stem` |  | The plan file's name without .json (gate labels name it). Returns a str. | docstring | - | 1939 |
-| `RingSession.sink_read` | e, d | (ok, detail) of sink_gate_read on this session's executor and last read; (True, 'dry') in a dry run. | docstring | - | 1943 |
-| `RingSession.census_snapshot` | s | {uid: class} of s.census_snapshot() kept to the pred's census classes (the recipes' 'snap'). ONE whole-VI read. | docstring | - | 1949 |
-| `RingSession.handles` |  | LabVIEW's handle count now (bench_prep.labview_handles); None in a dry run is the caller's business. | docstring | - | 1953 |
-| `RingSession.gate_l0` | s | L0 (FATAL): plan final + open_rows_match + plan_in == <plan>_in; base graph md5 == pred == file; bed md5 == pred; plan end | docstring | - | 1957 |
-| `RingSession.executor` | s | SG (FATAL: one declared sink gate per census row) -> the backend (stagexec.DryPlanBE in a dry run, else the SGBackend | docstring | - | 1968 |
-| `RingSession.run` | s | Run the executor: E1 (every checkpoint's real graph == its simulated step). On stagexec.ExecStop: save ops 1..k-1 for a | docstring | - | 1989 |
-| `RingSession.gates_ng_fr_d` | s, real | NG (crossing ops' new tunnel names == the simulator's), FR (FATAL: created objects on the sim end's frames; real frames == | docstring | - | 2006 |
-| `RingSession.gate_cen2` | s, c0, c1 | CEN2: the new-object census between snapshots c0 and c1 == the pred's census. Returns s.census_gate's delta. | docstring | - | 2028 |
-| `RingSession.gate_td` | s, real | TD: every base terminal the sim keeps wired is still wired; identities lost == the plan's deletes (position key). Records | docstring | - | 2032 |
-| `RingSession.gate_pb` | s, real | PB (FATAL, before save): pb_check(S1, real end) - by POSITION (fp-70). The real end's rows get the sim end's names on kept | docstring | - | 2043 |
-| `RingSession.finish` | s, h0, rk, dc, key, level, save=True | PH / HB (handles open -> save <= +700, PD236(b)), the rule-6 GUI save (broken by design), PS (saved, md5 differs, input | docstring | - | 2058 |
-| `pred_x10` | pred_path, plan_path | The X10 prediction of a plan: its pred file's memory_pred.peak_mb, ONLY when pred.plan.md5 == md5(plan) (the scratch | docstring | selftest_t7_ring.py | 2078 |
-| `census_all_install` | stage_cls=None | Wrap Stage.census_snapshot / census_gate (once) so every snapshot is kept and every census gate also prints the CENSUS-ALL | docstring | selftest_t7_ring.py | 2094 |
-| `el_norm_ocr` | s | An Error List text -> lower-case alphanumerics with the OCR aliases applied (== errorlist_check.norm). Returns a str. | docstring | - | 2131 |
-| `el_class` | it | One Error List item {raw, detail} -> its class: elrule.item_class's local / cond / sr, else input, else | docstring | selftest_t7_ring.py | 2140 |
-| `el_advisory` | items, pred_path, plan_path, pred=None | (rc, report) for one Error List read (its items) against the pred's errorlist.per_class (PD354(a), ADVISORY): rc 1 only for | docstring | selftest_t7_ring.py | 2152 |
-| `el_advisory_print` | rc, rep | Print the one EL-ADVISORY line of an el_advisory result. | docstring | - | 2175 |
-| `el_advisory_selftest` | pred_path, plan_path | Four synthetic Error List reads built from the pred's predicted per-class counts (offline, the scratch recipes' | docstring | - | 2182 |
-| `scratch_offline_modes` | argv, pred_path, plan_path | The scratch recipes' two OFFLINE modes, before any K.Stage: '--el-advisory-selftest' -> el_advisory_selftest's rc; | docstring | - | 2210 |
-| `scratch_tail` | st, rc, gone, key, tag, log, base_vi, base_md5, pred_path, plan_path, card, sum_json, fail_mb, launch_mb=680.0 | After K.run of a scratch: peak private MB from the log's METER lines vs the pinned X10 (pred_x10), and the gates MEM (peak <= | docstring | - | 2222 |
+| `Stage.census_gate` | label, before, after, declared, unpredicted=None, judged=None | Compare the measured NEW-object census (after - before, by class) with 'declared' {class: n} (e.g. the plan's | docstring | selftest_c159_cen2_ends.py | 307 |
+| `Stage.safe` | label, fn, default=None | Calls fn(); on any exception keeps it as _last_exc, records a FACT '<label> raised <Type>: <msg>' and returns (default, msg); on success returns (result, ''). | side file | - | 351 |
+| `Stage.left_s` |  | Seconds left before the stage's deadline: deadline_s minus the elapsed time since t0 minus reserve_s. Returns float. | side file | - | 360 |
+| `Stage.dump` |  | Writes the stage record R (plus gates {pass, fail, failing, soft}, facts, rows, elapsed_s) as JSON to out_json. Returns None. | side file | - | 363 |
+| `Stage.summary` |  | Prints the closing '=== GATES: n pass / m fail' line (failing labels, SOFT list), the JSON path and elapsed time, then the C6 RESULT line last. Returns 0 when no gate failed, else 1. | side file | - | 372 |
+| `Stage.file_facts` | tag, path | {path, exists[, md5, size, version_bytes]} of a file, with one FACT line (md5, size, LabVIEW version bytes, or 'IS NOT ON DISK'). Returns the dict. | side file | - | 386 |
+| `Stage.pin_check` | when | Every md5 pin, reported one per line. Returns True iff all hold. | docstring | - | 397 |
+| `Stage.restart` |  | Standing restart authority (CLAUDE.md 3). diag_s2_scaffold.fresh:155. | docstring | - | 409 |
+| `Stage.start` |  | FILES ONLY -> restart -> Preload the ORIGINAL read-only -> the dated WORK copy -> open it. | docstring | - | 422 |
+| `Stage.es` | tag, target=None | One ExecState reading, appended to the timeline. RECORDED; a criterion only where a gate says | docstring | - | 478 |
+| `Stage.count` | cls, target=None | Number of objects of class cls on target (default the work copy), via gscript.count. Returns int. | side file | - | 488 |
+| `Stage.census` | classes=CENSUS_CLASSES, tag='', target=None | A class census by NAME, never by index - the numbers a stage's counts gate on. | docstring | - | 491 |
+| `Stage.uid_index` | cls, uid, target=None | The traverse index of 'uid' RE-READ at the call site - never cached across a mutation (34(h)). | docstring | - | 503 |
+| `Stage.wired_terminals` | uid, hints=(), target=None, tag='' | Every terminal row of node #uid with its wire - 'build_d1_m3a1.node_view':572, which finds the | docstring | - | 508 |
+| `Stage.net_sources` | wire_uid, n=8, target=None, tag='' | THE OWNER-IDENTITY READING (build_d1_m3a3b_d3.py:589-600). 'OpWireSource_v5' is WIRE-addressed - | docstring | - | 518 |
+| `Stage.broken_wire_count` | target=None, allow_mutation=False, tag='' | THE DIAGRAM-WIDE BROKEN-WIRE COUNT (build_d1_m3a3b_d3.bad_wire_count:265). ⚠️ IT MUTATES - | docstring | - | 543 |
+| `Stage.scratch` | suffix, source=None | A dated scratch COPY (unique per run, deleted by 'close()') - the only surface a mutating | docstring | - | 560 |
+| `Stage.drop_scratch` | path, tag='H4' | Close and DELETE one scratch now (a diagnostic that runs several cells must not hold them all | docstring | - | 574 |
+| `Stage.discard_work` |  | THIS STAGE SAVES NOTHING: the dated work copy is treated as a scratch, so 'close()' deletes it | docstring | - | 592 |
+| `Stage.plan_rows` | rows, tag='' | DECLARE this stage's planned re-wiring rows: (source uid/terminal) -> (sink uid/terminal). | docstring | - | 602 |
+| `Stage.node_mark` | tag='' | The Node census BEFORE a mutation - 'junk_purge()' diffs against the last mark. | docstring | - | 667 |
+| `Stage.junk_purge` | tag='', hints=() | THE MEASURED PURGE (build_opfsinnertunnelconnect_v0.purge_junk:288): the OpConnect* family mints | docstring | - | 674 |
+| `Stage.delete_wire` | wire_uid, tag='' | build_opfsinnertunnelconnect_v0.del_wire:336 - by uid, via the LIVE traverse order. | docstring | - | 687 |
+| `Stage.delete_object` | cls, uid, tag='' | build_opfsinnertunnelconnect_v0.del_node:346 - uid -> live index -> 'g.delete_object'. | docstring | - | 700 |
+| `Stage.move_in` | uid, dest_diagram_index, position | build_d1_v0.move_in:318 - move an object INTO a nested diagram by uid. | docstring | - | 713 |
+| `Stage.connect` | sink_diag, sink_node, sink_term, src_diag, src_node, src_term, labels=None | gscript.connect_nested_v2:2965 = 'OpConnectNested_v2' - the nested-diagram writer. | docstring | - | 719 |
+| `Stage.connect_from_wire` | sink_diag, sink_node, sink_term, wire_uid, wire_term_index, labels=None | 'OpConnectFromWire_v0' - the only writer whose SOURCE need not be a node | docstring | - | 726 |
+| `Stage.fs_inner_tunnel_connect` | fsit_uid, sink_diag, sink_node, sink_term, auto_route=None, target=None, op=None | 'OpFsInnerTunnelConnect_v1' (build_d1_m3a3b_d3.fsit_call:279, the POISONED caller of Pre-decided | docstring | - | 739 |
+| `Stage.fs_inner_tunnel_read` | fsit_uid, target=None, tag='' | 'OpFsInnerTunnelTerm_v0' - the FSIT's two faces, read-only (build_d1_m3a3b_d3.fsit_read:342). | docstring | - | 766 |
+| `Stage.wire_indicators` | node_index, src_terms, indicator_names, diagram_index=0, node_class='SubVI' | gscript.wire_indicators:1786 - branch a node's outputs onto front-panel indicators. | docstring | - | 773 |
+| `Stage.add_shift_reg` | loop_index, y_position=120, class_name='WhileLoop' | gscript.add_shift_reg:687. | docstring | - | 782 |
+| `Stage.wire_sr` | variant, loop_index, reg_index, **kw | gscript.wire_sr:737. | docstring | - | 788 |
+| `Stage.create_local_read` | label, panel_index=None, tag='' | The BUILT local-variable creator. Its measured implementation lives in the diagnostics that | docstring | - | 794 |
+| `Stage.create_local_write` | label, panel_index=None, dest_diagram_uid=None, position=(40, 40), tag='' | The WRITE twin of create_local_read (card 100-2 V5): 'gscript.create_local_write' = OpCreateLocalRead_v0 | docstring | - | 817 |
+| `Stage.expect_is_broken_false` | label, reconnect, wire_uid=None | 42(b): THE ORDERED SECOND PASS. The acceptance is asserted on a SEPARATE, idempotent re-connect, | docstring | - | 832 |
+| `Stage.address` | end, is_source, objs=None | A terminal named by (node uid, terminal name, frame diagram uid) -> the LIVE index triple | docstring | - | 859 |
+| `Stage.resolve` | v | '$name' / '$name.key' -> self.sym; '$wire_of:<uid>:<term i>' -> that terminal's LIVE wire uid (read now, | docstring | - | 908 |
+| `Stage.copy_in` | cls, uid, dest_diagram_uid, position, tag='' | COPY a primitive that already exists on the donor into Diagram #dest by 'OpMoveByIndex_v0' (the op of | docstring | - | 925 |
+| `Stage.add_sr_row` | ex, tag='' | 'add_shift_reg' on the loop named by uid, then the register PAIR read back by index: {right, left, k, | docstring | - | 959 |
+| `Stage.const_row` | ex, tag='' | 'OpCreateConstOnTerm_v0' ('build_opcreateconstonterm_v0.create_const_on_term':364): a constant TYPED BY | docstring | - | 979 |
+| `Stage.cfw_second_pass` | src_uid, dst | 42(b)'s ordered idempotent second pass through 'OpConnectFromWire_v0', usable for ANY new wire whose sink | docstring | - | 994 |
+| `Stage.live_graph` | path, retired_rights=(), extra_rights=None | The step-4 graph of a LIVE file (stage_d1_m3a4.py:104-110's recipe): wiki_build.read_live + the bed's | docstring | - | 1012 |
+| `Stage.rule_check` | d | PRE-DECIDED 143: the op the row names must be the op 'jev_pairs.op_rule' names for its classes, unless | docstring | - | 1028 |
+| `Stage.from_decision` | record, tag='fd' | PLAN STEP 6 / Pre-decided 142-143: execute a decision record (tools/jev_pairs.write_record shape). | docstring | - | 1040 |
+| `Stage.save_route` | exec_state, broken_ok | WHICH SAVE ROUTE, as a pure function so it is self-testable without LabVIEW. | docstring | - | 1193 |
+| `Stage.save` | broken_ok=False, cold_check=True | ONE save of the work copy, by the route 'save_route' picks. Records md5, size and version bytes; | docstring | - | 1204 |
+| `Stage.close` | expect_files=None | HYGIENE: panels closed, refs opened == closed, scratches deleted, the input's md5 unchanged, | docstring | - | 1243 |
+| `fixtures_check` | bad_md5s=(), before_listing=None | REVIEW c68-h6 (archive/peer/2026-09-24-c68-h6-fixture-listing.md §1/§4, accepted): after a run that swapped | docstring | - | 1297 |
+| `match_term_uid` | term_uid, all_rows, node_rows, is_source | Pre-decided 173 (cycle 71): a terminal addressed by its TERMINAL UID after its first resolution, because a | docstring | - | 1319 |
+| `uid_edges` | G, kinds=('wire', 'fs') | A graph's edges keyed by TERMINAL UID, not by name (review archive/peer/2026-09-24-c68-m4a-p6b-rename.md §4, | docstring | - | 1342 |
+| `term_key` | r | A terminal row's identity: (term uid, owner uid, term name). | docstring | - | 1372 |
+| `wire_keys` | rows | {(wire uid, frozenset of its SOURCE rows' term_key)} over the wired rows. A recycled wire uid on a new source is a | docstring | - | 1377 |
+| `term_identity_gates` | base, sim, real, renames=None, bind=None | TD / unwired / D of a stage's end (base = graph rows before, sim = the simulated end rows, real = the read-back end | docstring | - | 1391 |
+| `term_identity_names` | base, sim, real | card 141-3 (PD325(b)) as it stood until card chat-T6 - identity (term uid, owner uid, NAME), wires (wire uid, source | docstring | - | 1401 |
+| `wire_ends_pos` | rows, ob=None, tb=None | {wire uid: (frozenset of source position keys, frozenset of sink position keys)} - a wire as its two ends. | docstring | - | 1454 |
+| `kept_nodes` | B, gone=() | The BASE nodes that keep at least one base position key (not all in 'gone'). Only these nodes' positions are compared | docstring | selftest_t6_poskey | 1464 |
+| `term_identity_pos` | base, sim, real, bind=None, renames=None | TD / unwired / D on position keys (block comment above). Returns the keys term_identity_gates always returned - | docstring | - | 1479 |
+| `licence_renames` | lic | {(term uid, owner uid): (from, to)} from a pb-licence/1 dict's 'renames' list ([{node, term_uids, from?, to?}]); | docstring | - | 1525 |
+| `pb_rename_rows` | base, sim, real, renames=None, bind=None | (rows, restored, unlicensed) for PB's build4 - card chat-T6 (docs/d1/result-gates.md): every real row on a KEPT BASE node (kept_nodes) | docstring | - | 1538 |
+| `d4_load` | path | The D4 JSON ({s1: {path, md5}, scope_nodes}) plus 'scope' (set), 's1_md5_got' and 'names' = {node: {name: | docstring | - | 1570 |
+| `d4_ok` | node, name, d4 | D4's one test: the node is in scope and S1's graph has a terminal of that name on it. | docstring | - | 1588 |
+| `d4_e1` | diffs, info, d4 | (ok, accepted, bad) over [(checkpoint k, stagexec.compare dict)]; 'info' = {term uid: (owner uid, name)}. | docstring | - | 1593 |
+| `d4_pb` | got, want, real_end, sim_end, d4 | (ok, closed, grown, bad) at PB. got / want = sets of (node, sink name) of cdiff(S1, real end) / the plan's | docstring | - | 1618 |
+| `d4_form` | real_end, d4 | FACTS ONLY: {scope node: 'equal to S1' / 'real-only {..} S1-only {..}'} comparing the real end's name counts on | docstring | - | 1642 |
+| `fixture_listing` |  | Sorted base names of the *.vi files in the folder of gscript.MOVE_DST (the move-target fixture folder). Returns list of str. | side file | - | 1660 |
+| `unload_donor` | path=None | Card 97-5 (judgement c97): after the copy_in calls, drop the donor (default 'g.MOVE_SRC') from LabVIEW's memory | docstring | - | 1664 |
+| `run` | fn, stage | The standard main(): run 'fn(stage)', never let an exception skip the hygiene tail. | docstring | - | 1689 |
+| `jload` | *parts | json.load of os.path.join(*parts) (utf-8) - the recipes' 'J' helper. Returns the parsed object. | docstring | - | 1720 |
+| `pure` | name | A NO-LabVIEW module (stagexec, stagesim, vigraph, jev_candidates, elrule) imported DIRECTLY, as the recipes import it - not | docstring | - | 1726 |
+| `pos_slot_table` | G | {term key: (node, index in the node's READ order, term class, is_source)} of a vigraph graph - the same key as | docstring | selftest_c153_poskey_convert.py | 1739 |
+| `pos_name_free` | P, s | One effective source ('<key>' or '<key>@<tunnel>/f<n>+...') -> (its position in table P, frame tag); an unknown key | docstring | selftest_c153_poskey_convert.py | 1752 |
+| `pos_slots` | G, nodes, V=None | {sink key: ((node, index, class), frozenset of name-free effective sources)} for the input terminals of 'nodes' in | docstring | selftest_c153_poskey_convert.py | 1763 |
+| `pos_convert` | rows, SA, SB | Name-keyed cdiff sink strings -> POSITION rows [{sink, slot, name_a, name_b, before, after[, passthrough]}], sorted by | docstring | selftest_c153_poskey_convert.py | 1774 |
+| `pos_convert_open_rows` | plan_open_rows, old_rows, new_rows | A plan's open_rows [{node, term}] with every row dropped whose (node, name) pair the old -> new row conversion removed | docstring | selftest_c153_poskey_convert.py | 1797 |
+| `s1_frame_graph` | labels=None | S1's FRAME-KEYED vigraph graph (the wiki S1 terminals + the newest graph_objs_s1 / graph_loops_s1 reads), as every ring | docstring | selftest_t7_ring.py | 1805 |
+| `pred_end_graph` | L, labels, fs_pairs | The FRAME-KEYED vigraph graph of a plan's simulated end state L (its terminals, objs, loops) - the graph a pred's cdiff rows | docstring | selftest_t7_ring.py | 1814 |
+| `pb_check` | S1f, G1, Gpred, pred_rows, open_rows, unlicensed=(), V=None | PB by POSITION (card chat-T7, fp-70): cdiff(S1f, G1 = the REAL end) (vigraph.computation_diff_frame) against the pred's cdiff | docstring | selftest_t7_ring | 1821 |
+| `run_bind` | bind=None, report=None | The run's bindings as ONE {sim uid: real uid} map: an Executor's x.bind ({obj, term, diag}) merged, plus the union of a recorded | docstring | selftest_c158_gates386.py | 1859 |
+| `real_rows_from_record` | rows5, sim_terms, flat | (rows, record): the 5-column real end rows a run records (RingSession.gate_td 'real_end_rows': term uid, owner uid, name, wire, | docstring | selftest_c158_gates386.py | 1873 |
+| `frame_tag_map` | G | {(tunnel node uid, frame ordinal): frame diagram uid} of a FRAME-KEYED vigraph graph - what a tag '<tunnel>/f<k>' means on THAT | docstring | selftest_c158_gates386.py | 1912 |
+| `frame_src_resolve` | src, fmap | One frame-keyed effective source '<key>' or '<key>@<tunnel>/f<k>+...' -> (key, frozenset((tunnel uid, frame diagram uid))): every | docstring | selftest_c158_gates386.py | 1925 |
+| `case_move_frames` | plan, sim_end, flat | {node uid: {frame diagram uid}} - for every plan 'move_in' whose dest_diagram is a frame 'new:<as>.f<k>' of a CaseStructure the SAME | docstring | selftest_c158_gates386.py | 1942 |
+| `pb_bound_rows` | cd, G, V=None | {sink: frozenset of (source POSITION key, frozenset((tunnel, frame uid)))} of a frame-keyed cdiff's rows on graph G (its 'after' | docstring | selftest_c158_gates386.py | 1961 |
+| `pb_check_bound` | S1f, G1, Gpred, Gsimb, pred_rows, open_rows, move_frames, unlicensed=(), V=None, inherit=None | PB of PD386(a): pb_check(S1f, G1 = the real end, Gpred, ...) PLUS (1) the real PB == the PB of Gsimb = the sim end re-keyed by the | docstring | selftest_c158_gates386.py | 1979 |
+| `pb_inherit_ctx` | plan, flat, base_vi_md5=None, labels=None, fs_pairs=None, S1f=None, V=None, adopt_path=None | The context pb_inherited_row needs, from files only (PD394(a), PD395(b)). Returns {frames {node: {frame uid}} inherited from the | docstring | selftest_c161_pbinherit.py | 2033 |
+| `pb_inherited_row` | sink, y, res, G1, S1f, bound_end, ctx | Class 1 / class 2 of ONE pred-extra PB row (docs/d1/ring-p5b.md PD394(a), PD395(b)); y = its cdiff row, res = its 'after' sources | docstring | selftest_c161_pbinherit.py | 2102 |
+| `pb_386` | base_terms, L, real, objs, flat, plan, pred_rows, open_rows, labels, fs_pairs, renames=None, S1f=None, V=None, inheri... | The whole PD386(a) PB from a run's pieces - what RingSession.gate_pb calls: L = the sim end (sim uids), real = the read-back end | docstring | selftest_c158_gates386.py | 2156 |
+| `wire_pairs_pos` | rows, ob=None, tb=None, base_nodes=None | (Counter of (source end, sink end) pairs, {wire uid: sorted source ends} of source-only stubs) of one terminal table, ends = position | docstring | selftest_c158_gates386.py | 2178 |
+| `term_identity_pairs` | base, sim, real, bind=None, renames=None | D / TD of PD386(b): term_identity_pos's dict with d_ok / td_ok re-judged PAIR-KEYED. D: the new and the lost (source, sink) pairs | docstring | selftest_c158_gates386.py | 2200 |
+| `stub_sides` | hs, hr | card 159-e1-1: the one-sided source-only stubs of a sim side and a real side - hs / hr = {wire uid: source ends} -> {sim_only: | docstring | selftest_c159_cen2_ends.py | 2227 |
+| `wire_end_pairs` | rows, base_terms, base_frames | card 159-e1-1 (PD389(b), docs/d1/ring-p5b.md): (Counter of (source key, sink key, frame) end pairs, {wire uid: sorted source keys} | docstring | selftest_c159_cen2_ends.py | 2239 |
+| `cen2_wire_ends` | base, sim, real, base_frames=() | card 159-e1-1 (PD389(b), docs/d1/ring-p5b.md): CEN2's Wire class judged by ENDS. base / sim / real = terminal rows (base = c0's | docstring | selftest_c159_cen2_ends.py | 2273 |
+| `scratch_census` | log_path, sum_json=None, key='CENSUS-ALL new uids by class (every class) ' | (census {class: n}, whole-file line number, last-segment start line) from the ONE 'key' line in the LAST bgrun segment of a | docstring | selftest_c158_gates386.py | 2291 |
+| `op_class_census` | prev_rows, rows | Class census between two whole-VI terminal reads (no extra LabVIEW read): {terms: {term class: n new term uids}, owners: {owner | docstring | selftest_c158_gates386.py | 2308 |
+| `op_class_census_install` | rs, ops=(16, 17) | PRINTING ONLY (PD386(c), the PD385(b) per-op census owed): wrap the ring backend's read (sink_gate_backend_class) so the whole-VI | docstring | selftest_c158_gates386.py | 2325 |
+| `op_class_census_print` | h | Print one 'OPCENSUS op <k>' line per op of an op_class_census_install holder (or why it was not measured). Returns the dict. | docstring | - | 2349 |
+| `retry_card_arg` | argv, script | PRINTING ONLY: the '--retry-card <path>' / 'RETRY_CARD=<path>' judgement card in a recipe's own argv (stage_prerun.RETRY_CARD_RE, | docstring | selftest_c158_gates386.py | 2364 |
+| `sink_gate_spec` | e, actions, base, sim_end | One sink-gate census row (prep_*_session.json 'sink_gate_census', needs_sink_gate) -> its declared sink gate spec | docstring | selftest_t7_ring.py | 2381 |
+| `sink_gate_read` | e, d, x, rows, n_actions | (ok, detail) for the deferred op error on sink d['sink'] (stage_d1_ring_p5s01a.py:90-117 sg_read, unchanged): (a) the indicator | docstring | selftest_t7_ring.py | 2406 |
+| `sink_gate_backend_class` |  | stagexec.LVBackend subclass that KEEPS its last whole-VI read in 'last_terms' (no extra read; LVBackend.read is called exactly | docstring | - | 2438 |
+| `SimCensus` | (class) | card 159-a4-1 (PD387(e)): a {uid: class} census snapshot taken from a stagesim STATE, not from LabVIEW; Stage.census_gate | docstring | selftest_c159_a4_1.py | 2453 |
+| `sim_census_snapshot` | state, classes=None | card 159-a4-1 (PD387(e)): the SimCensus {uid: class} of one stagesim state - objs by class, terminals by term_class, every | docstring | selftest_c159_a4_1.py | 2459 |
+| `census_unpredicted_reason` | pred | card 159-a4-1 (PD387(e), docs/violation-decisions.md device-failed 2026-10-10 03:2x): None when a pred's census block covers | docstring | selftest_c159_a4_1.py | 2479 |
+| `RingSession` | (class) | The inputs of one ring stage session and the gates its body runs - stage_d1_ring_p5s01a.py:31-191 as calls. A recipe builds | docstring | selftest_t7_ring.py | 2498 |
+| `RingSession.stem` |  | The plan file's name without .json (gate labels name it). Returns a str. | docstring | - | 2529 |
+| `RingSession.sink_read` | e, d | (ok, detail) of sink_gate_read on this session's executor and last read; (True, 'dry') in a dry run. | docstring | - | 2533 |
+| `RingSession.census_snapshot` | s | {uid: class} of s.census_snapshot() kept to the pred's census classes (the recipes' 'snap'). ONE whole-VI read. | docstring | - | 2539 |
+| `RingSession.handles` |  | LabVIEW's handle count now (bench_prep.labview_handles); None in a dry run is the caller's business. | docstring | - | 2543 |
+| `RingSession.gate_l0` | s | L0 (FATAL): plan final + open_rows_match + plan_in == <plan>_in or <plan>_in<N> (plan_in_matches_stem); base graph md5 == pred == file; | docstring | - | 2547 |
+| `RingSession.executor` | s | SG (FATAL: one declared sink gate per census row) -> the backend (stagexec.DryPlanBE in a dry run, else the SGBackend | docstring | - | 2558 |
+| `RingSession.run` | s | Run the executor: E1 (every checkpoint's real graph == its simulated step). On stagexec.ExecStop: save ops 1..k-1 for a | docstring | - | 2579 |
+| `RingSession.gates_ng_fr_d` | s, real | NG (crossing ops' new tunnel names == the simulator's), FR (FATAL: created objects on the sim end's frames; real frames == | docstring | - | 2596 |
+| `RingSession.gate_cen2` | s, c0, c1, real=None | CEN2: the new-object census between snapshots c0 and c1 == the pred's census. Returns s.census_gate's delta. | docstring | - | 2624 |
+| `RingSession.gate_td` | s, real | TD: every base terminal the sim keeps wired is still wired; identities lost == the plan's deletes (position key). Records | docstring | - | 2657 |
+| `RingSession.gate_pb` | s, real | PB (FATAL, before save): pb_check(S1, real end) - by POSITION (fp-70). The real end's rows get the sim end's names on kept | docstring | - | 2671 |
+| `RingSession.finish` | s, h0, rk, dc, key, level, save=True | PH / HB (handles open -> save <= +700, PD236(b)), the rule-6 GUI save (broken by design), PS (saved, md5 differs, input | docstring | - | 2688 |
+| `pred_x10` | pred_path, plan_path | The X10 prediction of a plan: its pred file's memory_pred.peak_mb, ONLY when pred.plan.md5 == md5(plan) (the scratch | docstring | selftest_t7_ring.py | 2708 |
+| `census_all_install` | stage_cls=None | Wrap Stage.census_snapshot / census_gate (once) so every snapshot is kept and every census gate also prints the CENSUS-ALL | docstring | selftest_t7_ring.py | 2724 |
+| `el_norm_ocr` | s | An Error List text -> lower-case alphanumerics with the OCR aliases applied (== errorlist_check.norm). Returns a str. | docstring | - | 2761 |
+| `el_class` | it | One Error List item {raw, detail} -> its class: elrule.item_class's local / cond / sr, else input, else | docstring | selftest_t7_ring.py | 2770 |
+| `el_advisory` | items, pred_path, plan_path, pred=None | (rc, report) for one Error List read (its items) against the pred's errorlist.per_class (PD354(a), ADVISORY): rc 1 only for | docstring | selftest_t7_ring.py | 2782 |
+| `el_advisory_print` | rc, rep | Print the one EL-ADVISORY line of an el_advisory result. | docstring | - | 2805 |
+| `el_advisory_selftest` | pred_path, plan_path | Four synthetic Error List reads built from the pred's predicted per-class counts (offline, the scratch recipes' | docstring | - | 2812 |
+| `scratch_offline_modes` | argv, pred_path, plan_path | The scratch recipes' two OFFLINE modes, before any K.Stage: '--el-advisory-selftest' -> el_advisory_selftest's rc; | docstring | - | 2840 |
+| `scratch_tail` | st, rc, gone, key, tag, log, base_vi, base_md5, pred_path, plan_path, card, sum_json, fail_mb, launch_mb=680.0 | After K.run of a scratch: peak private MB from the log's METER lines vs the pinned X10 (pred_x10), and the gates MEM (peak <= | docstring | - | 2852 |
+| `made_symbols` | acts | The 'new:' symbols the rows create: every 'as' alias, plus <as>L / <as>R of an add_shift_reg; returns a set. | docstring | selftest_c160_stagemap.py | 2884 |
+| `used_symbols` | acts, made | Sorted earlier-step symbols the rows reference: 'new:X' (address heads) or 'new:X.f<k>' (frame diagrams), minus 'made'; returns a list. | docstring | selftest_c160_stagemap.py | 2894 |
+| `map_symbols` | used, sym, bound, graph | (REAL, bad, lines): each used symbol -> sim uid (sym) -> real uid (bound); a frame symbol's real uid must be an owners entry | docstring | selftest_c160_stagemap.py | 2912 |
+| `map_frames` | acts, all_acts, sym, bound, owners, default_frames=('False', 'True') | (FMAP {(action id, end uid): {...,'addr': '#<uid>'}}, bad, lines): a 'frame' name on an end whose tunnel ('tunnel' action in all_acts) | docstring | selftest_c160_stagemap.py | 2939 |
+| `apply_map` | acts, REAL, FMAP | The rows with earlier-step symbols -> real uids (string address 'new:X.t' in src/dst -> {'uid': real, 'term': 't'}) and mapped frame | docstring | selftest_c160_stagemap.py | 2975 |
+| `bound_from_cmap` | path | (head, {sim uid: real uid}) over the obj / diag / term entries of ONE creation-map/1 file, read by stage_prerun.read_creation_map; a sim id | docstring | selftest_c160_stagemap.py | 3001 |
+| `plan_in_matches_stem` | path, stem | True when the basename of 'path' without its extension is exactly <stem>_in or <stem>_in<ASCII digits> (a numbered revision of the | docstring | selftest_c160_l0stem.py | 3015 |
 
 ### tools/stagesim.py
 
-shared module; imported by 175 file(s): `tools/bench/dedupe_check_s2b.py`, `tools/bench/diag_c100_6_parity.py`, `tools/bench/diag_c100_6_resim.py`, `tools/bench/diag_c100_6_resim2.py`, `tools/bench/diag_c100_disp_sim.py`, `tools/bench/diag_c100_plan.py` ...
+shared module; imported by 193 file(s): `tools/bench/dedupe_check_s2b.py`, `tools/bench/diag_c100_6_parity.py`, `tools/bench/diag_c100_6_resim.py`, `tools/bench/diag_c100_6_resim2.py`, `tools/bench/diag_c100_disp_sim.py`, `tools/bench/diag_c100_plan.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
 | `SimError` | (class) | An action that cannot be applied: an unaddressable/ambiguous terminal, an occupied sink, a cross-diagram | docstring | - | 210 |
-| `md5_file` | path | (undocumented) | - | - | 215 |
-| `load_models` | model_dir=OPMODEL_DIR | (undocumented) | - | - | 240 |
+| `md5_file` | path | MD5 hex digest of the file at path, read in 1 MiB chunks. Returns str. | side file | - | 215 |
+| `load_models` | model_dir=OPMODEL_DIR | {op name: {path, md5, data}} for every *.json op model in model_dir (default OPMODEL_DIR); the name is the file's 'op' string, else its stem; an unreadable file gives {path, md5 None, data None, er... | side file | - | 240 |
 | `model_for` | op, models | (params, source string, evidence, gaps) for one op. | docstring | - | 254 |
 | `cfw_border_rule` | data | card 114-3 C1/C2 (review archive/peer/2026-09-28-c114b-l2b3d.md s1): 'recreate' when the MEASURED connect_from_wire | docstring | - | 276 |
 | `plan_tunnel_face` | st, row | True when 'row' is a face of a tunnel an earlier 'tunnel' action of THIS plan made (a symbolic LoopTunnel/Tunnel, | docstring | - | 298 |
-| `base_state` | graph, context=None | (undocumented) | - | - | 307 |
+| `base_state` | graph, context=None | Simulator state from a graph read: deduplicated terminals, objs, loops, fs pairs, owners (context files may replace loops / fs pairs / owners), empty sym; a previous simulated end state keeps its k... | side file | - | 307 |
 | `fs_measured_state` | graph | card 134-1 (PD287(b)): the Flat Sequence map of a REAL graph from what its reader MEASURED - graph['fs_measured'] = | docstring | - | 374 |
 | `fs_border_gate` | graph, uses | card 134-2 (PD288(b)): gate B SCOPED, never relaxed. Every FlatSequenceOuterTunnel of a measured graph that | docstring | - | 496 |
 | `completeness_gate` | g, uses=None, st=None | card 135-2 (docs/violation-decisions.md 2026-10-02 12:2x, device (1); selftest_c134_4_owners O1-O3 made a gate): a | docstring | selftest_c134_4_owners | 516 |
 | `WriteGuard` | (class) | card 135-2 (docs/violation-decisions.md 2026-10-02 12:2x, device (2); PD279(c) extended to finalize and to the step | docstring | - | 564 |
-| `WriteGuard.unchanged` |  | (undocumented) | - | - | 584 |
-| `WriteGuard.restore` |  | (undocumented) | - | - | 587 |
-| `new_uid` | st | (undocumented) | - | - | 608 |
-| `node_rows` | st, uid | (undocumented) | - | - | 613 |
-| `wire_rows` | st, w | (undocumented) | - | - | 617 |
-| `has_source` | st, w | (undocumented) | - | - | 621 |
-| `obj_class` | st, uid | (undocumented) | - | - | 625 |
-| `resolve_uid` | st, ref | (undocumented) | - | - | 635 |
-| `resolve_diag` | st, ref | A diagram field (dest_diagram / diagram / body / parent) -> a diagram uid. An int is a base diagram; the string | docstring | - | 648 |
-| `parse_addr` | a | Terminal address -> {'uid': head, 'term': terminal}: a dict is copied, a '<uid>.<terminal>' / 'new:<kind><n>.<terminal>' string is split at its first '.'; anything else raises SimError. | side file | - | 669 |
-| `base_case_frames` | owners, case | card 155-a1-1 (PD378(a)): the frame diagram uids of CaseStructure #case, read from an owner map ({uid: [owner class, | docstring | selftest_c155_basecase_frame.py | 681 |
-| `case_frame_names` | st, case | card 155-a1-1 (PD378(a)): [[name, frame diagram uid], ...] of CaseStructure #case in frame-index order. A case THIS | docstring | selftest_c155_basecase_frame.py | 691 |
-| `case_frame_of` | st, frame_diag | card 124-2 (PD249(d)): (case uid, frame index, frame name) of 'frame_diag' when it is a frame of a case THIS plan | docstring | selftest_c155_basecase_frame.py | 702 |
-| `fs_of` | st, frame_diag | card 126-3: (FS uid, frame index left to right) when 'frame_diag' is a frame of a Flat Sequence THIS plan created | docstring | - | 718 |
-| `resolve_addr` | st, a, want_source | The ONE terminal row an address names. Selector order: term_uid, then name; 'inner'/'outer' (or 'side') | docstring | - | 767 |
-| `graph` | st, labels=None, fs_pairs=None | fs_pairs (card 106-3): an override for the state's own 'fs_pairs' (None = the state's) - the finalize cdiff graph | docstring | - | 858 |
-| `effective_consumers` | G, key | The COMPUTATION sink terminals 'key''s value reaches through scheduling relays only (forward twin of | docstring | - | 870 |
-| `s1_partner` | S1, G, key | (undocumented) | - | - | 887 |
-| `seed_base_flips` | st, cascade=False | card 112-1 T3 (PD225(h)3 (iii), brief_110-3 (e)): flips made in an EARLIER session. A base-graph tunnel of a | docstring | - | 982 |
-| `seed_base_flips_modelled` | st, models | seed_base_flips under the switch that arms the same-session un-flip (the move_in model's 'unflip_on_source', | docstring | - | 1008 |
-| `only_sink_fate` | P, src_class | The only-sink sub-rule (card chat-S3; tools/bench/opmodels_onlysink.log): what happens to a wire whose ONLY | docstring | - | 1027 |
-| `only_source_fate` | P, src_class | card 101-4, the MIRROR of only_sink_fate: a CUT wire whose ONLY source sat on the MOVED node and whose one other | docstring | - | 1035 |
-| `closure_of` | st, uid | (nodes, diagrams): everything a move of 'uid' carries - 'uid' itself plus every node with a terminal on a diagram | docstring | - | 1083 |
-| `op_move_in` | st, a, P, S1, labels | MOVE (card 80-6 refit to the L2-A1 reads, fixture tools/bench/sim/l2a1_real_80.json): | docstring | - | 1097 |
-| `termclass_table` | path=None | The measured table (termclass_table/1) or None when absent/unreadable (then measured_term_class keeps the declared class). | docstring | - | 1268 |
-| `measured_term_class` | owner_class, decl, t, table=None | (term_class, note/None) for declared terminal 't' of a created 'owner_class' node whose declared terminal list is 'decl': | docstring | - | 1279 |
-| `op_add_shift_reg` | st, a, P, S1, labels | (undocumented) | - | - | 1318 |
-| `op_tunnel` | st, a, P, S1, labels | (undocumented) | - | - | 1381 |
-| `op_delete_wire` | st, a, P, S1, labels | (undocumented) | - | - | 1412 |
-| `op_delete_object` | st, a, P, S1, labels | (undocumented) | - | - | 1445 |
-| `cond_row` | st, loop | card 101-3: the conditional-terminal row of a While loop a 'create' made = the body Diagram's one unnamed | docstring | - | 1474 |
-| `cond_target` | st, ref | 'new:<alias>.cond' naming a WhileLoop an earlier 'create' made -> that loop's uid, else None. The conditional | docstring | - | 1485 |
-| `op_wire` | st, a, P, S1, labels | (undocumented) | - | - | 1507 |
-| `op_remove_bad_wires` | st, a, P, S1, labels | (undocumented) | - | - | 1605 |
-| `naming_table_lt_pairs` | path | card 153-b1-1: the measured LoopTunnel source shapes recorded in a naming table -> [(loop_class, inner_src_class)]. | docstring | - | 1939 |
-| `cross_face_names` | st, s, a, tunnels | card 131-1: the names LabVIEW gives the faces of the tunnels ONE crossing creates. 'tunnels' = [(cls, fin, fout, | docstring | - | 1965 |
-| `naming_table_check` | path=None | card 131-1: every row of the crossing table vs cross_face_names -> {rows: [(label, bad, cite)], skipped: [label], | docstring | - | 1979 |
-| `op_wire_remove_loose_ends` | st, a, P, S1, labels | card 127-2 (PD255(b)/256(b)): gscript.wire_remove_loose_ends on a pre-existing wire ('wire_uid') or on every wire the | docstring | - | 2227 |
-| `op_create` | st, a, P, S1, labels | card 100-3: 'diagram' may be 'new:<alias>.body'. By class: | docstring | - | 2256 |
-| `op_gate` | st, a, P, S1, labels | card 100-3: a VALUE gate on a base constant (the real run reads it and stops when it equals 'stop_if'). The graph | docstring | - | 2381 |
-| `op_decide` | st, a, P, S1, labels | (undocumented) | - | - | 2392 |
-| `uid_edges` | G, kinds=('wire', 'fs') | stagekit.uid_edges, copied (importing stagekit pulls the LabVIEW fleet in). | docstring | - | 2406 |
-| `canon` | edges, base_nodes, cls_of | Edges with every NEW object named by its class only ('NEW:<class>', terminal '*') - comparison up to | docstring | - | 2416 |
-| `canon_diff` | ca, cb | (undocumented) | - | - | 2427 |
-| `cdiff_keys` | cd | (undocumented) | - | - | 2433 |
-| `load_s1` | plan | (undocumented) | - | - | 2438 |
-| `cdiff_inputs` | plan, st, labels=None | card 106-3 (PD217(d), facts_c104c_e3.json): the node labels + fs tunnel pairs the FINALIZE cdiff graph is built | docstring | - | 2448 |
-| `open_row_class` | r | PD217(c): a plan open row's PD213(d) class - a 'class' field, else the class the finalizer wrote into 'why' | docstring | - | 2472 |
-| `c4_check` | S1, G, c4 | PD217(c): for every class-(4) (node, term) row, the end graph's effective sources == S1's, on every sink key of | docstring | - | 2486 |
-| `open_rows_classed` | plan, S1, G, end_pairs | card 106-3: the finalize open-row rule under PD217(c)'s classes (the E3 rule applied at plan time): every declared | docstring | - | 2503 |
-| `route_report` | plan_out_path, model_dir=OPMODEL_DIR, log=print, require_final=True | card 112-1 T4: stagexec.dry_run on a just-finalized plan -> {status, first_fail, rows: [{k, op, ids, route, how, | docstring | - | 2516 |
-| `fs_routes_of` | steps | card 133-1: {str(action n): {"how", "variant", "id"}} for every simulated 'wire' step whose effect is a Flat Sequence | docstring | - | 2545 |
-| `simulate` | plan_path, graph_path, out_root=SIM_ROOT, plan_out_dir=BENCH, model_dir=OPMODEL_DIR, labels=None, log=print, route_ch... | card 153-b1-1 (PD370(c)): 'collect_all' (default False = the unchanged replay) - an UNMEASURED refusal takes the plan's own | docstring | - | 2571 |
-| `selftest` |  | (undocumented) | - | - | 2866 |
-| `main` | argv | (undocumented) | - | - | 3523 |
+| `WriteGuard.unchanged` |  | True when the current bytes of every snapshotted file and of every file in the snapshotted dirs equal the snapshot taken at construction. Returns bool. | side file | - | 584 |
+| `WriteGuard.restore` |  | Puts the snapshot back: rewrites each file (deleting one that did not exist), removes files new in the dirs, rewrites the dirs' files. Returns unchanged() afterwards. | side file | - | 587 |
+| `new_uid` | st | Decrements the state's negative-uid counter st['neg'] and returns it: the next simulator-made uid. Returns int. | side file | - | 608 |
+| `node_rows` | st, uid | Terminal rows of the state whose graph node (vigraph.node_of) is uid. Returns list. | side file | - | 613 |
+| `wire_rows` | st, w | Terminal rows of the state on wire w; [] when w is 0 or None. Returns list. | side file | - | 617 |
+| `termless_wire` | st, w | card 160-a1-1 (PD390(a)): True only when 'w' is in the CURRENT object list as class 'Wire' AND has 0 terminal rows | docstring | selftest_c160_delwire.py | 621 |
+| `has_source` | st, w | True when any terminal row on wire w is a source. Returns bool. | side file | - | 628 |
+| `sourceless_wire` | st, w | card 160-a2-1 (docs/d1/ring-p5b.md PD391(b)): True only when 'w' is in the CURRENT object list as class 'Wire' AND none | docstring | selftest_c160_delwire.py | 632 |
+| `obj_class` | st, uid | Class of uid: from the state's objs, else from the first terminal row of that node (vigraph.node_class), else None. Returns str or None. | side file | - | 640 |
+| `resolve_uid` | st, ref | Plan uid reference -> uid: an int as is, 'new:<alias>' from st['sym'] (SimError when no earlier action created it), else int(ref); an unconvertible ref raises SimError. Returns int. | side file | - | 650 |
+| `resolve_diag` | st, ref | A diagram field (dest_diagram / diagram / body / parent) -> a diagram uid. An int is a base diagram; the string | docstring | - | 663 |
+| `parse_addr` | a | Terminal address -> {'uid': head, 'term': terminal}: a dict is copied, a '<uid>.<terminal>' / 'new:<kind><n>.<terminal>' string is split at its first '.'; anything else raises SimError. | side file | - | 684 |
+| `base_case_frames` | owners, case | card 155-a1-1 (PD378(a)): the frame diagram uids of CaseStructure #case, read from an owner map ({uid: [owner class, | docstring | selftest_c155_basecase_frame.py | 696 |
+| `case_frame_names` | st, case | card 155-a1-1 (PD378(a)): [[name, frame diagram uid], ...] of CaseStructure #case in frame-index order. A case THIS | docstring | selftest_c155_basecase_frame.py | 706 |
+| `case_frame_of` | st, frame_diag | card 124-2 (PD249(d)): (case uid, frame index, frame name) of 'frame_diag' when it is a frame of a case THIS plan | docstring | selftest_c155_basecase_frame.py | 717 |
+| `fs_of` | st, frame_diag | card 126-3: (FS uid, frame index left to right) when 'frame_diag' is a frame of a Flat Sequence THIS plan created | docstring | - | 733 |
+| `resolve_addr` | st, a, want_source | The ONE terminal row an address names. Selector order: term_uid, then name; 'inner'/'outer' (or 'side') | docstring | - | 782 |
+| `graph` | st, labels=None, fs_pairs=None | fs_pairs (card 106-3): an override for the state's own 'fs_pairs' (None = the state's) - the finalize cdiff graph | docstring | - | 873 |
+| `effective_consumers` | G, key | The COMPUTATION sink terminals 'key''s value reaches through scheduling relays only (forward twin of | docstring | - | 885 |
+| `s1_partner` | S1, G, key | Maps a graph key to the S1 key (jev_candidates.map_key) and lists its S1 wire partners: direct sinks and effective consumers for a source, direct and effective sources for a sink. Returns {s1_key, ... | side file | - | 902 |
+| `seed_base_flips` | st, cascade=False | card 112-1 T3 (PD225(h)3 (iii), brief_110-3 (e)): flips made in an EARLIER session. A base-graph tunnel of a | docstring | - | 997 |
+| `seed_base_flips_modelled` | st, models | seed_base_flips under the switch that arms the same-session un-flip (the move_in model's 'unflip_on_source', | docstring | - | 1023 |
+| `only_sink_fate` | P, src_class | The only-sink sub-rule (card chat-S3; tools/bench/opmodels_onlysink.log): what happens to a wire whose ONLY | docstring | - | 1042 |
+| `only_source_fate` | P, src_class | card 101-4, the MIRROR of only_sink_fate: a CUT wire whose ONLY source sat on the MOVED node and whose one other | docstring | - | 1050 |
+| `closure_of` | st, uid | (nodes, diagrams): everything a move of 'uid' carries - 'uid' itself plus every node with a terminal on a diagram | docstring | - | 1098 |
+| `op_move_in` | st, a, P, S1, labels | MOVE (card 80-6 refit to the L2-A1 reads, fixture tools/bench/sim/l2a1_real_80.json): | docstring | - | 1112 |
+| `termclass_table` | path=None | The measured table (termclass_table/1) or None when absent/unreadable (then measured_term_class keeps the declared class). | docstring | - | 1283 |
+| `measured_term_class` | owner_class, decl, t, table=None | (term_class, note/None) for declared terminal 't' of a created 'owner_class' node whose declared terminal list is 'decl': | docstring | - | 1294 |
+| `op_add_shift_reg` | st, a, P, S1, labels | Simulates add_shift_reg: new Right/Left shift-register objects with inner faces on the body and outer faces on the parent, registered in st['loops'] (right_uids, left_of). Returns ({right, left sym... | side file | - | 1333 |
+| `op_tunnel` | st, a, P, S1, labels | Simulates a tunnel: on a CaseStructure delegates to _case_tunnel, else makes a LoopTunnel with its outer face on the parent and inner face on the body (dir 'in' = inner source) and its indexing fla... | side file | - | 1396 |
+| `op_delete_wire` | st, a, P, S1, labels | Simulates delete_wire on wire_uid or the one wire at address 'at' (SimError on 0 or several, or an absent wire): unwires its rows and drops DROP_WHEN_UNWIRED tunnels left unwired. Returns ({wire, n... | side file | - | 1427 |
+| `op_delete_object` | st, a, P, S1, labels | Simulates delete_object: removes uid (missing_ok gives already_absent, else SimError) with its shift-register partner, applies the only-sink rule to its wires, optionally flips orphaned tunnels. Re... | side file | - | 1467 |
+| `cond_row` | st, loop | card 101-3: the conditional-terminal row of a While loop a 'create' made = the body Diagram's one unnamed | docstring | - | 1496 |
+| `cond_target` | st, ref | 'new:<alias>.cond' naming a WhileLoop an earlier 'create' made -> that loop's uid, else None. The conditional | docstring | - | 1507 |
+| `op_wire` | st, a, P, S1, labels | Simulates a wire src -> dst: a While '.cond' sink, Flat Sequence frame / border / exit routes, else same-diagram only; a sink on a sourced wire is a SimError, a sourceless stub is detached or joine... | side file | - | 1529 |
+| `op_remove_bad_wires` | st, a, P, S1, labels | Simulates Remove Bad Wires: unwires every wire whose rows have no source, several sources or no sink; with drop_unconnected_fsit also drops FlatSequenceInnerTunnels left unwired. Returns ({removed_... | side file | - | 1627 |
+| `naming_table_lt_pairs` | path | card 153-b1-1: the measured LoopTunnel source shapes recorded in a naming table -> [(loop_class, inner_src_class)]. | docstring | - | 1961 |
+| `cross_face_names` | st, s, a, tunnels | card 131-1: the names LabVIEW gives the faces of the tunnels ONE crossing creates. 'tunnels' = [(cls, fin, fout, | docstring | - | 1987 |
+| `naming_table_check` | path=None | card 131-1: every row of the crossing table vs cross_face_names -> {rows: [(label, bad, cite)], skipped: [label], | docstring | - | 2001 |
+| `op_wire_remove_loose_ends` | st, a, P, S1, labels | card 127-2 (PD255(b)/256(b)): gscript.wire_remove_loose_ends on a pre-existing wire ('wire_uid') or on every wire the | docstring | - | 2249 |
+| `op_create` | st, a, P, S1, labels | card 100-3: 'diagram' may be 'new:<alias>.body'. By class: | docstring | - | 2278 |
+| `op_gate` | st, a, P, S1, labels | card 100-3: a VALUE gate on a base constant (the real run reads it and stops when it equals 'stop_if'). The graph | docstring | - | 2403 |
+| `op_decide` | st, a, P, S1, labels | Records an undecided choice among the action's options (no state change). Returns ({undecided: True, options}, [one candidate with intent, per-option pairs, undecided]). | side file | - | 2414 |
+| `uid_edges` | G, kinds=('wire', 'fs') | stagekit.uid_edges, copied (importing stagekit pulls the LabVIEW fleet in). | docstring | - | 2428 |
+| `canon` | edges, base_nodes, cls_of | Edges with every NEW object named by its class only ('NEW:<class>', terminal '*') - comparison up to | docstring | - | 2438 |
+| `canon_diff` | ca, cb | Multiset difference of two canon() Counters. Returns {only_sim, only_ref (sorted elements), n = total count of both}. | side file | - | 2449 |
+| `cdiff_keys` | cd | Sorted set of the 'sink' values of a computation-diff record's rows. Returns list. | side file | - | 2455 |
+| `load_s1` | plan | The S1 (original computation) graph of a plan: context s1_graph file built with vigraph.build4, else context s1_key via jev_candidates.load, else None. Returns graph dict or None. | side file | - | 2460 |
+| `cdiff_inputs` | plan, st, labels=None | card 106-3 (PD217(d), facts_c104c_e3.json): the node labels + fs tunnel pairs the FINALIZE cdiff graph is built | docstring | - | 2470 |
+| `open_row_class` | r | PD217(c): a plan open row's PD213(d) class - a 'class' field, else the class the finalizer wrote into 'why' | docstring | - | 2494 |
+| `c4_check` | S1, G, c4 | PD217(c): for every class-(4) (node, term) row, the end graph's effective sources == S1's, on every sink key of | docstring | - | 2508 |
+| `open_rows_classed` | plan, S1, G, end_pairs | card 106-3: the finalize open-row rule under PD217(c)'s classes (the E3 rule applied at plan time): every declared | docstring | - | 2525 |
+| `route_report` | plan_out_path, model_dir=OPMODEL_DIR, log=print, require_final=True | card 112-1 T4: stagexec.dry_run on a just-finalized plan -> {status, first_fail, rows: [{k, op, ids, route, how, | docstring | - | 2538 |
+| `fs_routes_of` | steps | card 133-1: {str(action n): {"how", "variant", "id"}} for every simulated 'wire' step whose effect is a Flat Sequence | docstring | - | 2567 |
+| `simulate` | plan_path, graph_path, out_root=SIM_ROOT, plan_out_dir=BENCH, model_dir=OPMODEL_DIR, labels=None, log=print, route_ch... | card 153-b1-1 (PD370(c)): 'collect_all' (default False = the unchanged replay) - an UNMEASURED refusal takes the plan's own | docstring | - | 2593 |
+| `selftest` |  | Offline self-test: runs the G-numbered gates on a synthetic graph in a temp dir, printing PASS / FAIL per gate, a GATES line and a RESULT line. Returns 0 when every gate passed, else 1. | side file | - | 2888 |
+| `main` | argv | CLI: 'selftest', or 'simulate <plan> <graph> [--out-root, --plan-out, --naming-table, --collect-all]' printing a SUMMARY and a RESULT line. Returns 0 final, 1 not final or collect-all, 2 (doc print... | side file | - | 3545 |
 
 ### tools/stagexec.py
 
-shared module; imported by 336 file(s): `tools/bench/constsrc_l2a1_82.py`, `tools/bench/constsrc_l2a1_85.py`, `tools/bench/ctsrc_l2a1_82.py`, `tools/bench/diag_c100_6_parity.py`, `tools/bench/diag_c100_rows.py`, `tools/bench/diag_c101_resim.py` ...
+shared module; imported by 386 file(s): `tools/bench/constsrc_l2a1_82.py`, `tools/bench/constsrc_l2a1_85.py`, `tools/bench/ctsrc_l2a1_82.py`, `tools/bench/diag_c100_6_parity.py`, `tools/bench/diag_c100_rows.py`, `tools/bench/diag_c101_resim.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
 | `ExecStop` | (class) | The executor stops here (a difference, an unbound object, an unaddressable terminal). | docstring | - | 62 |
 | `Meter` | (class) | Private bytes (MB) + handle count, stamped per op and per read. 'probe()' -> (private_bytes_int_or_None, | docstring | - | 95 |
-| `Meter.summary` |  | (undocumented) | - | - | 122 |
+| `Meter.summary` |  | Summary of the meter rows: n, first / peak private MB, last row, summed and mean MB deltas for 'op' and 'read' stamps, warned_at. Returns dict. | side file | - | 122 |
 | `meter_rows_from_log` | path | card 106-3: the recorded per-op meter of one run, read back from its log's 'METER <tag> k <k> private <mb> MB' lines | docstring | - | 137 |
 | `mem_predict` | rows, stop_after=None, from_step=None, start_mb=None, memstop=MEM_STOP_MB, margin_mb=0.0 | card 106-3 (retrospective-cycle103 'inference-over-measurement', PD216(f)): the private-MB peak a run over ops | docstring | - | 149 |
-| `md5` | p | (undocumented) | - | - | 172 |
+| `md5` | p | MD5 hex digest of file p (stagesim.md5_file). Returns str. | side file | - | 172 |
 | `load_final_plan` | plan_path, require_final=True | The plan, its step states (md5-checked against 'finalized.step_files') and the actions' step numbers. | docstring | - | 186 |
 | `base_cond` | ref | card 139-5 (PD316): {'uid': <BASE loop uid>, 'term': 'cond'} -> that uid (int), else None. The conditional terminal | docstring | - | 212 |
-| `verbs_missing` | route | The verbs a route calls that are NOT defined in the source (a text check - the dry run imports no LabVIEW side, | docstring | - | 338 |
-| `precondition_failures` | plan, ctx, stop_after=None, from_step=None | card 106-3: [{k, route, acts, ids, needs, work}] - every op the run DISPATCHES (from_step < k <= stop_after) whose | docstring | - | 371 |
-| `create_route` | a | The CREATE_ROUTES key for a create action, else ExecStop (no executor for that shape). | docstring | - | 389 |
-| `purge_entry` | purge, uid | The junk purge's read-back entry {uid, class, label, ...} of the created node #uid, else None. | docstring | - | 461 |
-| `prim_check` | a, entry, uid=None | card 141-1: (ok, detail) for ONE created primitive: read-back label == a['prim'] and class == a['class']. | docstring | - | 472 |
-| `const_born_on` | real, term, diagram | card 122-3 (PD241(a)): the row of terminal 'term' when it is the OUTPUT terminal of a diagram CONSTANT (is_const) on | docstring | - | 497 |
-| `tunnel_outer_face` | real, term, diagram | card 100-6 (PD213(f)3) + card 108-6 (PD222(g)): the row of terminal 'term' when it is the OUTER SOURCE face of a | docstring | - | 511 |
-| `check_symbols` | A | card 100-3: every symbolic reference names an alias an EARLIER action created; '.body' only of a loop create, | docstring | - | 532 |
-| `base_case_named` | owners, case | card 155-a1-1 (PD378(a)): (case uid, ['#<frame diagram uid>', ...]) of a BASE-graph CaseStructure #case from the base | docstring | selftest_c155_basecase_frame.py | 602 |
-| `base_case_of_frame` | owners, frame | card 155-a1-1 (PD378(a)): (case uid, frame names) when 'frame' is '#<diagram uid>' (FS_FACE_RE, the form a Flat | docstring | selftest_c155_basecase_frame.py | 613 |
-| `plan_base_owners` | plan | card 155-a1-1 (PD378(a)): the owner map {uid: [owner class, owner uid]} of the plan's BASE graph - plan['base'] or | docstring | selftest_c155_basecase_frame.py | 624 |
-| `case_frame_op` | A, i, fr, owners=None | card 124-2 (PD249(d)): {frame, frame_index, case} of wire action i whose end(s) carry 'frame' - read from the PLAN: | docstring | - | 654 |
-| `fs_wire_ops` | A | card 126-3 (PD253(e)): {wire action index: op fields} for the wires a FLAT SEQUENCE route takes, read from the PLAN | docstring | - | 730 |
-| `compile_plan` | plan, owners=None | [{kind, acts:[action indices 1-based], ...}] - one entry per REAL op, in order. Raises ExecStop on a shape the | docstring | selftest_c155_basecase_frame.py | 803 |
-| `dedupe` | terms | (undocumented) | - | - | 930 |
-| `edges` | terms | Groups terminal rows by wire_uid; returns (E, dang): E = set of (source term_uid, sink term_uid) pairs of every wire, dang = term_uids on a wire that has no source or no sink. | side file | - | 934 |
-| `translate` | state_terms, bind | Sim rows with created (negative) uids replaced by their bound real uids. Unbound negatives stay negative. | docstring | - | 950 |
-| `compare` | sim_terms, real_terms, bind, allow_either=() | {n, only_sim_terms, only_real_terms, only_sim_edges, only_real_edges, dangling_sim_only, dangling_real_only}. | docstring | - | 961 |
-| `step_soft` | d | card chat-S3 (PD328(c)): True when this step diff is LOG-only by gateclass (tunnel face rows only). | docstring | - | 988 |
-| `classify_step_diff` | plan, last_act, d | PD214(c) (user-side plan decision, cycle 101): a step difference made ONLY of sourceless (dangling) terminals - | docstring | - | 1010 |
-| `uid_reuse` | prev_real, real | Evidence that LabVIEW re-issued a freed uid to a NEW object within one op (hyp-optunouter-uidreuse-85.md:78-82; NI: | docstring | - | 1031 |
-| `bind_new` | prev_real, real, sim_prev, sim_now, bind | Bind the objects the simulation created between sim_prev and sim_now to the real objects that appeared between | docstring | - | 1054 |
-| `tunnel_name_check` | sim_prev, sim_now, real_prev, real_now | card 132-1 (PD275(c)): the per-op TUNNEL-NAME gate. The NEW rows owned by a *Tunnel object (term_uid absent from the | docstring | - | 1157 |
-| `is_crossing_op` | step_effects | card 132-1 (PD275(c)): an op is a CROSSING op when one of its plan actions' simulated steps lists created border tunnels | docstring | - | 1175 |
-| `bind_by_frames` | cls, su, ru, new_sim, new_real, dg, bind | Bind several created 'cls' objects of ONE op by their faces' frames. Object key = the sorted (term_class, is_source, | docstring | - | 1186 |
-| `bind_fs_tunnel` | prev_real, real, sim_prev, sim_now, bind | card 126-3: bind the FlatSequenceInnerTunnel a cross-frame wire made (stagesim._fs_frame_wire). Its FOUR rows are filed | docstring | - | 1213 |
-| `bind_case_faces` | prev_real, real, sim_prev, sim_now, bind | card 120-3 R2: bind a created case SELECTOR ('Tunnel') or case DATA tunnel (SelectorTunnel) - one outer face plus ONE | docstring | - | 1250 |
-| `is_ct` | r | (undocumented) | - | - | 1326 |
-| `listed_as_node` | r | Constant / Tunnel / Terminal are OUTSIDE the Node branch of the VI Server hierarchy (gobject/constant/.., | docstring | - | 1337 |
-| `is_const` | r | PD188(c) (card 85-1): a diagram CONSTANT end - outside Diagram.Nodes[] (listed_as_node), addressed by its class | docstring | - | 1352 |
-| `loop_parent` | st, L | The diagram uid a loop sits on: its own non-body rows, else its registers' / tunnels' OUTER faces (one value). | docstring | - | 1359 |
-| `touched_diagrams` | plan, st | Base diagram uids the plan touches: moved nodes' source diagrams, move destinations, register/tunnel parent + body, | docstring | - | 1387 |
-| `listing` | rd, diag, cls | {(class, uid)} of reader rd's Nodes[] on diagram uid 'diag' (None when the reader has no such diagram). | docstring | - | 1412 |
-| `reader_parity` | real_rd, sim_rd, diags, cls_real, cls_sim | [{diagram, n_real, n_sim, only_real, only_sim}] per diagram; 'n' = total one-side-only entries. | docstring | - | 1420 |
-| `classes_of` | st_or_rows, objs | uid -> class, from the objects list, else from the terminal rows (node_of / node_class). | docstring | - | 1434 |
-| `connect_route` | addr, real, src, dst, loop_of | The connect route BOTH backends take (so the dry run sees what the real run does): 'indicator' (panel sink, wired | docstring | - | 1447 |
-| `base_registers` | st | card 112-1 T1: {register uid: {"loop": loop uid, "right": its RightShiftRegister uid, "cls": class}} for every | docstring | - | 1572 |
-| `base_sr_route` | real, src, dst, base_regs | card 112-1 T1: (variant, register uid, body-side terminal) when a plain 'wire' row touches the INNER face of a | docstring | - | 1587 |
-| `face_twins` | rows, r, owners | PD191(b): the owner-routed OUTER faces on the same owner structure as row r with r's (name, direction) - r included. | docstring | - | 1601 |
-| `tunnel_owner` | rows, tun, owners | The structure uid owning tunnel 'tun' (via its inner frame diagrams in 'owners'), else ExecStop. | docstring | - | 1616 |
-| `loop_inner_face_route` | rows, rs, owners | card 157-a1-1 (docs/d1/ring-p5.md PD381(b)): the info fields of the 'cfw' route for an UNWIRED inner face of a While / | docstring | selftest_c157_innerface.py | 1626 |
-| `route_on_state` | st, src, dst, zero_terms=() | card 157-a1-1: connect_route on a simulated / recorded STATE, addressed as the dry backend addresses it (Addr over | docstring | selftest_c157_innerface.py | 1648 |
-| `Addr` | (class) | Terminal -> live index triple (Diagram idx, Nodes[] idx, Terminals[] idx). 'rd' = reader with diagrams(), | docstring | - | 1667 |
-| `Addr.snap_loop` | loop, diag | (undocumented) | - | - | 1696 |
-| `Addr.track_new` | loop, r_outer, l_outer | (undocumented) | - | - | 1700 |
-| `Addr.retrack` |  | (undocumented) | - | - | 1718 |
-| `Addr.triple` | real, term_uid, is_source, loop_of=None | (undocumented) | - | - | 1747 |
-| `Addr.ct` | real, term_uid | PD187(b) / 179(b): a ControlTerminal end -> {ct, diag, didx, name, is_source, wire}. term_uid == its own uid, | docstring | - | 1759 |
-| `Addr.const` | real, term_uid | PD188(c): a bare diagram-CONSTANT source -> {const, cls, term}. Its terminal row must be the constant's own | docstring | - | 1784 |
-| `Addr.tun` | real, term_uid | PD191(b): a structure tunnel's OUTER face -> {tun, cls, term}, addressed by the TUNNEL uid (Tunnel.Outside | docstring | - | 1800 |
-| `load_binding` | src, plan_path, from_step | card 103-4 (PD215(b) Part B): the Part-A binding -> {bind, loop_of, sym_real} with INT keys. 'src' = the dict | docstring | - | 1916 |
-| `bind_state` | st, bind | card 103-4: a simulated step state with every created (negative) uid replaced by its Part-A real uid - owner, | docstring | - | 1939 |
-| `bound_owners` | owners, bind | card 104-2: a SIMULATED step's owners map (str(frame diagram uid) -> [structure class, structure uid]) with every | docstring | - | 2012 |
-| `checkpoint_ops` | ops | card 157-a1-1 (docs/d1/ring-p5.md PD379(e), PD381(d)): the E1 checkpoint set of a compiled op list - 0, the last op, | docstring | selftest_c157_innerface.py | 2028 |
-| `fate_lines` | n, eff, prev_terms, read_rows, bind_term=None | card 157-a1-1 (docs/d1/ring-p5.md PD381(c)): the FATE record of plan step n (a move_in) - one line per wire the sim | docstring | selftest_c157_innerface.py | 2036 |
-| `Executor` | (class) | PD193(a), card 86-4: 'checkpoints' = the real-op numbers k after which the whole-VI read + step diff run. None = | docstring | - | 2060 |
-| `Executor.step` | n | (undocumented) | - | - | 2113 |
-| `Executor.face_soft` | k, kind, d | card chat-S3 (PD328(c)): an E1 step diff of tunnel face rows only. One '  SOFT  ' line per step and one | docstring | - | 2220 |
-| `Executor.part_a_record` |  | card 103-1 PART-A (PD215(b)), after run() with stop_after=k: (a1, a2, detail, binding). | docstring | - | 2237 |
-| `Executor.resume_record` | stop_msg='' | card chat-S4 R: after an ExecStop IN op k (self.cur), the resume/1 record for from_step k-1 - the binding exactly as | docstring | - | 2256 |
-| `Executor.sim_uid` | st, ref | (undocumented) | - | - | 2314 |
-| `Executor.diag_real` | st, ref | card 100-3: a diagram field -> the REAL diagram uid (an int as is; 'new:X.body' through the binding the create | docstring | - | 2319 |
-| `Executor.obj_real` | st, ref | (undocumented) | - | - | 2333 |
-| `Executor.real_term` | st_prev, st_after, addr_ref, want_source | The plan end -> the REAL terminal uid: resolved on the simulated state (the plan's own resolver), then | docstring | - | 2340 |
-| `Executor.run` |  | (undocumented) | - | - | 2352 |
-| `Executor.execute` | op, prev, after, real | (undocumented) | - | - | 2673 |
-| `LVReader` | (class) | (undocumented) | - | - | 2877 |
-| `LVReader.diagrams` |  | (undocumented) | - | - | 2881 |
-| `LVReader.node_uids` | didx | (undocumented) | - | - | 2884 |
-| `LVReader.node_terms` | didx, nidx | (undocumented) | - | - | 2887 |
-| `LVReader.node_term_uids` | didx, nidx | card 112-2 D2: one TERMINAL uid per Terminals[] entry of Nodes[nidx] (gscript.node_terms_uids, OpNodeTermsUid_v0), | docstring | - | 2890 |
-| `LVReader.ct_uids` |  | (undocumented) | - | - | 2903 |
-| `LVReader.obj_uids` | cls | (undocumented) | - | - | 2906 |
-| `check_sink_gates` | sink_gates, gates | SINK GATES (card 80-3, retrospective-cycle79 device-failed at the old whitelist here): a recipe may let a | docstring | - | 2910 |
-| `sink_gate_for` | tag, err, sink, decls | The declaration whose sink == 'sink' exactly, else ExecStop (the op error stops the run). | docstring | - | 2927 |
-| `LVBackend` | (class) | Every mutator is a stagekit / gscript verb the L7 stages used; each is followed by the measured junk purge. | docstring | - | 2937 |
-| `LVBackend.run_deferred` |  | Executor.run's last act: every deferred op error's declared gate READS its sink now; a gate that fails stops. | docstring | - | 2958 |
-| `LVBackend.read` |  | (undocumented) | - | - | 2967 |
-| `LVBackend.obj_classes` | real | (undocumented) | - | - | 2973 |
-| `LVBackend.set_description` | uid, text | (undocumented) | - | - | 2979 |
-| `LVBackend.get_description` | uid | (undocumented) | - | - | 2988 |
-| `LVBackend.move_in` | uid, dest, pos, op | (undocumented) | - | - | 3000 |
-| `LVBackend.add_sr` | loop, y, op | (undocumented) | - | - | 3004 |
-| `LVBackend.wire_sr` | variant, loop, right, term, real, op | (undocumented) | - | - | 3019 |
-| `LVBackend.connect` | src, dst, real, loop_of, op | (undocumented) | - | - | 3039 |
-| `LVBackend.indicator` | rs, rd | (undocumented) | - | - | 3151 |
-| `LVBackend.create` | route, a, args, real, op | One 'create' row -> its verb (CREATE_ROUTES). Returns {err, s, uid[, body], how}. Every verb is followed by the | docstring | - | 3172 |
-| `LVBackend.stop` | loop, src, real, op | OpStopFromNode_v0 (tools/recipes/build_opcreateconstonterm_v0.py:528-537): the While loop's conditional terminal | docstring | - | 3388 |
-| `LVBackend.value_gate` | uid, a, op | read_bool_const (OpConstValueB_v0, card 100-2 V4): the stage STOPS when the value equals 'stop_if'. | docstring | - | 3411 |
-| `LVBackend.recheck_gate` | uid, a, op | card 103-4 PART-B ENTRY: the value gate Part A passed, READ again on the loaded file (same read, no edit). | docstring | - | 3422 |
-| `LVBackend.branch` | tun, dst, real, loop_of, op, side='outer' | (undocumented) | - | - | 3426 |
-| `LVBackend.case_frame_wire` | case, k, src, dst, real, op | card 124-2 (PD249(d)): gscript.case_frame_wire (card 124-1's verb, the contract in brief_124-2.md) wires src -> dst | docstring | - | 3439 |
-| `LVBackend.connect_term_uid` | src, dst, real, op | card 124-6 (PD250(c)): gscript.connect_term_uid(work, sink=dst, src=src) for an R1/R2 tunnel group. A missing verb, | docstring | - | 3465 |
-| `LVBackend.rle` | wires, op | card 127-2: gscript.wire_remove_loose_ends on each live wire; a uid echo error or a wire still Is Broken? True after | docstring | - | 3489 |
-| `LVBackend.index_mode_fix` | tun, indexing | (undocumented) | - | - | 3506 |
-| `LVBackend.delete_wire` | w, op, plan_wire=None | (undocumented) | - | - | 3517 |
-| `LVBackend.delete_object` | cls, uid, op | (undocumented) | - | - | 3521 |
-| `LVBackend.rbw` | op | (undocumented) | - | - | 3525 |
-| `SimReader` | (class) | (undocumented) | - | - | 3531 |
-| `SimReader.diagrams` |  | (undocumented) | - | - | 3535 |
-| `SimReader.node_uids` | didx | (undocumented) | - | - | 3553 |
-| `SimReader.node_terms` | didx, nidx | (undocumented) | - | - | 3570 |
-| `SimReader.node_term_uids` | didx, nidx | card 112-2 D2: the offline analogue of OpNodeTermsUid_v0 - each listed entry's own terminal uid. | docstring | - | 3583 |
-| `SimReader.ct_uids` |  | (undocumented) | - | - | 3587 |
-| `SimReader.obj_uids` | cls | (undocumented) | - | - | 3590 |
-| `SimBackend` | (class) | The DRY backend: every real op applies the plan actions it covers with stagesim's own OPS on a private state | docstring | - | 3598 |
-| `SimBackend.read` |  | (undocumented) | - | - | 3611 |
-| `SimBackend.read_owners` | uids | card chat-S4 B: the per-owner read - the rows of these owner uids only (what read() would return for them). | docstring | - | 3616 |
-| `SimBackend.obj_classes` | real | (undocumented) | - | - | 3621 |
-| `SimBackend.move_in` | uid, dest, pos, op | (undocumented) | - | - | 3699 |
-| `SimBackend.add_sr` | loop, y, op | (undocumented) | - | - | 3704 |
-| `SimBackend.create` | route, a, args, real, op | (undocumented) | - | - | 3720 |
-| `SimBackend.stop` | loop, src, real, op | (undocumented) | - | - | 3816 |
-| `SimBackend.value_gate` | uid, a, op | (undocumented) | - | - | 3828 |
-| `SimBackend.recheck_gate` | uid, a, op | card 103-4: the dry side of a Part-B entry's gate re-read - the constant must still be a BooleanConstant of | docstring | - | 3841 |
-| `SimBackend.wire_sr` | variant, loop, right, term, real, op | (undocumented) | - | - | 3848 |
-| `SimBackend.connect` | src, dst, real, loop_of, op | (undocumented) | - | - | 3866 |
-| `SimBackend.branch` | tun, dst, real, loop_of, op, side='outer' | (undocumented) | - | - | 3879 |
-| `SimBackend.case_frame_wire` | case, k, src, dst, real, op | card 124-2 (PD249(d)): the dry side of gscript.case_frame_wire - the verb is defined, the case exists with a frame | docstring | - | 3891 |
-| `SimBackend.connect_term_uid` | src, dst, real, op | card 124-6 (PD250(c)): the dry side of an R1/R2 group - the verb is defined; one end is a shift register's INNER | docstring | - | 3989 |
-| `SimBackend.index_mode_fix` | tun, indexing | (undocumented) | - | - | 4031 |
-| `SimBackend.delete_wire` | w, op, plan_wire=None | (undocumented) | - | - | 4034 |
-| `SimBackend.delete_object` | cls, uid, op | (undocumented) | - | - | 4037 |
-| `SimBackend.rbw` | op | (undocumented) | - | - | 4040 |
-| `SimBackend.rle` | wires, op | (undocumented) | - | - | 4043 |
-| `from_step_state` | plan_path, from_step, binding | card 103-4: the offline stand-in for the saved Part-A file - simulated step (last act of op k) with every created | docstring | - | 4058 |
-| `rel_root` | p | (undocumented) | - | - | 4104 |
-| `is_real_backend` | be | True for a backend that drives LabVIEW (LVBackend, possibly wrapped by RetireGuardBE); False for SimBackend and its | docstring | - | 4111 |
-| `tag_switch` | path=None | The in-VI tag switch (default OFF): tools/bench/creation_tag.json {"enabled": false}. Missing/unreadable -> OFF. | docstring | - | 4120 |
-| `tag_text` | stage, plan_id, sim_uid | The Description text of a created object: 'claude-plan:<stage>:<plan action id>:<sim id>'. | docstring | - | 4129 |
-| `parse_tag` | text | (stage, plan id, sim id) of a tag_text string, else None. | docstring | - | 4134 |
-| `adopt_stage_key` | path | The stage a script belongs to: basename, lower case, '_vN' and a '_scratch<N>' suffix stripped | docstring | - | 4140 |
-| `adopt_verdict` | text, required=() | Pure: {ok, why, n_pass, stop_fails, log_fails, missing, stops, results} for one scratch log segment. | docstring | - | 4148 |
-| `adopt_scratch` | script, log_path, artefact, input_vi, input_md5, plan_md5s, required, path=None, claudedev=None, note='', now=None | A: (ok, record / reasons). The scratch run's own log segment (the last BGRUN segment) must pass adopt_verdict; the | docstring | - | 4202 |
-| `read_adoptions` | path=None | (undocumented) | - | - | 4241 |
-| `adopted_launch` | script, plan_md5s, path=None | A, the launch gate's question: the newest non-revoked adopt/1 record of this stage (the scratch wrapper and the stage | docstring | - | 4253 |
-| `prefix_fingerprint` | plan, s_act | R: sha256 of the base graph md5 + actions 1..s_act - what must be unchanged for a FIXED plan to resume at s_act. | docstring | - | 4262 |
-| `plan_bed_vi` | plan | The real bed VI a plan's base graph was read from (its 'vi' key), or None. | docstring | - | 4270 |
-| `write_resume` | rec, file_path, cycle, out_path=None, plan=None | R: complete a resume_record with the scratch file saved as-is (path + md5) and the cycle, refuse the bed, write JSON. | docstring | - | 4278 |
-| `load_resume` | path, plan_path, cycle | R: the resume record -> the binding dict Executor(from_step=rec['stop_after'], binding=...) takes, after the checks: | docstring | - | 4296 |
-| `save_for_resume` | s, x, e, cycle=None | R, a recipe's ExecStop handler (before report_stop): the resume record of the stop, the scratch SAVED AS-IS (Stage.save | docstring | - | 4320 |
-| `adopt_cli` | argv | 'py tools/stagexec.py adopt --script S --log L --artefact VI --input VI --input-md5 M --required E1,PB,PS [--plan P ...]' | docstring | - | 4344 |
-| `DryPlanBE` | (class) | stage_prerun's dry backend for a plan-executing recipe (stage_d1_disp.DryBE, after stage_d1_l2a1.DryBE): the plan's | docstring | - | 4369 |
-| `w0_wires` | s, base, from_step, dry | W0: the pre-existing Wire uids W1 judges RBW against - S1's from the plan base graph for a PART-B run (== Part A's | docstring | - | 4387 |
-| `retire_check` | rows, uids | (ok, detail) on ONE terminal read: 'uids' = the nodes one delete removes (a register pair). FAILS when a node of | docstring | - | 4402 |
-| `retire_ends` | base_rows, rows, retire | (ok, detail): every wire that carried a terminal of a retired node AND a terminal of a kept node still carries, | docstring | - | 4417 |
-| `RetireGuardBE` | (class) | Wraps a backend (LVBackend or DryPlanBE): delete_object first reads the graph ('read()' = the live file, or the | docstring | - | 4443 |
-| `RetireGuardBE.delete_object` | cls, uid, op | (undocumented) | - | - | 4457 |
-| `report_stop` | s, x, be, e | An ExecStop inside Executor.run: record the report / meter / step diffs, list every unroutable row, FAIL E1 fatally. | docstring | - | 4466 |
-| `log_step_diffs` | s, x | Every recorded step diff as a STEP-WARN / STEP-DIFF fact; returns the FAIL-class ones (PD214(c): WARN = dangling only, | docstring | - | 4482 |
-| `b1_gate` | s, x, from_step | PART-B entry gate (card 103-4): the entry read == simulated step from_step (or a WARN), gates re-read, parity, PRIME, | docstring | - | 4493 |
-| `part_a_gates` | s, x, be, stop | card 103-1 PART-A (PD215(b)): ops 1..stop only, step stop real == sim (WARN only), gui_save, md5 + binding JSON. | docstring | - | 4503 |
-| `w1_rbw` | s, be, w_pre | W1 (PD211(b) / PD212(f)): termless wires after the batch, then RBW on the work copy - it may remove only pre-existing | docstring | - | 4514 |
-| `e3_gate` | s, plan, x, be, real, wiki, dry, tag | PD217(c) E3 (FATAL, before save) on the executor's end - also in the dry run, where a failing E3 is a FAIL | docstring | - | 4534 |
-| `kill_labview_at_exit` |  | A live recipe's last act: taskkill LabVIEW and report whether it is gone (CLAUDE.md 1b grant: every cycle ends with | docstring | - | 4546 |
-| `dry_run` | plan_path, fault=None, log=print, model_dir=None, require_final=True, from_step=None, binding=None | (status, first_fail, executor). No LabVIEW. require_final=False = the DIAGNOSTIC routability run (card 100-3). | docstring | - | 4557 |
-| `prerun_plan` | plan_path, log=print, model_dir=None | Offline gates for a plan launch: final + step files intact (load_final_plan), compile, open_rows declared and | docstring | - | 4587 |
-| `e3_wiki` | plan | The S1 wiki record whose fs tunnel pairs + graph summary build the E3 end graph (context fs_pairs_wiki, else s1_key). | docstring | - | 4622 |
-| `e3_graph` | plan, ex, objs, real, wiki, tag='E3 end' | The END graph E3 compares with S1: the real (or dry) end terminals + objects, the plan's last-step loops translated | docstring | - | 4631 |
-| `e3_eval` | plan, S1, G, created, deleted | PD217(c) E3, pure: cdiff(S1, G) rows == the plan open rows of PD213(d) classes (1)-(3) (want derived from each row's | docstring | - | 4646 |
-| `e3_created` | plan, ex | (created, deleted) for e3_eval: created = the real uids the binding holds for SIMULATED-created ids (sim ids < 0: | docstring | - | 4669 |
-| `e3_check` | plan, ex, objs, real, wiki, tag='E3 end' | PD217(c) E3 on an executor's end (live or dry): builds the end graph (e3_graph), S1 (stagesim.load_s1), the created | docstring | - | 4679 |
-| `e3_line` | r | One-line E3 verdict for a gate label/detail. | docstring | - | 4689 |
-| `lv_run` | plan_path, reference=None, max_min=60 | (undocumented) | - | - | 4697 |
-| `canon_diff` | real_a, real_b, base_nodes | Two real reads compared up to new-uid naming: a node outside 'base_nodes' is its class. | docstring | - | 4751 |
-| `selftest` |  | (undocumented) | - | - | 4950 |
-| `proposed_schema` | on=True | TEST / DIAGNOSTIC ONLY (card 100-3): the installed docs/protocol/stageplan.json has integer-only diagram fields, | docstring | - | 5662 |
-| `main` | argv | (undocumented) | - | - | 6053 |
-| `case_pass_wire` | A, i, k, created, base_owners | card 156-a1-2 (PD379(b)): True when wire action k is the PASS WIRE of the case in-tunnel group that starts at tunnel | docstring | selftest_c156_passwire.py | 6084 |
+| `verbs_missing` | route | The verbs a route calls that are NOT defined in the source (a text check - the dry run imports no LabVIEW side, | docstring | - | 340 |
+| `precondition_failures` | plan, ctx, stop_after=None, from_step=None | card 106-3: [{k, route, acts, ids, needs, work}] - every op the run DISPATCHES (from_step < k <= stop_after) whose | docstring | - | 373 |
+| `create_route` | a | The CREATE_ROUTES key for a create action, else ExecStop (no executor for that shape). | docstring | - | 391 |
+| `purge_entry` | purge, uid | The junk purge's read-back entry {uid, class, label, ...} of the created node #uid, else None. | docstring | - | 463 |
+| `prim_check` | a, entry, uid=None | card 141-1: (ok, detail) for ONE created primitive: read-back label == a['prim'] and class == a['class']. | docstring | - | 474 |
+| `const_born_on` | real, term, diagram | card 122-3 (PD241(a)): the row of terminal 'term' when it is the OUTPUT terminal of a diagram CONSTANT (is_const) on | docstring | - | 499 |
+| `tunnel_outer_face` | real, term, diagram | card 100-6 (PD213(f)3) + card 108-6 (PD222(g)): the row of terminal 'term' when it is the OUTER SOURCE face of a | docstring | - | 513 |
+| `check_symbols` | A | card 100-3: every symbolic reference names an alias an EARLIER action created; '.body' only of a loop create, | docstring | - | 534 |
+| `base_case_named` | owners, case | card 155-a1-1 (PD378(a)): (case uid, ['#<frame diagram uid>', ...]) of a BASE-graph CaseStructure #case from the base | docstring | selftest_c155_basecase_frame.py | 604 |
+| `base_case_of_frame` | owners, frame | card 155-a1-1 (PD378(a)): (case uid, frame names) when 'frame' is '#<diagram uid>' (FS_FACE_RE, the form a Flat | docstring | selftest_c155_basecase_frame.py | 615 |
+| `plan_base_owners` | plan | card 155-a1-1 (PD378(a)): the owner map {uid: [owner class, owner uid]} of the plan's BASE graph - plan['base'] or | docstring | selftest_c155_basecase_frame.py | 626 |
+| `plan_base_docs` | plan | card 160-a2-1 (extracted from plan_base_owners, card 155-a1-1): yields the loaded JSON of the plan's pinned BASE file(s), | docstring | selftest_c160_regface.py | 640 |
+| `plan_base_state` | plan | card 160-a2-1 (PD391(c)): stagesim.base_state of the plan's pinned BASE graph (a graph JSON, or a step file's 'state') - | docstring | selftest_c160_regface.py | 651 |
+| `base_register_end` | st, end, want_source | card 160-a2-1 (docs/d1/ring-p5b.md PD391(c)): 'srR' / 'srL' when the plain plan end 'end' names, on the BASE state 'st' | docstring | selftest_c160_regface.py | 662 |
+| `case_frame_op` | A, i, fr, owners=None | card 124-2 (PD249(d)): {frame, frame_index, case} of wire action i whose end(s) carry 'frame' - read from the PLAN: | docstring | - | 692 |
+| `fs_wire_ops` | A | card 126-3 (PD253(e)): {wire action index: op fields} for the wires a FLAT SEQUENCE route takes, read from the PLAN | docstring | - | 768 |
+| `compile_plan` | plan, owners=None | [{kind, acts:[action indices 1-based], ...}] - one entry per REAL op, in order. Raises ExecStop on a shape the | docstring | selftest_c155_basecase_frame.py | 841 |
+| `dedupe` | terms | The terminal rows with repeated term_uids dropped, first wins (vigraph.dedupe_rows without its record). Returns list. | side file | - | 977 |
+| `edges` | terms | Groups terminal rows by wire_uid; returns (E, dang): E = set of (source term_uid, sink term_uid) pairs of every wire, dang = term_uids on a wire that has no source or no sink. | side file | - | 981 |
+| `translate` | state_terms, bind | Sim rows with created (negative) uids replaced by their bound real uids. Unbound negatives stay negative. | docstring | - | 997 |
+| `compare` | sim_terms, real_terms, bind, allow_either=() | {n, only_sim_terms, only_real_terms, only_sim_edges, only_real_edges, dangling_sim_only, dangling_real_only}. | docstring | - | 1008 |
+| `step_soft` | d | card chat-S3 (PD328(c)): True when this step diff is LOG-only by gateclass (tunnel face rows only). | docstring | - | 1035 |
+| `classify_step_diff` | plan, last_act, d | PD214(c) (user-side plan decision, cycle 101): a step difference made ONLY of sourceless (dangling) terminals - | docstring | - | 1057 |
+| `uid_reuse` | prev_real, real | Evidence that LabVIEW re-issued a freed uid to a NEW object within one op (hyp-optunouter-uidreuse-85.md:78-82; NI: | docstring | - | 1078 |
+| `bind_new` | prev_real, real, sim_prev, sim_now, bind | Bind the objects the simulation created between sim_prev and sim_now to the real objects that appeared between | docstring | - | 1101 |
+| `tunnel_name_check` | sim_prev, sim_now, real_prev, real_now | card 132-1 (PD275(c)): the per-op TUNNEL-NAME gate. The NEW rows owned by a *Tunnel object (term_uid absent from the | docstring | - | 1204 |
+| `is_crossing_op` | step_effects | card 132-1 (PD275(c)): an op is a CROSSING op when one of its plan actions' simulated steps lists created border tunnels | docstring | - | 1222 |
+| `bind_by_frames` | cls, su, ru, new_sim, new_real, dg, bind | Bind several created 'cls' objects of ONE op by their faces' frames. Object key = the sorted (term_class, is_source, | docstring | - | 1233 |
+| `bind_fs_tunnel` | prev_real, real, sim_prev, sim_now, bind | card 126-3: bind the FlatSequenceInnerTunnel a cross-frame wire made (stagesim._fs_frame_wire). Its FOUR rows are filed | docstring | - | 1260 |
+| `bind_case_faces` | prev_real, real, sim_prev, sim_now, bind | card 120-3 R2: bind a created case SELECTOR ('Tunnel') or case DATA tunnel (SelectorTunnel) - one outer face plus ONE | docstring | - | 1297 |
+| `is_ct` | r | True when the terminal row is a front-panel ControlTerminal node (vigraph.node_class == 'ControlTerminal'). Returns bool. | side file | - | 1373 |
+| `listed_as_node` | r | Constant / Tunnel / Terminal are OUTSIDE the Node branch of the VI Server hierarchy (gobject/constant/.., | docstring | - | 1384 |
+| `is_const` | r | PD188(c) (card 85-1): a diagram CONSTANT end - outside Diagram.Nodes[] (listed_as_node), addressed by its class | docstring | - | 1399 |
+| `loop_parent` | st, L | The diagram uid a loop sits on: its own non-body rows, else its registers' / tunnels' OUTER faces (one value). | docstring | - | 1406 |
+| `touched_diagrams` | plan, st | Base diagram uids the plan touches: moved nodes' source diagrams, move destinations, register/tunnel parent + body, | docstring | - | 1434 |
+| `listing` | rd, diag, cls | {(class, uid)} of reader rd's Nodes[] on diagram uid 'diag' (None when the reader has no such diagram). | docstring | - | 1459 |
+| `reader_parity` | real_rd, sim_rd, diags, cls_real, cls_sim | [{diagram, n_real, n_sim, only_real, only_sim}] per diagram; 'n' = total one-side-only entries. | docstring | - | 1467 |
+| `classes_of` | st_or_rows, objs | uid -> class, from the objects list, else from the terminal rows (node_of / node_class). | docstring | - | 1481 |
+| `connect_route` | addr, real, src, dst, loop_of | The connect route BOTH backends take (so the dry run sees what the real run does): 'indicator' (panel sink, wired | docstring | - | 1494 |
+| `base_registers` | st | card 112-1 T1: {register uid: {"loop": loop uid, "right": its RightShiftRegister uid, "cls": class}} for every | docstring | - | 1623 |
+| `base_sr_route` | real, src, dst, base_regs | card 112-1 T1: (variant, register uid, body-side terminal) when a plain 'wire' row touches the INNER face of a | docstring | - | 1638 |
+| `face_twins` | rows, r, owners | PD191(b): the owner-routed OUTER faces on the same owner structure as row r with r's (name, direction) - r included. | docstring | - | 1652 |
+| `tunnel_owner` | rows, tun, owners | The structure uid owning tunnel 'tun' (via its inner frame diagrams in 'owners'), else ExecStop. | docstring | - | 1667 |
+| `loop_inner_face_route` | rows, rs, owners | card 157-a1-1 (docs/d1/ring-p5.md PD381(b)): the info fields of the 'cfw' route for an UNWIRED inner face of a While / | docstring | selftest_c157_innerface.py | 1677 |
+| `struct_parent_diags` | rows, struct, owners | card 158-a2-1: the diagram uid(s) structure 'struct' sits on, read from the graph alone - the OUTER faces of the tunnels | docstring | selftest_c158_wire0face.py | 1699 |
+| `loop_face_wire0_act` | rows, rs, rd, owners | card 158-a2-1 (PD385(a)(b)): the act for an UNWIRED While/For LoopTunnel inner face routed 'cfw' by | docstring | selftest_c158_wire0face.py | 1719 |
+| `state_addr` | st, zero_terms=() | card 158-a2-1 (extracted from route_on_state, card 157-a1-1): a deep copy of a simulated / recorded STATE with the wire | docstring | selftest_c158_wire0face.py | 1742 |
+| `route_on_state` | st, src, dst, zero_terms=() | card 157-a1-1: connect_route on a simulated / recorded STATE, addressed as the dry backend addresses it (Addr over | docstring | selftest_c157_innerface.py | 1757 |
+| `Addr` | (class) | Terminal -> live index triple (Diagram idx, Nodes[] idx, Terminals[] idx). 'rd' = reader with diagrams(), | docstring | - | 1770 |
+| `Addr.snap_loop` | loop, diag | Stores the loop's current Terminals[] list ((name, is_source, wire) per entry, _loop_list) as its key snapshot, creating its slot {diag, keys, track} if absent. Returns None. | side file | - | 1799 |
+| `Addr.track_new` | loop, r_outer, l_outer | After add_shift_reg on loop: difflib of the snapshot vs a fresh Terminals[] list; anything but insertions, or not exactly one inserted source + one sink, raises ExecStop; tracks r_outer / l_outer a... | side file | - | 1803 |
+| `Addr.retrack` |  | Re-reads every tracked loop's Terminals[] list and remaps its tracked face indexes (identity when the count is unchanged, else a difflib match on (direction, wire)); an unmatched face becomes None.... | side file | - | 1821 |
+| `Addr.triple` | real, term_uid, is_source, loop_of=None | Live address of term_uid: exactly one row in 'real' with the wanted is_source, else ExecStop; resolved by _triple and cached as (node uid, terminal index) when wired. Returns ((diagram idx, node id... | side file | - | 1850 |
+| `Addr.ct` | real, term_uid | PD187(b) / 179(b): a ControlTerminal end -> {ct, diag, didx, name, is_source, wire}. term_uid == its own uid, | docstring | - | 1862 |
+| `Addr.const` | real, term_uid | PD188(c): a bare diagram-CONSTANT source -> {const, cls, term}. Its terminal row must be the constant's own | docstring | - | 1887 |
+| `Addr.tun` | real, term_uid | PD191(b): a structure tunnel's OUTER face -> {tun, cls, term}, addressed by the TUNNEL uid (Tunnel.Outside | docstring | - | 1903 |
+| `load_binding` | src, plan_path, from_step | card 103-4 (PD215(b) Part B): the Part-A binding -> {bind, loop_of, sym_real} with INT keys. 'src' = the dict | docstring | - | 2019 |
+| `bind_state` | st, bind | card 103-4: a simulated step state with every created (negative) uid replaced by its Part-A real uid - owner, | docstring | - | 2042 |
+| `bound_owners` | owners, bind | card 104-2: a SIMULATED step's owners map (str(frame diagram uid) -> [structure class, structure uid]) with every | docstring | - | 2115 |
+| `required_checkpoints` | ops, lo=0, hi=None | card 161-a1-1 (docs/d1/ring-p5b.md PD393(a)): the ops a checkpoint set MUST hold when ops lo+1..hi of a compiled op | docstring | selftest_c161_delckpt.py | 2139 |
+| `move_in_runs` | ops | card 158-a1-2 (docs/d1/ring-p5.md PD384(b)): the maximal runs of consecutive READ_KINDS (move_in) ops of a compiled op | docstring | selftest_c158_runcheck.py | 2152 |
+| `checkpoint_ops` | ops | card 157-a1-1 (docs/d1/ring-p5.md PD379(e), PD381(d)), rule changed by card 158-a1-2 (PD384(b)) and card 161-a1-1 | docstring | selftest_c158_runcheck.py | 2168 |
+| `run_fate_lines` | run, ops, step_of, read_rows, bind_term=None | card 158-a1-2 (docs/d1/ring-p5.md PD384(b)): the FATE lines of one run of consecutive move_in ops ('run' = op numbers, | docstring | selftest_c158_runcheck.py | 2178 |
+| `fate_lines` | n, eff, prev_terms, read_rows, bind_term=None | card 157-a1-1 (docs/d1/ring-p5.md PD381(c)): the FATE record of plan step n (a move_in) - one line per wire the sim | docstring | selftest_c157_innerface.py | 2192 |
+| `Executor` | (class) | PD193(a), card 86-4: 'checkpoints' = the real-op numbers k after which the whole-VI read + step diff run. None = | docstring | - | 2216 |
+| `Executor.step` | n | The simulated step n's JSON file (step_paths[n] from load_final_plan; 0 = base), loaded. Returns the step dict ('state', 'effect'). | side file | - | 2273 |
+| `Executor.face_soft` | k, kind, d | card chat-S3 (PD328(c)): an E1 step diff of tunnel face rows only. One '  SOFT  ' line per step and one | docstring | - | 2380 |
+| `Executor.part_a_record` |  | card 103-1 PART-A (PD215(b)), after run() with stop_after=k: (a1, a2, detail, binding). | docstring | - | 2397 |
+| `Executor.resume_record` | stop_msg='' | card chat-S4 R: after an ExecStop IN op k (self.cur), the resume/1 record for from_step k-1 - the binding exactly as | docstring | - | 2416 |
+| `Executor.sim_uid` | st, ref | A simulated uid: an int ref as is, else st['sym'][ref] (KeyError when the symbol is unknown). Returns int. | side file | - | 2474 |
+| `Executor.diag_real` | st, ref | card 100-3: a diagram field -> the REAL diagram uid (an int as is; 'new:X.body' through the binding the create | docstring | - | 2479 |
+| `Executor.obj_real` | st, ref | Plan object ref -> REAL uid: stagesim.resolve_uid on state st, then the 'obj' binding (a positive uid passes through); a still-negative uid raises ExecStop. Returns int. | side file | - | 2493 |
+| `Executor.real_term` | st_prev, st_after, addr_ref, want_source | The plan end -> the REAL terminal uid: resolved on the simulated state (the plan's own resolver), then | docstring | - | 2500 |
+| `Executor.run` |  | Runs the compiled ops: base / FROM-STEP read vs its simulated step, reader PARITY, PRIME address proofs, CHECKPOINT set; per op execute, read (whole or per owner), bind, retrack, compare to the sim... | side file | - | 2512 |
+| `Executor.execute` | op, prev, after, real | One compiled op -> its backend call by kind (move_in, create, gate, stop, add_sr, wire_sr, tunnel, connect_term_uid, wire_remove_loose_ends, case_frame_wire, branch, connect, delete_wire, delete_ob... | side file | - | 2842 |
+| `LVReader` | (class) | Live reader over gscript on the work copy that Addr addresses through (diagrams, node_uids, node_terms, node_term_uids, ct_uids, obj_uids); SimReader is its offline analogue. | side file | - | 3054 |
+| `LVReader.diagrams` |  | Uids of every Diagram of the work copy (gscript.report_all 'Diagram'), in traverse order. Returns list of int. | side file | - | 3058 |
+| `LVReader.node_uids` | didx | Uids of the nodes of diagram index didx, from gscript.node_labels. Returns list of int. | side file | - | 3061 |
+| `LVReader.node_terms` | didx, nidx | The terminal list of node nidx on diagram didx as gscript.node_terms_uid returns it. Returns its result unchanged. | side file | - | 3064 |
+| `LVReader.node_term_uids` | didx, nidx | card 112-2 D2: one TERMINAL uid per Terminals[] entry of Nodes[nidx] (gscript.node_terms_uids, OpNodeTermsUid_v0), | docstring | - | 3067 |
+| `LVReader.ct_uids` |  | Set of uids of every ControlTerminal of the work copy (gscript.report_all). Returns set of int. | side file | - | 3080 |
+| `LVReader.obj_uids` | cls | Uids of every object of class cls on the work copy (gscript.report_all), traverse order. Returns list of int. | side file | - | 3083 |
+| `check_sink_gates` | sink_gates, gates | SINK GATES (card 80-3, retrospective-cycle79 device-failed at the old whitelist here): a recipe may let a | docstring | - | 3087 |
+| `sink_gate_for` | tag, err, sink, decls | The declaration whose sink == 'sink' exactly, else ExecStop (the op error stops the run). | docstring | - | 3104 |
+| `LVBackend` | (class) | Every mutator is a stagekit / gscript verb the L7 stages used; each is followed by the measured junk purge. | docstring | - | 3114 |
+| `LVBackend.run_deferred` |  | Executor.run's last act: every deferred op error's declared gate READS its sink now; a gate that fails stops. | docstring | - | 3135 |
+| `LVBackend.read` |  | Live terminal read of the work copy via wiki_build.read_live (with the fs pairs); stores its secs and objs, returns the deduplicated terminal rows. Returns list. | side file | - | 3144 |
+| `LVBackend.obj_classes` | real | {uid: class} for the read rows, objects from the last live read first (classes_of). Returns dict. | side file | - | 3150 |
+| `LVBackend.set_description` | uid, text | In-VI tag write via gscript.set_description(work, uid, text); raises ExecStop when gscript has no such verb yet or the op returns err. Returns the op record. | side file | - | 3156 |
+| `LVBackend.get_description` | uid | In-VI tag read via gscript.get_description(work, uid); raises ExecStop when gscript has no such verb yet. Returns its 'text' (str or None). | side file | - | 3165 |
+| `LVBackend.move_in` | uid, dest, pos, op | Stage.move_in of uid into the diagram index of dest at pos, then the junk purge; an op error raises ExecStop. Returns {err, s}. | side file | - | 3177 |
+| `LVBackend.add_sr` | loop, y, op | Stage.add_shift_reg on the WhileLoop loop (its traverse index) at y_position y, then the junk purge; an op error raises ExecStop. Returns {err, s}. | side file | - | 3181 |
+| `LVBackend.wire_sr` | variant, loop, right, term, real, op | Wires a shift register face: register index of 'right' in the WhileLoop's Shift Registers[] (ExecStop if absent), Addr.triple of term (source iff RightIn), Stage.wire_sr, junk purge; op error raise... | side file | - | 3196 |
+| `LVBackend.connect` | src, dst, real, loop_of, op | Wires src -> dst by connect_route's kind: indicator, ctlsink/ctltun (wire_ctlsink), tunouter, ctl (wire_control), const_sr, const, cfw (connect_from_wire; loop_face_wire0 when the source has no wir... | side file | - | 3216 |
+| `LVBackend.indicator` | rs, rd | Stage.wire_indicators from a WIRED source to a panel sink on the source's diagram (bare source: ExecStop); an op error is DEFERRED to the declared sink gate (sink_gate_for) instead of stopping. Ret... | side file | - | 3332 |
+| `LVBackend.create` | route, a, args, real, op | One 'create' row -> its verb (CREATE_ROUTES). Returns {err, s, uid[, body], how}. Every verb is followed by the | docstring | - | 3353 |
+| `LVBackend.stop` | loop, src, real, op | OpStopFromNode_v0 (tools/recipes/build_opcreateconstonterm_v0.py:528-537): the While loop's conditional terminal | docstring | - | 3569 |
+| `LVBackend.value_gate` | uid, a, op | read_bool_const (OpConstValueB_v0, card 100-2 V4): the stage STOPS when the value equals 'stop_if'. | docstring | - | 3592 |
+| `LVBackend.recheck_gate` | uid, a, op | card 103-4 PART-B ENTRY: the value gate Part A passed, READ again on the loaded file (same read, no edit). | docstring | - | 3603 |
+| `LVBackend.branch` | tun, dst, real, loop_of, op, side='outer' | Branches off tunnel tun's wired source face (outer, or inner when side='inner') to dst: a panel sink via indicator, else connect_from_wire (_cfw) on the face's wire; no wired face raises ExecStop. ... | side file | - | 3607 |
+| `LVBackend.case_frame_wire` | case, k, src, dst, real, op | card 124-2 (PD249(d)): gscript.case_frame_wire (card 124-1's verb, the contract in brief_124-2.md) wires src -> dst | docstring | - | 3623 |
+| `LVBackend.connect_term_uid` | src, dst, real, op | card 124-6 (PD250(c)): gscript.connect_term_uid(work, sink=dst, src=src) for an R1/R2 tunnel group. A missing verb, | docstring | - | 3649 |
+| `LVBackend.loop_face_wire0` | rs, rd, real, op | card 158-a2-1 (PD385(a)): the live act for an UNWIRED While/For LoopTunnel inner face (connect_route 'cfw' with | docstring | selftest_c158_wire0face.py | 3674 |
+| `LVBackend.loop_face_sink` | a, real, op | card 165-1-1 (PD400(b)): the live act for an UNWIRED While/For LoopTunnel inner face as the SINK (loop_inner_face_sink's | docstring | selftest_c165_innerface.py | 3684 |
+| `LVBackend.rle` | wires, op | card 127-2: gscript.wire_remove_loose_ends on each live wire; a uid echo error or a wire still Is Broken? True after | docstring | - | 3692 |
+| `LVBackend.index_mode_fix` | tun, indexing | Sets LoopTunnel #tun's IndexMode to 1 (indexing) or 0 with gscript.set_index_mode when it differs, re-reads it and raises ExecStop if it still differs. Returns the wanted mode (int). | side file | - | 3709 |
+| `LVBackend.delete_wire` | w, op, plan_wire=None | Stage.delete_wire of wire w, then the junk purge; an op error raises ExecStop. Returns {err, s}. | side file | - | 3720 |
+| `LVBackend.delete_object` | cls, uid, op | Stage.delete_object of class cls #uid, then the junk purge; an op error raises ExecStop. Returns {err, s}. | side file | - | 3724 |
+| `LVBackend.rbw` | op | Remove Bad Wires through Stage.broken_wire_count(allow_mutation=True). Returns {'rbw': its result}. | side file | - | 3728 |
+| `SimReader` | (class) | Offline analogue of LVReader over a SimBackend state: lists diagrams, nodes (owner-routed tunnel faces on their owner, loops on their parent), node terminals, ControlTerminals and objects as LabVIE... | side file | - | 3734 |
+| `SimReader.diagrams` |  | Sorted union of every terminal row's frame_diagram and the diagrams the plan made (st['diagrams'] keys). Returns list of int. | side file | - | 3738 |
+| `SimReader.node_uids` | didx | Offline Nodes[] of diagram index didx: uids of rows listed as nodes, owners of owner-routed tunnel faces, then loops whose parent is this diagram (or unplaceable), first-seen order. Returns list of... | side file | - | 3756 |
+| `SimReader.node_terms` | didx, nidx | Offline Terminals[] of node nidx on diagram didx: its own rows (no NOT_NODES class, no ControlTerminal), its routed tunnel outer faces and, for a loop, its registers' outer faces. Returns (node uid... | side file | - | 3773 |
+| `SimReader.node_term_uids` | didx, nidx | card 112-2 D2: the offline analogue of OpNodeTermsUid_v0 - each listed entry's own terminal uid. | docstring | - | 3786 |
+| `SimReader.ct_uids` |  | Set of term_uids of the state's ControlTerminal rows (the report_all 'ControlTerminal' analogue). Returns set. | side file | - | 3790 |
+| `SimReader.obj_uids` | cls | Owner uids of the state's terminal rows whose owner_class is cls, first-seen order (the report_all analogue). Returns list of int. | side file | - | 3793 |
+| `SimBackend` | (class) | The DRY backend: every real op applies the plan actions it covers with stagesim's own OPS on a private state | docstring | - | 3801 |
+| `SimBackend.read` |  | Deep copy of the private state's deduplicated terminal rows. Returns list. | side file | - | 3814 |
+| `SimBackend.read_owners` | uids | card chat-S4 B: the per-owner read - the rows of these owner uids only (what read() would return for them). | docstring | - | 3819 |
+| `SimBackend.obj_classes` | real | {uid: class} for the given rows, the private state's objs first (classes_of). Returns dict. | side file | - | 3824 |
+| `SimBackend.move_in` | uid, dest, pos, op | Dry move_in: a destination diagram not in the reader's diagram list is recorded via _unroutable, else the op's plan actions are applied (_apply). Returns {applied, check}. | side file | - | 3902 |
+| `SimBackend.add_sr` | loop, y, op | Dry add_sr: applies the op's plan actions on the private state (_apply), no check. Returns {applied, check None}. | side file | - | 3907 |
+| `SimBackend.create` | route, a, args, real, op | Dry create: checks the route's real-backend preconditions (verbs defined, diagram listed, per-route end / owner / label checks; failure -> _unroutable), then _apply and adds the uid(s) LVBackend wo... | side file | - | 3923 |
+| `SimBackend.stop` | loop, src, real, op | Dry stop: stop verb defined, loop in the loop table, source a Nodes[] node end (_node_end), else _unroutable; then _apply with that check. Returns {applied, check}. | side file | - | 4019 |
+| `SimBackend.value_gate` | uid, a, op | Dry value gate: gate verb defined and uid a BooleanConstant of the reader, else _unroutable; then _apply (no value offline). Returns {applied, check, value None}. | side file | - | 4031 |
+| `SimBackend.recheck_gate` | uid, a, op | card 103-4: the dry side of a Part-B entry's gate re-read - the constant must still be a BooleanConstant of | docstring | - | 4044 |
+| `SimBackend.wire_sr` | variant, loop, right, term, real, op | Dry wire_sr: the terminal's Addr triple and resolved name (_check, source iff RightIn) plus route / loop / right, else _unroutable; then _apply. Returns {applied, check}. | side file | - | 4051 |
+| `SimBackend.connect` | src, dst, real, loop_of, op | Dry connect: the real backend's connect_route, the sink's address checked (_check) unless indicator (ctlsink: source triple), the loop_face_wire0 act added for a cfw from an unwired face; failure -... | side file | - | 4069 |
+| `SimBackend.branch` | tun, dst, real, loop_of, op, side='outer' | Dry branch: tunnel tun needs exactly one wired source face (outer, or inner when side='inner') and an addressable sink (_check, skipped for a ControlTerminal), else _unroutable; then _apply. Return... | side file | - | 4087 |
+| `SimBackend.case_frame_wire` | case, k, src, dst, real, op | card 124-2 (PD249(d)): the dry side of gscript.case_frame_wire - the verb is defined, the case exists with a frame | docstring | - | 4103 |
+| `SimBackend.connect_term_uid` | src, dst, real, op | card 124-6 (PD250(c)): the dry side of an R1/R2 group - the verb is defined; one end is a shift register's INNER | docstring | - | 4201 |
+| `SimBackend.index_mode_fix` | tun, indexing | Dry IndexMode fix: nothing is read or set. Returns 1 when indexing, else 0. | side file | - | 4243 |
+| `SimBackend.delete_wire` | w, op, plan_wire=None | Applies the op's plan actions with stagesim OPS on the private state (_apply: created ids renumbered positive). Returns {applied, check None}. | side file | - | 4246 |
+| `SimBackend.delete_object` | cls, uid, op | Applies the op's plan actions with stagesim OPS on the private state (_apply: created ids renumbered positive). Returns {applied, check None}. | side file | - | 4249 |
+| `SimBackend.rbw` | op | Applies the op's plan actions (remove_bad_wires) with stagesim OPS on the private state via _apply. Returns {applied, check None}. | side file | - | 4252 |
+| `SimBackend.rle` | wires, op | Dry wire_remove_loose_ends: verb missing -> _unroutable; else _apply, then ExecStop unless the simulator's own wires for the row (last_effects 'wires') are non-empty and equal the executor's live w... | side file | - | 4255 |
+| `from_step_state` | plan_path, from_step, binding | card 103-4: the offline stand-in for the saved Part-A file - simulated step (last act of op k) with every created | docstring | - | 4270 |
+| `rel_root` | p | Absolute path of p relative to the project root with forward slashes; the absolute path when on another drive. Returns str. | side file | - | 4316 |
+| `is_real_backend` | be | True for a backend that drives LabVIEW (LVBackend, possibly wrapped by RetireGuardBE); False for SimBackend and its | docstring | - | 4323 |
+| `tag_switch` | path=None | The in-VI tag switch (default OFF): tools/bench/creation_tag.json {"enabled": false}. Missing/unreadable -> OFF. | docstring | - | 4332 |
+| `tag_text` | stage, plan_id, sim_uid | The Description text of a created object: 'claude-plan:<stage>:<plan action id>:<sim id>'. | docstring | - | 4341 |
+| `parse_tag` | text | (stage, plan id, sim id) of a tag_text string, else None. | docstring | - | 4346 |
+| `adopt_stage_key` | path | The stage a script belongs to: basename, lower case, '_vN' and a '_scratch<N>' suffix stripped | docstring | - | 4352 |
+| `adopt_verdict` | text, required=() | Pure: {ok, why, n_pass, stop_fails, log_fails, missing, stops, results} for one scratch log segment. | docstring | - | 4360 |
+| `adopt_scratch` | script, log_path, artefact, input_vi, input_md5, plan_md5s, required, path=None, claudedev=None, note='', now=None | A: (ok, record / reasons). The scratch run's own log segment (the last BGRUN segment) must pass adopt_verdict; the | docstring | - | 4414 |
+| `read_adoptions` | path=None | Every JSON row of the adoption log (path, default tools/bench/adopted_scratch.jsonl); unparsable lines skipped, [] when absent. Returns list of dicts. | side file | - | 4453 |
+| `adopted_launch` | script, plan_md5s, path=None | A, the launch gate's question: the newest non-revoked adopt/1 record of this stage (the scratch wrapper and the stage | docstring | - | 4465 |
+| `prefix_fingerprint` | plan, s_act | R: sha256 of the base graph md5 + actions 1..s_act - what must be unchanged for a FIXED plan to resume at s_act. | docstring | - | 4474 |
+| `plan_bed_vi` | plan | The real bed VI a plan's base graph was read from (its 'vi' key), or None. | docstring | - | 4482 |
+| `write_resume` | rec, file_path, cycle, out_path=None, plan=None | R: complete a resume_record with the scratch file saved as-is (path + md5) and the cycle, refuse the bed, write JSON. | docstring | - | 4490 |
+| `load_resume` | path, plan_path, cycle | R: the resume record -> the binding dict Executor(from_step=rec['stop_after'], binding=...) takes, after the checks: | docstring | - | 4508 |
+| `save_for_resume` | s, x, e, cycle=None | R, a recipe's ExecStop handler (before report_stop): the resume record of the stop, the scratch SAVED AS-IS (Stage.save | docstring | - | 4532 |
+| `adopt_cli` | argv | 'py tools/stagexec.py adopt --script S --log L --artefact VI --input VI --input-md5 M --required E1,PB,PS [--plan P ...]' | docstring | - | 4556 |
+| `DryPlanBE` | (class) | stage_prerun's dry backend for a plan-executing recipe (stage_d1_disp.DryBE, after stage_d1_l2a1.DryBE): the plan's | docstring | - | 4581 |
+| `w0_wires` | s, base, from_step, dry | W0: the pre-existing Wire uids W1 judges RBW against - S1's from the plan base graph for a PART-B run (== Part A's | docstring | - | 4599 |
+| `retire_check` | rows, uids | (ok, detail) on ONE terminal read: 'uids' = the nodes one delete removes (a register pair). FAILS when a node of | docstring | - | 4614 |
+| `retire_ends` | base_rows, rows, retire | (ok, detail): every wire that carried a terminal of a retired node AND a terminal of a kept node still carries, | docstring | - | 4629 |
+| `RetireGuardBE` | (class) | Wraps a backend (LVBackend or DryPlanBE): delete_object first reads the graph ('read()' = the live file, or the | docstring | - | 4655 |
+| `RetireGuardBE.delete_object` | cls, uid, op | Re-reads the graph and runs retire_check on uid's pair (pairs[uid] or [uid]), records it as an LC gate; a FAIL raises ExecStop before anything is deleted, else the wrapped backend's delete_object. ... | side file | - | 4669 |
+| `report_stop` | s, x, be, e | An ExecStop inside Executor.run: record the report / meter / step diffs, list every unroutable row, FAIL E1 fatally. | docstring | - | 4678 |
+| `log_step_diffs` | s, x | Every recorded step diff as a STEP-WARN / STEP-DIFF fact; returns the FAIL-class ones (PD214(c): WARN = dangling only, | docstring | - | 4694 |
+| `b1_gate` | s, x, from_step | PART-B entry gate (card 103-4): the entry read == simulated step from_step (or a WARN), gates re-read, parity, PRIME, | docstring | - | 4705 |
+| `part_a_gates` | s, x, be, stop | card 103-1 PART-A (PD215(b)): ops 1..stop only, step stop real == sim (WARN only), gui_save, md5 + binding JSON. | docstring | - | 4715 |
+| `w1_rbw` | s, be, w_pre | W1 (PD211(b) / PD212(f)): termless wires after the batch, then RBW on the work copy - it may remove only pre-existing | docstring | - | 4726 |
+| `e3_gate` | s, plan, x, be, real, wiki, dry, tag | PD217(c) E3 (FATAL, before save) on the executor's end - also in the dry run, where a failing E3 is a FAIL | docstring | - | 4746 |
+| `kill_labview_at_exit` |  | A live recipe's last act: taskkill LabVIEW and report whether it is gone (CLAUDE.md 1b grant: every cycle ends with | docstring | - | 4758 |
+| `dry_run` | plan_path, fault=None, log=print, model_dir=None, require_final=True, from_step=None, binding=None, checkpoints=None | (status, first_fail, executor). No LabVIEW. require_final=False = the DIAGNOSTIC routability run (card 100-3). | docstring | selftest_c158_runcheck.py | 4769 |
+| `prerun_plan` | plan_path, log=print, model_dir=None | Offline gates for a plan launch: final + step files intact (load_final_plan), compile, open_rows declared and | docstring | - | 4803 |
+| `e3_wiki` | plan | The S1 wiki record whose fs tunnel pairs + graph summary build the E3 end graph (context fs_pairs_wiki, else s1_key). | docstring | - | 4838 |
+| `e3_graph` | plan, ex, objs, real, wiki, tag='E3 end' | The END graph E3 compares with S1: the real (or dry) end terminals + objects, the plan's last-step loops translated | docstring | - | 4847 |
+| `e3_eval` | plan, S1, G, created, deleted | PD217(c) E3, pure: cdiff(S1, G) rows == the plan open rows of PD213(d) classes (1)-(3) (want derived from each row's | docstring | - | 4862 |
+| `e3_created` | plan, ex | (created, deleted) for e3_eval: created = the real uids the binding holds for SIMULATED-created ids (sim ids < 0: | docstring | - | 4885 |
+| `e3_check` | plan, ex, objs, real, wiki, tag='E3 end' | PD217(c) E3 on an executor's end (live or dry): builds the end graph (e3_graph), S1 (stagesim.load_s1), the created | docstring | - | 4895 |
+| `e3_line` | r | One-line E3 verdict for a gate label/detail. | docstring | - | 4905 |
+| `lv_run` | plan_path, reference=None, max_min=60 | LabVIEW run of a finalized plan: Stage on its base VI (pins, deadline max_min-3), scratch copy discarded, LVBackend + Executor.run, gates E1 (ops == steps), E2 (ExecState 1), E3 (end graph), E4 (op... | side file | - | 4913 |
+| `canon_diff` | real_a, real_b, base_nodes | Two real reads compared up to new-uid naming: a node outside 'base_nodes' is its class. | docstring | - | 4967 |
+| `selftest` |  | Offline self-test: builds a synthetic graph + plan in a temp dir, simulates it and runs the Executor / SimBackend gates T01.. and the from_step, create, c106c, c112, c127_4, c128 suites; prints gat... | side file | - | 5166 |
+| `proposed_schema` | on=True | TEST / DIAGNOSTIC ONLY (card 100-3): the installed docs/protocol/stageplan.json has integer-only diagram fields, | docstring | - | 5883 |
+| `main` | argv | CLI: selftest; adopt; dry <plan> [--from-step k --binding f] [--nonfinal] and prerun <plan> (RESULT line each); run <plan> [--reference vi md5] [--max-min n] (lv_run); else prints the module doc. R... | side file | - | 6274 |
+| `case_pass_wire` | A, i, k, created, base_owners | card 156-a1-2 (PD379(b)): True when wire action k is the PASS WIRE of the case in-tunnel group that starts at tunnel | docstring | selftest_c156_passwire.py | 6305 |
+| `loop_inner_face_sink` | rows, rs, rd, owners | card 165-1-1 (PD400(b)): the connect_term_uid act when the DST is the INNER face of a While / For LoopTunnel with wire 0 | docstring | selftest_c165_innerface.py | 6353 |
+| `prime_deleted_face_skip` | A, ops, checkpoints, i, r, lo=0 | card 165-3-1 (docs/d1/ring-p5c.md PD402(b)): whether the Executor's base PRIME pass may leave plan action i's end 'r' | docstring | selftest_c165_prime.py | 6384 |
 
 ### tools/stop_record.py
 
-shared module; imported by 27 file(s): `tools/bench/c19_close_release_probe.py`, `tools/bench/c20_release_probe.py`, `tools/bench/c22_v1_gate_probe.py`, `tools/bench/c58c_gatecheck.py`, `tools/bench/diag_c111c_realstore.py`, `tools/bench/diag_c111c_regress.py` ...
+shared module; imported by 31 file(s): `tools/bench/c19_close_release_probe.py`, `tools/bench/c20_release_probe.py`, `tools/bench/c22_v1_gate_probe.py`, `tools/bench/c58c_gatecheck.py`, `tools/bench/diag_c111c_realstore.py`, `tools/bench/diag_c111c_regress.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -2756,24 +2867,24 @@ shared module; imported by 27 file(s): `tools/bench/c19_close_release_probe.py`,
 
 ### tools/vigraph.py
 
-shared module; imported by 160 file(s): `tools/addrcheck.py`, `tools/bench/c73_l7r_facts.py`, `tools/bench/c73_l7r_live.py`, `tools/bench/cdiff_blindspot_74.py`, `tools/bench/ct23541_facts_80.py`, `tools/bench/dedupe_check_s2b.py` ...
+shared module; imported by 171 file(s): `tools/addrcheck.py`, `tools/bench/c73_l7r_facts.py`, `tools/bench/c73_l7r_live.py`, `tools/bench/cdiff_blindspot_74.py`, `tools/bench/ct23541_facts_80.py`, `tools/bench/dedupe_check_s2b.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
 | `node_of` | row | The GRAPH NODE a terminal row belongs to: its owner, except a front-panel terminal, which is its | docstring | - | 57 |
-| `node_class` | row | (undocumented) | - | - | 63 |
+| `node_class` | row | Class of the graph node a terminal row belongs to: 'ControlTerminal' for a front-panel terminal row, else the row's owner_class. Returns str. | side file | - | 63 |
 | `build` | terms, wires, objs=None | {adj, nodes, cls, method} - a directed node-uid graph. Pure; no LabVIEW, no mutation of the input. | docstring | - | 67 |
 | `reach` | graph, starts | Every node uid reachable from 'starts' (node-level, forward). | docstring | - | 148 |
 | `fp_terminals` | terms | The VI's own front-panel control/indicator terminals: leaf class 'ControlTerminal'. | docstring | - | 166 |
 | `io_paths` | graph, terms, labels_in=None, labels_out=None | {output label: [input labels that can reach it]} over the front-panel terminals. | docstring | - | 178 |
-| `key_parts` | key | (undocumented) | - | - | 248 |
-| `show` | key | (undocumented) | - | - | 254 |
+| `key_parts` | key | Splits a terminal key 'node/class/name/ordinal' (name may contain '/') into (int node uid, class, name, int ordinal). Returns tuple. | side file | - | 248 |
+| `show` | key | Readable form of a terminal key: '#<node> <class> <repr(name) or (unnamed)>' plus ' [<ordinal>]' when the ordinal is not 0. Returns str. | side file | - | 254 |
 | `dedupe_rows` | terms | (rows, record): the terminal rows with a repeated 'term_uid' dropped, FIRST occurrence wins. | docstring | - | 260 |
 | `build4` | terms, objs=None, loops=None, labels=None, fs_pairs=None, frame_keyed=False | The full terminal-level graph. 'terms' = OpAllTerms_v1 rows (the 7th column 'frame_diagram' is | docstring | - | 334 |
 | `is_scheduling` | G, node | ASSUMPTION A. A node is SCHEDULING when its class is a tunnel / shift register / structure / | docstring | - | 632 |
 | `transparent` | G, key | ASSUMPTION A, at TERMINAL level: is this terminal a scheduling RELAY to walk through? | docstring | - | 641 |
 | `terminals` | G, node=None, name=None, term_uid=None, is_source=None, cls=None | Terminal KEYS matching the filter - the addressing helper the queries below take. | docstring | - | 653 |
-| `wire_terminals` | G, wire_uid | (undocumented) | - | - | 671 |
+| `wire_terminals` | G, wire_uid | Sorted terminal keys of graph G whose row sits on wire wire_uid. Returns list. | side file | - | 671 |
 | `reach4` | G, starts, kinds=None | Every terminal key reachable DOWNSTREAM of 'starts' (terminal keys, or node uids). | docstring | - | 675 |
 | `sources_of` | G, sink, kinds=None, collapse=False | Every terminal key UPSTREAM of 'sink'. 'collapse=True' returns only COMPUTATION terminals, | docstring | - | 692 |
 | `path` | G, a, b, kinds=None | One shortest terminal path a -> b as a list of terminal keys, or [] if there is none. | docstring | - | 714 |
@@ -2797,7 +2908,7 @@ shared module; imported by 2 file(s): `tools/bench/selftest_c156_b2_1_violations
 
 ### tools/wiki_build.py
 
-shared module; imported by 85 file(s): `tools/bench/build_kswap_88.py`, `tools/bench/c73_l7r_live.py`, `tools/bench/diag_c107b_bedgraph.py`, `tools/bench/diag_c108b_graph.py`, `tools/bench/diag_c108d_graph.py`, `tools/bench/diag_c108d_selind.py` ...
+shared module; imported by 89 file(s): `tools/bench/build_kswap_88.py`, `tools/bench/c73_l7r_live.py`, `tools/bench/diag_c107b_bedgraph.py`, `tools/bench/diag_c108b_graph.py`, `tools/bench/diag_c108d_graph.py`, `tools/bench/diag_c108d_selind.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -2815,7 +2926,7 @@ shared module; imported by 85 file(s): `tools/bench/build_kswap_88.py`, `tools/b
 
 ### tools/bench/bench_prep.py
 
-shared file in the bench folder (move to tools/ later); imported by 294 file(s): `tools/bench/allterms_s4.py`, `tools/bench/allterms_v1_check.py`, `tools/bench/build_kswap_88.py`, `tools/bench/build_op_const_loopterm_77.py`, `tools/bench/build_op_termtype.py`, `tools/bench/build_opstopmode_v0.py` ...
+shared file in the bench folder (move to tools/ later); imported by 298 file(s): `tools/bench/allterms_s4.py`, `tools/bench/allterms_v1_check.py`, `tools/bench/build_kswap_88.py`, `tools/bench/build_op_const_loopterm_77.py`, `tools/bench/build_op_termtype.py`, `tools/bench/build_opstopmode_v0.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -3100,6 +3211,21 @@ shared file in the bench folder (move to tools/ later); imported by 1 file(s): `
 shared file in the bench folder (move to tools/ later); imported by 1 file(s): `tools/bench/selftest_c156_b2_2_invcheck.py`
 
 (no public function)
+
+### tools/bench/diag_c159_f1_2_t2.py
+
+shared file in the bench folder (move to tools/ later); imported by 1 file(s): `tools/bench/diag_c160_f1_1_bisect.py`
+
+| function | arguments | what it does | from | self-test | line |
+|---|---|---|---|---|---|
+| `md5b` | b | (undocumented) | - | - | 37 |
+| `src_bytes` | spec, name | (undocumented) | - | - | 41 |
+| `Serve` | (class) | (undocumented) | - | - | 48 |
+| `Serve.find_spec` | name, path=None, target=None | (undocumented) | - | - | 52 |
+| `Serve.create_module` | spec | (undocumented) | - | - | 57 |
+| `Serve.exec_module` | module | (undocumented) | - | - | 60 |
+| `child` | cfg_i | (undocumented) | - | - | 66 |
+| `main` |  | (undocumented) | - | - | 87 |
 
 ### tools/bench/diag_c61_localdir_write2.py
 
@@ -3393,24 +3519,24 @@ shared file in the bench folder (move to tools/ later); imported by 9 file(s): `
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
 | `new1` | t, cls, before | the ONE uid of class 'cls' on 't' that is not in 'before' (raises on 0 or >1; DRY: 0) | docstring | - | 41 |
-| `new_label` | t, before, indicator | (undocumented) | - | - | 51 |
+| `new_label` | t, before, indicator | Label of the last front-panel object of t (g.fp_labels order) whose indicator flag equals indicator and whose label is not in before; RuntimeError when none ('' in DRY). Returns str. | side file | - | 51 |
 | `copy_to` | s, cls, uid, dest_diag_uid, pos, tag | copy_top + (dest_diag_uid) move_in into that diagram + junk purge = stagekit.copy_in:779 with DRY-safe lookups | docstring | - | 60 |
-| `pins` |  | (undocumented) | - | - | 69 |
-| `walk` | t, d=0 | (undocumented) | - | - | 75 |
-| `term` | rows, name, source | (undocumented) | - | - | 86 |
+| `pins` |  | The pinned inputs as (name, path, md5): IMAQdx Get Image, the IMAQdx lvlib, get-buff copy and original, frames manifest (md5 read now), pane base and S1 (fixed md5 constants). Returns tuple of tuples. | side file | - | 69 |
+| `walk` | t, d=0 | Node table of diagram d of VI t: {uid: (index n, label, terminal rows)} from g.node_terms_uid for n = 0..79 until a 0 uid; a missing key raises KeyError, or gives (0, '', []) in DRY. Returns _Walk ... | side file | - | 75 |
+| `term` | rows, name, source | First terminal row of rows with that name and is_source == source; None when absent (a copy of DUMMY in DRY). Returns dict or None. | side file | - | 86 |
 | `tname` | rows, pred, source | the one terminal name satisfying pred(name) with the given direction (raises on 0 or >1) | docstring | - | 90 |
-| `fidx` | t, cls, uid | (undocumented) | - | - | 106 |
-| `diag_index` | t, uid | (undocumented) | - | - | 110 |
-| `donor_class` | uid | (undocumented) | - | - | 114 |
+| `fidx` | t, cls, uid | Index of uid among the uids of g.report_all(t, cls) (ValueError when absent; 0 in DRY). Returns int. | side file | - | 106 |
+| `diag_index` | t, uid | Index of diagram uid among g.report_all(t, 'Diagram') (ValueError when absent; 0 in DRY). Returns int. | side file | - | 110 |
+| `donor_class` | uid | 'Function' or 'Node': the first of those classes whose report_all on g.MOVE_SRC holds uid; None when neither; always 'Function' in DRY. Returns str or None. | side file | - | 114 |
 | `copy_top` | s, cls, uid, tag | stagekit.copy_in:779 minus move_in: OpMoveByIndex_v0 duplicate=True with the UID guard; the copy stays top level. | docstring | - | 123 |
-| `str_array_ctl` | s, t, tag | (undocumented) | - | - | 137 |
+| `str_array_ctl` | s, t, tag | Makes a free String[] control on t: drops Get Controls.vi, creates a control on its 'Control Names' input, deletes that wire and the subVI, removes bad wires; fatal gate that the control has no wir... | side file | - | 137 |
 | `pwire` | t, label | the wire uid on panel object 'label' (panel_wiring; raises if absent; DRY: 0) | docstring | - | 149 |
-| `pidx` | t, label | (undocumented) | - | - | 159 |
+| `pidx` | t, label | Index of label among the front-panel labels of t (g.fp_labels order; ValueError when absent, 0 in DRY). Returns int. | side file | - | 159 |
 | `pane_dirs` | t | {slot: (label, is_indicator)} over the connector pane (label + direction; K3 of 76-4) | docstring | - | 163 |
-| `edges` | live, remap | (undocumented) | - | - | 169 |
-| `census` | t | (undocumented) | - | - | 179 |
+| `edges` | live, remap | Edge set of a live graph read: (source owner, source terminal name, sink owner, sink terminal name) for every source/sink pair on one wire, owners mapped through remap. Returns set of tuples. | side file | - | 169 |
+| `census` | t | {subVI uid: path} over every diagram of t (g.subvis per diagram index). Returns dict. | side file | - | 179 |
 | `tail` | s, fxl=None, bad=() | once per run, just before the RESULT line: Moving-Objects pair restored and proven (stagekit.fixtures_check), | docstring | - | 187 |
-| `frame_paths` |  | (undocumented) | - | - | 206 |
+| `frame_paths` |  | The N_FR (10044) replay frame paths f00000.tif, f00001.tif, ... under FR (G:\m8_replay_frames), in index order. Returns list of str. | side file | - | 206 |
 
 ### tools/bench/diag_s2_scaffold.py
 
@@ -3712,10 +3838,10 @@ shared file in the bench folder (move to tools/ later); imported by 16 file(s): 
 | `ladder_allowed_line` | log_name, cls, p, ts | One JSON line per ladder ALLOW, so tools/audit_cycle.py can count builds that ran with no new review. | docstring | - | 359 |
 | `cited_review` | discharge_line | archive/peer/<name>.md named by a JEV-DISCHARGE line (fresh or cached), or None. | docstring | - | 379 |
 | `next_action` | cls, allowed, discharge_line=None | The NEXT-ACTION text for one gate outcome. 'allowed' is the gate's own decision, never the class alone: | docstring | - | 385 |
-| `with_next` | line, action | (undocumented) | - | - | 395 |
-| `ladder_cache_path` |  | (undocumented) | - | - | 408 |
+| `with_next` | line, action | The JEV line with ' / NEXT-ACTION: <action>' appended. Returns str. | side file | - | 395 |
+| `ladder_cache_path` |  | Path of jev_ladder_cache.jsonl in the same folder as GATE_LOG (a redirected GATE_LOG moves the cache too). Returns str. | side file | - | 408 |
 | `ladder_cache_get` | key, md5 | The stored verdict for (key, md5), newest wins; None when absent or unreadable. | docstring | - | 432 |
-| `ladder_cache_put` | rec | (undocumented) | - | - | 449 |
+| `ladder_cache_put` | rec | Appends rec as one JSON line to the ladder cache file; an OSError is ignored. Returns None. | side file | - | 449 |
 | `newest_ladder_line` | log_name | The newest JEV-LADDER line in GATE_LOG for this log basename (tail only), or None. | docstring | - | 457 |
 | `ladder_after_discharge` | log_path, discharge_line, write=True | guard_peer calls this when the ladder did NOT act and the OLD-PATH discharge then allowed: the newest | docstring | - | 474 |
 | `jev_ladder` | log_path, failure_text, n=N_RECENT_REVIEWS, before=None, write=True, gate_rows=None | THE LADDER CALL (tools/hooks/guard_peer.py), run BEFORE the ordinary discharge. | docstring | - | 489 |
@@ -3767,7 +3893,7 @@ shared file in the bench folder (move to tools/ later); imported by 1 file(s): `
 
 ### tools/bench/k_contract_79.py
 
-shared file in the bench folder (move to tools/ later); imported by 37 file(s): `tools/bench/diag_c107b_bedgraph.py`, `tools/bench/diag_c108b_graph.py`, `tools/bench/diag_c110_bedgraph.py`, `tools/bench/diag_c111b_b1graph.py`, `tools/bench/diag_c112c_fixture.py`, `tools/bench/diag_c113a_b2agraph.py` ...
+shared file in the bench folder (move to tools/ later); imported by 41 file(s): `tools/bench/diag_c107b_bedgraph.py`, `tools/bench/diag_c108b_graph.py`, `tools/bench/diag_c110_bedgraph.py`, `tools/bench/diag_c111b_b1graph.py`, `tools/bench/diag_c112c_fixture.py`, `tools/bench/diag_c113a_b2agraph.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -3854,7 +3980,7 @@ shared file in the bench folder (move to tools/ later); imported by 11 file(s): 
 
 ### tools/bench/prep_c156_a1_1_lib.py
 
-shared file in the bench folder (move to tools/ later); imported by 5 file(s): `tools/bench/prep_c156_a1_1_inv.py`, `tools/bench/prep_c156_a1_1_licence.py`, `tools/bench/prep_c156_a1_1_mk.py`, `tools/bench/prep_c156_a1_1_pred.py`, `tools/bench/prep_c157_a1_4_cut.py`
+shared file in the bench folder (move to tools/ later); imported by 41 file(s): `tools/bench/diag_c160_g1_1.py`, `tools/bench/diag_c162_a1_1_hash.py`, `tools/bench/diag_c162_a1_2_hash.py`, `tools/bench/diag_c163_a2_1_hash.py`, `tools/bench/diag_c163_a2_2_hash.py`, `tools/bench/diag_c164_a3_5_hash.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -3862,12 +3988,12 @@ shared file in the bench folder (move to tools/ later); imported by 5 file(s): `
 | `Gate.result` | arts=None | (undocumented) | - | - | 46 |
 | `step_facts` | tag, R_, quiet=False | {step n: md5 of the step file's state} for a stagesim.simulate result; prints one 'FACT STEP' line per step (op, id, ok/PROVISIONAL/ | docstring | - | 51 |
 | `tie_rows` | SA, ACTS, ok_pairs, key_parts, card | (ties, untied, open_rows): every end cdiff row of a pass-A sim tied to the FIRST action of the unbroken run of steps that carry it (or to a | docstring | - | 66 |
-| `main_of` | n, KINDS, SX, SPR, MODEL, START, reads=2 | (MAIN MB, x10_model_peak dict, checkpoints) of the op prefix 1..n: Executor peak at START with a checkpoint at every BIND op + 'reads' | docstring | - | 95 |
-| `sg_census` | p, SX | The ControlTerminal-sink rows of a FINAL plan: every wire action whose sim effect's dst terminal is a ControlTerminal (stagexec.is_ct) | docstring | - | 103 |
+| `main_of` | n, KINDS, SX, SPR, MODEL, START, reads=2 | (MAIN MB, x10_model_peak dict, checkpoints) of the op prefix 1..n: Executor peak at START with a checkpoint at every op of the SHARED | docstring | - | 95 |
+| `sg_census` | p, SX | The ControlTerminal-sink rows of a FINAL plan: every wire action whose sim effect's dst terminal is a ControlTerminal (stagexec.is_ct) | docstring | - | 104 |
 
 ### tools/bench/prep_c156_a1_2_lib.py
 
-shared file in the bench folder (move to tools/ later); imported by 4 file(s): `tools/bench/prep_c156_a1_2_measure.py`, `tools/bench/prep_c156_a1_2_regress.py`, `tools/bench/prep_c157_a1_1_regress.py`, `tools/bench/selftest_c156_passwire.py`
+shared file in the bench folder (move to tools/ later); imported by 7 file(s): `tools/bench/diag_c160_f3_2.py`, `tools/bench/diag_c163_a3_1_read.py`, `tools/bench/prep_c156_a1_2_measure.py`, `tools/bench/prep_c156_a1_2_regress.py`, `tools/bench/prep_c157_a1_1_regress.py`, `tools/bench/selftest_c156_passwire.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -3879,6 +4005,45 @@ shared file in the bench folder (move to tools/ later); imported by 4 file(s): `
 | `term_brief` | r | (term_uid, owner_uid, owner_class, term_class, frame_diagram, wire_uid) of a terminal row. | docstring | - | 93 |
 | `compile_all` | pattern='plan_*.json' | {repo-relative plan path: {md5, ops} / {md5, error} / {skip}} - stagexec.compile_plan over every stored plan matching | docstring | - | 98 |
 | `run_suite` | tag, outdir=HERE | [(name, rc, pass_lines, fail_lines, last RESULT/summary line)] - each SUITE self-test run as a child (offline), its | docstring | - | 115 |
+
+### tools/bench/prep_c159_c1_1_lib.py
+
+shared file in the bench folder (move to tools/ later); imported by 3 file(s): `tools/bench/diag_c160_g1_1.py`, `tools/bench/prep_c159_c1_1_mk.py`, `tools/bench/selftest_c160_stagemap.py`
+
+| function | arguments | what it does | from | self-test | line |
+|---|---|---|---|---|---|
+| `made_symbols` | acts | The 'new:' symbols the rows create: every 'as' alias, plus <as>L / <as>R of an add_shift_reg. Self-test: --selftest. | docstring | - | 31 |
+| `used_symbols` | acts, made | Sorted earlier-step symbols the rows reference: 'new:X' (address heads) or 'new:X.f<k>' (frame diagrams), minus 'made'. Self-test: --selftest. | docstring | - | 40 |
+| `map_symbols` | used, sym, bound, graph | (REAL, bad, lines): each used symbol -> sim uid (sym) -> real uid (bound); a frame symbol's real uid must be an owners entry | docstring | - | 57 |
+| `map_frames` | acts, all_acts, sym, bound, owners, default_frames=('False', 'True') | (FMAP {(action id, end uid): {...,'addr': '#<uid>'}}, bad, lines): a 'frame' name on an end whose tunnel ('tunnel' action in all_acts) | docstring | - | 84 |
+| `apply_map` | acts, REAL, FMAP | The rows with earlier-step symbols -> real uids (string address 'new:X.t' in src/dst -> {'uid': real, 'term': 't'}) and mapped frame | docstring | - | 120 |
+| `bound_from_cmap` | path | {sim uid: real uid} over the obj / diag / term entries of ONE creation-map/1 file, read by stage_prerun.read_creation_map; a sim id in | docstring | - | 146 |
+
+### tools/bench/prep_c164_a2_3_lib.py
+
+shared file in the bench folder (move to tools/ later); imported by 19 file(s): `tools/bench/prep_c164_a2_3_el.py`, `tools/bench/prep_c164_a2_3_licence.py`, `tools/bench/prep_c164_a2_3_md5.py`, `tools/bench/prep_c164_a2_3_pred.py`, `tools/bench/prep_c164_a3_4_el.py`, `tools/bench/prep_c164_a3_4_licence.py` ...
+
+| function | arguments | what it does | from | self-test | line |
+|---|---|---|---|---|---|
+| `base_uids` | a | Base (int) uids a plan action names: loop / body / parent / diagram, a delete row's uid / wire_uid, and a dict end's uid / term_uid. | docstring | - | 32 |
+| `is_stale` | row, aids | (stale, action name): a row whose clears_by names an ACTION ('A70 w_k3f') that is not in this plan's ids 'aids'. | docstring | - | 42 |
+| `attached_wires` | state, uid | Wire uids on the terminal rows owned by object 'uid' in a sim state. | docstring | - | 49 |
+| `wires_of` | s | (undocumented) | - | - | 54 |
+| `objs_of` | s | (undocumented) | - | - | 58 |
+| `licence` | cfg | cfg: PLAN, LIC, X11LOG, SESS, STAGE, CARD, STEP_TXT, PD, PRECEDENT, MAKER. Writes the pb-licence/1 file; returns the gate rc. | docstring | - | 68 |
+| `el` | cfg | cfg: PLAN, SESS, EXPF, OUT, PINS, A0 (A number of action 1), STEP_TXT, CARD, MAKER, UNPRED_WHY, ELR_SPAN. Writes the predicted | docstring | - | 118 |
+| `pred` | cfg | cfg: RRP, PP, SESS, SGF, ELF, LIC, GRAPH, PINS, BEDVI_MD5_PREFIX, A0, LIMIT, MAIN_SRC_READS, CARD, STEP_TXT, NOTE, N_DW, N_DO. Writes the | docstring | - | 239 |
+| `unchanged` | pins, outs | U: every pinned file's md5 starts with its pin; prints the md5 of every output. Returns the gate rc. | docstring | - | 411 |
+
+### tools/bench/prep_plan_flow_lib.py
+
+shared file in the bench folder (move to tools/ later); imported by 12 file(s): `tools/bench/prep_c164_a1_1_mk.py`, `tools/bench/prep_c164_a2_1_cmp.py`, `tools/bench/prep_c164_a2_1_mk.py`, `tools/bench/prep_c164_a2_2_mk.py`, `tools/bench/prep_c164_a3_1_cmp.py`, `tools/bench/prep_c164_a3_1_hash.py` ...
+
+| function | arguments | what it does | from | self-test | line |
+|---|---|---|---|---|---|
+| `leaves` | x, pre='' | {'/path': scalar} of a JSON value (dict keys / list indices joined by '/'). Same as prep_c163_a1_1_mk.py:74-79. | docstring | - | 35 |
+| `bind_sources` | gate, sources, used, GR | (REAL {symbol: real uid}, per-source info): each used symbol is bound by the ONE adopted step whose actions make it - that step's last sim step | docstring | - | 44 |
+| `make_step_plan` | gate, rin, groups, graph, base_vi, base_plan, sources, card, stage, plan_in, session, goal_fn, probe_goal, plan_out_d... | Make plan_<stage>.json (written ONLY by stagesim.simulate) from the rows of the whole 'groups' (census names, in plan order) of 'rin', on the | docstring | - | 79 |
 
 ### tools/bench/s1_subvi_paths.py
 
@@ -3893,6 +4058,24 @@ shared file in the bench folder (move to tools/ later); imported by 2 file(s): `
 | `run_condition` | tag, target | (undocumented) | - | - | 183 |
 | `llb_root` | path | Nearest ancestor DIRECTORY COMPONENT of 'path' whose name ends in .llb, or None. | docstring | - | 212 |
 | `main` |  | (undocumented) | - | - | 224 |
+
+### tools/bench/selftest_assign_flow.py
+
+shared file in the bench folder (move to tools/ later); imported by 1 file(s): `tools/bench/selftest_runner_debate.py`
+
+| function | arguments | what it does | from | self-test | line |
+|---|---|---|---|---|---|
+| `gate` | label, ok, detail='' | (undocumented) | - | - | 65 |
+| `hook` | env_extra, sub, prompt, sid, transcript=None | (undocumented) | - | - | 70 |
+| `mk_card` | d, cid, advances=('M3',), write=('tools/bench/x_*.py',), goal='build step', retry=None, unblocks=None | (undocumented) | - | - | 85 |
+| `mk_result` | d, cid, status='PASS', ff=None, blocked=None | (undocumented) | - | - | 101 |
+| `fresh_state` | tmp, name, purpose=None, t0=None, decisions=None | (undocumented) | - | - | 109 |
+| `env_for` | st, cfg | (undocumented) | - | - | 115 |
+| `hook_tests` | tmp, cfg | (undocumented) | - | - | 122 |
+| `runner_stubs` | tmp | Write the judge / assign stand-ins and the space-free hook launcher into 'tmp'. -> dict of their paths. Shared | docstring | selftest_runner_debate.py | 305 |
+| `runner_case` | tmp, st, name, jmode, amode, cfg_path, extra=(), seed_next=False, cycles=1 | Run tools/cycle_runner.py --dry-cmd <judge stub> [--assign-dry-cmd <assign stub>] on a fresh bench under | docstring | - | 320 |
+| `runner_tests` | tmp, cfg | (undocumented) | - | - | 348 |
+| `main` |  | (undocumented) | - | - | 404 |
 
 ### tools/bench/selftest_c153_poskey_convert.py
 
@@ -4095,7 +4278,7 @@ recipe imported by another file; imported by 4 file(s): `tools/bench/diag_c86_no
 
 ### tools/recipes/build_d1_v0.py
 
-recipe imported by another file; imported by 177 file(s): `tools/bench/build_op_const_loopterm_77.py`, `tools/bench/c52_astcheck.py`, `tools/bench/c52r2_astcheck.py`, `tools/bench/c52r3_astcheck.py`, `tools/bench/c53_astcheck.py`, `tools/bench/c73_l7r_live.py` ...
+recipe imported by another file; imported by 181 file(s): `tools/bench/build_op_const_loopterm_77.py`, `tools/bench/c52_astcheck.py`, `tools/bench/c52r2_astcheck.py`, `tools/bench/c52r3_astcheck.py`, `tools/bench/c53_astcheck.py`, `tools/bench/c73_l7r_live.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -4138,7 +4321,7 @@ recipe imported by another file; imported by 1 file(s): `tools/recipes/build_opl
 
 ### tools/recipes/build_opconnectfromwire_v0.py
 
-recipe imported by another file; imported by 54 file(s): `tools/bench/constsrc_l2a1_82.py`, `tools/bench/constsrc_l2a1_85.py`, `tools/bench/ctsrc_l2a1_82.py`, `tools/bench/diag_c113c_scratch.py`, `tools/bench/diag_c66_s3b_m3.py`, `tools/bench/diag_c66b_s3b_m3.py` ...
+recipe imported by another file; imported by 55 file(s): `tools/bench/constsrc_l2a1_82.py`, `tools/bench/constsrc_l2a1_85.py`, `tools/bench/ctsrc_l2a1_82.py`, `tools/bench/diag_c113c_scratch.py`, `tools/bench/diag_c66_s3b_m3.py`, `tools/bench/diag_c66b_s3b_m3.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -4826,6 +5009,38 @@ recipe imported by another file; imported by 1 file(s): `tools/recipes/stage_d1_
 |---|---|---|---|---|---|
 | `body` | s | (undocumented) | - | - | 36 |
 
+### tools/recipes/stage_d1_ring_p5s02b.py
+
+recipe imported by another file; imported by 1 file(s): `tools/recipes/stage_d1_ring_p5s02b_scratch.py`
+
+| function | arguments | what it does | from | self-test | line |
+|---|---|---|---|---|---|
+| `body` | s | (undocumented) | - | - | 38 |
+
+### tools/recipes/stage_d1_ring_p5s02c.py
+
+recipe imported by another file; imported by 1 file(s): `tools/recipes/stage_d1_ring_p5s02c_scratch.py`
+
+| function | arguments | what it does | from | self-test | line |
+|---|---|---|---|---|---|
+| `body` | s | (undocumented) | - | - | 38 |
+
+### tools/recipes/stage_d1_ring_p5s02d.py
+
+recipe imported by another file; imported by 1 file(s): `tools/recipes/stage_d1_ring_p5s02d_scratch.py`
+
+| function | arguments | what it does | from | self-test | line |
+|---|---|---|---|---|---|
+| `body` | s | (undocumented) | - | - | 41 |
+
+### tools/recipes/stage_d1_ring_p5s02e.py
+
+recipe imported by another file; imported by 1 file(s): `tools/recipes/stage_d1_ring_p5s02e_scratch.py`
+
+| function | arguments | what it does | from | self-test | line |
+|---|---|---|---|---|---|
+| `body` | s | (undocumented) | - | - | 40 |
+
 ### tools/recipes/stage_d1_s1.py
 
 recipe imported by another file; imported by 4 file(s): `tools/bench/c53_astcheck.py`, `tools/bench/verify_d1_s2.py`, `tools/recipes/stage_d1_s2_loops.py`, `tools/recipes/stage_d1_s3_focus.py`
@@ -4891,7 +5106,7 @@ recipe imported by another file; imported by 1 file(s): `tools/recipes/stage_tem
 
 ### tools/hooks/guard_assign.py
 
-hook - reference; imported by 4 file(s): `tools/bench/selftest_assign_flow.py`, `tools/bench/selftest_c148_guard_fp.py`, `tools/cycle_runner.py`, `tools/hooks/guard_session.py`
+hook - reference; imported by 6 file(s): `tools/bench/prep_c162_check_outside.py`, `tools/bench/selftest_assign_flow.py`, `tools/bench/selftest_c148_guard_fp.py`, `tools/bench/selftest_runner_debate.py`, `tools/cycle_runner.py`, `tools/hooks/guard_session.py`
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -4945,7 +5160,7 @@ hook - reference; imported by 4 file(s): `tools/bench/selftest_c111c_launchunit.
 
 ### tools/hooks/guard_cycle.py
 
-hook - reference; imported by 25 file(s): `tools/bench/c19_close_release_probe.py`, `tools/bench/c20_release_probe.py`, `tools/bench/c22_v1_gate_probe.py`, `tools/bench/chk_fixed_c69.py`, `tools/bench/diag_c112c_release.py`, `tools/bench/diag_c129_8_pagate.py` ...
+hook - reference; imported by 29 file(s): `tools/bench/c19_close_release_probe.py`, `tools/bench/c20_release_probe.py`, `tools/bench/c22_v1_gate_probe.py`, `tools/bench/chk_fixed_c69.py`, `tools/bench/diag_c112c_release.py`, `tools/bench/diag_c129_8_pagate.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -4966,7 +5181,7 @@ hook - reference; imported by 25 file(s): `tools/bench/c19_close_release_probe.p
 
 ### tools/hooks/guard_peer.py
 
-hook - reference; imported by 25 file(s): `tools/bench/c125_1_probe.py`, `tools/bench/diag_c131_2_offline.py`, `tools/bench/diag_c144_3_check.py`, `tools/bench/diag_c146_a1_1_repro.py`, `tools/bench/jev_gate.py`, `tools/bench/jev_gatecheck_c68.py` ...
+hook - reference; imported by 27 file(s): `tools/bench/c125_1_probe.py`, `tools/bench/diag_c131_2_offline.py`, `tools/bench/diag_c144_3_check.py`, `tools/bench/diag_c146_a1_1_repro.py`, `tools/bench/diag_c160_d4_1_gate.py`, `tools/bench/jev_gate.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -5004,13 +5219,13 @@ hook - reference; imported by 6 file(s): `tools/bench/selftest_c148_assign_leak.
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
-| `in_cycle` |  | (undocumented) | - | - | 94 |
+| `in_cycle` |  | True when env CYCLE_SESSION is set and non-empty (a runner cycle session). Returns bool. | side file | - | 94 |
 | `last_context_tokens` | transcript_path | Tokens the chat's last assistant turn sent as input (input + cache creation + cache read), read from the | docstring | - | 98 |
 | `chat_context_refusal` | data | (f) The chat's bound: refuse a counted dispatch once its context passed CHAT_CONTEXT_LIMIT. '' = allow. | docstring | - | 123 |
-| `session_id` | data=None | (undocumented) | - | - | 138 |
-| `state_path` | sid | (undocumented) | - | - | 146 |
-| `load` | sid | (undocumented) | - | - | 150 |
-| `save` | sid, d | (undocumented) | - | - | 163 |
+| `session_id` | data=None | data['session_id'], else env CLAUDE_SESSION_ID, else 'unknown', with characters outside [A-Za-z0-9._-] replaced by '_' and cut to 80. Returns str. | side file | - | 138 |
+| `state_path` | sid | Path of the session state file tools/bench/session_<sid>.json. Returns str. | side file | - | 146 |
+| `load` | sid | Session state from state_path(sid) with defaults dispatches 0 and retro_done False; {dispatches: 0, retro_done: False} when missing, unreadable or not a dict. Returns dict. | side file | - | 150 |
+| `save` | sid, d | Writes d as JSON to state_path(sid), creating tools/bench if needed; an OSError is ignored. Returns None. | side file | - | 163 |
 | `mark_retro_done` | sid | Called by tools/hooks/guard_bash.py when it sees the retrospective being run in this session. | docstring | - | 172 |
 | `card_of_prompt` | prompt | (card dict / None, card abs path / None) for a 'CARD <path>' prompt. An unreadable card -> ({}, path). | docstring | - | 196 |
 | `prune_live` | live, now=None | The entries still live: no result_<id>.json newer than the dispatch beside the card, and younger than | docstring | - | 211 |
@@ -5018,14 +5233,14 @@ hook - reference; imported by 6 file(s): `tools/bench/selftest_c148_assign_leak.
 | `tool_hits` | globs | (g) the STAGE_TOOLS a write-glob list reaches. None (unknown writes) reaches all of them. | docstring | - | 239 |
 | `pairing_refusal` | cid, lv, writes, live | (g) refusal text for dispatching card 'cid' (labview 'lv', write globs 'writes') beside the 'live' entries, | docstring | - | 247 |
 | `send_message_refusal` | data | (c) NO RESUME BY SendMessage IN A CYCLE SESSION (docs/violation-decisions.md "repeated-failure-class - | docstring | - | 286 |
-| `main` |  | (undocumented) | - | - | 307 |
-| `escalation_refusal` | sub, card, cpath | (undocumented) | - | - | 357 |
+| `main` |  | PreToolUse hook: BENCH_CELL or unreadable stdin -> 0; SendMessage in a cycle refused (2); counts SendMessage resumes (not to main), Agent calls of COUNTED types and Workflow; outside a cycle the ch... | side file | - | 307 |
+| `escalation_refusal` | sub, card, cpath | Refusal text when an escalation-rung dispatch (material-opus-max / material-fable-*) of a card with retry_of_card is routed 'scratch-verify' by stage_prerun.escalation_route; '' otherwise or when t... | side file | - | 357 |
 | `cycle_role` |  | (h) '' (legacy / chat) / 'judgement' / 'assign' - only inside a runner cycle session. | docstring | - | 379 |
 | `decide` | sid, sub, ti, data=None | The counted-dispatch decision, run under the session-state lock. 0 allow / 2 refuse. | docstring | - | 400 |
 
 ### tools/hooks/guard_write.py
 
-hook - reference; imported by 4 file(s): `tools/bench/diag_c146_a1_1_repro.py`, `tools/bench/replay_c_e3_142_143.py`, `tools/bench/selftest_c148_guard_fp.py`, `tools/bench/selftest_c_e3.py`
+hook - reference; imported by 6 file(s): `tools/bench/diag_c146_a1_1_repro.py`, `tools/bench/prep_c164_a2_1_pins.py`, `tools/bench/prep_c165_a2_1_close.py`, `tools/bench/replay_c_e3_142_143.py`, `tools/bench/selftest_c148_guard_fp.py`, `tools/bench/selftest_c_e3.py`
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|

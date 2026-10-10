@@ -1,0 +1,27 @@
+{"schema":"result/1","id":"160-a2-1","status":"PASS","gates":{"pass":7,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+{"path":"tools/stagesim.py","md5":"95a162baec5324ff037a8d23bd7ef46d"},
+{"path":"tools/stagexec.py","md5":"ddf23a31b10767015da246be8ceaa2e2"},
+{"path":"tools/bench/diag_c160_a2_1_baseline.json","md5":"25b320c456621ae4b047f28a11906b62"},
+{"path":"tools/bench/selftest_c160_delwire.py","md5":"9b8b45d7e8a3ce15903afa59ba0df505"},
+{"path":"tools/bench/selftest_c160_regface.py","md5":"fb8f0b3fb80fc22b88c21aaf3a8d6f29"},
+{"path":"tools/bench/selftest_c160_regface.log","md5":"e0b5a393472287009d7c4b3bd5feb74c"},
+{"path":"tools/bench/diag_c160_a2_1_plan_tmp.json","md5":"73971108cd6c2e6b7839fad62296dc93"},
+{"path":"tools/bench/diag_c160_a2_1_facts.md","md5":"4a1d31e915ffec30271c9e692706137b"}],
+"facts":[
+"Baseline before any edit: diag_c160_a2_1_baseline.log RESULT 9/0; op md5 p5s01a 5f95830f, p5s01b b8b59791 (diag_c160_a2_1_baseline.json)",
+"stagesim 95a162ba: sourceless_wire stagesim.py:632-637; op_delete_wire :1445,:1461-1463 drops the Wire object for sink-only wires (old path left it: baseline.log)",
+"stagexec ddf23a31: plan_base_docs :640, plan_base_state :651, base_register_end :662; compile :906-912; delete executor :2896-2900; docstring :30-33 fixed",
+"regface log:20 R1: temp plan + dw w24264/w24300 -> t_go/t_ho compile connect_term_uid register_end_case_border, route check PASS, 0 UNROUTABLE, final True",
+"regface log:22-32: R2 p5s01a/b op lists == baseline (5f95830f, b8b59791); R3 only t_go/t_ho changed; R4 t_gi/t_hi stay tunnel/cfw; RESULT 12/0 (log:36)",
+"delwire selftest_c160_delwire_c160a2.log:39 RESULT 20/0 (old 12 + 8); TA2 log:24: end pairs lose exactly (None,24139,23405),(None,24235,23405)",
+"Brief said 'no pair changes': stagekit.wire_end_pairs pairs a sink-only wire as (None, sink, frame) (stagekit.py:2102-2103); first run 19/1 (_try1.log)",
+"Re-runs: cen2_ends 8/0 (_c160a2.log:16), runcheck 10/0 (:23), wire0face 24/0 (:40), stagemap 5/0 (:9); stagesim selftest 106/0, stagexec 141/0",
+"Re-pin stagesim a3261b56->95a162ba only: selftest_c158_runcheck.py:152 (+:24), selftest_c158_wire0face.py:260 (+:29)",
+"Unchanged: stagekit 1441bb4c, stage_prerun 7605116f, addrcheck 207beb0d, vigraph a7eb58c7, p5s01a ed62e8d6, p5s01b 75a77a00; VIs V0==V1; hooks untouched"],
+"open":[
+"Re-pin later: selftest_c156_b2_2_invcheck.py:100 (stagexec c4a6e0b6, stagesim a3261b56), selftest_c156_passwire.py:163 (stagesim); diag_c160_g1_1.py:27-28 etc.",
+"Accept base_register_end excluding a WIRED SOURCE face (stagexec.py:676, needed for R4) and the sink-only delete keeping the measured LoopTunnel auto-drop?",
+"Old delete path (wire WITH a source row) still leaves its Wire object in objs, so termless_wire turns True afterwards (baseline.log w24285/w32594) - fix?"],
+"cost":{"usd":null,"minutes":15,"labview_runs":0},
+"note":"Offline only. Facts: tools/bench/diag_c160_a2_1_facts.md. Pre-edit tool copies kept as tools/bench/selftest_c160_delwire_{stagesim_a3261b56,stagexec_c4a6e0b6}.txt."}

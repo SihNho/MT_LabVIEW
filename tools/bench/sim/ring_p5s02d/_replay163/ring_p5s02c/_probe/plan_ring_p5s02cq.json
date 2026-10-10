@@ -1,0 +1,448 @@
+{
+ "schema": "stageplan/1",
+ "context": {
+  "s1_key": "D1_s1_copy"
+ },
+ "stage": "ring_p5s02cq",
+ "goal": "card 163-a1-2 PROBE (fact only): step-3 rows on f9ae7751",
+ "base": {
+  "path": "tools/bench/graph_ring_p5s02b_20261010_111905.json",
+  "md5": "431cfd833310cde7d66a238db3db16f8"
+ },
+ "actions": [
+  {
+   "op": "add_shift_reg",
+   "id": "sr_c7",
+   "loop": 23041,
+   "body": 23405,
+   "parent": 686,
+   "as": "CS7",
+   "why": "PD374(b) 1.7 record counter SR"
+  },
+  {
+   "op": "create",
+   "id": "c_k07",
+   "class": "DigitalNumericConstant",
+   "diagram": 686,
+   "as": "K07",
+   "prim": "const_donor",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorSRInit_v0.vi",
+    "uid": 248
+   },
+   "terminals": [
+    {
+     "name": "",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "PD374(b) init 0 (donor as P5-1 c_k0)"
+  },
+  {
+   "op": "wire",
+   "id": "w_k07",
+   "src": "new:K07.value",
+   "dst": "new:CS7L.outer",
+   "why": "PD374(b)"
+  },
+  {
+   "op": "create",
+   "id": "c_inc7",
+   "class": "Function",
+   "diagram": 31506,
+   "as": "IN7",
+   "prim": "Increment",
+   "donor": {
+    "donor": "$work",
+    "uid": 1978
+   },
+   "terminals": [
+    {
+     "name": "x+1",
+     "is_source": true,
+     "term_class": "OverridableParameterTerminal"
+    },
+    {
+     "name": "x",
+     "is_source": false,
+     "term_class": "ParameterTerminal"
+    }
+   ],
+   "why": "PD374(b) +1 only where an element was dequeued (donor as P5-1 c_inc)"
+  },
+  {
+   "op": "tunnel",
+   "id": "t_ci7",
+   "loop": 31308,
+   "body": 31506,
+   "parent": 23405,
+   "dir": "in",
+   "as": "TC7",
+   "why": "PD374(b)"
+  },
+  {
+   "op": "wire",
+   "id": "w_ci7_in",
+   "src": "new:CS7L.inner",
+   "dst": "new:TC7.outer",
+   "why": "PD374(b)"
+  },
+  {
+   "op": "wire",
+   "id": "w_ci7_inc",
+   "src": "new:TC7.inner",
+   "dst": "new:IN7.x",
+   "why": "PD374(b)"
+  },
+  {
+   "op": "wire",
+   "id": "w_c7_fi",
+   "src": {
+    "uid": "new:TC7",
+    "side": "inner",
+    "frame": "#31506"
+   },
+   "dst": {
+    "uid": 376,
+    "term": "frame index",
+    "term_uid": 5763
+   },
+   "why": "PD374(b) t7 <- the counter's LEFT value (before this call)"
+  },
+  {
+   "op": "tunnel",
+   "id": "t_co7",
+   "loop": 31308,
+   "body": 31506,
+   "parent": 23405,
+   "dir": "out",
+   "as": "TD7",
+   "why": "PD374(b)"
+  },
+  {
+   "op": "wire",
+   "id": "w_inc7_co",
+   "src": "new:IN7.x+1",
+   "dst": "new:TD7.inner",
+   "why": "PD374(b)"
+  },
+  {
+   "op": "wire",
+   "id": "w_co7_r",
+   "src": "new:TD7.outer",
+   "dst": "new:CS7R.inner",
+   "why": "PD374(b)"
+  },
+  {
+   "op": "wire",
+   "id": "w_c7_pass",
+   "src": {
+    "uid": "new:TC7",
+    "side": "inner",
+    "frame": "#31517"
+   },
+   "dst": {
+    "uid": "new:TD7",
+    "side": "inner",
+    "frame": "#31517"
+   },
+   "why": "PD374(b) no element -> no increment"
+  }
+ ],
+ "final": false,
+ "finalized": {
+  "base": {
+   "path": "tools/bench/graph_ring_p5s02b_20261010_111905.json",
+   "md5": "431cfd833310cde7d66a238db3db16f8"
+  },
+  "plan_in": {
+   "path": "tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/_probe/plan_ring_p5s02cq_in.json",
+   "md5": "f769a6c64a14b94267aa4be50e8ea69f"
+  },
+  "last_step": {
+   "path": "tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/_probe/ring_p5s02cq/step_12_wire.json",
+   "md5": "0cb11ddbcd2e038781a0a3fb56246707"
+  },
+  "summary": {
+   "path": "tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/_probe/ring_p5s02cq/summary.json",
+   "md5": "68d86e07a9afb48a9d411e1046d9476c"
+  },
+  "end_cdiff_rows": [
+   "10068|ParameterTerminal|x|0",
+   "10150|ParameterTerminal|x|0",
+   "10382|ParameterTerminal|x|0",
+   "10757|Terminal|array|0",
+   "11261|Terminal|array|0",
+   "11261|Terminal|element|0",
+   "11529|ParameterTerminal|x|0",
+   "2048|Terminal|array|0",
+   "2048|Terminal|length|0",
+   "2626|Terminal|array|0",
+   "2626|Terminal|element|0",
+   "2626|Terminal|element|1",
+   "2626|Terminal|element|2",
+   "28083|Terminal|Magnet position|0",
+   "29240|ParameterTerminal|x|0",
+   "29625|Terminal|array|0",
+   "376|Terminal|current frame data array in|0",
+   "376|Terminal|frame index|0",
+   "5058|Terminal|Bead is good? array in|0",
+   "5058|Terminal|Image In|0",
+   "5058|Terminal|pos in cal image in|0",
+   "5058|Terminal|x,y,z array|0",
+   "6384|Terminal|actual # data points|0",
+   "6384|Terminal|error in|0",
+   "6384|Terminal|file # to append|0",
+   "8634|Terminal|array|0"
+  ],
+  "failed": null,
+  "first_divergent": {
+   "n": 0,
+   "op": "base",
+   "id": null,
+   "rows_from_here": 26
+  },
+  "open_rows": [],
+  "open_rows_match": false,
+  "open_rows_match_legacy": false,
+  "open_rows_classed": {
+   "ok": false,
+   "want": [],
+   "c4_n": 0,
+   "c4_keys": 0,
+   "c4_bad": [],
+   "unclassed": []
+  },
+  "cdiff_inputs": {
+   "labels": "node_labels_default",
+   "labels_n": 626,
+   "fs_pairs": "state",
+   "fs_pairs_n": 576
+  },
+  "step_files": [
+   {
+    "n": 0,
+    "op": "base",
+    "path": "tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/_probe/ring_p5s02cq/step_00_base.json",
+    "md5": "0540ddca87e55e9ee13abb30abcfb550"
+   },
+   {
+    "n": 1,
+    "op": "add_shift_reg",
+    "path": "tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/_probe/ring_p5s02cq/step_01_add_shift_reg.json",
+    "md5": "04651c633569167050288e55a4641806"
+   },
+   {
+    "n": 2,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/_probe/ring_p5s02cq/step_02_create.json",
+    "md5": "6c4e666eae55e3e542e26c2ecae0c830"
+   },
+   {
+    "n": 3,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/_probe/ring_p5s02cq/step_03_wire.json",
+    "md5": "70f93d3c8a896e42fed40a37dd515a21"
+   },
+   {
+    "n": 4,
+    "op": "create",
+    "path": "tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/_probe/ring_p5s02cq/step_04_create.json",
+    "md5": "b662edc0c3200807a835ad6416c45722"
+   },
+   {
+    "n": 5,
+    "op": "tunnel",
+    "path": "tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/_probe/ring_p5s02cq/step_05_tunnel.json",
+    "md5": "854133175ff74a2fa89e2084c20c1f3f"
+   },
+   {
+    "n": 6,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/_probe/ring_p5s02cq/step_06_wire.json",
+    "md5": "7d7ac56081d8a8c29538dcb807a12c07"
+   },
+   {
+    "n": 7,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/_probe/ring_p5s02cq/step_07_wire.json",
+    "md5": "b1b9c4fa9a974a4a8205ace93b73b4c1"
+   },
+   {
+    "n": 8,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/_probe/ring_p5s02cq/step_08_wire.json",
+    "md5": "725b494271811e233801f458f24f5818"
+   },
+   {
+    "n": 9,
+    "op": "tunnel",
+    "path": "tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/_probe/ring_p5s02cq/step_09_tunnel.json",
+    "md5": "432527a022f877e82ceceda5c2d54709"
+   },
+   {
+    "n": 10,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/_probe/ring_p5s02cq/step_10_wire.json",
+    "md5": "4b579132bb4c9ffb945106fdc04615c7"
+   },
+   {
+    "n": 11,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/_probe/ring_p5s02cq/step_11_wire.json",
+    "md5": "16031a7609c66cf1131c7e84931d7bbc"
+   },
+   {
+    "n": 12,
+    "op": "wire",
+    "path": "tools/bench/sim/ring_p5s02d/_replay163/ring_p5s02c/_probe/ring_p5s02cq/step_12_wire.json",
+    "md5": "0cb11ddbcd2e038781a0a3fb56246707"
+   }
+  ],
+  "undecided": 0,
+  "at": "2026-10-10 13:49:27",
+  "fs_routes": {},
+  "addr_pos": [
+   {
+    "n": 3,
+    "addr": "new:K07.value",
+    "source": true,
+    "owner": -7,
+    "index": 0,
+    "class": "Terminal",
+    "name": ""
+   },
+   {
+    "n": 3,
+    "addr": "new:CS7L.outer",
+    "source": false,
+    "owner": -2,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 6,
+    "addr": "new:CS7L.inner",
+    "source": true,
+    "owner": -2,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 6,
+    "addr": "new:TC7.outer",
+    "source": false,
+    "owner": -13,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 7,
+    "addr": "new:TC7.inner",
+    "source": true,
+    "owner": -13,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 7,
+    "addr": "new:IN7.x",
+    "source": false,
+    "owner": -10,
+    "index": 1,
+    "class": "ParameterTerminal",
+    "name": "x"
+   },
+   {
+    "n": 8,
+    "addr": "{\"frame\":\"#31506\",\"side\":\"inner\",\"uid\":\"new:TC7\"}",
+    "source": true,
+    "owner": -13,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 8,
+    "addr": "{\"term\":\"frame index\",\"term_uid\":5763,\"uid\":376}",
+    "source": false,
+    "owner": 376,
+    "index": 7,
+    "class": "Terminal",
+    "name": "frame index"
+   },
+   {
+    "n": 10,
+    "addr": "new:IN7.x+1",
+    "source": true,
+    "owner": -10,
+    "index": 0,
+    "class": "OverridableParameterTerminal",
+    "name": "x+1"
+   },
+   {
+    "n": 10,
+    "addr": "new:TD7.inner",
+    "source": false,
+    "owner": -19,
+    "index": 1,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 11,
+    "addr": "new:TD7.outer",
+    "source": true,
+    "owner": -19,
+    "index": 0,
+    "class": "OuterTerminal",
+    "name": ""
+   },
+   {
+    "n": 11,
+    "addr": "new:CS7R.inner",
+    "source": false,
+    "owner": -1,
+    "index": 0,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 12,
+    "addr": "{\"frame\":\"#31517\",\"side\":\"inner\",\"uid\":\"new:TC7\"}",
+    "source": true,
+    "owner": -13,
+    "index": 2,
+    "class": "InnerTerminal",
+    "name": ""
+   },
+   {
+    "n": 12,
+    "addr": "{\"frame\":\"#31517\",\"side\":\"inner\",\"uid\":\"new:TD7\"}",
+    "source": false,
+    "owner": -19,
+    "index": 2,
+    "class": "InnerTerminal",
+    "name": ""
+   }
+  ],
+  "fs_border_gate": {
+   "status": "PASS",
+   "unmeasured": [
+    14430,
+    31050,
+    34409,
+    34489,
+    43605,
+    44160,
+    44164
+   ],
+   "used": {}
+  }
+ }
+}

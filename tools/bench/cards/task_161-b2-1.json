@@ -1,0 +1,57 @@
+{
+ "schema": "task/1",
+ "id": "161-b2-1",
+ "kind": "diagnose",
+ "goal": "Offline pre-check of the p5s02b step-2 launch on the final tools: dry of both recipes, prerun (X10 read-only), --check-launch, --scratch-required, hashes of the four VIs. No --launch.",
+ "why": "PB classes 1/2 (stagekit 9b8f82c1) and the pred on the shared checkpoint rule (a1fd43fb, MAIN 665.0 <= 675) are done; the dry refused the launch before, so the gates must be read once on the final tools.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_161-b2-1.md", "md5": "7109a4c260b8dbc0123678ec7fc7dca8"},
+  {"path": "tools/bench/diag_c161_a3_1_facts.md", "md5": "67684a29bb278c5122e5f29d3c270d3d"},
+  {"path": "tools/bench/diag_c161_a3_2_facts.md", "md5": "b3fdd869da62af46e2075adf8315563c"},
+  {"path": "docs/d1/ring-p5b.md", "md5": "93dcb778db320dbecc813cd8e156cb1c"},
+  {"path": "tools/stagekit.py", "md5": "9b8f82c1a0150bcaacaf9c56e003c335"},
+  {"path": "tools/bench/plan_ring_p5s02b.json", "md5": "f4520b101baad70f065ba5d6c9d14925"}
+ ],
+ "pass": [
+  "Dry of stage_d1_ring_p5s02b.py and _scratch.py: PASS or PASS-UNVERIFIED with CEN2 the ONLY unverified gate; PB line quoted (5 #376 rows RECORDED); lines quoted verbatim",
+  "Prerun: X10 MAIN quoted vs 675 (expect 665.0), X14, X17, X8 results quoted; --check-launch rc and reason lines quoted (no --launch)",
+  "--scratch-required on the p5s02b recipe: exit code and reason quoted (expected 3)",
+  "VI hashes s09 eb1d0f31, P5-1a 2482fe7b, P5-1 7f2582ae, p5s02a 94ffff94 equal/unequal quoted; claudeDev name of the p5s02a file given",
+  "md5 of pred a1fd43fb, plan f4520b10, licence f61a2514, EL 79ec3207, both recipes, stagekit/stagesim/stagexec/stage_prerun unchanged after the card; facts file written"
+ ],
+ "outputs": [
+  "tools/bench/diag_c161_b2_1_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+    "tools/bench/prep_c161_b2_1*",
+    "tools/bench/diag_c161_b2_1*",
+    "tools/bench/prerun_records.jsonl",
+    "tools/bench/sim/ring_p5s02b/**",
+    "tools/bench/gate_fp_queue.jsonl",
+    "tools/bench/jev_*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 45
+ },
+ "rules": [
+  "Offline; no --launch; no tools/hooks edit; no env bypass",
+  "No plan, recipe, pred, licence, EL or tools/*.py edit; no gate loosened",
+  "Any dry FAIL, other unverified gate or refusal: quote the line and stop",
+  "Hook false positive: py tools/gate_fp.py log; never edit a hook"
+ ],
+ "advances": ["M3", "M8", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p5s02b.json"}
+ ]
+}

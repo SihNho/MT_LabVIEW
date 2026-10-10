@@ -1,0 +1,66 @@
+{
+ "schema": "task/1",
+ "id": "163-a1-3",
+ "kind": "build",
+ "goal": "Offline: step-3 (p5s02c, group I A41..A52) recipe pair, pred, licence, predicted Error List; dry, prerun, check-launch, scratch-required, prior-art line; no launch.",
+ "why": "Purpose items 3-5 of cycle 163: gates and the predicted Error List must exist before the one scratch run on a byte copy of f9ae7751 (PD396(d)).",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_163-a1-3.md", "md5": "208e2a2d4d9c71107874a06cc2b27c31"},
+  {"path": "tools/bench/diag_c163_a1_2_facts.md", "md5": "fe9124b2cd8a7354d2a81032121b59e6"},
+  {"path": "tools/bench/plan_ring_p5s02c.json", "md5": "930699ece36e3366e2c1a2cdf9a82c34"},
+  {"path": "tools/bench/errorlist_expected_D1_ring_p5s02b_20261010_105511.json", "md5": "60e02787818234eeb0689fd36ca32a9b"},
+  {"path": "tools/bench/cards/brief_160-c3-1.md", "md5": "111bf3bd5481f801a1be19f0bfcbacf0"},
+  {"path": "tools/bench/prep_c160_c3_1_pred.py", "md5": "89930da27102bb8b4d9293001bc837c4"},
+  {"path": "tools/bench/prep_c160_c3_1_licence.py", "md5": "a4e46195e7e87538362aa1a7661df424"},
+  {"path": "tools/recipes/stage_d1_ring_p5s02b.py", "md5": "083fda6d551164e7d3b07fc43c3496cd"},
+  {"path": "tools/recipes/stage_d1_ring_p5s02b_scratch.py", "md5": "3f6fb8980734d559d53e0d98760af98c"},
+  {"path": "docs/d1/ring-p5b.md", "md5": "70b89facff7e0e5f3ef6944a326be721"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"}
+ ],
+ "pass": [
+  "Recipe pair stage_d1_ring_p5s02c{,_scratch}.py are inputs-only on stagekit.RingSession; dry on both PASS or PASS-UNVERIFIED with only CEN2; prerun PASS (X10, X14, X17, X8)",
+  "--check-launch on the full scratch command PASS and --scratch-required exit code with its reason line quoted; exact scratch and real launch command lines in the facts",
+  "errorlist_predicted_D1_ring_p5s02c_end.json from the 53-row file: cleared/raised cited to A41..A52, rest UNPREDICTED or STANDING; md5 and counts; errorlist_check.compare accepts it",
+  "Prior art: review verdict novel + disposition if owed, else the PROVEN-PATTERN line quoted; no tool edit; UNCHANGED md5 list; facts file"
+ ],
+ "outputs": [
+  "tools/recipes/stage_d1_ring_p5s02c.py",
+  "tools/recipes/stage_d1_ring_p5s02c_scratch.py",
+  "tools/bench/plan_ring_p5s02c_pred.json",
+  "tools/bench/plan_ring_p5s02c_licence.json",
+  "tools/bench/errorlist_predicted_D1_ring_p5s02c_end.json",
+  "tools/bench/diag_c163_a1_3_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c163_a1_3*",
+   "tools/bench/prep_c163_a1_3*",
+   "tools/bench/plan_ring_p5s02c_*",
+   "tools/bench/errorlist_predicted_D1_ring_p5s02c*",
+   "tools/recipes/stage_d1_ring_p5s02c*",
+   "tools/bench/sim/ring_p5s02c/**",
+   "tools/bench/jev_*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "archive/peer/**",
+   "archive/prior-art/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 75
+ },
+ "advances": ["M3", "M8", "R1"],
+ "rules": [
+  "Offline only: no LabVIEW/motor/camera, no --launch, no hooks edit, no edit of stagekit/exec/sim/prerun/shared",
+  "Call shared functions, never copy them (docs/script-writing.md); limit 675 kept; memory_model.json untouched",
+  "Hook false positive on own command text: py tools/gate_fp.py log, report; no env bypass"
+ ]
+}

@@ -1,0 +1,64 @@
+BGRUN START 2026-10-10 06:28:34 limit 300.0 min: claude.exe -p --model claude-sonnet-5-5 --effort high --output-format json --permission-mode acceptEdits --max-budget-usd 90.00 CARD tools/bench/cards/assign_160_2.json
+
+You are the ASSIGNMENT session of one cycle of this project (card chat-A1, user 2026-10-04). You were spawned by
+`tools/cycle_runner.py` after the judgement session set the cycle's PURPOSE; when you end your turn the process ends.
+Nobody is watching. The first line of this prompt is `CARD tools/bench/cards/assign_<N>_<k>.json` (`assign/1`): the
+purpose (act, pass items, plan, goal ids), your caps, your state file and the path you must write your result to.
+
+## Read, in this order, and nothing else
+0. The `assign/1` card. If `handback_in` is set, the previous round handed back: read that `handback/1` record — the
+   judgement session has since revised the purpose; do not repeat what it refused.
+1. `CLAUDE.md` (the standing rules bind you), `STATUS.md` (lock, rig-state banner — never infer the rig state).
+2. The plan file named in the purpose, only the sections the purpose names. Not `archive/`, not whole logs.
+3. `docs/script-writing.md` (user 2026-10-09) — before writing any brief that asks for a script. Briefs ask for CALLS
+   to shared functions, never "copy the s06 pair"; if the function does not exist yet, the first card extracts it into
+   `tools/stagekit.py` (or the module that owns the topic) with a self-test, then the recipe card uses it.
+
+## What you do: turn the purpose into cards, until every pass item is met
+- Dispatch with the Agent tool, `subagent_type` `material` (Opus 5.5 high), ONE-LINE prompt `CARD <task/1 path>`.
+  Write each card with `py tools/protocol.py new task --id <N>-a<k>-<seq>`, fill goal, inputs (md5), pass, outputs,
+  **flags** (labview / gui / hardware / run_vi / write globs / status_edit / git_commit / peers), budget, rules,
+  `requires`, and **`advances`/`unblocks` copied from the purpose**; then `py tools/protocol.py validate <card>` and
+  `py tools/protocol.py requires <card>`. A brief states the MEASUREMENT, never a result-dependent action.
+- Keep `write` globs NARROW: never the plan file, CLAUDE.md, docs/user-rules.md, Requests.md, `.claude/**`,
+  `tools/hooks/**`, `tools/bench/memory_model.json` — unless the purpose's act/pass names that path. Such a card is a
+  plan / rule / memory-limit change, which is the judgement session's, and the hook hands it back.
+- Read each `result/1` (`status`, `first_fail`, `blocked_by`, the Jev-ladder row in `facts`); never infer from wording.
+- **Retry once, escalate on the existing ladder.** A FAIL the classifiers explain (soft LOG-only gate, address/format
+  mismatch, Error List by-design) or whose Jev row says `our-script-bug` / `already-reviewed-class`: re-issue it as a
+  new card with `retry_of_card: <old id>` applying that NEXT-ACTION. A FAIL with its failure budget spent or its
+  minutes exceeded: `escalation: 1` to `material-opus-max`, then `escalation: 2` to `material-fable-low` (same goal,
+  pass, flags). A REPEATED TOOL FUNCTION is a scratch-VI verification card at the same rung, not an escalation
+  (`guard_session` refuses the escalation). An UNEXPLAINED FAIL gets ONE retry; if that retry fails too, the hook
+  hands the purpose back.
+- **Deliverable first (user 2026-10-08):** dispatch the purpose's LabVIEW deliverable card (build / scratch / adopt)
+  before any tooling card (gate-fp drain, suite re-runs, regression proofs); tooling cards run after it returns. Only a
+  gate that refuses the deliverable's own launch is fixed first. A gate false positive in `tools/hooks/**` is never a
+  card: log it with `tools/gate_fp.py log` and go on — the chat drains hooks between runs.
+- **Pipeline:** at most 2 cards live, at most ONE with `flags.labview` != "none"; an offline prep card may run beside
+  a LabVIEW card (two Agent calls in one message). No gate-tool edit beside a LabVIEW card.
+- Dispatch in the foreground and wait for every agent you started before ending your turn. Never end a message
+  expecting to be resumed. Do not run `retrospective.py`, do not write `tools/bench/next.json` or STATUS.md's NEXT —
+  those are the judgement session's and the runner's.
+- A question only the user can answer: do NOT decide it and do not add it to decisions_pending yourself — hand back.
+
+## HAND-BACK is mechanical — obey it
+`tools/hooks/guard_session.py` → `tools/hooks/guard_assign.py` refuses a dispatch with `HANDBACK REQUIRED (<trigger>)`
+when: (a) an unexplained FAIL repeats after its one retry; (b) the same failure class appears twice; (c) a card leaves
+the purpose (plan file, memory limit, user rule, goal ids outside the purpose); (d) a user question appears
+(decisions_pending grew, or a card is BLOCKED on the user); or a cap is reached (time / USD from the card, runaway
+backstop of cards). After that refusal every further dispatch is refused: write the result and end your turn. The
+runner re-checks all of it after you exit, so a PURPOSE_MET you write while a trigger stands is overridden.
+Hand back yourself, too, whenever continuing would need a decision that is not in the purpose.
+
+## Your output — `assign-result/1`, written to the card's `result` path, then validated
+`{"schema":"assign-result/1","cycle":N,"round":k,"status":"PURPOSE_MET"|"HANDBACK","cards":["<card ids>"],
+"pass_evidence":[{"item":0,"met":true,"evidence":["tools/bench/cards/result_<id>.json","<file:line>"]}, ...],
+"handback":null | {"reason":"<one line>","question":null},"note":""}` — `item` is the 0-based index of the purpose's
+`pass` list; PURPOSE_MET needs one `met: true` row with evidence for EVERY pass item, or the runner turns it into a
+hand-back. Check it with `py tools/protocol.py validate <path>`, then end your turn with a one-line summary.
+
+BGRUN PID 26960
+[claude-code:unrecognized_model] {"model":"claude-sonnet-5-5","query_source":"sdk"}
+{"duration_api_ms":3594534,"stop_reason":"end_turn","session_id":"422b9090-8e2f-47f6-8261-d898bbf97385","total_cost_usd":35.74903,"usage":{"input_tokens":6,"cache_creation_input_tokens":3827,"cache_read_input_tokens":422499,"output_tokens":1044,"output_tokens_details":{"thinking_tokens":95},"server_tool_use":{"web_search_requests":0,"web_fetch_requests":0},"service_tier":"standard","cache_creation":{"ephemeral_1h_input_tokens":3827,"ephemeral_5m_input_tokens":0},"inference_geo":"global","iterations":[{"input_tokens":2,"output_tokens":147,"cache_read_input_tokens":142348,"cache_creation_input_tokens":211,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":211},"type":"message"}],"speed":"standard"},"modelUsage":{"claude-sonnet-5-5":{"inputTokens":11216,"outputTokens":109088,"cacheReadInputTokens":13677182,"cacheCreationInputTokens":519608,"webSearchRequests":0,"costUSD":9.108304400000005,"contextWindow":200000,"maxOutputTokens":128000,"thinkingTokens":19830,"canonicalModel":"claude-sonnet-5-5","provider":"firstParty","costBasis":"unknown"},"claude-opus-5-5[1m]":{"inputTokens":728,"outputTokens":289113,"cacheReadInputTokens":51477443,"cacheCreationInputTokens":2112013,"webSearchRequests":0,"costUSD":26.640725599999996,"contextWindow":1000000,"maxOutputTokens":128000,"thinkingTokens":78122,"canonicalModel":"claude-opus-5-5","provider":"firstParty","costBasis":"list"}},"permission_denials":[],"terminal_reason":"completed","fast_mode_state":"off","fast_mode_disabled_reason":"sdk_opt_in_required","origin":{"kind":"task-notification"},"subagent_stats":{"spawned":8,"requested":{"background":1,"foreground":1,"unset":6},"started_in_background":7,"max_depth":1,"spawned_by_subagents":0,"completed":8,"failed":0,"killed":{"parent":0,"user":0,"system":0},"refused":{"depth_limit":0,"concurrency_limit":0,"budget":0},"by_type":{"material":8}},"is_error":false,"num_turns":3,"subtype":"success","api_error_status":null,"result":"Cycle 160 round 2 ends as HANDBACK. Card 160-e5-1 passed and the result is validated. Items 8 and 9 (dry, prerun, check-launch, scratch-required on the `plan_ring_p5s02b` recipe pair) are still open. Item 15 is open too, because the VI md5s were never hashed. The guard refused card 160-c3-2 because of its wording, so I dispatched nothing more.","ttft_ms":2746,"type":"result","duration_ms":12299,"uuid":"6e81bb66-712b-4db2-a4f4-f5363cc4b0ee","ttft_stream_ms":1961,"time_to_request_ms":136,"first_content_frame_ms":1961,"queued_turn_count":0,"result_index":7}
+BGRUN END rc=0 after 6162s

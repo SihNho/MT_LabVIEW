@@ -1,0 +1,38 @@
+BGRUN START 2026-10-10 11:43:44 limit 3.0 min: py -u tools/bench/selftest_c160_regface.py
+BGRUN PID 7912
+  PASS  P0 pins (graph, plans, baseline, stagekit, stage_prerun, addrcheck, vigraph)  {'tools/bench/graph_ring_p5s02a_20261010_032547.json': '7ac24924', 'tools/bench/plan_ring_p5s02b_in.json': '56bfddd3', 'tools/bench/plan_ring_p5s01a.json': 'ed62e8d6', 'tools/bench/plan_ring_p5s01b.json': '75a77a00', 'tools/bench/diag_c160_a2_1_baseline.json': '25b320c4', 'tools/stagekit.py': '9b8f82c1', 'tools/stage_prerun.py': '7605116f', 'tools/addrcheck.py': '207beb0d', 'tools/vigraph.py': 'a7eb58c7'}
+  PASS  V0 claudeDev VI pins before (94ffff94, s09, P5-1a, P5-1)  {'p5s02a_20261010_023239': '94ffff94', 'p4s09_20261009_060515': 'eb1d0f31', 'p5s01a_20261009_101219': '2482fe7b', 'p5s01_20261009_124542': '7f2582ae'}
+FACT R1 stub wires read from the graph: t_go group sink 24139 -> w24264; t_ho group sink 24235 -> w24300; sourceless [True, True]
+FACT R1 temp plan tools/bench/diag_c160_a2_1_plan_tmp.json md5 73971108cd6c2e6b7839fad62296dc93: 20 actions (input 18)
+FACT R1 compiled groups {'t_in3': ('tunnel', None), 't_gi': ('tunnel', None), 't_go': ('connect_term_uid', 'register_end_case_border'), 't_hi': ('tunnel', None), 't_ho': ('connect_term_uid', 'register_end_case_border')}
+  PASS  R1a compile: t_go / t_ho -> connect_term_uid register_end_case_border; t_gi / t_hi -> tunnel  {'t_in3': ('tunnel', None), 't_gi': ('tunnel', None), 't_go': ('connect_term_uid', 'register_end_case_border'), 't_hi': ('tunnel', None), 't_ho': ('connect_term_uid', 'register_end_case_border')}
+FACT R1 ROUTE k=1 delete_wire ['dw_a13']: route delete_wire
+FACT R1 ROUTE k=2 tunnel ['t_in3', 'w_in3_t', 'w_in3_376']: route cfw
+FACT R1 ROUTE k=3 tunnel ['t_gi', 'w_gl', 'w_g376']: route cfw
+FACT R1 ROUTE k=4 delete_wire ['dw_go']: route delete_wire
+FACT R1 ROUTE k=5 connect_term_uid ['t_go', 'w_gout', 'w_gr']: route connect_term_uid
+FACT R1 ROUTE k=6 case_frame_wire ['w_gpass']: route case_frame_wire
+FACT R1 ROUTE k=7 tunnel ['t_hi', 'w_hl', 'w_h376']: route cfw
+FACT R1 ROUTE k=8 delete_wire ['dw_ho']: route delete_wire
+FACT R1 ROUTE k=9 connect_term_uid ['t_ho', 'w_hout', 'w_hr']: route connect_term_uid
+FACT R1 ROUTE k=10 case_frame_wire ['w_hpass']: route case_frame_wire
+FACT R1 simulate final True, failed null, route check PASS, first_fail None
+  PASS  R1b routes 4/7 (groups t_go / t_ho) ROUTABLE as connect_term_uid; 0 UNROUTABLE; route check PASS; plan final  {'t_go': 'connect_term_uid', 't_ho': 'connect_term_uid', 't_gi': 'cfw', 't_hi': 'cfw', 'dw_go': 'delete_wire', 'dw_ho': 'delete_wire'}
+  PASS  R1c the LSR MERGE groups t_gi / t_hi still route cfw; the two stub deletes route delete_wire  {'t_go': 'connect_term_uid', 't_ho': 'connect_term_uid', 't_gi': 'cfw', 't_hi': 'cfw', 'dw_go': 'delete_wire', 'dw_ho': 'delete_wire'}
+FACT R2 plan_ring_p5s01a.json: new ops md5 5f95830fccc5a4e7b55bb902d4fb42d5, baseline 5f95830fccc5a4e7b55bb902d4fb42d5
+  PASS  R2 plan_ring_p5s01a.json compiles to the op list IDENTICAL to the baseline  5f95830fccc5a4e7b55bb902d4fb42d5
+FACT R2 plan_ring_p5s01b.json: new ops md5 b8b59791733225662ff473357a3ed808, baseline b8b59791733225662ff473357a3ed808
+  PASS  R2 plan_ring_p5s01b.json compiles to the op list IDENTICAL to the baseline  b8b59791733225662ff473357a3ed808
+FACT R3 plan_ring_p5s02b_in: changed groups ['t_go', 't_ho']; new 8 / baseline 8 ops
+  PASS  R3a every op of plan_ring_p5s02b_in other than the t_go / t_ho groups compiles as in the baseline  ['t_go', 't_ho']
+FACT R3 non-register outside ends -> base_register_end [('plan_ring_p5s01a.json', 't_el', ''), ('plan_ring_p5s02b_in.json', 't_in3', '')]
+  PASS  R3b base_register_end is '' for every non-register plain outside end of the three plans (2)  [('plan_ring_p5s01a.json', 't_el', ''), ('plan_ring_p5s02b_in.json', 't_in3', '')]
+  PASS  R4a LSR-face groups t_gi / t_hi (wired source stubs) still compile to `tunnel`, == baseline  {'t_gi': 'tunnel', 't_hi': 'tunnel'}
+FACT R4 base_register_end: LSR face 24190 wired -> ''; same face unwired -> 'srL'; RSR face 24139 -> 'srR'
+  PASS  R4b base_register_end: wired LSR source '' (cfw kept), unwired LSR face 'srL', RSR inner sink 'srR'  
+  PASS  V1 claudeDev VI pins after == before; tool / plan pins after == P0; temp removed  {'p5s02a_20261010_023239': '94ffff94', 'p4s09_20261009_060515': 'eb1d0f31', 'p5s01a_20261009_101219': '2482fe7b', 'p5s01_20261009_124542': '7f2582ae'}
+FACT md5 stagesim 95a162baec5324ff037a8d23bd7ef46d stagexec a4df7e15c495b9fcbcdadf0d8047bc69 stagekit 9b8f82c1a0150bcaacaf9c56e003c335 stage_prerun 7605116f1dfe1c6fd4963dbfcf259de1
+=== TOTALS 12 pass / 0 fail
+RESULT 12/0
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":12,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/bench/diag_c160_a2_1_plan_tmp.json","md5":"73971108cd6c2e6b7839fad62296dc93"}],"card":"162-a2-3","labview":"none"}
+BGRUN END rc=0 after 28s

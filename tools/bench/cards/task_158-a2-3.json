@@ -1,0 +1,59 @@
+{
+ "schema": "task/1",
+ "id": "158-a2-3",
+ "kind": "diagnose",
+ "goal": "Offline: run the hypothesis review's PB-keying test and a pair-keyed D/TD recount on the c158-a2-2 scratch data; report facts on why D/CEN2/TD/PB failed. No edits.",
+ "why": "Scratch 158-a2-2 ran all 17 ops with E1 diff 0 and then failed D/CEN2/TD/PB; the review says the wires persisted and the gates may disagree on keying. A retry needs the cause measured first.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_158-a2-3.md", "md5": "57ebc1f862b45f6379d11f706f20fd2b"},
+  {"path": "tools/bench/diag_c158_a2_2_facts.md", "md5": "6376951c564cb0e9a8f5ddfb496fcb89"},
+  {"path": "archive/peer/2026-10-10-c158-a2-2-p5s02a-loopface.md", "md5": "75b057a4ad30528a3fb48b2be09c7ad3"},
+  {"path": "tools/bench/diag_c156_p5s02a_scratch.log", "md5": "784f69dba74c4f133380c1ee0c954e05"},
+  {"path": "tools/bench/diag_c156_p5s02a_scratch.json", "md5": "cb294f515a278082dc699b48e27be071"},
+  {"path": "tools/bench/sim/ring_p5s02a/step_23_wire.json", "md5": "b1892ad9833ea9d05d5e49e0aab30d99"},
+  {"path": "tools/bench/plan_ring_p5s02a_pred.json", "md5": "31d8e9beae89e7fffa37d3f3bc170976"},
+  {"path": "tools/stagekit.py", "md5": "0d8f6d252eac3d0c28fc3a2141f54a14"},
+  {"path": "tools/stagexec.py", "md5": "7a712ccb4c1f754d8bee4557f632177f"},
+  {"path": "tools/vigraph.py", "md5": "a7eb58c7e35a134f93df168ea4cdea80"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"}
+ ],
+ "pass": [
+  "Section-4 test run: effective_sources of #376 'cal cluster path'/'file size' printed on sim end graph, S1 graph, sim with real uids bound, and the real end graph; tag flip yes/no stated",
+  "Pair-keyed (source,sink) recount of real vs sim end wires: numbers and one-sided pairs listed; D 21/22, lost 12, TD (25223,1,Inner) reconciled or not",
+  "CEN2: declared census quoted, measured whole-run census quoted, the gate line (file:line) that produces the FAIL named",
+  "diag_c158_a2_3_facts.md written (<= 45 lines, facts only, OPEN lines); no tool, recipe, plan, pred, hook or gate file edited; no LabVIEW"
+ ],
+ "outputs": [
+  "tools/bench/diag_c158_a2_3_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c158_a2_3*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/jev_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 45
+ },
+ "advances": ["M3", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c156_p5s02a_scratch.json"},
+  {"kind": "file", "name": "tools/bench/sim/ring_p5s02a/step_23_wire.json"}
+ ],
+ "rules": [
+  "Offline measurement only; no tool, recipe, plan, pred, licence, gate or hook edit",
+  "Call stagekit/vigraph functions; do not copy them (script-writing.md)",
+  "Report facts and OPEN lines; no fix proposal, no gate-edit proposal",
+  "A gate refusing your own command text is a false positive: gate_fp.py log, no env bypass"
+ ]
+}

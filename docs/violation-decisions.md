@@ -2015,3 +2015,47 @@ decision answers is always earlier than the decision, so it is never counted aft
 `07:0x` header forms plus one plain `HH:MM`. Not a hook file; built offline in cycle 156 after the LabVIEW card
 (`docs/d1/ring-p5.md` PD379(g)). Rule for every judgement: answer each `gates_due` line in the purpose's note before writing
 `next.json`.
+
+## device-failed — 2026-10-10 03:2x (cycle 159 judgement, after archive/peer/2026-10-10-retrospective-cycle158.md:510)
+
+`VIOLATION: device-failed | loss_min=40 | loss_usd=? | evidence=tools/bench/diag_c158_a2_2_dry.log:70`: ACCEPTED. The
+2026-10-02 10:10 device ("an offline check must not pass what it did not verify") fired as `UNVERIFIED-DRY` for CEN2, but the
+dry's final count only counted PB, and `census_gate` treats only an EMPTY declaration as UNPREDICTED, so a declaration for one
+op of seventeen passed; PB ran on stub input and was waved through by the card. Both failures were computable offline.
+
+DECISION: device repair, offline in `stage_prerun`/`stagekit` (not a hook), built in cycle 159 after the LabVIEW card and
+before step 2's dry (`docs/d1/ring-p5.md` PD387(e)): the dry's `unverified N` counts every `UNVERIFIED-DRY` line; a census
+declaration that does not cover every op (or `census_overall: UNPREDICTED`) is UNPREDICTED; the dry runs PB, D, TD and CEN2
+against the simulated end. Self-test on the stored c158-a2-2 inputs. Rule for every judgement: a scratch card is written only
+on a dry that prints `unverified 0`.
+
+## wrong-ordering — 2026-10-10 08:45 (cycle 161 judgement, after archive/peer/2026-10-10-retrospective-cycle160.md:522)
+
+`VIOLATION: wrong-ordering | loss_min=70 | loss_usd=? | evidence=tools/bench/prep_c160_c3_1_dry.log:17`: ACCEPTED. A naming
+gate (L0) refused the 41-s dry, and the cycle edited stagekit and ran 52 min of regression before the dry had run. A data-only
+rename would have let the dry show the real blocker (the executor's stale read, fp-84) about 70 min earlier.
+
+DECISION: rule plus a narrow device. Rule for every judgement and assignment: when a gate refuses a dry or prerun on a NAME or
+convention, the next card runs that dry on a data-only rename, and any tool edit for the gate comes after the dry result is in.
+Device, offline, not a hook (`docs/d1/ring-p5b.md` PD393(a)): every `delete_wire` op is a required executor checkpoint, so the
+read-schedule gap behind this cycle's stop cannot recur silently. No new hook for the wrong-ordering counter's broader DUE
+state: hooks are drained by the chat (CLAUDE.md §3, user 2026-10-08).
+
+## device-failed — 2026-10-10 08:45 (cycle 161 judgement, after archive/peer/2026-10-10-retrospective-cycle160.md:523)
+
+`VIOLATION: device-failed | loss_min=0 | loss_usd=? | evidence=tools/bench/diag_c159_g1_1_facts.md:8`: ACCEPTED. The
+2026-10-08 20:50 shared disposition parser was never wired into `tools/hooks/guard_peer.py` (`:849-851`).
+
+DECISION: DEFERRED to the chat. It is a hook file, and no runner card may edit `tools/hooks/**` (user 2026-10-08). fp-81 is
+queued; the chat drains it between runs and tells the user.
+
+## repeated-failure-class — 2026-10-10 13:35 (cycle 164 judgement, after archive/peer/2026-10-10-retrospective-cycle163.md:510)
+
+`VIOLATION: repeated-failure-class | loss_min=25 | loss_usd=? | evidence=tools/bench/prep_c163_a1_3_dry.log:56`: ACCEPTED.
+The PB gate stopped on the same `#376` rows a third time, because each fix added a class by row shape and licensed only the
+current plan's rows.
+
+DECISION: rule plus a narrow tightening, offline, not a hook (`docs/d1/ring-p5c.md` PD397(d)/(e)). Rule: a step's PB check
+runs offline on its plan before any other card. A PB block hands back with the row; no further licence class is added. Device:
+after the step-4 LabVIEW card, PB class 3 requires recorded provenance (`RECORD PB <sink>` in the adopted step's scratch log),
+classes 2/3 check coverage per frame, and `chain_tunnel_case` is newest-wins. Self-tested on stored adopted data, stricter only.

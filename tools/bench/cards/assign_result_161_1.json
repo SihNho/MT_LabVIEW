@@ -1,0 +1,27 @@
+{
+  "schema": "assign-result/1",
+  "cycle": 161,
+  "round": 1,
+  "status": "HANDBACK",
+  "cards": ["161-a1-1", "161-a1-2", "161-b1-1", "161-b1-2"],
+  "pass_evidence": [
+    {"item": 0, "met": true, "evidence": ["tools/bench/diag_c161_a1_1_facts.md", "tools/bench/selftest_c161_delckpt.py"]},
+    {"item": 1, "met": true, "evidence": ["tools/bench/diag_c161_a1_1_facts.md", "tools/bench/diag_c161_a1_2_facts.md"]},
+    {"item": 2, "met": true, "evidence": ["tools/bench/diag_c161_b1_1_facts.md"]},
+    {"item": 3, "met": true, "evidence": ["tools/bench/diag_c161_b1_1_facts.md"]},
+    {"item": 4, "met": false, "evidence": ["tools/bench/prep_c161_b1_1_dry.log:55", "tools/bench/diag_c161_b1_2_facts.md"]},
+    {"item": 5, "met": false, "evidence": ["tools/bench/diag_c161_b1_1_facts.md"]},
+    {"item": 6, "met": false, "evidence": []},
+    {"item": 7, "met": false, "evidence": []},
+    {"item": 8, "met": false, "evidence": []},
+    {"item": 9, "met": false, "evidence": []},
+    {"item": 10, "met": false, "evidence": []},
+    {"item": 11, "met": false, "evidence": []},
+    {"item": 12, "met": true, "evidence": ["tools/bench/diag_c161_b1_1_facts.md", "tools/bench/diag_c161_b1_2_facts.md"]}
+  ],
+  "handback": {
+    "reason": "Checkpoint fix works (dry passes ops 5/9) but gate PB fails: 31 frame-keyed rows vs pred 26 / plan 24 open pairs; 5 extra rows on #376 exist from the base and no plan frame records them. Fix = pred maker, PB keying or plan open_rows: a gate/plan decision (diag_c161_b1_2_facts.md).",
+    "question": null
+  },
+  "note": "Items 6-11 not started (no scratch, no adopt, no shared module, no fp drain). Decision I took: the literal rule 'every delete_wire' makes op 1 a checkpoint too, so p5s02b has 3 extra reads (ops 1,4,8), not the 2 in PD393(b); the pred's MAIN peak (653.7/657.4) still uses the old set because prep_c156_a1_1_lib.py:98 main_of hand-codes BIND|{0,n}, so X10 with the 3 reads is unmeasured. Pred md5 48b50b29 -> 18729409 (checkpoint set only); plan f4520b10, licence f61a2514, EL 79ec3207 unchanged. fp-75/80/81/83 left for the chat."
+}

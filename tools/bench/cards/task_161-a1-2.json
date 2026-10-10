@@ -1,0 +1,58 @@
+{
+  "schema": "task/1",
+  "id": "161-a1-2",
+  "kind": "build",
+  "retry_of_card": "161-a1-1",
+  "goal": "Finish 161-a1-1's offline suite re-runs: re-pin selftest_c157_innerface (stale stagesim pin), make selftest_stagexec_s4 call the shared checkpoint rule, re-run s4/invcheck/c157/delckpt.",
+  "why": "161-a1-1 was BLOCKED by guard_peer on a pre-existing stale pin in its own c157 re-run; tool change itself is done (stagexec a4df7e15, delckpt 11/0).",
+  "inputs": [
+    {"path": "tools/bench/cards/brief_161-a1-2.md", "md5": "c0bf2145b239643b9d7474bedbd7c822"},
+    {"path": "tools/bench/diag_c161_a1_1_facts.md", "md5": "dee47a733c02d0e0d73ef5cb1595c7cf"},
+    {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+    {"path": "tools/stagexec.py", "md5": "a4df7e15c495b9fcbcdadf0d8047bc69"},
+    {"path": "tools/bench/selftest_c157_innerface.py", "md5": "b8e68843ac6d01ebb83c20f9de244195"},
+    {"path": "tools/bench/selftest_stagexec_s4.py", "md5": "922895c7d9c790da65c483919e933caa"}
+  ],
+  "pass": [
+    "selftest_c157_innerface re-pinned only where the measured md5 differs; re-run counts quoted (was 12/1)",
+    "selftest_stagexec_s4 calls the shared checkpoint rule instead of a copy; counts quoted before and after the edit",
+    "selftest_c156_b2_2_invcheck and selftest_c161_delckpt re-run, counts quoted; any guard_peer refusal quoted verbatim",
+    "md5 unchanged: stagexec a4df7e15, stagesim 95a162ba, stagekit 0b5bb678, stage_prerun 7605116f; no tools/hooks file touched"
+  ],
+  "outputs": [
+    "tools/bench/diag_c161_a1_2_facts.md"
+  ],
+  "flags": {
+    "labview": "none",
+    "gui": false,
+    "hardware": "none",
+    "run_vi": false,
+    "write": [
+      "tools/bench/selftest_c157_innerface*",
+      "tools/bench/selftest_stagexec_s4*",
+      "tools/bench/selftest_c156_b2_2*",
+      "tools/bench/selftest_c161_delckpt*",
+      "tools/bench/diag_c161_a1_2*",
+      "tools/bench/gate_fp_queue.jsonl",
+      "tools/bench/jev_*"
+    ],
+    "status_edit": false,
+    "git_commit": false,
+    "peers": []
+  },
+  "budget": {
+    "failures": 2,
+    "minutes": 40
+  },
+  "rules": [
+    "Offline; no LabVIEW process; no --launch; no tools/hooks edit; no env bypass",
+    "tools/stagexec.py and the other stage tools are not edited; only the listed self-tests",
+    "Do not loosen a self-test case to make it pass; report a failing case verbatim",
+    "Hook false positive: py tools/gate_fp.py log, report; never edit a hook"
+  ],
+  "advances": ["M3", "M8", "R1"],
+  "requires": [
+    {"kind": "file", "name": "tools/bench/selftest_c157_innerface.py"},
+    {"kind": "file", "name": "tools/bench/selftest_stagexec_s4.py"}
+  ]
+}

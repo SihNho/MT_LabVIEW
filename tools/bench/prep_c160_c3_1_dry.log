@@ -1,0 +1,21 @@
+BGRUN START 2026-10-10 07:07:19 limit 10.0 min: py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_ring_p5s02b.py
+BGRUN PID 26704
+stage_d1_ring_p5s02b - card 160-c3-1 (WRITTEN, NOT LAUNCHED), RING P5-2 step 2 (docs/d1/ring-p5b.md PD388(a), PD390(c)(f), PD391): on the
+saved p5s02a file (claudeDev\D1_ring_p5s02a_20261010_023239.vi 94ffff94, path/md5 read from the plan's base graph 7ac24924), apply the 20
+actions of plan_ring_p5s02b.json = delete_wire w10394, A24..A40 (groups F3 G H) and the two PD391(a) sink-only stub deletes w24264 / w24300
+before A32 / A39 (tools/bench/prep_c160_b3_1_mk.py; numbers in plan_ring_p5s02b_pred.json, prep_c160_c3_1_pred.py). Licence
+plan_ring_p5s02b_licence.json; sink-gate census prep_c160_c3_1_session.json (0 rows).
+Shape = the pair shape of stage_d1_ring_p5s02a.py on stagekit.RingSession (PD390(c), docs/script-writing.md rules 1-2): only plan / pred / licence
+/ census file / names / output name differ; every gate is CALLED.
+FRESH LabVIEW -> claudeDev\D1_ring_p5s02b_<ts>.vi (rule-6 GUI save, ExecState 0 by design) = an in-between file of step P5-2 (not counted,
+D-2026-10-02-02). The FIRST run is the full SCRATCH run on a byte copy (stage_d1_ring_p5s02b_scratch.py). ROWS ONLY FROM PLAN; expected values
+only from PRED.
+PREDICTION (numbers in PRED): SG 0 sink gates; L1 20 actions -> 10 ops == pred kinds; E1 every checkpoint [0,2,3,5,7,9,10] == sim; NG; PRIM; FR;
+D; TD; CEN2 (Wire by ENDS, PD389(b); census UNPREDICTED until the scratch measures it); PB by POSITION (FATAL, before save); HB handles <= +700;
+PS saved, input unchanged.
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/launch_c161_p5s02b.log -- py -u tools/recipes/stage_d1_ring_p5s02b.py
+  FAIL  L0 plan FINAL, open_rows_match, plan_in = plan_ring_p5s02b_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan  ('f4520b101baad70f065ba5d6c9d14925', {'path': 'tools/bench/graph_ring_p5s02a_20261010_032547.json', 'md5': '7ac24924f979afde964e63fb27957b45'}, '94ffff9413599d5153a5e6fb409294ab')
+
+=== DRY FAIL: first_fail=GATE L0 plan FINAL, open_rows_match, plan_in = plan_ring_p5s02b_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan coverage 22/36 lines, first mutation None, unverified 0, graph None
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"GATE L0 plan FINAL, open_rows_match, plan_in = plan_ring_p5s02b_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan","artefacts":[],"card":"160-c3-1","labview":"none"}
+BGRUN END rc=1 after 2s

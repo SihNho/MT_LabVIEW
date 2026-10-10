@@ -1,0 +1,28 @@
+{
+ "schema": "assign-result/1",
+ "cycle": 160,
+ "round": 1,
+ "status": "HANDBACK",
+ "cards": ["160-a1-1", "160-b1-1", "160-b2-1", "160-f1-1", "160-f2-1", "160-g1-1", "160-h1-1"],
+ "pass_evidence": [
+  {"item": 0, "met": true, "evidence": ["tools/bench/diag_c160_a1_1_facts.md", "stagesim.py:621-625,1432-1434; stagexec.py:2846-2850 -> stagekit.Stage.delete_wire (stagekit.py:687); Wire uid with 0 terminal rows only; no remove_bad_wires"]},
+  {"item": 1, "met": true, "evidence": ["tools/bench/selftest_c160_delwire.log RESULT 12/0", "T1 on the 94ffff94 graph: w10394 deleted, rows and end pairs identical, census diff {10394: Wire}"]},
+  {"item": 2, "met": true, "evidence": ["cen2_ends 8/0, runcheck 10/0, wire0face 24/0, delwire 12/0 (logs *_c160.log, *_c160b.log)", "pins: stagesim eb99c6ba->a3261b56, stagexec 7a712ccb->c4a6e0b6 (runcheck, wire0face); stagekit ->1441bb4c (delwire:43)"]},
+  {"item": 3, "met": true, "evidence": ["tools/bench/diag_c160_b1_1_facts.md", "stagekit.py:2733-2869 six mapping functions; selftest_c160_stagemap 5/0 incl. T4 == lib; plan made by prep_c160_b1_1_mk.py calling them; lib unedited"]},
+  {"item": 4, "met": false, "evidence": ["plan_ring_p5s02b.json 09ebc7a6 final False: REALSIM replays 18/18 but the route check refuses routes 4 (A32 w_gr) and 7 (A39 w_hr), prep_c160_b1_1_mk.log", "cause in tools/bench/diag_c160_b2_1_facts.md: sinks t24139/t24235 are InnerTerminals of base RSR #24083/#24150; stagexec.py:1918-1920 raises; no precedent"]},
+  {"item": 5, "met": false, "evidence": ["not started: recipe pair, dry and prerun need a final plan (item 4); PD390(e) forbids a workaround"]},
+  {"item": 6, "met": false, "evidence": ["plan whys of A28 A32 A35 A39 carry ASSUMPTION MERGE, expected uid (w24285 w24264 w24312 w24300), CEN2-by-ends (plan_ring_p5s02b_in.json)", "prediction file not written: waits on the final plan"]},
+  {"item": 7, "met": false, "evidence": ["not started: the predicted Error List follows the final plan"]},
+  {"item": 8, "met": false, "evidence": ["not started: prior-art review is of the final plan; step 2 not launched"]},
+  {"item": 9, "met": true, "evidence": ["tools/bench/diag_c160_g1_1_facts.md, diag_c160_g1_1.log:5-20", "p5s02c = A41-A60 (I J, 20 actions, 16 ops, MAIN 670.7 <= 675 from 603.4); K3/K4 GAP, K3f/K4f BLOCKED, no MAIN; files D1_ring_p5s02c_<ts>.vi; no step-3 plan"]},
+  {"item": 10, "met": true, "evidence": ["tools/bench/diag_c160_f1_1_facts.md: first bad commit 18c241ec (Cycle 153 outputs, 2026-10-09 08:09), vigraph 13be0847->a7eb58c7; array|0 is a rename, ring-p4d.md:172-183", "pred NOT re-pinned (not chat-T6/T7): OPEN; T2a pin edit proposed selftest_c134_1_dry.py:82 bb5ba064->0d1f0c15, not applied"]},
+  {"item": 11, "met": false, "evidence": ["tools/bench/diag_c160_f2_1_facts.md: passwire 20/0 (selftest_c156_passwire_c160.log:34), basecase_frame 21/0 (selftest_c155_basecase_frame_c160.log:25)", "invcheck 19/1 (selftest_c156_b2_2_invcheck_c160.log:183): gate :83 pins ring-p5.md aa238a09, found 99c812e6 (doc pin, not re-pinned)"]},
+  {"item": 12, "met": true, "evidence": ["tools/bench/diag_c160_h1_1_facts.md", "docs/fn_descriptions.json 245 -> 304 (+59), md5 bf3224bd -> 30db045d, check 9/0 (diag_c160_h1_1_check.log); no existing entry changed"]},
+  {"item": 13, "met": true, "evidence": ["tools/bench/diag_c160_b2_1_md5.log:9-12: 94ffff94, s09 eb1d0f31, P5-1a 2482fe7b, P5-1 7f2582ae unchanged", "original never opened; no stage launched; no tools/hooks edit (only hook-written material_marker.log)"]}
+ ],
+ "handback": {
+  "reason": "plan_ring_p5s02b.json cannot be made final: routes 4 and 7 (right-register MERGE rows A32/A39) are unroutable, sinks are InnerTerminals of base RSR nodes with stubs (stagexec.py:1918-1920). Needs router edit + LabVIEW measurement or plan redesign: a judgement call (PD390(e)).",
+  "question": null
+ },
+ "note": "Open: (1) routes 4/7 options a2+b1 / b2 / c in diag_c160_b2_1_facts.md; keep or drop PD388(c) MERGE onto stub-carrying sinks? (2) c134_1_dry pred: PB change is commit 18c241ec, not chat-T7; T2a pin edit proposed in diag_c160_f1_1_facts.md. (3) invcheck 19/1: re-pin ring-p5.md doc md5 aa238a09 -> 99c812e6 or loosen gate. (4) closed cards still pin stagekit ac3a8f57; stagexec.py:32 docstring stale. Cards: b1-1 FAIL (explained, diagnosed by b2-1), f2-1 FAIL (doc pin); others PASS."
+}

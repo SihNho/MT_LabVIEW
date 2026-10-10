@@ -14,7 +14,7 @@ globs, so the blocks live here; moving them into stagekit is OPEN (facts file).
   main_of        == prep_c155_a4_1_mk.py:423-426 (= prep_c155_a2_1_mk.py:229)
   sg_census      == prep_c155_a4_1_mk.py:540-553 (= prep_c155_a2_1_mk.py:336-347)
 Self-test (--selftest): replays cycle 155's recorded data - step_facts over the REALSIM step files listed in prep_c155_a4_1_session.json == its
-realsim_states; sg_census over plan_ring_p5s02.json == its sink_gate_census; main_of over 155's step-1 ops == its main_peak_mb 680.0
+realsim_states; sg_census over plan_ring_p5s02.json == its sink_gate_census; main_of over 155's step-1 ops == prep_c161_a3_2_x10.json lib_t3
 (tie_rows needs a pass-A result: exercised by the maker's TIE gate). PREDICTION: 3/0.
     py tools/bgrun.py --material --max-min 3 --log tools/bench/prep_c156_a1_1_lib.log -- py -u tools/bench/prep_c156_a1_1_lib.py --selftest"""
 import hashlib, json, os, sys                                                               # noqa: E401
@@ -93,9 +93,10 @@ def tie_rows(SA, ACTS, ok_pairs, key_parts, card):
 
 
 def main_of(n, KINDS, SX, SPR, MODEL, START, reads=2):
-    """(MAIN MB, x10_model_peak dict, checkpoints) of the op prefix 1..n: Executor peak at START with a checkpoint at every BIND op + `reads`
-    whole-VI reads of the main recipe source (prep_c152_b2_1_mk.py:79). Self-test: --selftest (155's step-1 MAIN 680.0)."""
-    cps = sorted({0, n} | set(k for k in range(1, n + 1) if KINDS[k - 1] in SX.BIND_KINDS))
+    """(MAIN MB, x10_model_peak dict, checkpoints) of the op prefix 1..n: Executor peak at START with a checkpoint at every op of the SHARED
+    rule stagexec.checkpoint_ops (bind, delete_wire, move_in-run-closing, last; card 161-a3-1, PD394(b) - was BIND|{0,n}) + `reads`
+    whole-VI reads of the main recipe source (prep_c152_b2_1_mk.py:79). Self-test: --selftest T3 (155's step-1 MAIN == prep_c161_a3_2_x10.json lib_t3)."""
+    cps = list(SX.checkpoint_ops([{"kind": k} for k in KINDS[:n]]))
     mp = SPR.x10_model_peak(KINDS[:n], cps, model=MODEL, start_mb=START)
     return round(mp["peak_mb"] + reads * float(MODEL["read_mb"]["value"]), 1), mp, cps
 
@@ -135,5 +136,7 @@ if __name__ == "__main__" and "--selftest" in sys.argv:
     g("T2 sg_census(plan_ring_p5s02.json) == session sink_gate_census", sg_census(P5, SX) == S5["sink_gate_census"], sg_census(P5, SX))
     ops = SX.compile_plan(P5)
     m, _mp, _c = main_of(len(ops), [o["kind"] for o in ops], SX, SPR, SPR.load_memory_model(), S5["start_mb"])
-    g("T3 main_of(155 step 1, {0} ops) {1} == session main_peak_mb {2}".format(len(ops), m, S5["main_peak_mb"]), m == S5["main_peak_mb"])
+    R3 = J(os.path.join(B, "prep_c161_a3_2_x10.json"))["lib_t3"]   # 161-a3-2: restated on the shared checkpoint rule (PD394(b)); old value kept
+    g("T3 main_of(155 step 1, {0} ops) {1} == x10 record lib_t3 {2} (old BIND rule {3} == session main_peak_mb {4})".format(len(ops), m, R3["main"], R3["old_main"],
+      S5["main_peak_mb"]), m == R3["main"] and R3["old_main"] == S5["main_peak_mb"] and R3["start_mb"] == S5["start_mb"] and R3["ops"] == len(ops))
     sys.exit(g.result())

@@ -1,0 +1,18 @@
+BGRUN START 2026-10-10 02:01:18 limit 5.0 min: py -u tools/bench/prep_c158_a3_1_checklaunch.py
+BGRUN PID 1928
+CMD A py tools/bgrun.py --material --max-min 50 --log tools/bench/diag_c158_p5s02a_scratch.log -- py -u tools/recipes/stage_d1_ring_p5s02a_scratch.py
+  UNITS ['tools/recipes/stage_d1_ring_p5s02a_scratch.py']
+  ALLOW 
+CMD B py tools/bgrun.py --material --max-min 50 --retry-card tools/bench/cards/task_158-a3-1.json --log tools/bench/diag_c158_p5s02a_scratch.log -- py -u tools/recipes/stage_d1_ring_p5s02a_scratch.py
+  UNITS ['tools/recipes/stage_d1_ring_p5s02a_scratch.py']
+  ALLOW 
+CMD C py tools/bgrun.py --material --max-min 50 --log tools/bench/diag_c158_p5s02a_scratch.log -- py -u tools/recipes/stage_d1_ring_p5s02a_scratch.py --unverified-card tools/bench/cards/task_158-a2-2.json
+  UNITS ['tools/recipes/stage_d1_ring_p5s02a_scratch.py']
+  ALLOW 
+FACT stage key 'stage_d1_ring_p5s02a_scratch.py'; cycle 'cycle 158'; counted runs this cycle 1; RETRY_CAP 2
+FACT retry_card(B, key) -> (None, "RETRY_CARD tools/bench/cards/task_158-a3-1.json is not a task/1 card with retry_of == 'stage_d1_ring_p5s02a_scratch.py' (has None)")
+GATE PASS | A units == 1 scratch recipe
+GATE PASS | B units == 1 scratch recipe
+GATE PASS | C units == 1 scratch recipe
+RESULT {"schema": "result-line/1", "status": "PASS", "gates": {"pass": 3, "fail": 0}, "first_fail": null, "artefacts": []}
+BGRUN END rc=0 after 19s

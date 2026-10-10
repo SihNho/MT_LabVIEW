@@ -1,0 +1,33 @@
+{"schema": "result/1", "id": "160-b1-1", "status": "FAIL",
+ "gates": {"pass": 3, "fail": 1},
+ "first_fail": "plan_ring_p5s02b.json final False: REALSIM 18/18 ok but route check UNROUTABLE routes 4,7 (prep_c160_b1_1_mk.log:54,75)",
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/stagekit.py", "md5": "1441bb4ca75eb5a59afaa3555690db37"},
+  {"path": "tools/bench/selftest_c160_stagemap.py", "md5": "505b793edf3e78d1e880992dc8895a0b"},
+  {"path": "tools/bench/selftest_c160_stagemap.log", "md5": "5a459f7dd438c82e41a3442b8ad4ee37"},
+  {"path": "tools/bench/selftest_c160_delwire.py", "md5": "33164136f83e5f894973d2a6f01f9d7e"},
+  {"path": "tools/bench/prep_c160_b1_1_mk.py", "md5": "4fe22a40769304c44b96c6b06fa6cd29"},
+  {"path": "tools/bench/prep_c160_b1_1_mk.log", "md5": "bbb2bc8e27a768575fd7a68bbc90dc49"},
+  {"path": "tools/bench/plan_ring_p5s02b.json", "md5": "09ebc7a6c08f466997ba472ec0c64109"},
+  {"path": "tools/bench/plan_ring_p5s02b_c159.json", "md5": "caef7e1c8a4a331c1a3f3337653052ba"},
+  {"path": "tools/bench/diag_c160_b1_1_facts.md", "md5": "e12b72d746e4e9de1874a7355411fc95"}
+ ],
+ "facts": [
+  "stagekit.py:2733-2869 adds FRAME_SYM, made_symbols:2741, used_symbols:2751, map_symbols:2769, map_frames:2796, apply_map:2832, bound_from_cmap:2858; no old line moved",
+  "selftest_c160_stagemap.log:9 PASS 5/0; T4 (log:7) all six stagekit fns == prep_c159_c1_1_lib (218af76c, unedited)",
+  "only selftest_c160_delwire.py:43 pinned stagekit: ac3a8f57 -> 1441bb4c; suites 10/0, 24/0, 8/0, 12/0 (*_c160b.log), counts unchanged",
+  "maker: 9 gates PASS incl. ROWS delete + stagekit.apply_map(A24..A40) == input 56bfddd3 (prep_c160_b1_1_mk.log:21), MERGE why texts (log:26)",
+  "REALSIM replays action 1 (delete w10394) and all 18 steps, failed null, 0 PROVISIONAL (prep_c160_b1_1_mk.log:28-45,74)",
+  "SB FAIL: route check UNROUTABLE route 4 acts[8,9,10] t_go/w_gout/w_gr 'node #24083 not in Diagram[124] (#23405).Nodes[]' (log:49)",
+  "same for route 7 acts[15,16,17] t_ho/w_hout/w_hr, node #24150 (log:52); message raised at stagexec.py:1920; #24083/#24150 = A32/A39 RSR nodes",
+  "stopped at SB (PD390e): compile, MERGE-END, X10 MAIN, X8, X17, gate U not run; plan_ring_p5s02b.json 09ebc7a6 final False",
+  "md5 unchanged: stage_prerun 7605116f, stagesim a3261b56, stagexec c4a6e0b6, addrcheck 207beb0d, vigraph a7eb58c7; VI pins PASS at M0 (log:4)",
+  "Jev: no JEV-LADDER row for prep_c160_b1_1_mk.log in jev_gate.log yet; tools/hooks only material_marker.log (hook-written)"
+ ],
+ "open": [
+  "Route rows 4 and 7 (tunnel route for t_go/t_ho) are UNROUTABLE: nodes #24083/#24150 not in Diagram[124] #23405 - change the plan rows or the router?",
+  "Past cards task_159-f1-1/-2 and task_160-a1-1 still pin stagekit ac3a8f57 (closed cards, not re-pinned)."
+ ],
+ "cost": {"usd": null, "minutes": 7, "labview_runs": 0},
+ "note": "Part 1 PASS; Part 2 FAIL at gate SB (route check). Facts: tools/bench/diag_c160_b1_1_facts.md"}

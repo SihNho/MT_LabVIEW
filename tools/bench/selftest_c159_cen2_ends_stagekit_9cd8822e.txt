@@ -1,0 +1,2648 @@
+r"""stagekit - THE STAGE-SCRIPT SKELETON AS A LIBRARY (docs/cycle27-plan.md Pre-decided 103, USER-APPROVED
+2026-09-22: "템플릿을 만들어두고 ... 아예 라이브러리 작성해서 인풋만 넣어주도록 ... 좋아").
+
+WHY: cycle 63 wrote five 35-55 KB scripts whose ~80 % is one skeleton, and that authoring was 99 of its 181
+minutes. This module holds THAT skeleton - lifted verbatim from the scripts that already passed, never
+re-invented - so a stage file declares its INPUT, its ROWS and its CRITERIA and nothing else.
+
+WHAT IT IS LIFTED FROM (read before a line was written, per CLAUDE.md "check what exists first"):
+  * `tools/recipes/build_opfsinnertunnelconnect_v0.py`  - md5 pin + PINS + claudeDev listing phase (`:359`),
+    `md5` `:227`, `del_wire` `:336`, `del_node` `:346`, `resolve_triple` `:730`, `purge_junk` `:288`,
+    `private_bytes` `:270`, the `gate`/`fact`/`head`/`safe`/`dump`/`left_s` block `:200-245`.
+  * `tools/bench/diag_c83_connect2x2_r2.py`            - the CELL loop on a dated scratch COPY (`:417`),
+    the poisoned caller (`:169`), the hygiene phase (`:523`).
+  * `tools/recipes/build_d1_m3a3b_d3.py`               - `bad_wire_count` `:265`, `fsit_call` `:279`,
+    `fsit_read` `:342`, GATE S's owner-identity reading `:580-612`.
+  * `tools/recipes/stage_d1_s1.py` / `stage_d1_s2_loops.py` - the STAGE shape: pins FATAL first, fresh
+    instance, ORIGINAL Preloaded read-only, one save, cold re-read, `cond_read`'s third outcome UNREAD.
+  * `tools/recipes/build_d1_m3a2.py` / `build_d1_m3a1.py`   - `node_census`/`new_nodes`/`node_view`/
+    `delete_by_uid`/`print_walk`/`pd85_violations`/`loop_index_of` (imported, never re-typed).
+  * `tools/gscript.py`                                  - every edit verb. NO NEW LabVIEW OP VI IS BUILT
+    HERE; every mutator below is a thin wrapper over a verb that already exists on disk.
+
+HARD RULES BAKED IN (they are not the stage file's to remember)
+  1  An ORIGINAL is never opened for writing and never saved: `Stage` md5-pins the ORIGINAL
+     (2a78e17c...) and its own INPUT before anything, FATALLY, and works only on a dated COPY under
+     claudeDev (`g.save` itself refuses a path outside it).
+  2  THE ARTEFACT IS NEVER RUN (34(f)). Nothing in this module calls `Run` on a stage target; the only
+     VIs that execute are the built op VIs - that is what scripting is.
+  3  Every uid is RE-READ immediately before use (34(h)); no index is carried across a mutation.
+  4  `%`-format is not used to build any message - `.format()`/f-strings only (the 2026-09-22 TypeError).
+  5  Gate rows print the DOCUMENTED tokens `  PASS  ` / `  FAIL  ` / `  FACT  ` - never `**FAIL**`
+     (guard_peer.py:96 FAILURE_RE; docs/violation-decisions.md `device-failed` 2026-09-20).
+  6  A mutating reader (Remove Bad Wires) refuses to run on the stage target unless the caller says
+     `allow_mutation=True`, because it DELETES.
+  7  Timeouts: the caller runs under `tools/bgrun.py --max-min N`; `Stage(deadline_min=)` keeps its own
+     soft budget so the hygiene tail always lands inside the process deadline.
+
+TYPICAL STAGE FILE
+    import stagekit as K
+    s = K.Stage(INPUT_VI, INPUT_MD5, "d1_m3a3_rowD", deadline_min=25)
+    s.start()
+    s.plan_rows(ROWS)                  # optional: one advisory JEV-ROWCHECK line per planned re-wiring row
+    s.delete_wire(7506)
+    r = s.fs_inner_tunnel_connect(7468, d_idx, 21, 1)
+    s.junk_purge("rowD")
+    s.gate("exactly one source and it is #23868", ...)
+    s.save(broken_ok=True)
+    sys.exit(s.close())
+"""
+import glob
+import hashlib
+import importlib
+import json
+import os
+import shutil
+import subprocess
+import sys
+import time
+
+for _s in (sys.stdout, sys.stderr):
+    try:
+        _s.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:                                                              # noqa: BLE001
+        pass
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(HERE)
+for _p in (HERE, os.path.join(HERE, "bench"), os.path.join(HERE, "recipes")):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
+
+import gscript as g                                                                # noqa: E402
+import fncontract as _fc                                                           # noqa: E402  card chat-F2: standard outcome
+import gateclass as _gateclass                                                    # noqa: E402  card chat-S2: STOP vs LOG-only
+
+BENCH = os.path.join(HERE, "bench")
+CLAUDEDEV = g.CLAUDEDEV
+
+# THE ORIGINAL'S IDENTITY IS IMPORTED, NEVER RESTATED - `gscript` owns it (`gscript.py:62-70`).
+# This module's FIRST run restated the path and restated it wrong, so the K2 pin pinned a file that is not
+# there (`tools/bench/diag_c83_connect2x2_kit.log:10`); the review that followed
+# (`archive/peer/2026-09-22-c87-stagekit-k2.md` §1) refuted "one wrong string" and named the real fault:
+# a SECOND owner of one identity. Re-synchronising two copies was the shallow repair; this is the other one.
+ORIGINAL = g.ORIGINAL
+ORIG_MD5 = g.ORIG_MD5
+
+# The five md5 pins every D1 stage carries (build_opfsinnertunnelconnect_v0.py:190-196). Resolved lazily so
+# this module imports on a machine that has no claudeDev.
+_PIN_SPEC = (("ORIGINAL", ORIGINAL, ORIG_MD5),
+             ("S1 D1_s1_copy", os.path.join(CLAUDEDEV, "D1_s1_copy.vi"),
+              "3e3d23cefd3a334001aa9d6156bf1aee"),
+             ("S2 D1_s2_loops", os.path.join(CLAUDEDEV, "D1_s2_loops.vi"),
+              "6ff19497f2309e007a214660bb64b911"),
+             ("ROW2 bed", os.path.join(CLAUDEDEV, "D1_s3b_row2_20260921_160311.vi"),
+              "26c54ff784cb5cea21edbd214d2cc3a0"),
+             ("M3a-2", os.path.join(CLAUDEDEV, "D1_s3b_m3a2_20260922_023029.vi"),
+              "3842f5e6f128226235dc78353f26ef44"))
+DEFAULT_PINS = _PIN_SPEC
+
+CENSUS_CLASSES = ("Diagram", "WhileLoop", "SubVI", "Wire", "LoopTunnel", "Local", "ControlTerminal",
+                  "Node")
+
+
+class Stop(Exception):
+    """A FATAL gate. The stage stops; `close()` still runs the hygiene tail."""
+
+
+# C6 RESULT LINE (docs/session-protocol.md, user-approved 2026-09-24). `Stage.summary()` prints
+# `RESULT {"schema":"result-line/1",...}` as its LAST line, from its own gate counts; bgrun / guard_peer / the
+# runner / audit_cycle read ONLY that line (their body scans are gone). The two exit paths summary() cannot see are
+# covered here: an UNCAUGHT exception (excepthook -> RESULT FAIL at exit, first_fail = the exception text) and gates
+# recorded AFTER the last summary (re-printed at exit). A Stage that never reached summary() and no exception ->
+# nothing printed, the exit code decides (a helper-only import must not invent a verdict).
+import atexit                                                                      # noqa: E402
+import protocol as _protocol                                                       # noqa: E402
+
+_C6 = {"stage": None, "sig": None, "exc": None}
+
+
+def _c6_line(stage, extra_fail=None):
+    n_fail = len(stage.fails) if stage is not None else 0
+    n_pass = len(stage.passes) if stage is not None else 0
+    first = extra_fail or (getattr(stage, "exc_text", None) if stage is not None else None) \
+        or (stage.fails[0] if stage is not None and stage.fails else None)
+    if extra_fail:
+        n_fail += 1
+    arts = []
+    if stage is not None:
+        sv = stage.R.get("saves") or {}
+        if sv.get("md5") and os.path.exists(stage.work):
+            arts = [{"path": stage.work, "md5": sv["md5"]}]
+    return _protocol.result_line(_protocol.make_result(n_pass, n_fail, first, arts))
+
+
+def _c6_excepthook(etype, value, tb, _orig=sys.excepthook):
+    if not issubclass(etype, (SystemExit, KeyboardInterrupt)):
+        _C6["exc"] = "{0}: {1}".format(etype.__name__, str(value))[:200]
+    elif issubclass(etype, KeyboardInterrupt):
+        _C6["exc"] = "KeyboardInterrupt"
+    if _C6["exc"]:                                   # card chat-T3: the structured STOP line of an uncaught exception
+        try:
+            sys.stdout.write(_protocol.stop_line("traceback", _C6["exc"], exc=etype.__name__) + "\n")
+            sys.stdout.flush()
+        except Exception:                                                          # noqa: BLE001
+            pass
+    _orig(etype, value, tb)
+
+
+def _c6_atexit():
+    st = _C6["stage"]
+    try:
+        if _C6["exc"]:
+            line = _c6_line(st, extra_fail=_C6["exc"])
+        elif st is not None and _C6["sig"] is not None and _C6["sig"] != (len(st.passes), len(st.fails)):
+            line = _c6_line(st)
+        else:
+            return
+        sys.stdout.write(line + "\n")
+        sys.stdout.flush()
+    except Exception:                                                              # noqa: BLE001
+        pass
+
+
+def _c6_thread_excepthook(args, _orig=getattr(__import__("threading"), "excepthook", None)):
+    """card chat-T3: an exception in a THREAD bypasses sys.excepthook (threading.excepthook, Python 3.8+); it is a real
+    stop too, so it prints the same structured STOP line (kind traceback, the thread's name) - found by the gate-flip report
+    (tools/bench/gate_flips_chat_t3.json SAFETY row diag_c106b_live.log: a reader-thread traceback inside a passing run)."""
+    try:
+        if not issubclass(args.exc_type, SystemExit):
+            msg = "{0}: {1}".format(args.exc_type.__name__, str(args.exc_value))[:200]
+            sys.stdout.write(_protocol.stop_line("traceback", msg, exc=args.exc_type.__name__,
+                                                 thread=getattr(args.thread, "name", None)) + "\n")
+            sys.stdout.flush()
+    except Exception:                                                              # noqa: BLE001
+        pass
+    if _orig is not None:
+        _orig(args)
+
+
+sys.excepthook = _c6_excepthook
+if hasattr(__import__("threading"), "excepthook"):
+    __import__("threading").excepthook = _c6_thread_excepthook
+atexit.register(_c6_atexit)
+
+
+def md5(path):
+    """build_opfsinnertunnelconnect_v0.py:227 verbatim."""
+    h = hashlib.md5()
+    with open(path, "rb") as f:
+        for b in iter(lambda: f.read(1 << 20), b""):
+            h.update(b)
+    return h.hexdigest()
+
+
+def version_bytes(path, n=1 << 16):
+    """`19 00 80 00` = LV2019, `26 00 80 00` = LV2026 (CLAUDE.md rule 1) - diag_s2_scaffold.py:133-140."""
+    import re
+    with open(path, "rb") as f:
+        head = f.read(n)
+    return sorted({m.group(0)[0] for m in re.finditer(rb"(?s).\x00\x80\x00", head)})
+
+
+def private_bytes():
+    """LabVIEW's private bytes - the COMPANION of the handle count, which is blind to VI Server refnums
+    (docs/toolkit-capabilities.md:484-485). build_opfsinnertunnelconnect_v0.py:270 verbatim."""
+    try:
+        r = subprocess.run(["powershell", "-NoProfile", "-Command",
+                            "(Get-Process LabVIEW -ErrorAction SilentlyContinue | Select-Object -First 1)"
+                            ".PrivateMemorySize64"], capture_output=True, text=True, timeout=60)
+        return int((r.stdout or "").strip() or 0)
+    except Exception:                                                              # noqa: BLE001
+        return None
+
+
+_MODS = {}
+
+
+def mod(name):
+    """Lazy import of a heavy fleet module, so a no-LabVIEW self-test can import stagekit."""
+    if name not in _MODS:
+        _MODS[name] = importlib.import_module(name)
+    return _MODS[name]
+
+
+def _a(text):
+    return str(text).encode("ascii", "replace").decode("ascii")
+
+
+class Stage(object):
+    """One build/diagnostic stage: pin, copy, edit, gate, save, clean up, report."""
+
+    # ------------------------------------------------------------------ construction
+    def __init__(self, input_vi, input_md5, name, fresh=True, work_name=None, pins=DEFAULT_PINS,
+                 deadline_min=45.0, reserve_s=300.0, out_json=None, preload=True, work_dir=CLAUDEDEV,
+                 task=""):
+        self.input_vi = input_vi
+        self.input_md5 = input_md5
+        self.name = name
+        self.fresh = fresh
+        self.pins = tuple(pins or ())
+        self.preload_original = preload
+        self.deadline_s = float(deadline_min) * 60.0
+        self.reserve_s = float(reserve_s)
+        self.t0 = time.time()
+        self.stamp = time.strftime("%Y%m%d_%H%M%S")
+        self.work_dir = work_dir
+        self.work = os.path.join(work_dir, work_name or "{0}_{1}.vi".format(name, self.stamp))
+        self.out_json = out_json or os.path.join(BENCH, "{0}.json".format(name))
+        self.passes, self.fails, self.facts, self.rows = [], [], [], []
+        self.softs = []                   # card chat-S2: LOG-only mismatches (gateclass), recorded, not failures
+        self.scratches = []
+        self.planned_rows = []            # `plan_rows()`; NOT `self.rows`, which is the non-gate ROW record
+        self.sym = {}                     # from_decision symbols: "$name" -> what an earlier row created
+        self._rowcheck_done = False
+        self._nodes = None
+        self._preload = None
+        self.started = False
+        self.R = {"script": name, "stamp": self.stamp, "input": input_vi, "input_md5_pin": input_md5,
+                  "work": self.work, "task": task, "no_vi_was_run": True,
+                  "verification_level": "STRUCTURAL unless a gate says otherwise",
+                  "es_timeline": [], "ops": [], "saves": {}, "H": {}}
+
+    # ------------------------------------------------------------------ reporting primitives
+    def head(self, text):
+        print("\n---------- {0}".format(_a(text)), flush=True)
+
+    def gate(self, label, ok, detail="", fatal=False, kind=None):
+        ok = bool(ok)
+        if not ok:
+            # card chat-S2 (PD327, user 2026-10-03): a LOG-only mismatch (tools/gateclass.py, the ONE table) is recorded in
+            # tools/bench/gate_soft_log.jsonl and the run CONTINUES - printed `  SOFT  `, never `  FAIL  `, not counted as
+            # a fail, never fatal. Every other failing gate is unchanged (FAIL, fatal stays fatal).
+            c = _gateclass.classify_gate(label, detail, kind)
+            if c["verdict"] == "log":
+                self.softs.append(label)
+                _gateclass.record_classified(label, c, detail)
+                print(_a("  SOFT  {0}{1}  [LOG-only: {2}]".format(label, ("  " + str(detail)) if detail else "",
+                                                                   c["rule"])), flush=True)
+                return True
+        (self.passes if ok else self.fails).append(label)
+        print(_a("  {0}  {1}{2}".format("PASS" if ok else "FAIL", label,
+                                        ("  " + str(detail)) if detail else "")), flush=True)
+        if not ok and fatal:
+            raise Stop(label)
+        return ok
+
+    def fact(self, line):
+        self.facts.append(str(line))
+        print(_a("  FACT  {0}".format(line)), flush=True)
+        return line
+
+    def row(self, label, observed, expected=None):
+        """A NON-GATE record. Deliberately NOT at the start of the line, so a row reporting an expected
+        FAIL cannot arm `guard_peer.FAILURE_RE` - the gate belongs to the comparison, not to the row."""
+        rec = {"label": label, "observed": observed, "expected": expected}
+        self.rows.append(rec)
+        print(_a("  ROW   {0} : observed={1} expected={2}".format(label, observed, expected)), flush=True)
+        return rec
+
+    # ------------------------------------------------------------------ card 123-7 (PD247(e)): the census helper
+    def census_snapshot(self, target=None):
+        """{uid: class} of every GObject of `target` (default the work copy) - ONE report_all run. {} in a dry run."""
+        if getattr(g.report_all, "_dry", False):
+            return {}
+        return dict((int(o["uid"]), str(o["class"])) for o in g.report_all(target or self.work, "GObject"))
+
+    def census_gate(self, label, before, after, declared, unpredicted=None):
+        """Compare the measured NEW-object census (after - before, by class) with `declared` {class: n} (e.g. the plan's
+        `<plan>_pred.json` census block). DRY run -> prints 'UNVERIFIED-DRY' and returns None: a stubbed census is never a
+        PASS. Real run -> a gate (PASS iff every class of either side matches), returns the measured {class: n}.
+        card 159-a4-1 (PD387(e)): two SimCensus snapshots (sim_census_snapshot, a stagesim state) are compared in a dry run
+        too - the gate runs on the SIMULATED end. `unpredicted` = census_unpredicted_reason(pred): a declaration that does not
+        cover every op of the plan is UNPREDICTED like an empty one, never a partial PASS."""
+        dry = getattr(g.report_all, "_dry", False)
+        sim = isinstance(before, SimCensus) and isinstance(after, SimCensus)
+        if not declared or unpredicted:
+            # card 134-1 (PD287(a)): an EMPTY declared set predicts nothing - CEN2 passed on two empty sets
+            # (stage_d1_ring_p3b2a_scratch_c133_6.log:354). Never a PASS: printed UNPREDICTED, returns the measured census.
+            got = None
+            if (sim or not dry) and isinstance(before, dict) and isinstance(after, dict):
+                got = {}
+                for u in set(after) - set(before):
+                    got[after[u]] = got.get(after[u], 0) + 1
+            why = "declared set empty {0!r}".format(declared) if not declared else "declaration does not cover the plan: {0}".format(unpredicted)
+            print(_a("  UNPREDICTED  {0}  ({1}; measured {2})".format(
+                label, why, json.dumps(got, sort_keys=True) if got is not None else "not in a dry run")), flush=True)
+            self.R.setdefault("unpredicted", []).append(label)
+            return got
+        if (dry and not sim) or not isinstance(before, dict) or not isinstance(after, dict):
+            print(_a("  UNVERIFIED-DRY  {0}  (census not measured in a dry run; declared {1})".format(
+                label, json.dumps(declared, sort_keys=True))), flush=True)
+            return None
+        new = set(after) - set(before)
+        got = {}
+        for u in new:
+            got[after[u]] = got.get(after[u], 0) + 1
+        diff = dict((c, (got.get(c, 0), int(declared.get(c, 0)))) for c in set(got) | set(declared or {})
+                    if got.get(c, 0) != int((declared or {}).get(c, 0)))
+        det = {"measured": got, "declared": declared, "diff (measured, declared)": diff}
+        if sim:
+            det["source"] = "stagesim simulated end (sim_census_snapshot), card 159-a4-1"
+        self.gate(label, not diff, det, kind="census")
+        return got
+
+    def safe(self, label, fn, default=None):
+        try:
+            return fn(), ""
+        except Exception as e:                                                     # noqa: BLE001
+            self._last_exc = e                    # card chat-F2: _op reads its standard outcome (fncontract)
+            msg = "{0}: {1}".format(type(e).__name__, str(e)[:250])
+            self.fact("{0} raised {1}".format(label, msg))
+            return default, msg
+
+    def left_s(self):
+        return self.deadline_s - (time.time() - self.t0) - self.reserve_s
+
+    def dump(self):
+        self.R["gates"] = {"pass": len(self.passes), "fail": len(self.fails), "failing": self.fails,
+                           "soft": list(getattr(self, "softs", []))}
+        self.R["facts"] = self.facts
+        self.R["rows"] = self.rows
+        self.R["elapsed_s"] = round(time.time() - self.t0, 1)
+        with open(self.out_json, "w", encoding="utf-8") as f:
+            json.dump(self.R, f, indent=1, default=str)
+
+    def summary(self):
+        print("\n" + "=" * 100, flush=True)
+        print("=== GATES: {0} pass / {1} fail{2}".format(
+            len(self.passes), len(self.fails),
+            ("; failing: " + ", ".join(self.fails)) if self.fails else ""), flush=True)
+        if getattr(self, "softs", None):
+            print("=== SOFT (LOG-only, not failures, gate_soft_log.jsonl): {0}: {1}".format(len(self.softs), ", ".join(self.softs)),
+                  flush=True)
+        print("JSON: {0}   elapsed {1:.1f} s".format(self.out_json, time.time() - self.t0), flush=True)
+        _C6["stage"], _C6["sig"] = self, (len(self.passes), len(self.fails))
+        print(_c6_line(self), flush=True)                  # C6: the RESULT line is the LAST line
+        return 0 if not self.fails else 1
+
+    # ------------------------------------------------------------------ start
+    def file_facts(self, tag, path):
+        rec = {"path": path, "exists": os.path.exists(path)}
+        if rec["exists"]:
+            rec["md5"], rec["size"] = md5(path), os.path.getsize(path)
+            rec["version_bytes"] = version_bytes(path)
+            self.fact("{0}: {1} md5 {2} size {3} B; version bytes {4}".format(
+                tag, os.path.basename(path), rec["md5"], rec["size"], rec["version_bytes"]))
+        else:
+            self.fact("{0}: {1} IS NOT ON DISK".format(tag, os.path.basename(path)))
+        return rec
+
+    def pin_check(self, when):
+        """Every md5 pin, reported one per line. Returns True iff all hold."""
+        allok, seen = True, {}
+        for label, path, want in self.pins:
+            have = md5(path) if os.path.exists(path) else "MISSING"
+            seen[label] = have
+            allok = allok and (have == want)
+            self.fact("PIN {0:<6} {1:<16} {2}  (want {3}) {4}".format(
+                when, label, have, want, "OK" if have == want else "DIFFERS"))
+        self.R["pins_" + when.lower()] = seen
+        return allok
+
+    def restart(self):
+        """Standing restart authority (CLAUDE.md 3). diag_s2_scaffold.fresh:155."""
+        bp = mod("bench_prep")
+        before, _ = self.safe("handles before restart", bp.labview_handles)
+        self.R["H"]["handles_before_restart"] = before
+        self.fact("LabVIEW handle count BEFORE the restart: {0!r}".format(before))
+        self.safe("restart_labview", bp.restart_labview)
+        g.reset()
+        time.sleep(3.0)
+        after, _ = self.safe("handles after restart", bp.labview_handles)
+        self.R["H"]["handles_after_restart"] = after
+        self.fact("LabVIEW handle count AFTER the restart: {0!r}".format(after))
+
+    def start(self):
+        """FILES ONLY -> restart -> Preload the ORIGINAL read-only -> the dated WORK copy -> open it."""
+        self.head("[0] FILES ONLY - the input's md5, the pins, the claudeDev listing")
+        # THE LISTING IS TAKEN FIRST, before any fatal gate: a start() that STOPS at a pin used to leave
+        # `claudedev_before` unset, and close()'s H6 then read every file in claudeDev as "added".
+        self.R["claudedev_before"] = sorted(os.path.basename(p)
+                                            for p in glob.glob(os.path.join(CLAUDEDEV, "*.vi")))
+        self.fact("claudeDev holds {0} .vi file(s) BEFORE the run".format(len(self.R["claudedev_before"])))
+        got = md5(self.input_vi) if os.path.exists(self.input_vi) else "MISSING"
+        self.R["input_md5_before"] = got
+        self.gate("K1 input md5 == {0}".format(self.input_md5), got == self.input_md5,
+                  "got {0}".format(got), fatal=True)
+        self.pin_check("BEFORE")
+        # The detail carries the HASH **and** the path: a gate that prints only the path cannot tell
+        # "absent" from "present with the wrong bytes" (the c87 review's §2, accepted).
+        orig = md5(ORIGINAL) if os.path.exists(ORIGINAL) else "MISSING - no such file"
+        self.gate("K2 the ORIGINAL's md5 is {0}".format(ORIG_MD5), orig == ORIG_MD5,
+                  "got {0} at {1}".format(orig, ORIGINAL), fatal=True)
+        if self.fresh:
+            self.head("[1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)")
+            self.restart()
+        if self.preload_original:
+            self._preload_enter()
+        self.head("[2] THE DATED WORK COPY under claudeDev - the input is never opened for writing")
+        shutil.copyfile(self.input_vi, self.work)
+        time.sleep(0.4)
+        self.gate("K3 the work copy is byte-identical to the input",
+                  md5(self.work) == got, os.path.basename(self.work), fatal=True)
+        self.safe("ensure_loaded(work)", lambda: g.ensure_loaded(self.work))
+        self.es("after open")
+        self.started = True
+        self.dump()
+        return self.work
+
+    def _preload_enter(self):
+        """The established trick: the ORIGINAL resident READ-ONLY so the copy's subVI links resolve
+        without a relink pass. Nothing is opened, nothing is saved (diag_s2_scaffold.Preload:167)."""
+        try:
+            import pythoncom
+            from win32com.client import dynamic
+            pythoncom.CoInitialize()
+            app = dynamic.Dispatch("LabVIEW.Application")
+            vi = app.GetVIReference(ORIGINAL, "", False, 0)
+            self._preload = (app, vi)
+            self.fact("PRELOAD: the ORIGINAL is resident READ-ONLY (LabVIEW {0}), its own ExecState {1}; "
+                      "nothing opened, nothing saved".format(app.Version, int(vi.ExecState)))
+        except Exception as e:                                                     # noqa: BLE001
+            self.fact("PRELOAD FAILED ({0}: {1}) - continuing without it".format(type(e).__name__,
+                                                                                str(e)[:160]))
+
+    def _preload_exit(self):
+        if self._preload:
+            self._preload = None
+            self.fact("PRELOAD references released; refs {0!r}".format(g.ref_counts()))
+
+    # ------------------------------------------------------------------ readings
+    def es(self, tag, target=None):
+        """One ExecState reading, appended to the timeline. RECORDED; a criterion only where a gate says
+        so (the D1 beds are broken BY DESIGN - Pre-decided 89/97)."""
+        t = target or self.work
+        v, err = self.safe("exec_state({0})".format(tag), lambda: g.exec_state(t))
+        self.R["es_timeline"].append({"tag": tag, "target": os.path.basename(t), "exec_state": v,
+                                      "t": round(time.time() - self.t0, 1), "err": err})
+        self.fact("ExecState [{0}] {1} = {2!r}".format(tag, os.path.basename(t), v))
+        return v
+
+    def count(self, cls, target=None):
+        return g.count(target or self.work, cls)
+
+    def census(self, classes=CENSUS_CLASSES, tag="", target=None):
+        """A class census by NAME, never by index - the numbers a stage's counts gate on."""
+        t = target or self.work
+        out = {}
+        for c in classes:
+            v, _e = self.safe("count({0})".format(c), lambda cc=c: g.count(t, cc))
+            out[c] = v
+        self.fact("CENSUS {0} {1}: {2!r}".format(tag, os.path.basename(t), out))
+        self.R.setdefault("censuses", []).append({"tag": tag, "target": os.path.basename(t),
+                                                  "counts": out})
+        return out
+
+    def uid_index(self, cls, uid, target=None):
+        """The traverse index of `uid` RE-READ at the call site - never cached across a mutation (34(h))."""
+        order = [o["uid"] for o in g.report_all(target or self.work, cls)]
+        return order.index(uid) if uid in order else None
+
+    def wired_terminals(self, uid, hints=(), target=None, tag=""):
+        """Every terminal row of node #uid with its wire - `build_d1_m3a1.node_view`:572, which finds the
+        node by uid across diagrams and prints the full table. Returns (location, rows)."""
+        M = mod("build_d1_m3a1")
+        t = target or self.work
+        loc, rows = M.node_view(t, uid, list(hints), tag or "#{0}".format(uid))
+        wired = [r for r in (rows or []) if r.get("has_wire")]
+        self.fact("#{0}: {1} terminal(s), {2} WIRED".format(uid, len(rows or []), len(wired)))
+        return loc, (rows or [])
+
+    def net_sources(self, wire_uid, n=8, target=None, tag=""):
+        """THE OWNER-IDENTITY READING (build_d1_m3a3b_d3.py:589-600). `OpWireSource_v5` is WIRE-addressed -
+        a terminal is named by the wire it carries - and every row carries its own error columns, so an
+        unresolvable uid yields no owner instead of the previous call's answer."""
+        M = mod("build_d1_m3a1")
+        W = mod("build_opconnectfromwire_v0").wire_source_owner
+        t = target or self.work
+        tag = tag or "w{0}".format(wire_uid)
+        walk, err = self.safe("{0} OpWireSource_v5".format(tag),
+                              lambda: W(t, int(wire_uid), n=n) if wire_uid else [], [])
+        M.print_walk(tag, wire_uid, walk, err)
+        bad = M.pd85_violations(wire_uid, walk) if wire_uid else ["no wire"]
+        owners = sorted({(str(x.get("owner_class")), int(x.get("owner_uid")))
+                         for x in (walk or []) if x.get("owner_uid")})
+        srcs = sorted({(str(x.get("owner_class")), int(x.get("owner_uid")))
+                       for x in (walk or []) if x.get("is_source") and x.get("owner_uid")})
+        out = {"wire": wire_uid, "walk": walk, "err": err, "source_owners": srcs, "all_owners": owners,
+               "pd85_violations": len(bad), "pd85": bad}
+        self.fact("NET w{0}: source-terminal owners {1!r} ; every owner {2!r} ; PD85 {3}".format(
+            wire_uid, srcs, owners, len(bad)))
+        self.R.setdefault("nets", []).append({k: out[k] for k in
+                                              ("wire", "source_owners", "all_owners",
+                                               "pd85_violations", "err")})
+        return out
+
+    def broken_wire_count(self, target=None, allow_mutation=False, tag=""):
+        """THE DIAGRAM-WIDE BROKEN-WIRE COUNT (build_d1_m3a3b_d3.bad_wire_count:265). ⚠️ IT MUTATES -
+        `remove_bad_wires_scripted` runs LabVIEW's own Remove Bad Wires (VI method 410) and DELETES - so it
+        refuses the stage target unless the caller states `allow_mutation=True`; on a scratch about to be
+        discarded it is free."""
+        t = target or self.work
+        if t == self.work and not allow_mutation:
+            raise Stop("broken_wire_count on the STAGE TARGET deletes wires - pass allow_mutation=True or "
+                       "a scratch (stagekit rule 6)")
+        before = g.count(t, "Wire")
+        after, es = g.remove_bad_wires_scripted(t)
+        n = before - after
+        self.fact("{0} BROKEN-WIRE COUNT: Wire {1} -> {2} after Remove Bad Wires = {3} bad wire(s); "
+                  "ExecState after {4!r}".format(tag, before, after, n, es))
+        return {"bad": n, "wires_before": before, "wires_after": after, "exec_state": es}
+
+    # ------------------------------------------------------------------ scratch copies
+    def scratch(self, suffix, source=None):
+        """A dated scratch COPY (unique per run, deleted by `close()`) - the only surface a mutating
+        measurement is allowed to touch."""
+        src = source or self.input_vi
+        p = os.path.join(CLAUDEDEV, "{0}_{1}_{2}.vi".format(self.name[:18], self.stamp, suffix))
+        shutil.copyfile(src, p)
+        time.sleep(0.4)
+        self.scratches.append(p)
+        self.gate("SC {0} is a byte-identical copy of {1}".format(os.path.basename(p),
+                                                                  os.path.basename(src)),
+                  md5(p) == md5(src), os.path.basename(p), fatal=True)
+        self.safe("ensure_loaded({0})".format(suffix), lambda: g.ensure_loaded(p))
+        return p
+
+    def drop_scratch(self, path, tag="H4"):
+        """Close and DELETE one scratch now (a diagnostic that runs several cells must not hold them all
+        open). Retries, because LabVIEW can still hold the file for a moment."""
+        self.safe("close_panel({0})".format(os.path.basename(path)), lambda: g.close_panel(path))
+        for _a2 in range(6):
+            if not os.path.exists(path):
+                break
+            try:
+                os.remove(path)
+            except Exception as e:                                                 # noqa: BLE001
+                self.fact("delete {0} failed: {1}".format(os.path.basename(path), str(e)[:110]))
+                time.sleep(3.0)
+        ok = not os.path.exists(path)
+        if path in self.scratches:
+            self.scratches.remove(path)
+        self.gate("{0} scratch deleted: {1}".format(tag, os.path.basename(path)), ok, path)
+        return ok
+
+    def discard_work(self):
+        """THIS STAGE SAVES NOTHING: the dated work copy is treated as a scratch, so `close()` deletes it
+        and the files-left-on-disk gate expects []. A diagnostic must leave no artefact behind."""
+        if self.work not in self.scratches:
+            self.scratches.append(self.work)
+        self.fact("THE WORK COPY IS A SCRATCH: this stage saves nothing, so {0} is deleted at close".format(
+            os.path.basename(self.work)))
+        return self.work
+
+    # ------------------------------------------------------------------ planned rows (Jev row check, #5)
+    def plan_rows(self, rows, tag=""):
+        """DECLARE this stage's planned re-wiring rows: (source uid/terminal) -> (sink uid/terminal).
+
+        The rows are judged ONCE, by `tools/jev_rowcheck.py`, against this project's own measured terminal
+        tables, and the verdicts print as `JEV-ROWCHECK | <stage> | <row> | <class> p=<p>` - one line per row
+        here and in `tools/bench/jev_gate.log`. Two row schemas are accepted; `jev_rowcheck.normalise_row`'s
+        docstring is the contract, and a row matching neither reads `unknown`, never `ok`.
+
+        ADVISORY, BY CONSTRUCTION (docs/jev-integration-plan.md 2nd wave #5; measured 62.5 % on 40 labelled
+        rows, which is a signal, not a verdict): nothing here refuses a row, changes a gate, or raises. No key,
+        no network or a malformed row is a printed line and nothing else.
+
+        THE CALL IS LAZY - it fires from `_op`, immediately BEFORE the stage's first mutating verb, wherever in
+        the file the rows were declared. A stage that declares rows and then mutates nothing spends nothing."""
+        try:
+            self.planned_rows = list(rows or [])
+        except TypeError:
+            self.planned_rows = []
+        self._rowcheck_done = False
+        self.R["planned_rows"] = len(self.planned_rows)
+        self.fact("PLANNED RE-WIRING ROWS declared: {0}{1}".format(
+            len(self.planned_rows), ("  [" + str(tag) + "]") if tag else ""))
+        return self.planned_rows
+
+    def _rowcheck(self):
+        """Fire the planned-row advisory once. EVERYTHING is caught: this may never affect a build."""
+        if self._rowcheck_done or not self.planned_rows:
+            return []
+        self._rowcheck_done = True
+        try:
+            import jev_rowcheck
+            lines = jev_rowcheck.stage_lines(self.planned_rows, self.name,
+                                             budget_s=min(60.0, max(5.0, self.left_s())))
+        except Exception as e:                                                     # noqa: BLE001
+            print(_a("  JEV-ROWCHECK | {0} | - | unavailable ({1})".format(
+                self.name, type(e).__name__)), flush=True)
+            return []
+        for ln in lines:
+            print(_a("  " + ln), flush=True)
+        self.R["jev_rowcheck"] = lines
+        return lines
+
+    # ------------------------------------------------------------------ edit verbs (thin wrappers)
+    def _op(self, verb, fn, detail=""):
+        """Run one mutator, record its error column, mark the node census for a later junk purge."""
+        self._rowcheck()          # ADVISORY, once, before the first mutation (docs/jev-integration-plan.md #5)
+        self.node_mark(verb)
+        t0 = time.time()
+        m0, self._last_exc = _fc.mark(), None
+        res, err = self.safe("{0} {1}".format(verb, detail), fn)
+        rec = {"verb": verb, "detail": detail, "err": err, "result": res,
+               "s": round(time.time() - t0, 1)}
+        # card chat-F2: ONE standard outcome per op (ok | no_output | failed | timed_out, tools/fncontract.py): the
+        # exception's own outcome when it raised, else the worst outcome any wrapped gscript function recorded inside.
+        fn_name = "stagekit.op:" + verb
+        oc = (_fc.outcome_of_exception(self._last_exc, fn_name) if err and self._last_exc is not None else
+              _fc.outcome_of_text(err, fn_name) if err else _fc.worst(_fc.since(m0), fn_name))
+        rec["outcome"] = {"outcome": oc["outcome"], "fn": oc.get("fn"), "reason": oc.get("reason", "")[:200],
+                          "measured": oc.get("measured") or {}}
+        self.R["ops"].append(rec)
+        self.fact("OP {0} {1} -> err {2!r} ({3:.1f} s){4}".format(
+            verb, detail, err, rec["s"], "" if oc["outcome"] == "ok" else " OUTCOME {0} ({1}: {2})".format(
+                oc["outcome"], oc.get("fn"), str(oc.get("reason"))[:120])))
+        return rec
+
+    def node_mark(self, tag=""):
+        """The Node census BEFORE a mutation - `junk_purge()` diffs against the last mark."""
+        M = mod("build_d1_m3a1")
+        nodes, _e = self.safe("node_census({0})".format(tag), lambda: M.node_census(self.work, tag)[0], [])
+        self._nodes = nodes
+        return nodes
+
+    def junk_purge(self, tag="", hints=()):
+        """THE MEASURED PURGE (build_opfsinnertunnelconnect_v0.purge_junk:288): the OpConnect* family mints
+        1.00 stray `Invoke` per call, and a node with ZERO wired terminals is the only shape deleted -
+        anything else new is REPORTED VERBATIM and LEFT ALONE."""
+        C82 = mod("build_opfsinnertunnelconnect_v0")
+        if self._nodes is None:
+            self.node_mark(tag)
+            return {"skipped": "no census mark existed; one was taken now"}
+        final, rec = C82.purge_junk(self.work, self._nodes, tag or self.name, list(hints))
+        self._nodes = final
+        self.R.setdefault("purges", []).append(rec)
+        return rec
+
+    def delete_wire(self, wire_uid, tag=""):
+        """build_opfsinnertunnelconnect_v0.del_wire:336 - by uid, via the LIVE traverse order."""
+        C82 = mod("build_opfsinnertunnelconnect_v0")
+
+        def run():
+            # card chat-F2: postcondition `stagekit.op:delete_wire` found == 1 - del_wire returns False when the uid is
+            # not in its own Wire listing (a DOUBLE delete) and used to pass silently; it now fails at this call.
+            ok = C82.del_wire(self.work, wire_uid, tag)
+            _fc.check("stagekit.op:delete_wire", "delete_wire w{0}: del_wire returned {1!r}".format(wire_uid, ok),
+                      found=1 if ok else 0)
+            return ok
+        return self._op("delete_wire", run, "w{0}".format(wire_uid))
+
+    def delete_object(self, cls, uid, tag=""):
+        """build_opfsinnertunnelconnect_v0.del_node:346 - uid -> live index -> `g.delete_object`."""
+        C82 = mod("build_opfsinnertunnelconnect_v0")
+
+        def run():
+            # card chat-F2: postcondition `stagekit.op:delete_object` removed == 1 - del_node's own after-read returns
+            # False when the uid was already gone (a DOUBLE delete) or did not disappear; that used to pass silently.
+            ok = C82.del_node(self.work, cls, uid, tag)
+            _fc.check("stagekit.op:delete_object", "delete_object {0} #{1}: del_node returned {2!r}".format(
+                cls, uid, ok), removed=1 if ok else 0)
+            return ok
+        return self._op("delete_object", run, "{0} #{1}".format(cls, uid))
+
+    def move_in(self, uid, dest_diagram_index, position):
+        """build_d1_v0.move_in:318 - move an object INTO a nested diagram by uid."""
+        B = mod("build_d1_v0")
+        return self._op("move_in", lambda: B.move_in(self.work, uid, dest_diagram_index, position),
+                        "#{0} -> Diagram[{1}] at {2}".format(uid, dest_diagram_index, position))
+
+    def connect(self, sink_diag, sink_node, sink_term, src_diag, src_node, src_term, labels=None):
+        """gscript.connect_nested_v2:2965 = `OpConnectNested_v2` - the nested-diagram writer."""
+        return self._op("connect", lambda: g.connect_nested_v2(self.work, sink_diag, sink_node, sink_term,
+                                                               src_diag, src_node, src_term, labels),
+                        "sink D[{0}].N[{1}].t{2} <- src D[{3}].N[{4}].t{5}".format(
+                            sink_diag, sink_node, sink_term, src_diag, src_node, src_term))
+
+    def connect_from_wire(self, sink_diag, sink_node, sink_term, wire_uid, wire_term_index, labels=None):
+        """`OpConnectFromWire_v0` - the only writer whose SOURCE need not be a node
+        (docs/toolkit-capabilities.md:70). `build_opconnectfromwire_v0.connect_from_wire`:381, whose own
+        argument order is (target, wire_uid, term_index, sink_diag, sink_node, sink_term, labels); the
+        label map defaults to the op's own `tools/bench/opconnectfromwire_v0_labels.json`."""
+        F = mod("build_opconnectfromwire_v0")
+        lab = labels or json.load(open(F.MAP_OUT, encoding="utf-8"))
+        return self._op("connect_from_wire",
+                        lambda: F.connect_from_wire(self.work, wire_uid, wire_term_index, sink_diag,
+                                                    sink_node, sink_term, lab),
+                        "sink D[{0}].N[{1}].t{2} <- w{3}[{4}]".format(sink_diag, sink_node, sink_term,
+                                                                      wire_uid, wire_term_index))
+
+    def fs_inner_tunnel_connect(self, fsit_uid, sink_diag, sink_node, sink_term, auto_route=None,
+                                target=None, op=None):
+        """`OpFsInnerTunnelConnect_v1` (build_d1_m3a3b_d3.fsit_call:279, the POISONED caller of Pre-decided
+        125). Connects a source terminal addressed by INDEX TRIPLE to a `FlatSequenceInnerTunnel`'s
+        terminal addressed by UID. Returns the op's full readout dict incl. every error column."""
+        D3 = mod("build_d1_m3a3b_d3")
+        t = target or self.work
+        op_path = op or D3.OP1
+        labels = json.load(open(D3.MAP_OUT, encoding="utf-8"))
+        self.node_mark("fsit_connect")
+        r, err = self.safe("fs_inner_tunnel_connect #{0}".format(fsit_uid),
+                           lambda: D3.fsit_call(op_path, labels, t, fsit_uid, sink_diag, sink_node,
+                                                sink_term, auto_route=auto_route), {})
+        r = r or {}
+        r["wrapper_err"] = err
+        self.R["ops"].append({"verb": "fs_inner_tunnel_connect", "op": os.path.basename(op_path),
+                              "fsit_uid": fsit_uid, "triple": [sink_diag, sink_node, sink_term],
+                              "err": r.get("err"), "invoke_err": r.get("invoke_err"),
+                              "term_uid": r.get("term_uid"), "uid_back": r.get("uid_back"),
+                              "sink_wire_uid": r.get("sink_wire_uid"), "is_broken": r.get("is_broken"),
+                              "wire_delta": r.get("wire_delta"), "wrapper_err": err})
+        self.fact("OP fs_inner_tunnel_connect(#{0}) -> op_err={1!r} invoke_err={2!r} term_uid={3!r} "
+                  "uid_back={4!r} UID2={5!r} wire_delta={6!r} is_broken={7!r}".format(
+                      fsit_uid, r.get("err"), r.get("invoke_err"), r.get("term_uid"), r.get("uid_back"),
+                      r.get("sink_wire_uid"), r.get("wire_delta"), r.get("is_broken")))
+        return r
+
+    def fs_inner_tunnel_read(self, fsit_uid, target=None, tag=""):
+        """`OpFsInnerTunnelTerm_v0` - the FSIT's two faces, read-only (build_d1_m3a3b_d3.fsit_read:342)."""
+        D3 = mod("build_d1_m3a3b_d3")
+        r, _e = self.safe("fsit_read #{0}".format(fsit_uid),
+                          lambda: D3.fsit_read(target or self.work, fsit_uid, tag or self.name))
+        return r or {}
+
+    def wire_indicators(self, node_index, src_terms, indicator_names, diagram_index=0,
+                        node_class="SubVI"):
+        """gscript.wire_indicators:1786 - branch a node's outputs onto front-panel indicators."""
+        return self._op("wire_indicators",
+                        lambda: g.wire_indicators(self.work, node_index, list(src_terms),
+                                                  list(indicator_names), diagram_index=diagram_index,
+                                                  node_class=node_class),
+                        "N[{0}] {1} -> {2}".format(node_index, list(src_terms), list(indicator_names)))
+
+    def add_shift_reg(self, loop_index, y_position=120, class_name="WhileLoop"):
+        """gscript.add_shift_reg:687."""
+        return self._op("add_shift_reg",
+                        lambda: g.add_shift_reg(self.work, loop_index, y_position, class_name),
+                        "loop[{0}] y={1}".format(loop_index, y_position))
+
+    def wire_sr(self, variant, loop_index, reg_index, **kw):
+        """gscript.wire_sr:737."""
+        return self._op("wire_sr",
+                        lambda: g.wire_sr(variant, self.work, loop_index, reg_index, **kw),
+                        "{0} loop[{1}] reg[{2}] {3!r}".format(variant, loop_index, reg_index, kw))
+
+    def create_local_read(self, label, panel_index=None, tag=""):
+        """The BUILT local-variable creator. Its measured implementation lives in the diagnostics that
+        proved it (`tools/bench/diag_s3b_l0_localname_v2.create_local`:964 - label + panel index); this is
+        a thin binding to THAT function, never a re-implementation. Card 101-5: `panel_index` None -> resolved
+        from `label` over panel_wiring exactly as create_local_write does (r5 passed None and the creator's
+        int(None) raised, stage_d1_disp_r5.log:452)."""
+        if panel_index is None:
+            rows = [i for i, r in enumerate(g.panel_wiring(self.work)) if r["label"] == label]
+            if len(rows) != 1:
+                raise Stop("create_local_read: label {0!r} matches {1} panel rows".format(label, len(rows)))
+            panel_index = rows[0]
+        # Cycle 102 (stage_d1_disp_r6.log:544,572,595): the old binding drove the donor OpCreateLocal_v0, whose Local is
+        # BORN WRITE (is_source False), so a `.value` SOURCE could never be addressed. Now OpCreateLocalRead_v0 with
+        # `Write?` = False (gscript.create_local_read, the read twin of create_local_write); the caller still moves it.
+        def _mk():
+            r = g.create_local_read(self.work, panel_index)
+            if r.get("err"):
+                raise RuntimeError(r["err"])
+            if r.get("is_source") != [True]:
+                raise RuntimeError("Local #{0} is_source {1!r}, wanted [True] (READ)".format(r.get("uid"), r.get("is_source")))
+            return r
+        return self._op("create_local_read", _mk, "{0!r} panel[{1}] (READ mode)".format(label, panel_index))
+
+    def create_local_write(self, label, panel_index=None, dest_diagram_uid=None, position=(40, 40), tag=""):
+        """The WRITE twin of create_local_read (card 100-2 V5): `gscript.create_local_write` = OpCreateLocalRead_v0
+        with `Write?` = True (toolkit-capabilities.md:76), then moved INTO Diagram #dest_diagram_uid. `panel_index`
+        None -> resolved from `label` over panel_wiring (exactly one row must carry it). Returns the op record; its
+        `result` is {uid, owner_class, owner, is_source (False = WRITE), err}."""
+        if panel_index is None:
+            rows = [i for i, r in enumerate(g.panel_wiring(self.work)) if r["label"] == label]
+            if len(rows) != 1:
+                raise Stop("create_local_write: label {0!r} matches {1} panel rows".format(label, len(rows)))
+            panel_index = rows[0]
+        return self._op("create_local_write",
+                        lambda: g.create_local_write(self.work, panel_index, dest_diagram_uid, position),
+                        "{0!r} panel[{1}] -> Diagram #{2}".format(label, panel_index, dest_diagram_uid))
+
+    # ------------------------------------------------------------------ the ordered second pass
+    def expect_is_broken_false(self, label, reconnect, wire_uid=None):
+        """42(b): THE ORDERED SECOND PASS. The acceptance is asserted on a SEPARATE, idempotent re-connect,
+        never in the pass that made the connection (build_d1_m3a3.phase_second_pass:1374, Pre-decided 94):
+        `wire_delta` must be 0 because the connection already exists, and the op's own `Wire.Is Broken?`
+        6371004 readback must be False. `reconnect` is a callable that RE-RESOLVES its endpoints and
+        re-issues the connect - nothing is carried across the mutation (the T2c2 lesson)."""
+        w0 = self.count("Wire")
+        r = reconnect() or {}
+        w1 = self.count("Wire")
+        delta = w1 - w0
+        ib = r.get("is_broken")
+        same = (wire_uid is None) or (r.get("sink_wire_uid") == wire_uid)
+        self.fact("{0} ORDERED SECOND PASS: Wire {1} -> {2} (delta {3}); op err {4!r}; `UID 2` {5!r}; "
+                  "`Is Broken?` {6!r}".format(label, w0, w1, delta, r.get("err"),
+                                              r.get("sink_wire_uid"), ib))
+        a = self.gate("{0} wire_delta 0 on the ordered idempotent second pass (Pre-decided 94)".format(
+            label), delta == 0, "wire_delta {0!r}".format(delta))
+        b = self.gate("{0} `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass "
+                      "(42(b))".format(label), ib is False and same,
+                      "Is Broken? {0!r} ; `UID 2` {1!r} vs wire {2!r} (same {3!r})".format(
+                          ib, r.get("sink_wire_uid"), wire_uid, same))
+        return {"wire_delta": delta, "is_broken": ib, "pass": bool(a and b), "readout": r}
+
+    # ------------------------------------------------------------------ decision record -> edits (plan step 6)
+    STRUCTS = ("CaseStructure", "WhileLoop", "ForLoop", "TimedLoop", "EventStructure", "FlatSequence",
+               "StackedSequence")
+
+    def address(self, end, is_source, objs=None):
+        """A terminal named by (node uid, terminal name, frame diagram uid) -> the LIVE index triple
+        (Diagram idx, Nodes[] idx, Terminals[] idx), every index read off the machine just before use and the
+        node's uid ECHOED back. A Selector/Loop tunnel's OUTER terminal is addressed as a terminal of its
+        STRUCTURE node, found by GEOMETRY (a structure on the same diagram at the tunnel's left x, or the nearest
+        structure up-left of it) - a HEURISTIC, reported in the returned `how`, and made safe by requiring the
+        name to resolve to exactly one terminal of the right direction on that structure."""
+        t = self.work
+        uid, how = int(end["uid"]), "node"
+        diags = g.report_all(t, "Diagram")
+        didx = next((d["i"] for d in diags if int(d["uid"]) == int(end["diagram"])), None)
+        if didx is None:
+            raise RuntimeError("diagram #{0} not in report_all('Diagram')".format(end["diagram"]))
+        labels = g.node_labels(t, didx)
+        uids = [r["uid"] for r in labels]
+        if end["owner_class"] in ("SelectorTunnel", "Tunnel", "LoopTunnel") and end["term_class"] == "OuterTerminal":
+            pos = dict((o["uid"], (o["pos"], o["class"])) for o in (objs or []))
+            tp = pos[uid][0]
+            cands = [u for u in uids if pos.get(u, (None, ""))[1] in self.STRUCTS]
+            left = [u for u in cands if pos[u][0][0] == tp[0] and pos[u][0][1] <= tp[1]]
+            upl = sorted((u for u in cands if pos[u][0][0] <= tp[0] and pos[u][0][1] <= tp[1]),
+                         key=lambda u: (-pos[u][0][0], -pos[u][0][1]))
+            pick = left or upl[:1]
+            if not pick:
+                raise RuntimeError("no structure found for tunnel #{0}".format(uid))
+            uid, how = pick[0], "structure #{0} of tunnel #{1} (geometry: {2})".format(
+                pick[0], end["uid"], "left edge x" if left else "nearest up-left")
+        if uid not in uids:
+            raise RuntimeError("#{0} not in Diagram[{1}].Nodes[]".format(uid, didx))
+        nidx = uids.index(uid)
+        echo, rows = g.node_terms_uid(t, didx, nidx)
+        if echo != uid:
+            raise RuntimeError("uid echo {0!r} != #{1}".format(echo, uid))
+        # Pre-decided 173 + 174 (cycle 72 firefighter): ONLY the staged field `verify_term_uid` selects the uid path.
+        # Candidate ends from jev_candidates carry `term_uid` at FIRST wiring, when the terminal is still unwired,
+        # and r2 (stage_d1_l7_1b_r2.log:41-45) died because that field switched the branch. `term_uid` is ignored
+        # here; the second pass / Is Broken? / gates set `verify_term_uid` after the wire has landed.
+        if end.get("verify_term_uid"):
+            ti, _a = match_term_uid(end["verify_term_uid"], mod("allterms").read_terms(t)[0], rows, is_source)
+            return (didx, nidx, ti), "{0}; terminal by uid #{1} (wire {2})".format(how, end["verify_term_uid"], _a["wire_uid"])
+        hits = [r for r in rows if r["name"] == end["term"] and bool(r["is_source"]) == bool(is_source)]
+        if len(hits) > 1:
+            hits = [r for r in hits if not r["wire"]]
+        if len(hits) != 1:
+            raise RuntimeError("terminal {0!r} ({1}) on #{2}: {3} matches".format(
+                end["term"], "source" if is_source else "sink", uid, len(hits)))
+        return (didx, nidx, int(hits[0]["i"])), how
+
+    # ------------------------------------------------------------------ creator rows (cycle 68, M4a/M4b)
+    def resolve(self, v):
+        """`$name` / `$name.key` -> self.sym; `$wire_of:<uid>:<term i>` -> that terminal's LIVE wire uid (read now,
+        never carried). Lists and dicts are resolved recursively; anything else is returned unchanged."""
+        if isinstance(v, dict):
+            return dict((k, self.resolve(x)) for k, x in v.items())
+        if isinstance(v, list):
+            return [self.resolve(x) for x in v]
+        if not (isinstance(v, str) and v.startswith("$")):
+            return v
+        if v.startswith("$wire_of:"):
+            _w, uid, ti = v.split(":")
+            _loc, rows = self.wired_terminals(int(uid), tag="resolve {0}".format(v))
+            return int([r for r in rows if int(r["i"]) == int(ti)][0]["wire"])
+        name, _dot, key = v[1:].partition(".")
+        x = self.sym[name]
+        return x[key] if key else x
+
+    def copy_in(self, cls, uid, dest_diagram_uid, position, tag=""):
+        """COPY a primitive that already exists on the donor into Diagram #dest by `OpMoveByIndex_v0` (the op of
+        `gscript.copy_by_index`, duplicate=True, UID guard) + `move_in` + junk purge. PRECONDITION (the op is
+        hard-wired to the NI Moving-Objects pair): `self.work` IS `g.MOVE_DST` and `g.MOVE_SRC` holds the donor's
+        bytes - the stage file arranges both. copy_by_index itself is not called because it saves and file-copies
+        the Target, which a stage that has more rows to execute must not do. Returns the new node's uid."""
+        if os.path.normcase(self.work) != os.path.normcase(g.MOVE_DST):
+            raise Stop("copy_in needs work == gscript.MOVE_DST (got {0})".format(self.work))
+        order = [int(o["uid"]) for o in g.report_all(g.MOVE_SRC, cls)]
+        idx = order.index(int(uid))
+        before = set(int(o["uid"]) for o in g.report_all(self.work, cls))
+
+        def _copy():
+            lab = json.load(open(os.path.join(BENCH, "opmovebyindex_labels.json"), encoding="utf-8"))
+            vi = g.op(g.OP_MOVE_INDEX)
+            vi.SetControlValue(lab["class_name"], cls)
+            vi.SetControlValue(lab["index"], int(idx))
+            vi.SetControlValue(lab["duplicate"], True)
+            vi.SetControlValue(lab["traverse_target"], 1)
+            g._run(vi)
+            return int(vi.GetControlValue(lab["selected_uid"]))
+        rec = self._op("copy_in", _copy, "{0}[{1}] #{2}".format(cls, idx, uid))
+        if rec["result"] != int(uid):
+            raise Stop("copy_in UID guard: selected {0!r} != #{1}".format(rec["result"], uid))
+        new = sorted(set(int(o["uid"]) for o in g.report_all(self.work, cls)) - before)
+        self.fact("COPY #{0} -> new {1} uid(s) {2!r}".format(uid, cls, new))
+        if len(new) != 1:
+            raise Stop("copy_in: {0} new {1} object(s), expected 1: {2!r}".format(len(new), cls, new))
+        self.junk_purge("{0} after copy".format(tag))
+        di = [int(o["uid"]) for o in g.report_all(self.work, "Diagram")].index(int(dest_diagram_uid))
+        self.move_in(new[0], di, tuple(position))
+        self.junk_purge("{0} after move_in".format(tag), hints=[di, 0])
+        return new[0]
+
+    def add_sr_row(self, ex, tag=""):
+        """`add_shift_reg` on the loop named by uid, then the register PAIR read back by index: {right, left, k,
+        right_uids, loop_index}."""
+        cls = ex.get("loop_class", "WhileLoop")
+        li = self.uid_index(cls, int(ex["loop_uid"]))
+        rec = self.add_shift_reg(li, class_name=cls)
+        right = rec["result"]
+        rights = []
+        for k in range(12):
+            u = g.shift_reg(self.work, li, k, class_name=cls).get("uid")
+            if u is None:
+                break
+            rights.append(int(u))
+        k = rights.index(int(right))
+        left = g.shift_reg_left(self.work, li, k, class_name=cls)["left"]["uid"]
+        self.junk_purge("{0} after add_shift_reg".format(tag))
+        out = {"right": int(right), "left": int(left), "k": k, "right_uids": rights, "loop_index": li}
+        self.fact("SHIFT REGISTER on {0} #{1}: {2!r}".format(cls, ex["loop_uid"], out))
+        return out
+
+    def const_row(self, ex, tag=""):
+        """`OpCreateConstOnTerm_v0` (`build_opcreateconstonterm_v0.create_const_on_term`:364): a constant TYPED BY
+        THE SINK and already wired, on a node of a WhileLoop BODY. exec {loop_uid, body_diagram, node, term,
+        value}. Returns the op's {err, inv_err, created_uid}."""
+        C = mod("build_opcreateconstonterm_v0")
+        lab = json.load(open(os.path.join(BENCH, "opcreateconstonterm_labels.json"), encoding="utf-8"))
+        li = self.uid_index("WhileLoop", int(ex["loop_uid"]))
+        (_d, n, t), _how = self.address({"uid": ex["node"], "term": ex["term"], "diagram": ex["body_diagram"],
+                                         "owner_class": "", "term_class": ""}, False)
+        rec = self._op("create_const_on_term",
+                       lambda: C.create_const_on_term(self.work, li, n, t, lab, value=ex.get("value")),
+                       "loop[{0}] N[{1}].t{2} value {3!r}".format(li, n, t, ex.get("value")))
+        self.junk_purge("{0} after const".format(tag))
+        return rec
+
+    def cfw_second_pass(self, src_uid, dst):
+        """42(b)'s ordered idempotent second pass through `OpConnectFromWire_v0`, usable for ANY new wire whose sink
+        is a Nodes[] terminal: the source is src_uid's terminal on the sink's CURRENT wire (read live), so the
+        re-connect must add no wire and read back `Wire.Is Broken?`. Feed it to `expect_is_broken_false`."""
+        F = mod("build_opconnectfromwire_v0")
+        (dd, dn, dt), _h = self.address(dst, False)       # dst["verify_term_uid"] set => by uid (Pre-decided 173/174)
+        self.fact("2nd-pass sink addressed: {0}".format(_h))
+        self.wired_terminals(dst["uid"], tag="2nd-pass sink")                     # the printed table, evidence only
+        w = int([r for r in g.node_terms(self.work, dd, dn) if int(r["i"]) == dt][0]["wire"])
+        hit = [x for x in F.wire_source_owner(self.work, w, n=8)
+               if x.get("owner_uid") == int(src_uid) and x.get("is_source")]
+        self.node_mark("2nd pass")
+        dw, es, err, sub = F.connect_from_wire(self.work, w, int(hit[0]["i"]), dd, dn, dt,
+                                               json.load(open(F.MAP_OUT, encoding="utf-8")))
+        self.junk_purge("2nd pass purge", hints=[dd, 0])
+        return {"is_broken": (sub or {}).get("Is Broken?"), "sink_wire_uid": (sub or {}).get("UID 2"), "err": err,
+                "wire": w, "wire_delta_op": dw}
+
+    def live_graph(self, path, retired_rights=(), extra_rights=None):
+        """The step-4 graph of a LIVE file (stage_d1_m3a4.py:104-110's recipe): wiki_build.read_live + the bed's
+        loop table with `retired_rights` dropped and `extra_rights` {loop_uid: [right uid, ...]} appended, flat-
+        sequence faces reused from the rowD wiki (a wire edit never touches them)."""
+        W, JC = mod("wiki_build"), mod("jev_candidates")
+        Gr = JC.load(JC.BED_KEY)
+        ex = extra_rights or {}
+        loops = [dict(l, right_uids=[u for u in l["right_uids"] if u not in set(retired_rights)] +
+                      list(ex.get(l["loop_uid"], [])))
+                 for l in json.load(open(JC._newest("graph_loops_bed_*.json"), encoding="utf-8"))["loops"]]
+        lv = W.read_live(path, fs_pairs=Gr["wiki"]["fs_tunnel_pairs"])
+        self.fact("LIVE MAP {0}: {1}".format(os.path.basename(path), lv["secs"]))
+        return JC.from_parts({"terminals": lv["terminals"], "graph_summary": Gr["wiki"]["graph_summary"]},
+                             lv["objs"], loops, JC.node_labels_default(), lv["fs_tunnel_pairs"],
+                             os.path.basename(path))
+
+    def rule_check(self, d):
+        """PRE-DECIDED 143: the op the row names must be the op `jev_pairs.op_rule` names for its classes, unless
+        the row carries `op_override` (a reason). Returns (rule_op, rule_variant, why)."""
+        import jev_pairs
+        ex = d["exec"]
+        c = {"src": dict(ex["src"]), "dst": dict(ex["dst"])}
+        op, var, why = jev_pairs.op_rule(c)
+        if (op, var) != (d.get("op"), d.get("variant")) and not d.get("op_override"):
+            raise RuntimeError("op_rule says {0}/{1} ({2}); row says {3}/{4}".format(op, var, why, d.get("op"),
+                                                                                  d.get("variant")))
+        return op, var, why
+
+    def from_decision(self, record, tag="fd"):
+        """PLAN STEP 6 / Pre-decided 142-143: execute a decision record (tools/jev_pairs.write_record shape).
+        action 'wire'   -> the row's `op` (connect_nested | connect_terminals | wire_sr | connect_from_wire |
+                           fs_inner_tunnel_connect) on the `exec` ends {uid, term, term_class, owner_class, diagram};
+                           wire_sr also needs exec.sr {loop_uid, loop_class, right_uid, right_uids}. The op is
+                           checked against `jev_pairs.op_rule` first (`rule_check`); `es_probe` reads ExecState
+                           right after the connect, after 2 s, and after the purge (review c68-p6d §4).
+        action 'delete' -> exec.wire_uid is deleted; 'retire' -> exec {class, uid} is deleted.
+        action 'copy' -> `copy_in` (exec {cls, uid, dest_diagram, pos}); 'add_shift_reg' -> `add_sr_row`;
+        'create_const_on_term' -> `const_row`. A row with `as` stores its result in self.sym for later `$` refs.
+        'llm' / 'skip' / anything else -> REPORTED, never executed. Every mutation goes through `_op`, so the node
+        census is marked and the measured junk `Invoke` is purged after it. Returns one dict per decision."""
+        objs = [dict(o, pos=tuple(o["pos"])) for o in g.report_all(self.work, "GObject")]
+        out = []
+        for i, d0 in enumerate(record.get("decisions", [])):
+            row = {"i": i, "row_key": d0.get("row_key"), "action": d0.get("action"), "op": d0.get("op"),
+                   "variant": d0.get("variant"), "id": d0.get("id")}
+            act = d0.get("action")
+            try:
+                d = self.resolve(d0) if act in ("wire", "delete", "retire", "copy", "add_shift_reg",
+                                                "create_const_on_term") else d0
+                ex = d.get("exec") or {}
+                if act == "delete":
+                    row["result"] = self.delete_wire(int(ex["wire_uid"]), tag)
+                elif act == "retire":
+                    row["result"] = self.delete_object(ex["class"], int(ex["uid"]), tag)
+                elif act == "copy":
+                    row["result"] = self.copy_in(ex["cls"], ex["uid"], ex["dest_diagram"], ex["pos"], d0.get("id"))
+                elif act == "add_shift_reg":
+                    row["result"] = self.add_sr_row(ex, d0.get("id") or tag)
+                elif act == "create_const_on_term":
+                    row["result"] = self.const_row(ex, d0.get("id") or tag)
+                elif act == "wire":
+                    row["op_rule"] = self.rule_check(d)
+                    row.update(self._wire_row(d, objs))
+                    if d.get("es_probe"):
+                        row["es_probe"] = [self.es("{0} right after the connect".format(d0.get("id")))]
+                        time.sleep(2.0)
+                        row["es_probe"].append(self.es("{0} after 2 s".format(d0.get("id"))))
+                    self.junk_purge("{0} row {1}".format(tag, i))
+                    if d.get("es_probe"):
+                        row["es_probe"].append(self.es("{0} after the purge".format(d0.get("id"))))
+                        self.row("P6D-probe {0} ES now/2s/purged".format(d0.get("id")), row["es_probe"],
+                                 "recorded")
+                else:
+                    row["result"] = "NOT EXECUTED (action {0!r})".format(act)
+                if d0.get("as") and act in ("copy", "add_shift_reg", "create_const_on_term"):
+                    self.sym[d0["as"]] = row["result"]
+            except Exception as e:                                                 # noqa: BLE001
+                row["error"] = "{0}: {1}".format(type(e).__name__, str(e)[:240])
+            res = row.get("result") if isinstance(row.get("result"), dict) else {}
+            row["failed_layer"] = "execution" if row.get("error") or res.get("err") \
+                else (None if act in ("wire", "delete", "retire", "copy", "add_shift_reg", "create_const_on_term")
+                      else (d0.get("evidence") or {}).get("failed_layer"))
+            self.row("from_decision row {0} {1}".format(i, row.get("id")), {k: row.get(k) for k in
+                     ("action", "op", "variant", "how", "result", "error", "failed_layer")})
+            out.append(row)
+        self.R["from_decision"] = out
+        self.dump()
+        return out
+
+    def _wire_row(self, d, objs):
+        ex, op = d["exec"], d["op"]
+        s, t = ex["src"], ex["dst"]
+        if op in ("connect_nested", "connect_terminals"):
+            (sd, sn, st), hs = self.address(s, True, objs)
+            (dd, dn, dt), hd = self.address(t, False, objs)
+            N = mod("build_opconnectnested_v1")
+            lab = json.load(open(N.MAP_OUT, encoding="utf-8"))
+            if op == "connect_terminals" and sd == dd == 0:
+                rec = self._op("connect_terminals", lambda: g.connect_terminals(self.work, dn, dt, sn, st),
+                               "N[{0}].t{1} <- N[{2}].t{3}".format(dn, dt, sn, st))
+            else:
+                rec = self._op("connect_nested_v1", lambda: N.connect_nested_v1(self.work, dd, dn, dt, sd, sn, st, lab),
+                               "D[{0}].N[{1}].t{2} <- D[{3}].N[{4}].t{5}".format(dd, dn, dt, sd, sn, st))
+            return {"how": [hs, hd], "result": rec}
+        if op == "wire_sr":
+            sr, variant = ex["sr"], d["variant"]
+            body, is_src = (t, False) if variant == "LeftIn" else (s, True)
+            reg_end = s if variant == "LeftIn" else t
+            if int(body["diagram"]) != int(reg_end["diagram"]):
+                raise RuntimeError("body end on diagram {0}, register inside on {1}".format(body["diagram"],
+                                                                                            reg_end["diagram"]))
+            (bd, bn, bt), hb = self.address(body, is_src, objs)
+            cls = sr.get("loop_class", "WhileLoop")
+            li = next((r["i"] for r in g.report_all(self.work, cls) if int(r["uid"]) == int(sr["loop_uid"])), None)
+            k = list(sr["right_uids"]).index(int(sr["right_uid"]))
+            echo = g.shift_reg(self.work, li, k, class_name=cls).get("uid")
+            if echo != int(sr["right_uid"]):
+                raise RuntimeError("shift_reg[{0}][{1}] echo {2!r} != #{3}".format(li, k, echo, sr["right_uid"]))
+            rec = self._op("wire_sr", lambda: g.wire_sr(variant, self.work, li, k, node_index=bn, term_index=bt,
+                                                        class_name=cls),
+                           "{0} loop[{1}] reg[{2}] node[{3}].t{4}".format(variant, li, k, bn, bt))
+            return {"how": [hb, "loop #{0} idx {1}, reg {2} echo #{3}".format(sr["loop_uid"], li, k, echo)],
+                    "result": rec}
+        if op == "fs_inner_tunnel_connect":
+            (sd, sn, st), hs = self.address(s, True, objs)
+            return {"how": [hs], "result": self.fs_inner_tunnel_connect(int(t["uid"]), sd, sn, st)}
+        if op == "connect_from_wire":
+            return self._cfw_row(d, objs)
+        raise RuntimeError("op {0!r} has no executor in from_decision".format(op))
+
+    def _cfw_row(self, d, objs):
+        """`OpConnectFromWire_v0` rows. variant None: the source terminal is on live wire exec.src.wire_uid.
+        variant 'tunnel_outer' (PRE-DECIDED 146, docs/connectivity-map-plan.md; measured
+        tools/bench/bench_map_w9635.log C1): the source is a Selector/Loop tunnel's INNER terminal that no writer
+        can address; branch off the tunnel's OUTER feed wire, taking the terminal the tunnel itself owns on it
+        (index read live by `OpWireSource_v5`, owner uid echoed) - LabVIEW mints a NEW tunnel - then delete the
+        ORPHAN (the old tunnel, only when every inner wire reads 0 via `OpTunnels_v0`). ExecState is read before
+        and after the delete and REPORTED; nothing else is cleaned up."""
+        ex, variant = d["exec"], d.get("variant")
+        s, t = ex["src"], ex["dst"]
+        F = mod("build_opconnectfromwire_v0")
+        w = int(s.get("outer_wire") or 0) if variant == "tunnel_outer" else int(s.get("wire_uid") or 0)
+        want_src = variant != "tunnel_outer"
+        walk = F.wire_source_owner(self.work, w, n=8) if w else []
+        hit = [x for x in walk if x.get("owner_uid") == int(s["uid"]) and bool(x.get("is_source")) == want_src]
+        if len(hit) != 1:
+            raise RuntimeError("w{0}: {1} term(s) owned by #{2} (is_source {3})".format(w, len(hit), s["uid"], want_src))
+        (dd, dn, dt), hd = self.address(t, False, objs)
+        rec = self.connect_from_wire(dd, dn, dt, w, int(hit[0]["i"]))
+        how = [hd, "w{0}[{1}] owned by #{2}".format(w, hit[0]["i"], s["uid"])]
+        out = {"how": how, "result": rec}
+        if variant == "tunnel_outer" and s.get("owner_class") == "LoopTunnel":
+            self.junk_purge("cfw before orphan")      # the connect's stray Invoke, before delete re-marks the census
+            cls, uid = "LoopTunnel", int(s["uid"])
+            li = self.uid_index(cls, uid)
+            tun = g.tunnels(self.work, li) if li is not None else {}
+            # review 2026-09-23 bench-map-w9635-writers test 1: the NEW tunnel's IndexMode + outer net vs the old
+
+            def _new_tunnel():
+                res = rec.get("result")
+                sw = (res[3] or {}).get("UID 2") if isinstance(res, (list, tuple)) and len(res) > 3 else None
+                new = [x for x in (F.wire_source_owner(self.work, int(sw), n=4) if sw else []) if x.get("is_source")]
+                nu = int(new[0]["owner_uid"]) if new else None
+                ni = self.uid_index(cls, nu) if nu else None
+                nt = g.tunnels(self.work, ni) if ni is not None else {}
+                nnet = self.net_sources(nt.get("out_wire"), tag="new tunnel outer") if nt.get("out_wire") else {}
+                return {"uid": nu, "index_mode": nt.get("index_mode"), "out_wire": nt.get("out_wire"),
+                        "out_net_sources": nnet.get("source_owners"), "old_index_mode": tun.get("index_mode"),
+                        "old_out_wire": tun.get("out_wire"), "feed_wire_alive": w in g.uids(self.work, "Wire")}
+            out["new_tunnel"], _e = self.safe("PD146 new-tunnel read", _new_tunnel, {})
+            self.fact("PD146 new tunnel vs old: {0}".format(out["new_tunnel"]))
+            orphan = bool(tun) and tun.get("uid") == uid and not any(tun.get("in_wires") or [1])
+            es0 = self.es("before orphan delete #{0}".format(uid))
+            if orphan:
+                out["orphan_delete"] = self.delete_object(cls, uid, "orphan")
+            out["orphan"] = {"uid": uid, "in_wires": tun.get("in_wires"), "deleted": orphan, "es_before": es0,
+                             "es_after": self.es("after orphan delete #{0}".format(uid))}
+            self.fact("PD146 orphan #{0}: {1}".format(uid, out["orphan"]))
+        return out
+
+    # ------------------------------------------------------------------ save
+    def save_route(self, exec_state, broken_ok):
+        """WHICH SAVE ROUTE, as a pure function so it is self-testable without LabVIEW.
+        1 -> the scripted `SaveInstrument`; 0 + broken_ok -> the APPROVED broken-intermediate `gui_save`
+        (CLAUDE.md split-rule 6, evidence "user 2026-09-22 broken-intermediate save"); 0 without it ->
+        REFUSE (`SaveInstrument` blocks forever on a broken VI - gscript.save:2147)."""
+        if exec_state == 1:
+            return "scripted"
+        if exec_state == 0 and broken_ok:
+            return "gui_save"
+        return "refuse"
+
+    def save(self, broken_ok=False, cold_check=True):
+        """ONE save of the work copy, by the route `save_route` picks. Records md5, size and version bytes;
+        the COLD re-open check runs only when ExecState was 1 (never cold-load a broken-saved VI - the
+        recompile spin, skill "five laws")."""
+        self.head("[SAVE] {0}".format(os.path.basename(self.work)))
+        es = self.es("before the save")
+        route = self.save_route(es, broken_ok)
+        self.R["saves"]["exec_state_before"] = es
+        self.R["saves"]["route"] = route
+        if route == "refuse":
+            self.gate("S1 a save route exists for ExecState {0!r}".format(es), False,
+                      "ExecState 0 and broken_ok=False - NOTHING SAVED")
+            return None
+        if route == "gui_save":
+            self.fact("SAVE ROUTE = gui_save, the APPROVED broken-intermediate route (CLAUDE.md "
+                      "split-rule 6; evidence \"user 2026-09-22 broken-intermediate save\"). The artefact "
+                      "is BROKEN BY DESIGN and is NEVER RUN (34(f)).")
+        size, err = self.safe("g.save(allow_broken={0!r})".format(route == "gui_save"),
+                              lambda: g.save(self.work, allow_broken=(route == "gui_save")))
+        self.gate("S1 the save returned without raising ({0} route)".format(route), not err,
+                  str(err)[:180])
+        g.reset()
+        time.sleep(1.5)
+        ff = self.file_facts("SAVED ARTEFACT", self.work)
+        self.R["saves"].update({"size": size, "md5": ff.get("md5"), "bytes": ff.get("size"),
+                                "version_bytes": ff.get("version_bytes")})
+        self.gate("S2 the artefact is on disk and non-empty", bool(ff.get("size")),
+                  "{0} B".format(ff.get("size")))
+        if route == "scripted" and cold_check:
+            es2 = self.es("re-read AFTER the save")
+            self.gate("S3 ExecState 1 re-read AFTER the save", es2 == 1,
+                      "ExecState {0!r}".format(es2))
+        else:
+            self.fact("S3 COLD re-open check SKIPPED BY RULE: ExecState was {0!r}, and a broken-saved VI "
+                      "is never cold-loaded headless (recompile spin).".format(es))
+        self.dump()
+        return ff.get("md5")
+
+    # ------------------------------------------------------------------ close
+    def close(self, expect_files=None):
+        """HYGIENE: panels closed, refs opened == closed, scratches deleted, the input's md5 unchanged,
+        every pin re-checked, the files-left-on-disk listing, handles, JSON. Returns the process rc."""
+        self.head("[H] HYGIENE")
+        for p in [self.work] + list(self.scratches):
+            self.safe("close_panel({0})".format(os.path.basename(p)), lambda q=p: g.close_panel(q))
+        self._preload_exit()
+        self.R["H"]["ref_counts"] = g.ref_counts()
+        self.fact("gscript ref_counts: {0!r}".format(self.R["H"]["ref_counts"]))
+        self.gate("H5 VI-Server reference counter level (opened == closed)",
+                  self.R["H"]["ref_counts"].get("live") == 0, repr(self.R["H"]["ref_counts"]))
+        bp = mod("bench_prep")
+        handles, _ = self.safe("handles after the work", bp.labview_handles)
+        self.R["H"]["handles_after_work"] = handles
+        self.fact("LabVIEW handle count AFTER the work: {0!r}".format(handles))
+        if self.scratches:
+            self.safe("restart before the deletes", bp.restart_labview)
+            g.reset()
+            time.sleep(2.0)
+        for p in self.scratches:
+            for _a2 in range(6):
+                if not os.path.exists(p):
+                    break
+                try:
+                    os.remove(p)
+                except Exception as e:                                             # noqa: BLE001
+                    self.fact("delete {0} failed: {1}".format(os.path.basename(p), str(e)[:110]))
+                    time.sleep(4.0)
+            self.gate("H4 scratch deleted: {0}".format(os.path.basename(p)), not os.path.exists(p), p)
+        got = md5(self.input_vi) if os.path.exists(self.input_vi) else "MISSING"
+        self.R["input_md5_after"] = got
+        self.gate("H2 the INPUT's md5 is UNCHANGED after the run", got == self.R.get("input_md5_before"),
+                  "before {0} / after {1}".format(self.R.get("input_md5_before"), got))
+        self.gate("H3 every md5 pin still holds", self.pin_check("AFTER"))
+        after = sorted(os.path.basename(p) for p in glob.glob(os.path.join(CLAUDEDEV, "*.vi")))
+        if self.R.get("claudedev_before") is None:
+            self.fact("H6 NOT MEASURED: the run never took the BEFORE listing, so an 'added' set would be "
+                      "the whole directory. Reported, not gated.")
+            self.dump()
+            return self.summary()
+        added = sorted(set(after) - set(self.R["claudedev_before"]))
+        gone = sorted(set(self.R["claudedev_before"]) - set(after))
+        want = sorted(expect_files if expect_files is not None else
+                      ([os.path.basename(self.work)] if os.path.exists(self.work) else []))
+        self.fact("THE FILES THIS RUN LEFT ON DISK: {0!r}  (removed: {1!r})".format(added, gone))
+        self.gate("H6 the files left on disk == {0!r} and nothing was removed".format(want),
+                  added == want and not gone, "added {0!r} removed {1!r}".format(added, gone))
+        handles2, _ = self.safe("handles final", bp.labview_handles)
+        self.R["H"]["handles_final"] = handles2
+        self.fact("LabVIEW handle count at exit: {0!r}".format(handles2))
+        self.dump()
+        return self.summary()
+
+
+def fixtures_check(bad_md5s=(), before_listing=None):
+    """REVIEW c68-h6 (archive/peer/2026-09-24-c68-h6-fixture-listing.md §1/§4, accepted): after a run that swapped
+    bytes into the NI Moving-Objects pair, PROVE the restore - each live file == its `.ORIG.bak`, no `.bak` holds a
+    run's bytes (`bad_md5s`, e.g. the bed), and the folder's *.vi listing is unchanged. Prints gate rows; returns ok."""
+    ok = True
+    for live in (g.MOVE_SRC, g.MOVE_DST):
+        bak = live + ".ORIG.bak"
+        a = md5(live) if os.path.exists(live) else "MISSING"
+        b = md5(bak) if os.path.exists(bak) else "MISSING"
+        good = a == b and b != "MISSING" and b not in set(bad_md5s)
+        ok = ok and good
+        print(_a("  {0}  FX {1} == its .ORIG.bak and the .bak is not a run's bytes  live {2} bak {3}".format(
+            "PASS" if good else "FAIL", os.path.basename(live), a, b)), flush=True)
+    now = sorted(os.path.basename(p) for p in glob.glob(os.path.join(os.path.dirname(g.MOVE_DST), "*.vi")))
+    if before_listing is not None:
+        same = now == sorted(before_listing)
+        ok = ok and same
+        print(_a("  {0}  FX the Moving-Objects *.vi listing is unchanged  {1}".format("PASS" if same else "FAIL",
+                                                                                     now)), flush=True)
+    return ok
+
+
+def match_term_uid(term_uid, all_rows, node_rows, is_source):
+    """Pre-decided 173 (cycle 71): a terminal addressed by its TERMINAL UID after its first resolution, because a
+    terminal's NAME changes on move and on wiring (`stage_d1_l7_1b.log:274`: a new left SR's outer terminal read
+    'total data array out' before its wire landed and '' after). Pure function, no LabVIEW.
+    `all_rows` = `allterms.read_terms` rows (term_uid, wire_uid, is_source, ...); `node_rows` = `gscript.node_terms`
+    rows of the node the connect op addresses (i, name, is_source, wire) - which may be the STRUCTURE carrying the
+    terminal (a shift register's outer terminal sits in the loop's Terminals[]). The uid is found in the whole-VI
+    table, and its WIRE uid (a unique object) picks the one node row of the same direction. An unwired terminal or
+    anything other than exactly one hit RAISES - never a fallback to the name. Returns (terminal index, all-row)."""
+    a = [r for r in all_rows if int(r["term_uid"]) == int(term_uid)]
+    if len(a) != 1:
+        raise RuntimeError("terminal uid #{0}: {1} row(s) in the whole-VI terminal table".format(term_uid, len(a)))
+    w = int(a[0]["wire_uid"] or 0)
+    if not w or bool(a[0]["is_source"]) != bool(is_source):
+        raise RuntimeError("terminal uid #{0}: wire {1}, is_source {2} - uid addressing needs a wired terminal of "
+                           "direction {3}".format(term_uid, w, a[0]["is_source"], bool(is_source)))
+    hits = [r for r in node_rows if int(r.get("wire") or 0) == w and bool(r["is_source"]) == bool(is_source)]
+    if len(hits) != 1:
+        raise RuntimeError("terminal uid #{0} (wire {1}): {2} matching row(s) on the addressed node".format(
+            term_uid, w, len(hits)))
+    return int(hits[0]["i"]), a[0]
+
+
+def uid_edges(G, kinds=("wire", "fs")):
+    """A graph's edges keyed by TERMINAL UID, not by name (review archive/peer/2026-09-24-c68-m4a-p6b-rename.md §4,
+    measured tools/bench/q_m4a_diffuid.log: a name-keyed diff reported 13/12 renamed-only edges on unchanged
+    uids). `sr` is excluded by default: vigraph pairs registers by equal TOP, and a new register added at an
+    occupied TOP makes the pairing ambiguous (same log, U3/U6) - report it, never gate on it."""
+    V = mod("vigraph")
+    out = set()
+    for k, a, b, _i in G["edges"]:
+        if k in kinds:
+            out.add((k, V.key_parts(a)[0], int((G["rows"].get(a) or {}).get("term_uid") or 0),
+                     V.key_parts(b)[0], int((G["rows"].get(b) or {}).get("term_uid") or 0)))
+    return out
+
+
+# ---------------------------------------------------------------------------------------------- TERMINAL IDENTITY (card 141-3)
+# PD325(b), review archive/peer/2026-10-02-c141-2-scratch-td.md: LabVIEW RE-USES a deleted object's uid inside one session
+# (141-2 scratch: base 'output array' terminals 28004/28979 of the deleted #27928/#28916 came back as terminals of the NEW
+# #6942/#6805, diag_c141_p4s01_scratch.log:167,267; wire uid 28296 came back as a terminal uid, :181). A raw-uid key cannot tell
+# the old object from the new one: gate TD failed falsely (:280) and could equally hide a real loss. So TD / the unwired check /
+# gate D compare terminals by IDENTITY = (term uid, owner uid, term name), and wires by (wire uid, its source terminals'
+# identities). Pure functions, no LabVIEW. Offline test: tools/bench/selftest_td_key_c141_3.py.
+# SUPERSEDED AS THE GATE KEY by card chat-T6 (docs/d1/result-gates.md): term_identity_gates keys by POSITION (block "POSITION KEYS" below);
+# term_key / wire_keys / term_identity_names stay for reference and comparison only.
+def _iv(v):
+    try:
+        return int(v)
+    except (TypeError, ValueError):
+        return str(v)
+
+
+def term_key(r):
+    """A terminal row's identity: (term uid, owner uid, term name)."""
+    return (_iv(r["term_uid"]), _iv(r.get("owner_uid")), str(r.get("term_name") or ""))
+
+
+def wire_keys(rows):
+    """{(wire uid, frozenset of its SOURCE rows' term_key)} over the wired rows. A recycled wire uid on a new source is a
+    different key, so it counts as one lost + one new wire, never as 'kept'."""
+    src = {}
+    for r in rows:
+        w = _iv(r.get("wire_uid") or 0)
+        if w in (0, "", "0", "None"):
+            continue
+        src.setdefault(w, set())
+        if r.get("is_source"):
+            src[w].add(term_key(r))
+    return set((w, frozenset(s)) for w, s in src.items())
+
+
+def term_identity_gates(base, sim, real, renames=None, bind=None):
+    """TD / unwired / D of a stage's end (base = graph rows before, sim = the simulated end rows, real = the read-back end
+    rows). Card chat-T6 (docs/d1/result-gates.md): keyed by POSITION - see term_identity_pos, whose dict this returns. `renames` (an old
+    pb-licence/1 `renames` list, licence_renames) is still accepted and only REPORTED (`licence_renames_listed`): a name change
+    is INFO, licensed or not. `bind` = {"term": {sim uid: real uid}, "obj": {sim uid: real uid}} maps the sim end's created
+    objects onto the real ones, so D compares the NEW wires as sets, not only as counts. The name-keyed code that stood here
+    (cards 141-3 / 147-b1-2) is kept below as term_identity_names, for reference and comparison only."""
+    return term_identity_pos(base, sim, real, bind=bind, renames=renames)
+
+
+def term_identity_names(base, sim, real):
+    """card 141-3 (PD325(b)) as it stood until card chat-T6 - identity (term uid, owner uid, NAME), wires (wire uid, source
+    identities). NOT a gate any more (docs/d1/result-gates.md); kept so a test can show what the name key would have said."""
+    wv = lambda rows: dict((term_key(r), _iv(r.get("wire_uid") or 0)) for r in rows)   # noqa: E731
+    on = lambda w: w not in (0, "", "0", "None")                                       # noqa: E731
+    bk, sk, rk = wv(base), wv(sim), wv(real)
+    lost, gone = set(bk) - set(rk), set(bk) - set(sk)
+    unw = sorted(k for k, w in bk.items() if on(w) and k not in gone and on(sk.get(k, 0)) and not on(rk.get(k, 0)))
+    ru = set(k[0] for k in rk)
+    bw, sw, rw = wire_keys(base), wire_keys(sim), wire_keys(real)
+    new, lost_w, sim_new, sim_lost = rw - bw, bw - rw, sw - bw, bw - sw
+    return {"td_ok": not unw and lost == gone, "unwired": unw, "lost": sorted(lost), "gone": sorted(gone),
+            "recycled": sorted(k[0] for k in lost if k[0] in ru), "raw_lost": sorted(set(k[0] for k in bk) - ru),
+            "d_ok": len(new) == len(sim_new) and len(lost_w) == len(sim_lost),
+            "new": sorted(str(k[0]) for k in new), "lost_w": sorted(str(k[0]) for k in lost_w),
+            "sim_new": sorted(str(k[0]) for k in sim_new), "sim_lost_w": sorted(str(k[0]) for k in sim_lost)}
+
+
+# ---------------------------------------------------------------------------------------------- POSITION KEYS (card chat-T6, docs/d1/result-gates.md)
+# User 2026-10-08 ("두 가지 모두 적용하자"; "단자 네이밍은 몇 차례나 이야기했던 것 같은데, 왜 아직도 수정이 안되는거임?"). Cycle 147
+# (result_147-a1-8.json): LabVIEW renames polymorphic inputs when it wires them (#2626 'array'->'element', #9503 'Value'->'') and
+# re-issues a deleted wire uid (23807), so the name / wire-uid keys above called a correct build lost, and a renames LICENCE (PD356(b),
+# cards 147-b1-2 / 147-c3-2) had to whitelist each batch's renames. S1 (PD337) already ADDRESSES plan terminals by position; the
+# RESULT gates now compare by it too:
+#   terminal = POSITION KEY (node, index among the node's rows in read order, term class, direction) - addrcheck.pos_table, the
+#              index of addrcheck.triple; the name is a report column (`renames`, INFO; a licence's list is only echoed);
+#   wire     = (frozenset of its source keys, frozenset of its sink keys) - never its uid; a deleted uid LabVIEW re-issues is INFO.
+# Nothing true slips: a base key the sim keeps but the real end lacks = lost (TD FAIL); a kept key that now holds ANOTHER term uid =
+# `moved` (TD FAIL - an index / class swap at one node); a key wired in base and in the sim end but not in real = unwired (TD FAIL);
+# a wire whose source or sinks change = one lost + one new wire the sim does not have (D FAIL: lost wires and the new wires between
+# kept base nodes are compared as SETS, the rest by count - kept_nodes). Pure functions, no LabVIEW.
+# Offline test: tools/bench/selftest_t6_poskey.py.
+def _on(w):
+    return w not in (0, "", "0", "None", None)
+
+
+def _pos_rows(rows, ob=None, tb=None):
+    """{position key: row} of one terminal table (first row of a term uid). The key's node is mapped through `ob` (object
+    uids) and `tb` (term uids - a front-panel terminal is its own node): the sim end's created objects onto the real ones."""
+    ob, tb = ob or {}, tb or {}
+    t = mod("addrcheck").pos_table(rows)
+    seen, out = set(), {}
+    for r in rows or []:
+        u = r["term_uid"]
+        if u in seen or u not in t:
+            continue
+        seen.add(u)
+        node, i, c, s = t[u]
+        n = _iv(node)
+        out[(ob.get(n, tb.get(n, n)), i, c, s)] = r
+    return out
+
+
+def wire_ends_pos(rows, ob=None, tb=None):
+    """{wire uid: (frozenset of source position keys, frozenset of sink position keys)} - a wire as its two ends."""
+    by = {}
+    for k, r in _pos_rows(rows, ob, tb).items():
+        w = _iv(r.get("wire_uid") or 0)
+        if _on(w):
+            by.setdefault(w, (set(), set()))[0 if r.get("is_source") else 1].add(k)
+    return dict((w, (frozenset(a), frozenset(b))) for w, (a, b) in by.items())
+
+
+def kept_nodes(B, gone=()):
+    """The BASE nodes that keep at least one base position key (not all in `gone`). Only these nodes' positions are compared
+    across the sim end and the real end: a CREATED object's terminal order in the sim end is the simulator's, not LabVIEW's
+    (ring P4 s03: the sim lists #29396's 'index' where LabVIEW reads 'new element/subarray', selftest_t6_poskey.log), so its
+    wires count by number and its names are left as read."""
+    g = set(gone)
+    return set(k[0] for k in B if k not in g)
+
+
+def _bind_maps(bind):
+    b = bind or {}
+    return (dict((_iv(k), _iv(v)) for k, v in (b.get("term") or {}).items()),
+            dict((_iv(k), _iv(v)) for k, v in (b.get("obj") or {}).items()))
+
+
+def term_identity_pos(base, sim, real, bind=None, renames=None):
+    """TD / unwired / D on position keys (block comment above). Returns the keys term_identity_gates always returned -
+    {td_ok, unwired, lost, gone, recycled, raw_lost, d_ok, new, lost_w, sim_new, sim_lost_w, d_new, d_lost, reuse_noted,
+    reuse_bad, renames, unlicensed_renames, td_key} - plus moved / extra / d_sets / licence_renames_listed:
+      gone = base keys absent from the sim end (the plan's deletes); lost = base keys absent from real, plus a GONE key that
+      real holds with another term uid (`recycled`: LabVIEW re-used the owner uid); moved = kept keys whose real term uid is
+      not the base one; unwired = base keys wired in base and in the sim end, not wired (or absent) in real;
+      td_ok = not unwired and not moved and lost == gone;
+      d_ok = lost wires == the sim's lost wires (sets, base space), the new wires whose every end is on a kept base node
+      (kept_nodes) == the sim's (sets; `d_new_kept_nodes` = their two sizes), and |new| == |sim new| (a wire touching a
+      created object counts by number - kept_nodes says why); renames (INFO) = kept keys whose real name differs from the sim
+      end's; reuse_noted (INFO) = deleted wire uids present again at the end; extra (INFO) = real keys on a kept base node that
+      neither base nor the sim end has."""
+    tb, ob = _bind_maps(bind)
+    B, S, R = _pos_rows(base), _pos_rows(sim), _pos_rows(real)
+    nm = lambda r: str(r.get("term_name") or "")                                      # noqa: E731
+    wv = lambda r: _iv(r.get("wire_uid") or 0)                                        # noqa: E731
+    gone = set(B) - set(S)
+    both = set(B) & set(R)
+    moved = sorted(k for k in both - gone if _iv(R[k]["term_uid"]) != _iv(B[k]["term_uid"]))
+    recycled = sorted(k for k in both & gone if _iv(R[k]["term_uid"]) != _iv(B[k]["term_uid"]))
+    lost = (set(B) - set(R)) | set(recycled)
+    unw = sorted(k for k in set(B) - gone if _on(wv(B[k])) and _on(wv(S[k])) and not (k in R and _on(wv(R[k]))))
+    ren = sorted((k, nm(S[k]), nm(R[k])) for k in both - gone if k in S and nm(S[k]) != nm(R[k]))
+    kn = kept_nodes(B, gone)
+    Sm = _pos_rows(sim, ob, tb) if bind is not None else S
+    extra = sorted(k for k in set(R) - set(B) - set(Sm) if k[0] in kn)
+    be, se, re_ = wire_ends_pos(base), wire_ends_pos(sim, ob, tb) if bind is not None else wire_ends_pos(sim), wire_ends_pos(real)
+    bw, sw, rw = set(be.values()), set(se.values()), set(re_.values())
+    new, lost_w, sim_new, sim_lost = rw - bw, bw - rw, sw - bw, bw - sw
+    on_kept = lambda E: set(p for p in E if all(k[0] in kn for k in p[0] | p[1]))   # noqa: E731
+    d_ok = lost_w == sim_lost and on_kept(new) == on_kept(sim_new) and len(new) == len(sim_new)
+    uids = lambda E, P: sorted(str(w) for w, p in E.items() if p in P)                # noqa: E731
+    deleted = set(be) - set(se)
+    noted = [{"wire": w, "base_ends": [sorted(x) for x in be[w]], "real_ends": [sorted(x) for x in re_[w]]}
+             for w in sorted(deleted & set(re_), key=str)]
+    ru = set(_iv(r["term_uid"]) for r in real or [])
+    return {"td_ok": not unw and not moved and lost == gone, "unwired": unw, "lost": sorted(lost), "gone": sorted(gone),
+            "moved": moved, "recycled": recycled, "extra": extra,
+            "raw_lost": sorted(set(_iv(r["term_uid"]) for r in base or []) - ru),
+            "d_ok": d_ok, "d_new_kept_nodes": [len(on_kept(new)), len(on_kept(sim_new))], "new": uids(re_, new), "lost_w": uids(be, lost_w), "sim_new": uids(se, sim_new),
+            "sim_lost_w": uids(be, sim_lost), "d_new": len(new), "d_lost": len(lost_w), "reuse_noted": noted, "reuse_bad": [],
+            "renames": ren, "unlicensed_renames": [], "licence_renames_listed": sorted(renames or {}),
+            "td_key": "position (node, index, term class, direction)"}
+
+
+def licence_renames(lic):
+    """{(term uid, owner uid): (from, to)} from a pb-licence/1 dict's `renames` list ([{node, term_uids, from?, to?}]);
+    from/to None = any name. None when the dict has no `renames` key. Since card chat-T6 (docs/d1/result-gates.md) a licence's renames are
+    only READ and echoed (term_identity_gates `licence_renames_listed`); no gate needs them."""
+    if not isinstance(lic, dict) or "renames" not in lic:
+        return None
+    out = {}
+    for e in lic.get("renames") or []:
+        for u in e.get("term_uids") or []:
+            out[(_iv(u), _iv(e["node"]))] = (e.get("from"), e.get("to"))
+    return out
+
+
+def pb_rename_rows(base, sim, real, renames=None, bind=None):
+    """(rows, restored, unlicensed) for PB's build4 - card chat-T6 (docs/d1/result-gates.md): every real row on a KEPT BASE node (kept_nodes)
+    whose POSITION KEY (_pos_rows) the sim end also has gets the sim end's NAME, so PB's node|class|name|ordinal key
+    (vigraph.py:244-245) ranks it as the prediction did; wires are untouched, so a wiring difference still shows in the cdiff.
+    A created object's rows keep their real names (its sim terminal order is not LabVIEW's - kept_nodes; NG checks those
+    names). restored = [(term uid, owner uid, real name, sim name)] (INFO); unlicensed is always [] (renames - an old licence
+    list - is accepted and ignored). `bind` is accepted for symmetry with term_identity_gates and not needed here."""
+    B, S = _pos_rows(base), _pos_rows(sim)
+    kn = kept_nodes(B, set(B) - set(S))
+    fix, restored = {}, []
+    for k, r in _pos_rows(real).items():
+        if k in S and k[0] in kn:
+            a, b = str(r.get("term_name") or ""), str(S[k].get("term_name") or "")
+            if a != b:
+                fix[_iv(r["term_uid"])] = S[k].get("term_name")
+                restored.append((_iv(r["term_uid"]), _iv(r.get("owner_uid")), a, b))
+    rows = [dict(r, term_name=fix[_iv(r["term_uid"])]) if _iv(r["term_uid"]) in fix else r for r in real]
+    return rows, sorted(restored), []
+
+
+# ---------------------------------------------------------------------------------------------- RULE D4
+# Card 112-4 (judgement, cycle 112), after review archive/peer/2026-09-27-c112c-b2a-e1.md s1-s3: LabVIEW's type
+# propagation restores S1-form terminals on polymorphic nodes (IndexArray #8741/#30331 grew 'disabled index (col)',
+# tools/bench/stage_d1_l2b2a.log:96,119), which the simulator does not model. "Allow-either" would also accept the
+# bed's non-S1 form, so the rule is ONE-WAY TOWARD S1 - D4: a real-only term at a checkpoint/PB passes ONLY if
+# (node, name) exists on that node in S1's graph; scope = the split page's s3 cascade nodes; anything else, or a
+# real-lost term, FAILS. S1's names come from the graph file the D4 JSON pins, after its md5 is checked.
+# Pure functions, no LabVIEW. Offline test: tools/bench/selftest_d4_l2b2a.py.
+D4_FAIL_KEYS = ("only_sim_terms", "only_sim_edges", "only_real_edges", "dangling_sim_only", "dangling_real_only",
+                "unbound")
+
+
+def d4_load(path):
+    """The D4 JSON ({s1: {path, md5}, scope_nodes}) plus `scope` (set), `s1_md5_got` and `names` = {node: {name:
+    count}} over S1's terminal rows (deduplicated by term uid). `names` is EMPTY when S1's md5 is not the pinned one:
+    the caller gates on `s1_md5_got`."""
+    d = json.load(open(path, encoding="utf-8"))
+    s1 = os.path.join(ROOT, d["s1"]["path"].replace("/", os.sep))
+    got, names, seen = md5(s1), {}, set()
+    scope = set(int(n) for n in d["scope_nodes"])
+    if got == d["s1"]["md5"]:
+        for r in json.load(open(s1, encoding="utf-8"))["terminals"]:
+            n, t = int(r["owner_uid"]), int(r["term_uid"])
+            if n in scope and t not in seen:
+                seen.add(t)
+                names.setdefault(n, {})
+                names[n][r["term_name"]] = names[n].get(r["term_name"], 0) + 1
+    return dict(d, scope=scope, s1_md5_got=got, names=names)
+
+
+def d4_ok(node, name, d4):
+    """D4's one test: the node is in scope and S1's graph has a terminal of that name on it."""
+    return node in d4["scope"] and name in d4["names"].get(node, {})
+
+
+def d4_e1(diffs, info, d4):
+    """(ok, accepted, bad) over [(checkpoint k, stagexec.compare dict)]; `info` = {term uid: (owner uid, name)}.
+    accepted = [(k, term, node, name)] real-only terms that pass d4_ok AND stay within S1's COUNT of that name on
+    that node at that checkpoint (prior-art c112d `contradicted`: review c112c-b2a-e1 :78/:91 asks names AND count;
+    D4's "passes ONLY if" is a necessary condition, the count cap only narrows it); bad = every other diff entry."""
+    acc, bad = [], []
+    for k, d in diffs:
+        bad += [(k, key, t) for key in D4_FAIL_KEYS for t in d.get(key) or []]
+        seen = {}
+        for t in d.get("only_real_terms") or []:
+            node, name = info.get(int(t), (None, None))
+            ok = d4_ok(node, name, d4) and seen.get((node, name), 0) < d4["names"][node][name]
+            if ok:
+                seen[(node, name)] = seen.get((node, name), 0) + 1
+            (acc if ok else bad).append((k, int(t), node, name))
+    return not bad, acc, bad
+
+
+def _d4_terms(rows):
+    out = {}
+    for r in rows:
+        out.setdefault(int(r["term_uid"]), (int(r["owner_uid"]), r["term_name"]))
+    return out
+
+
+def d4_pb(got, want, real_end, sim_end, d4):
+    """(ok, closed, grown, bad) at PB. got / want = sets of (node, sink name) of cdiff(S1, real end) / the plan's
+    open_rows; real_end / sim_end = terminal rows (sim uids already bound to real ones). ONE-WAY TOWARD S1: a NEW
+    pair FAILS; a planned pair that CLOSED passes only on a scope node; every (node, name) a scope node holds in the
+    real end beyond the simulated end (grown or renamed, by count) must pass d4_ok; every real-only terminal uid must
+    pass d4_ok; a real-lost terminal uid FAILS."""
+    R, S = _d4_terms(real_end), _d4_terms(sim_end)
+    cr, cs = {}, {}
+    for src, cnt in ((R, cr), (S, cs)):
+        for v in src.values():
+            if v[0] in d4["scope"]:
+                cnt[v] = cnt.get(v, 0) + 1
+    grown = sorted((p, c - cs.get(p, 0)) for p, c in cr.items() if c > cs.get(p, 0))
+    closed = sorted(want - got)
+    bad = [("new-pair", p) for p in sorted(got - want)] + [("closed-off-scope", p) for p in closed
+                                                          if p[0] not in d4["scope"]]
+    bad += [("grown-not-S1", p, c) for p, c in grown if not d4_ok(p[0], p[1], d4)]
+    bad += [("count-over-S1", p, cr[p], d4["names"][p[0]][p[1]]) for p, _c in grown
+            if d4_ok(p[0], p[1], d4) and cr[p] > d4["names"][p[0]][p[1]]]       # prior-art c112d: names AND count
+    bad += [("real-only-not-S1", t, R[t]) for t in sorted(set(R) - set(S)) if not d4_ok(R[t][0], R[t][1], d4)]
+    bad += [("real-lost", t, S[t]) for t in sorted(set(S) - set(R))]
+    return not bad, closed, grown, bad
+
+
+def d4_form(real_end, d4):
+    """FACTS ONLY: {scope node: 'equal to S1' | 'real-only {..} S1-only {..}'} comparing the real end's name counts on
+    each scope node with S1's (the review's stronger 'names and count' reading; never a gate here)."""
+    cnt = {}
+    for n, name in _d4_terms(real_end).values():
+        if n in d4["scope"]:
+            cnt.setdefault(n, {})
+            cnt[n][name] = cnt[n].get(name, 0) + 1
+    out = {}
+    for n in sorted(d4["scope"]):
+        a, b = cnt.get(n, {}), d4["names"].get(n, {})
+        ra = dict((k, v - b.get(k, 0)) for k, v in a.items() if v > b.get(k, 0))
+        sb = dict((k, v - a.get(k, 0)) for k, v in b.items() if v > a.get(k, 0))
+        out[n] = "equal to S1 {0}".format(sorted(a.items())) if not (ra or sb) else \
+            "real-only {0} S1-only {1}".format(sorted(ra.items()), sorted(sb.items()))
+    return out
+
+
+def fixture_listing():
+    return sorted(os.path.basename(p) for p in glob.glob(os.path.join(os.path.dirname(g.MOVE_DST), "*.vi")))
+
+
+def unload_donor(path=None):
+    """Card 97-5 (judgement c97): after the copy_in calls, drop the donor (default `g.MOVE_SRC`) from LabVIEW's memory
+    before the MEMSTOP-metered edits. An open front panel keeps a VI resident (gscript.close_panel), so its panel is
+    closed; residency is READ before/after from `Application.ExportedVIs` (NI 'All VIs in Memory'), and private MB
+    before/after. FACTS ONLY: returns a dict, never raises - a failed read is recorded, not gated."""
+    path = path or g.MOVE_SRC
+    name = os.path.basename(path).lower()
+
+    def resident():
+        try:
+            return any(os.path.basename(str(n)).lower() == name for n in (g.lv().ExportedVIs or ()))
+        except Exception as e:                                                     # noqa: BLE001
+            return "unread: {0}".format(str(e)[:60])
+    out = {"mb_before": round((private_bytes() or 0) / 1e6, 1), "resident_before": resident()}
+    try:
+        g.close_panel(path)
+        out["close_panel"] = "ok"
+    except Exception as e:                                                         # noqa: BLE001
+        out["close_panel"] = "err: {0}".format(str(e)[:80])
+    time.sleep(1.0)
+    out["resident_after"] = resident()
+    out["mb_after"] = round((private_bytes() or 0) / 1e6, 1)
+    return out
+
+
+def run(fn, stage):
+    """The standard main(): run `fn(stage)`, never let an exception skip the hygiene tail."""
+    # card chat-T3: every real stop also prints ONE structured `STOP {json}` line (protocol.stop_line) - the line the adopt
+    # checker reads; the prose lines below stay for people and for the older log readers.
+    try:
+        fn(stage)
+    except Stop as e:
+        print(_protocol.stop_line("gate", str(e)), flush=True)
+        stage.gate("STOP at gate: {0}".format(e), False)
+    except Exception as e:                                                         # noqa: BLE001
+        import traceback
+        stage.exc_text = "{0}: {1}".format(type(e).__name__, str(e))[:200]      # C6 first_fail
+        stage.R["fatal"] = traceback.format_exc()[-2500:]
+        print(_protocol.stop_line(_protocol.stop_kind_of(e), stage.exc_text, exc=type(e).__name__), flush=True)
+        print("\nOBSERVED EXC {0}\n{1}".format(str(e)[:300], traceback.format_exc()[-2000:]), flush=True)
+        stage.gate("the run completed without an unhandled exception", False, str(e)[:160])
+    try:
+        return stage.close()
+    except Exception as e:                                                         # noqa: BLE001
+        stage.gate("H-HYGIENE the hygiene phase completed", False, str(e)[:150])
+        return stage.summary()
+
+
+# ============================================================================================== RING RECIPES AS CALLS (card chat-T7)
+# User 2026-10-09: "보통 같은 함수가 계속 반복되면 복사 붙여넣기 대신 공통 함수로 만들고 호출하지 않아?" (docs/script-writing.md).
+# The ring stage recipes tools/recipes/stage_d1_ring_p4_s0[6-9]v18.py / stage_d1_ring_p5s01a.py (+ their _scratch pairs) were made by
+# copying the previous batch; their bodies are the same ~120 lines with only file names changed (census: docs/d1/result-gates.md PD377).
+# That logic lives HERE now, once; a recipe holds its inputs and calls (tools/recipes/stage_template_ring.py + _scratch.py).
+# Behaviour is the p5s01a recipe's, line for line, EXCEPT PB, which compares by POSITION (pb_check, gate-fp fp-70; PD371(b), PD373).
+# The recipes that already ran stay as they are: they are the record of what ran (docs/script-writing.md rule 4).
+# Offline test: tools/bench/selftest_t7_ring.py.
+def jload(*parts):
+    """json.load of os.path.join(*parts) (utf-8) - the recipes' `J` helper. Returns the parsed object."""
+    with open(os.path.join(*parts), encoding="utf-8") as f:
+        return json.load(f)
+
+
+def pure(name):
+    """A NO-LabVIEW module (stagexec, stagesim, vigraph, jev_candidates, elrule) imported DIRECTLY, as the recipes import it - not
+    through mod(), which stage_prerun's dry run replaces with a stubbing wrapper (stage_prerun.py:781). Returns the module."""
+    return importlib.import_module(name)
+
+
+# ---------------------------------------------------------------------------------------------- PB by POSITION (card chat-T7, fp-70)
+# vigraph.computation_diff (a7eb58c7, card 153-b2-1) already compares sinks and sources by position and drops a rename-only slot; a
+# pred written under the older name-keyed vigraph still lists such a slot as one lost + one new NAME row ('2626|Terminal|array|0..3'
+# vs S1's 'element|0..2', s06: 18 stored rows = 14 slots). PD371(b) / PD373(d): convert the stored rows to position rows - a lost +
+# new pair at one (owner, index, class) is ONE changed row, a pair with equal (name-free) sources is no row - and compare SLOTS. The
+# converter is the one card 153-a2-3 wrote (tools/bench/selftest_c153_poskey_convert.py:20-73, now a thin test of these functions).
+# It is idempotent, so a pred already written under a7eb58c7 (P5 on, PD373(e)) passes through unchanged.
+def pos_slot_table(G):
+    """{term key: (node, index in the node's READ order, term class, is_source)} of a vigraph graph - the same key as
+    vigraph.pos_keys / addrcheck.pos_table. Self-test: tools/bench/selftest_c153_poskey_convert.py."""
+    import collections
+    by = G.get("by_node")
+    if by is None:
+        by = collections.OrderedDict()
+        for r in G["rows"].values():
+            by.setdefault(r["node"], []).append(r)
+    return dict((r["key"], (node, i, r.get("term_class", ""), bool(r.get("is_source")))) for node, rs in by.items()
+                for i, r in enumerate(rs))
+
+
+def pos_name_free(P, s):
+    """One effective source ('<key>' or '<key>@<tunnel>/f<n>+...') -> (its position in table P, frame tag); an unknown key
+    -> ('?', key). Self-test: tools/bench/selftest_c153_poskey_convert.py."""
+    base, tag = s, ""
+    if "@" in s:
+        b, t = s.rsplit("@", 1)
+        if all("/f" in x and x.split("/f")[0].isdigit() and x.split("/f")[-1].isdigit() for x in t.split("+")):
+            base, tag = b, t
+    return (P.get(base, ("?", base)), tag)
+
+
+def pos_slots(G, nodes, V=None):
+    """{sink key: ((node, index, class), frozenset of name-free effective sources)} for the input terminals of `nodes` in
+    graph G (V = the vigraph module). Self-test: tools/bench/selftest_c153_poskey_convert.py."""
+    V = V or pure("vigraph")
+    P, memo, out = pos_slot_table(G), {}, {}
+    for k, p in P.items():
+        if not p[3] and p[0] in nodes:
+            out[k] = (p[:3], frozenset(pos_name_free(P, s) for s in V.effective_sources(G, k, memo)))
+    return out
+
+
+def pos_convert(rows, SA, SB):
+    """Name-keyed cdiff sink strings -> POSITION rows [{sink, slot, name_a, name_b, before, after[, passthrough]}], sorted by
+    sink: one row per (node, index, class) whose sources differ between SA and SB (pos_slots of graph A / B); a row with no
+    slot in either is passed through (slot None). Idempotent. Self-test: tools/bench/selftest_c153_poskey_convert.py S1-S7."""
+    order, out = [], []
+    for s in rows:
+        ps = [X[s][0] for X in (SA, SB) if s in X]
+        if not ps:
+            out.append({"sink": s, "slot": None, "name_a": s, "name_b": s, "before": None, "after": None, "passthrough": True})
+        for p in ps:
+            if p not in order:
+                order.append(p)
+    ia = dict((v[0], (k, v[1])) for k, v in SA.items())
+    ib = dict((v[0], (k, v[1])) for k, v in SB.items())
+    for p in order:
+        a, b = ia.get(p), ib.get(p)
+        va, vb = (a[1] if a else None), (b[1] if b else None)
+        if va == vb:
+            continue
+        out.append({"sink": a[0] if a else b[0], "slot": p, "name_a": a and a[0], "name_b": b and b[0], "before": va, "after": vb})
+    return sorted(out, key=lambda r: r["sink"])
+
+
+def pos_convert_open_rows(plan_open_rows, old_rows, new_rows):
+    """A plan's open_rows [{node, term}] with every row dropped whose (node, name) pair the old -> new row conversion removed
+    ENTIRELY (PD372(c)); the rest kept, in order. Self-test: tools/bench/selftest_c153_poskey_convert.py O1-O3."""
+    nm = lambda rs: set((int(s.split("|", 1)[0]), s.split("|", 2)[2].rsplit("|", 1)[0]) for s in rs)   # noqa: E731
+    gone = nm(old_rows) - nm(new_rows)
+    return [y for y in plan_open_rows if (int(y["node"]), y["term"]) not in gone]
+
+
+def s1_frame_graph(labels=None):
+    """S1's FRAME-KEYED vigraph graph (the wiki S1 terminals + the newest graph_objs_s1 / graph_loops_s1 reads), as every ring
+    recipe's PB built it (stage_d1_ring_p5s01a.py:174-175). Returns the build4 dict. Self-test: tools/bench/selftest_t7_ring.py."""
+    V, JC = pure("vigraph"), pure("jev_candidates")
+    s1p = jload(JC.WIKI, JC.S1_KEY + ".json")
+    return V.build4(s1p["terminals"], jload(JC._newest("graph_objs_s1_*.json"))["objects"], jload(JC._newest("graph_loops_s1_*.json"))["loops"],
+                    labels if labels is not None else JC.node_labels_default(), s1p["fs_tunnel_pairs"], frame_keyed=True)
+
+
+def pred_end_graph(L, labels, fs_pairs):
+    """The FRAME-KEYED vigraph graph of a plan's simulated end state L (its terminals, objs, loops) - the graph a pred's cdiff rows
+    describe; pb_check converts the pred on it. Returns the build4 dict. Self-test: tools/bench/selftest_t7_ring.py."""
+    import copy as _copy
+    return pure("vigraph").build4(L["terminals"], L.get("objs") or [], _copy.deepcopy(L["loops"]), labels, fs_pairs, frame_keyed=True)
+
+
+def pb_check(S1f, G1, Gpred, pred_rows, open_rows, unlicensed=(), V=None):
+    """PB by POSITION (card chat-T7, fp-70): cdiff(S1f, G1 = the REAL end) (vigraph.computation_diff_frame) against the pred's cdiff
+    rows and the plan's open (node, term) pairs. The pred rows are converted (pos_convert) on the slots of S1f and Gpred = the graph
+    the PRED was made on (the plan's simulated end) - never on the real end, which would erase a pred row the build failed to make
+    (selftest_t7_ring M2); the real rows on S1f / G1's slots. A stored NAME-keyed pred and a native position-keyed one compare the
+    same way: ok = the SLOT sets are equal (a passthrough row compares by its sink string), the converted open pairs == the cdiff rows'
+    (node, S1-side name) pairs, and no unlicensed rename. Sink names are report columns.
+    Returns {ok, rows (cdiff sinks), pred_rows, slots_got, slots_want, extra, missing, pairs_got, pairs_want, open_rows, cd}.
+    Self-test: tools/bench/selftest_t7_ring.py (stored P4 s03..s09 + P5-1a end reads, mutations)."""
+    V = V or pure("vigraph")
+    cd = V.computation_diff_frame(S1f, G1)
+    rk = sorted(str(y["sink"]) for y in cd["rows"])
+    nodes = set(int(s.split("|", 1)[0]) for s in list(pred_rows) + rk)
+    SA = pos_slots(S1f, nodes, V)
+    key = lambda r: tuple(r["slot"]) if r.get("slot") is not None else ("sink", r["sink"])   # noqa: E731
+    want_rows, got_rows = pos_convert(list(pred_rows), SA, pos_slots(Gpred, nodes, V)), pos_convert(rk, SA, pos_slots(G1, nodes, V))
+    want, got = set(key(r) for r in want_rows), set(key(r) for r in got_rows)
+    op = pos_convert_open_rows(list(open_rows), list(pred_rows), [r["sink"] for r in want_rows])
+    pw = set((int(y["node"]), y["term"]) for y in op)
+    pg = set((int(y["node"]), str(y["sink"]).split("|")[2]) for y in cd["rows"])
+    sk = lambda S: sorted(S, key=str)                                               # noqa: E731
+    return {"ok": want == got and pw == pg and list(unlicensed or []) == [], "rows": rk, "pred_rows": len(pred_rows),
+            "slots_got": len(got), "slots_want": len(want), "extra": sk(got - want), "missing": sk(want - got),
+            "extra_sinks": sorted(r["sink"] for r in got_rows if key(r) not in want),
+            "missing_sinks": sorted(r["sink"] for r in want_rows if key(r) not in got),
+            "pairs_got": len(pg), "pairs_want": len(pw), "pairs_extra": sk(pg - pw), "pairs_missing": sk(pw - pg),
+            "open_rows": op, "unlicensed": list(unlicensed or []), "cd": cd}
+
+
+# ---------------------------------------------------------------------------------------------- PD386 (card 158-a3-1): BLOCK vs RECORD
+# docs/d1/ring-p5.md item 386 (steer debate:plan-overall-02 items 4/10: BLOCK = computation / save / safety invariant, RECORD =
+# representation). Scratch c158-a2-2 built the planned graph (E1 diff 0) and failed PB / D / TD / CEN2 on convention
+# (tools/bench/diag_c158_a2_3_facts.md): (a) PB's frame tag `@<tunnel>/f<ordinal>` ranks frames by uid (vigraph.py:322), so negative
+# sim uids reverse the ordinal; the tag is now resolved to the FRAME UID on its own graph and the real PB is compared with the sim-end
+# PB re-keyed by the run's bindings; a row whose only difference from S1 is that tag is RECORDED iff its source terminal uids equal
+# S1's and every tag's frame is the plan's frame for the move. (b) D / TD compare (source, sink) position pairs; a wire with no sink
+# (a source-only stub) carries nothing and is dropped on both sides and RECORDED (wire 24091: the sim keeps it, LabVIEW deletes it).
+# Pure functions, no LabVIEW. Self-test: tools/bench/selftest_c158_gates386.py (recorded c158-a2-2 data + BLOCK mutations).
+def run_bind(bind=None, report=None):
+    """The run's bindings as ONE {sim uid: real uid} map: an Executor's x.bind ({obj, term, diag}) merged, plus the union of a recorded
+    run's per-op `bound` dicts (x.report / a scratch json's `stagexec` list = the log's `bound {...}` lines). Returns a dict.
+    Self-test: tools/bench/selftest_c158_gates386.py."""
+    M = {}
+    for kind in ("obj", "term", "diag"):
+        for k, v in ((bind or {}).get(kind) or {}).items():
+            M[_iv(k)] = _iv(v)
+    for o in report or []:
+        for k, v in (o.get("bound") or {}).items():
+            M[_iv(k)] = _iv(v)
+    return M
+
+
+def real_rows_from_record(rows5, sim_terms, flat):
+    """(rows, record): the 5-column real end rows a run records (RingSession.gate_td `real_end_rows`: term uid, owner uid, name, wire,
+    is_source) as full terminal rows. term_class / owner_class / frame_diagram come from the sim end row of the SAME term uid, else from an
+    unused sim row (negative uid) of the same bound owner, first by (name, direction), then by direction in read order; frame_diagram is
+    mapped through `flat` (the AL rule of tools/bench/diag_c158_a2_3_measure.py:74-112, extracted here). record = {same_uid, by_name,
+    by_order, unmatched}. Self-test: tools/bench/selftest_c158_gates386.py."""
+    by_uid = dict((_iv(s["term_uid"]), s) for s in sim_terms)
+    neg = {}
+    for s in sim_terms:
+        if _iv(s["term_uid"]) < 0:
+            o = _iv(s["owner_uid"])
+            neg.setdefault(flat.get(o, o), []).append(s)
+    rec, pick = {"same_uid": 0, "by_name": 0, "by_order": 0, "unmatched": []}, {}
+    for q in rows5:
+        if _iv(q[0]) in by_uid:
+            rec["same_uid"] += 1
+            pick[_iv(q[0])] = by_uid[_iv(q[0])]
+    for q in rows5:
+        if _iv(q[0]) in pick:
+            continue
+        c = neg.get(_iv(q[1]), [])
+        m = [s for s in c if s["term_name"] == q[2] and bool(s["is_source"]) == bool(q[4])]
+        if m:
+            rec["by_name"] += 1
+        else:
+            m = [s for s in c if bool(s["is_source"]) == bool(q[4])]
+            rec["by_order"] += 1 if m else 0
+        if m:
+            pick[_iv(q[0])] = m[0]
+            c.remove(m[0])
+        else:
+            rec["unmatched"].append(list(q))
+    fd = lambda v: flat.get(_iv(v), _iv(v)) if v not in (None, "") else v           # noqa: E731
+    rows = [{"term_uid": _iv(q[0]), "owner_uid": _iv(q[1]), "term_name": q[2], "wire_uid": _iv(q[3] or 0), "is_source": bool(q[4]),
+             "term_class": pick[_iv(q[0])].get("term_class"), "owner_class": pick[_iv(q[0])].get("owner_class"),
+             "frame_diagram": fd(pick[_iv(q[0])].get("frame_diagram"))} for q in rows5 if _iv(q[0]) in pick]
+    return rows, rec
+
+
+def frame_tag_map(G):
+    """{(tunnel node uid, frame ordinal): frame diagram uid} of a FRAME-KEYED vigraph graph - what a tag '<tunnel>/f<k>' means on THAT
+    graph (the ordinal is the rank of the frame uid, vigraph.py:322, so it is only meaningful inside one graph). Returns a dict.
+    Self-test: tools/bench/selftest_c158_gates386.py."""
+    V, out = pure("vigraph"), {}
+    for k in G.get("frame_inner") or ():
+        n, _c, _nm, o = V.key_parts(k)
+        f = G["rows"][k].get("frame_diagram")
+        if f not in (None, ""):
+            out[(n, o)] = _iv(f)
+    return out
+
+
+def frame_src_resolve(src, fmap):
+    """One frame-keyed effective source '<key>' or '<key>@<tunnel>/f<k>+...' -> (key, frozenset((tunnel uid, frame diagram uid))): every
+    tag's ordinal resolved on its own graph (fmap = frame_tag_map(G)); an ordinal the map lacks stays '?f<k>'. Negative (simulated) tunnel
+    uids are accepted. Self-test: tools/bench/selftest_c158_gates386.py."""
+    base, tags = src, []
+    if "@" in src:
+        b, t = src.rsplit("@", 1)
+        parts = t.split("+")
+        if all("/f" in x and x.rsplit("/f", 1)[0].lstrip("-").isdigit() and x.rsplit("/f", 1)[1].isdigit() for x in parts):
+            base, tags = b, parts
+    out = []
+    for x in tags:
+        tn, o = x.rsplit("/f", 1)
+        out.append((int(tn), fmap.get((int(tn), int(o)), "?f" + o)))
+    return base, frozenset(out)
+
+
+def case_move_frames(plan, sim_end, flat):
+    """{node uid: {frame diagram uid}} - for every plan `move_in` whose dest_diagram is a frame 'new:<as>.f<k>' of a CaseStructure the SAME
+    plan creates: the frame's simulated uid (sim_end['sym']) mapped through `flat` (the run's bindings). The frame a moved node's tag must
+    name (PD386(a) condition (ii)). Self-test: tools/bench/selftest_c158_gates386.py."""
+    acts = plan.get("actions") or []
+    cases = set(a["as"] for a in acts if a.get("op") == "create" and a.get("class") == "CaseStructure" and a.get("as"))
+    sym, out = sim_end.get("sym") or {}, {}
+    for a in acts:
+        d = a.get("dest_diagram")
+        if a.get("op") != "move_in" or not isinstance(d, str) or not d.startswith("new:") or d[4:].rsplit(".f", 1)[0] not in cases:
+            continue
+        u = sym.get(d)
+        if u is None:
+            continue
+        for n in a.get("nodes") or []:
+            out.setdefault(_iv(n), set()).add(flat.get(_iv(u), _iv(u)))
+    return out
+
+
+def pb_bound_rows(cd, G, V=None):
+    """{sink: frozenset of (source POSITION key, frozenset((tunnel, frame uid)))} of a frame-keyed cdiff's rows on graph G (its `after`
+    side): names out (fp-70), tag ordinals resolved to frame uids. Two graphs in the SAME uid space compare equal iff their PB agrees.
+    Self-test: tools/bench/selftest_c158_gates386.py."""
+    V = V or pure("vigraph")
+    P, fm, out = V.pos_keys(G), frame_tag_map(G), {}
+    for y in cd["rows"]:
+        if y["after"] is None:
+            out[y["sink"]] = None
+            continue
+        s = set()
+        for x in y["after"]:
+            b, tags = frame_src_resolve(x, fm)
+            s.add((P.get(b, ("?", b)), tags))
+        out[y["sink"]] = frozenset(s)
+    return out
+
+
+def pb_check_bound(S1f, G1, Gpred, Gsimb, pred_rows, open_rows, move_frames, unlicensed=(), V=None):
+    """PB of PD386(a): pb_check(S1f, G1 = the real end, Gpred, ...) PLUS (1) the real PB == the PB of Gsimb = the sim end re-keyed by the
+    run's bindings (pb_bound_rows, frame uids) - any difference BLOCKS; (2) a pred-extra row of PB(S1, real) is RECORDED iff its only
+    difference from S1 is the frame tag: sources untagged == S1's with the SAME source terminal uids, and every tag's frame uid is a
+    plan frame (move_frames, case_move_frames) of the sink's or the source's node; every other extra / missing row BLOCKS.
+    Returns {ok, old (pb_check's dict), eq_diff, recorded, blocked, pairs_extra_left, pairs_missing, n_rows}.
+    Self-test: tools/bench/selftest_c158_gates386.py."""
+    V = V or pure("vigraph")
+    r = pb_check(S1f, G1, Gpred, pred_rows, open_rows, unlicensed, V)
+    cs = V.computation_diff_frame(S1f, Gsimb)
+    R_, S_ = pb_bound_rows(r["cd"], G1, V), pb_bound_rows(cs, Gsimb, V)
+    eq_diff = sorted(k for k in set(R_) | set(S_) if R_.get(k) != S_.get(k))
+    by, fm = dict((y["sink"], y) for y in r["cd"]["rows"]), frame_tag_map(G1)
+    tu = lambda G, k: _iv((G["rows"].get(k) or {}).get("term_uid"))                # noqa: E731
+    recorded, blocked = [], [{"sink": s, "why": "missing: a pred row the real end lacks"} for s in r["missing_sinks"]]
+    for s in r["extra_sinks"]:
+        y, why = by.get(s), None
+        if y is None or y["before"] is None or y["after"] is None:
+            why = "sink absent on one side"
+        else:
+            res = [frame_src_resolve(x, fm) for x in y["after"]]
+            nodes = set([_iv(s.split("|", 1)[0])]) | set(_iv(b.split("|", 1)[0]) for b, _t in res)
+            allowed = set().union(*[move_frames.get(n, set()) for n in nodes])
+            tags = set(t for _b, ts in res for t in ts)
+            if sorted(tu(S1f, b) for b in y["before"]) != sorted(tu(G1, b) for b, _t in res):
+                why = "source terminal uids {0} != S1's {1}".format(sorted(tu(G1, b) for b, _t in res), sorted(tu(S1f, b) for b in y["before"]))
+            elif not tags:
+                why = "untagged difference from S1"
+            elif not all(f in allowed for _tn, f in tags):
+                why = "frame tag(s) {0} not the plan's frame(s) {1} for node(s) {2}".format(sorted(tags, key=str), sorted(allowed), sorted(nodes))
+        (blocked if why else recorded).append({"sink": s, "why": why or "tag only: S1 source uids, plan frame", "after": y and y["after"]})
+    rp = set((_iv(x["sink"].split("|", 1)[0]), x["sink"].split("|")[2]) for x in recorded)
+    left = [p for p in r["pairs_extra"] if tuple(p) not in rp]
+    ok = not eq_diff and not blocked and not left and not r["pairs_missing"] and list(unlicensed or []) == []
+    return {"ok": ok, "old": r, "eq_diff": eq_diff, "recorded": recorded, "blocked": blocked, "pairs_extra_left": left,
+            "pairs_missing": r["pairs_missing"], "n_rows": [len(R_), len(S_)]}
+
+
+def pb_386(base_terms, L, real, objs, flat, plan, pred_rows, open_rows, labels, fs_pairs, renames=None, S1f=None, V=None):
+    """The whole PD386(a) PB from a run's pieces - what RingSession.gate_pb calls: L = the sim end (sim uids), real = the read-back end
+    rows, objs = the real objects, flat = run_bind(...). Builds G1 (pb_rename_rows, the sim end's loops re-keyed by the bindings), Gsimb
+    (stagexec.bind_state of L), Gpred (L as is) and returns pb_check_bound's dict + {G1, restored, unlicensed, unbound, move_frames}.
+    Self-test: tools/bench/selftest_c158_gates386.py."""
+    import copy as _copy
+    V, SX = V or pure("vigraph"), pure("stagexec")
+    Lb, unbound = SX.bind_state(L, {"obj": flat, "term": {}, "diag": {}})
+    pbr, restored, unlic = pb_rename_rows(base_terms, L["terminals"], real, renames)
+    G1 = V.build4(pbr, objs, _copy.deepcopy(Lb["loops"]), labels, fs_pairs, frame_keyed=True)
+    mf = case_move_frames(plan, L, flat)
+    r = pb_check_bound(S1f or s1_frame_graph(labels), G1, pred_end_graph(L, labels, fs_pairs), pred_end_graph(Lb, labels, fs_pairs),
+                       pred_rows, open_rows, mf, unlic, V)
+    r.update({"G1": G1, "restored": restored, "unlicensed": unlic, "unbound": sorted(unbound),
+              "move_frames": dict((n, sorted(f)) for n, f in mf.items())})
+    return r
+
+
+def wire_pairs_pos(rows, ob=None, tb=None, base_nodes=None):
+    """(Counter of (source end, sink end) pairs, {wire uid: sorted source ends} of source-only stubs) of one terminal table, ends = position
+    keys (_pos_rows, nodes mapped through ob / tb). An end on a node NOT in base_nodes (a created object) drops its index (-1) when its
+    (node, class, direction) is unique on that node: the simulator's terminal order on a created object is not LabVIEW's (kept_nodes;
+    the created shift register 31347's two faces swap index 0/1, diag_c158_a2_3_facts.md:171-172). A wire with sinks but no source pairs
+    as (None, sink). Self-test: tools/bench/selftest_c158_gates386.py."""
+    import collections as _co
+    P = _pos_rows(rows, ob, tb)
+    grp = _co.Counter((k[0], k[2], k[3]) for k in P)
+    bn = base_nodes
+    end = lambda k: (k[0], -1, k[2], k[3]) if bn is not None and k[0] not in bn and grp[(k[0], k[2], k[3])] == 1 else k   # noqa: E731
+    pairs, stubs = _co.Counter(), {}
+    for w, (a, b) in wire_ends_pos(rows, ob, tb).items():
+        if not b:
+            stubs[w] = sorted(end(x) for x in a)
+            continue
+        for x in (sorted(a) or [None]):
+            for y in sorted(b):
+                pairs[(end(x) if x is not None else None, end(y))] += 1
+    return pairs, stubs
+
+
+def term_identity_pairs(base, sim, real, bind=None, renames=None):
+    """D / TD of PD386(b): term_identity_pos's dict with d_ok / td_ok re-judged PAIR-KEYED. D: the new and the lost (source, sink) pairs
+    (wire_pairs_pos, sim owners via `bind`) of real == the sim's, as multisets, else BLOCK; source-only stubs are dropped on both sides
+    and RECORDED (`stubs` sim_only / real_only / both, by source ends). TD: an `unwired` base key whose wire in the sim end is a
+    source-only stub is RECORDED (`unwired_recorded`); moved, lost != gone, or any other unwired key BLOCKS. Adds `pairs` (counts,
+    one-sided pairs) and `d_key`. Self-test: tools/bench/selftest_c158_gates386.py."""
+    ti = term_identity_pos(base, sim, real, bind=bind, renames=renames)
+    tb, ob = _bind_maps(bind)
+    bn = set(k[0] for k in _pos_rows(base))
+    Pb, _Hb = wire_pairs_pos(base, base_nodes=bn)
+    Ps, Hs = wire_pairs_pos(sim, ob, tb, bn)
+    Pr, Hr = wire_pairs_pos(real, base_nodes=bn)
+    ns, nr, ls, lr = Ps - Pb, Pr - Pb, Pb - Ps, Pb - Pr
+    d_ok = ns == nr and ls == lr
+    hs, hr = dict((w, tuple(v)) for w, v in Hs.items()), dict((w, tuple(v)) for w, v in Hr.items())
+    vs, vr = set(hs.values()), set(hr.values())
+    stubs = {"sim_only": [{"wire": w, "sources": list(v)} for w, v in sorted(hs.items(), key=str) if v not in vr],
+             "real_only": [{"wire": w, "sources": list(v)} for w, v in sorted(hr.items(), key=str) if v not in vs],
+             "both": len(vs & vr)}
+    S = _pos_rows(sim)
+    rec = [k for k in ti["unwired"] if k in S and _iv(S[k].get("wire_uid") or 0) in Hs]
+    unw = [k for k in ti["unwired"] if k not in rec]
+    st = lambda C: sorted(map(str, C.elements()))[:12]                              # noqa: E731
+    out = dict(ti)
+    out.update({"d_ok": d_ok, "td_ok": not unw and not ti["moved"] and set(ti["lost"]) == set(ti["gone"]), "unwired": unw,
+                "unwired_recorded": rec, "stubs": stubs, "d_key": "(source, sink) position pairs; source-only stubs RECORDED (PD386(b))",
+                "pairs": {"new_real": sum(nr.values()), "new_sim": sum(ns.values()), "lost_real": sum(lr.values()), "lost_sim": sum(ls.values()),
+                          "new_only_real": st(nr - ns), "new_only_sim": st(ns - nr), "lost_only_real": st(lr - ls), "lost_only_sim": st(ls - lr)}})
+    return out
+
+
+def scratch_census(log_path, sum_json=None, key="CENSUS-ALL new uids by class (every class) "):
+    """(census {class: n}, whole-file line number, last-segment start line) from the ONE `key` line in the LAST bgrun segment of a
+    scratch log (tools/bench/diag_c148_a2_4_census.py:31-40 as a call); ValueError when there is not exactly one such line, or when
+    sum_json's census_all.new_by_class differs. Self-test: tools/bench/selftest_c158_gates386.py."""
+    lines = open(log_path, encoding="utf-8", errors="replace").read().splitlines()
+    seg0 = max([i for i, ln in enumerate(lines) if ln.startswith("BGRUN START")] or [0])
+    hit = [(i + 1, ln) for i, ln in enumerate(lines) if i >= seg0 and key in ln]
+    if len(hit) != 1:
+        raise ValueError("scratch_census: {0} '{1}' lines in the last segment of {2}".format(len(hit), key.strip(), log_path))
+    meas = json.loads(hit[0][1].split(key, 1)[1])
+    if sum_json:
+        sj = (jload(sum_json).get("census_all") or {}).get("new_by_class")
+        if sj != meas:
+            raise ValueError("scratch_census: log line {0} != {1} census_all.new_by_class {2}".format(meas, sum_json, sj))
+    return meas, hit[0][0], seg0 + 1
+
+
+def op_class_census(prev_rows, rows):
+    """Class census between two whole-VI terminal reads (no extra LabVIEW read): {terms: {term class: n new term uids}, owners: {owner
+    class: n new owner uids}, wires: n new wire uids, lost_terms, lost_owners, lost_wires}. Self-test: tools/bench/selftest_c158_gates386.py."""
+    def idx(rs):
+        t, o, w = {}, {}, set()
+        for r in rs or []:
+            t[_iv(r["term_uid"])] = r.get("term_class")
+            o[_iv(r["owner_uid"])] = r.get("owner_class")
+            if _on(_iv(r.get("wire_uid") or 0)):
+                w.add(_iv(r["wire_uid"]))
+        return t, o, w
+    (ta, oa, wa), (tb_, ob_, wb) = idx(prev_rows), idx(rows)
+    cnt = lambda d, ks: dict(sorted(__import__("collections").Counter(str(d[k]) for k in ks).items()))   # noqa: E731
+    return {"terms": cnt(tb_, set(tb_) - set(ta)), "owners": cnt(ob_, set(ob_) - set(oa)), "wires": len(wb - wa),
+            "lost_terms": len(set(ta) - set(tb_)), "lost_owners": len(set(oa) - set(ob_)), "lost_wires": len(wa - wb)}
+
+
+def op_class_census_install(rs, ops=(16, 17)):
+    """PRINTING ONLY (PD386(c), the PD385(b) per-op census owed): wrap the ring backend's read (sink_gate_backend_class) so the whole-VI
+    terminal reads taken after ops k-1 and k (k in `ops`; the op = len(rs.x.report) + 1 at read time) are KEPT - no extra read, no act
+    change. op_class_census_print prints them. Returns the holder dict. Self-test: tools/bench/selftest_c158_gates386.py."""
+    cls = sink_gate_backend_class()
+    want = set(ops) | set(k - 1 for k in ops)
+    H = {"rs": rs, "ops": tuple(ops), "want": want, "reads": {}}
+    if not getattr(cls, "_opc_base", None):
+        cls._opc_base = cls.read
+
+        def read(self):
+            rows = cls._opc_base(self)
+            h = getattr(cls, "_opc", None)
+            x = h and getattr(h["rs"], "x", None)
+            if x is not None:
+                k = len(getattr(x, "report", None) or []) + 1
+                if k in h["want"]:
+                    h["reads"][k] = list(rows or [])
+            return rows
+        cls.read = read
+    cls._opc = H
+    return H
+
+
+def op_class_census_print(h):
+    """Print one `OPCENSUS op <k>` line per op of an op_class_census_install holder (or why it was not measured). Returns the dict."""
+    out = {}
+    for k in h["ops"]:
+        a, b = h["reads"].get(k - 1), h["reads"].get(k)
+        if a is None or b is None:
+            print("  OPCENSUS op {0} not measured (whole read after op {1}: {2}, after op {0}: {3}; dry run or op not reached)".format(
+                k, k - 1, a is not None, b is not None), flush=True)
+            continue
+        out[k] = op_class_census(a, b)
+        print("  OPCENSUS op {0} (terminal reads after op {1} -> op {0}, no extra read) {2}".format(k, k - 1, json.dumps(out[k], sort_keys=True)),
+              flush=True)
+    return out
+
+
+def retry_card_arg(argv, script):
+    """PRINTING ONLY: the `--retry-card <path>` / `RETRY_CARD=<path>` judgement card in a recipe's own argv (stage_prerun.RETRY_CARD_RE,
+    the form the launch gate reads) -> {path, id, retry_of, matches: retry_of == stage_prerun.stage_key(script)}; {'path': None} when the
+    card rides on the bgrun line instead (bgrun / the launch gate read it there). Never refuses. Self-test: selftest_c158_gates386.py."""
+    SP = pure("stage_prerun")
+    m = SP.RETRY_CARD_RE.search(" ".join(argv or []))
+    if not m:
+        return {"path": None, "note": "not in this process's argv (a bgrun --retry-card is read by the launch gate and bgrun)"}
+    p = m.group(1) if os.path.isabs(m.group(1)) else os.path.join(ROOT, m.group(1))
+    try:
+        c = jload(p)
+    except (OSError, ValueError) as e:
+        return {"path": m.group(1), "error": str(e)[:160]}
+    return {"path": m.group(1), "id": c.get("id"), "retry_of": c.get("retry_of"), "matches": c.get("retry_of") == SP.stage_key(script)}
+
+
+# ---------------------------------------------------------------------------------------------- SINK GATES (PD355(b), PD366(e))
+def sink_gate_spec(e, actions, base, sim_end):
+    """One sink-gate census row (prep_*_session.json `sink_gate_census`, needs_sink_gate) -> its declared sink gate spec
+    {n, row, gate, acts, terms, sink, census_sink, src_name}: acts = the plan's wire row, terms = its base dst term(s), sink =
+    (owner, name) from the base graph, src_name = the source terminal's name (base for a numeric source, the simulated end for a
+    symbolic 'new:' source). As stage_d1_ring_p5s01a.py:56-75 (_sg_spec). Self-test: tools/bench/selftest_t7_ring.py."""
+    import re as _re
+    acts = [a for a in actions if a.get("id") == e["id"] and a["op"] == "wire" and isinstance(a.get("dst"), dict)]   # a symbolic dst is a str
+    terms = sorted(set(a["dst"]["term_uid"] for a in acts))
+    sinks = sorted(set((r["owner_uid"], r["term_name"]) for r in base["terminals"] if r["term_uid"] in terms))
+    src = acts[0]["src"] if acts else None
+    if isinstance(src, dict):
+        sname = sorted(set(r["term_name"] for r in base["terminals"] if r["term_uid"] == src["term_uid"]))
+    elif isinstance(src, str) and src.startswith("new:"):
+        try:
+            sname = [pure("stagesim").resolve_addr(sim_end, src, True)["term_name"]]
+        except Exception as ex:                                                    # noqa: BLE001 - the SG gate reports it
+            sname = ["UNRESOLVED: {0!r}".format(ex)]
+    else:
+        sname = []
+    sink = list(sinks[0]) if len(sinks) == 1 else None                             # the sink key exactly as the run reports it
+    slug = _re.sub(r"[^a-z0-9]+", "-", str(sink[1] if sink else "").lower()).strip("-")
+    return {"n": e["n"], "row": e["id"], "gate": "SG-{0}-{1}".format(e["id"], slug), "acts": acts, "terms": terms, "sink": sink,
+            "census_sink": list(e["sink"]), "src_name": sname}
+
+
+def sink_gate_read(e, d, x, rows, n_actions):
+    """(ok, detail) for the deferred op error on sink d['sink'] (stage_d1_ring_p5s01a.py:90-117 sg_read, unchanged): (a) the indicator
+    terminal exists with exactly ONE wire, (b) that wire is the net of the plan source (through x.bind; a symbolic source resolved
+    on the simulated end x.step(n_actions)), (c) that net has exactly ONE source = that terminal, (d) `rows` are the executor's
+    whole-VI read after its LAST op. x = the stagexec.Executor, rows = the backend's last read. Self-test: selftest_t7_ring.py."""
+    a = d["acts"][0]
+    tb, ob = (lambda t: x.bind["term"].get(t, t)), (lambda u: x.bind["obj"].get(u, u))
+    if isinstance(a["src"], dict):
+        ts, so = tb(a["src"]["term_uid"]), ob(a["src"]["uid"])
+    else:
+        sr = pure("stagesim").resolve_addr(x.step(n_actions)["state"], a["src"], True)
+        ts, so = tb(sr["term_uid"]), ob(sr["owner_uid"])
+    td = tb(a["dst"]["term_uid"])
+    rows = rows or []
+    d_ok = bool(rows) and bool(x.reads_real) and x.reads_real[-1] == len(x.ops)
+    ind = sorted(set((r["term_uid"], r["owner_uid"], r["term_name"], r["wire_uid"]) for r in rows if r["term_uid"] == td))
+    src = sorted(set((r["term_uid"], r["owner_uid"], r["term_name"], r["wire_uid"]) for r in rows if r["term_uid"] == ts))
+    w = ind[0][3] if len(ind) == 1 else None
+    a_ok = len(ind) == 1 and bool(w) and [ind[0][1], ind[0][2]] == list(e.get("sink") or [])
+    b_ok = (bool(w) and len(src) == 1 and src[0][3] == w and src[0][1] == so and [src[0][2]] == d["src_name"]
+            and list(e.get("source") or []) == [so, d["src_name"][0]])
+    srcs = sorted(set(r["term_uid"] for r in rows if w and r["wire_uid"] == w and r["is_source"]))
+    c_ok = srcs == [ts]
+    return a_ok and b_ok and c_ok and d_ok, ("(a) indicator t{0} rows {1} wire {2}: {3}; (b) source t{4} #{5} rows {6} wire(s) {7} entry source {8}: {9}; "
+                                             "(c) sources on wire {2} {10} == [t{4}]: {11}; (d) rows {12} = read after op {13} of {14}: {15}").format(
+        td, ind, w, a_ok, ts, so, src, sorted(set(y[3] for y in src)), e.get("source"), b_ok, srcs, c_ok,
+        len(rows), (x.reads_real or [None])[-1], len(x.ops), d_ok)
+
+
+_SGB = {}
+
+
+def sink_gate_backend_class():
+    """stagexec.LVBackend subclass that KEEPS its last whole-VI read in `last_terms` (no extra read; LVBackend.read is called exactly
+    as before) - the recipes' SGBackend (stage_d1_ring_p5s01a.py:82-87). Built once, lazily (stagexec is heavy). Returns the class."""
+    if "c" not in _SGB:
+        SX = pure("stagexec")
+
+        class SGBackend(SX.LVBackend):
+            def read(self):
+                self.last_terms = SX.LVBackend.read(self)
+                return self.last_terms
+        _SGB["c"] = SGBackend
+    return _SGB["c"]
+
+
+# ---------------------------------------------------------------------------------------------- ONE RING SESSION (the recipe body)
+class SimCensus(dict):
+    """card 159-a4-1 (PD387(e)): a {uid: class} census snapshot taken from a stagesim STATE, not from LabVIEW; Stage.census_gate
+    compares two of them even in a dry run. Self-test: tools/bench/selftest_c159_a4_1.py."""
+    source = "stagesim"
+
+
+def sim_census_snapshot(state, classes=None):
+    """card 159-a4-1 (PD387(e)): the SimCensus {uid: class} of one stagesim state - objs by class, terminals by term_class, every
+    wire uid on a terminal row as 'Wire', every diagram uid as 'Diagram' - kept to `classes` when given (as RingSession.census_snapshot
+    keeps the pred's classes). Returns a SimCensus. Self-test: tools/bench/selftest_c159_a4_1.py."""
+    d = SimCensus()
+    for o in state.get("objs") or []:
+        d[int(o["uid"])] = str(o["class"])
+    for r in state.get("terminals") or []:
+        d[int(r["term_uid"])] = str(r.get("term_class") or "Terminal")
+        if r.get("wire_uid"):
+            d[int(r["wire_uid"])] = "Wire"
+    for k in state.get("diagrams") or {}:
+        d.setdefault(int(k), "Diagram")
+    if classes is not None:
+        keep = set(classes)
+        for u in [u for u, c in d.items() if c not in keep]:
+            del d[u]
+    return d
+
+
+def census_unpredicted_reason(pred):
+    """card 159-a4-1 (PD387(e), docs/violation-decisions.md device-failed 2026-10-10 03:2x): None when a pred's census block covers
+    every op of its plan, else why it is UNPREDICTED - an empty census, census_overall UNPREDICTED or absent, or any non-measured
+    verdict with rows left in census_unpredicted. A MEASURED-* census (one whole-run measurement) covers every op. Returns None or a
+    str. Self-test: tools/bench/selftest_c159_a4_1.py."""
+    pred = pred or {}
+    un = list(pred.get("census_unpredicted") or [])
+    ov = str(pred.get("census_overall") or "")
+    if not pred.get("census"):
+        return "census block empty"
+    if ov.startswith("MEASURED"):
+        return None
+    if not ov:
+        return "census_overall absent - coverage of the plan's ops not stated"
+    if ov == "UNPREDICTED" or un:
+        return "census_overall {0}, {1} plan row(s) not predicted {2}".format(ov, len(un), un[:6])
+    return None if ov == "PASS" else "census_overall {0}".format(ov)
+
+
+class RingSession(object):
+    """The inputs of one ring stage session and the gates its body runs - stage_d1_ring_p5s01a.py:31-191 as calls. A recipe builds
+    ONE RingSession at module level from its four input files and calls, in body(s): gate_l0 -> start/discard_work -> handles ->
+    census_snapshot -> executor -> run -> gates_ng_fr_d -> gate_cen2 (with a second census_snapshot) -> gate_td -> s.es -> gate_pb
+    -> finish. The two census_snapshot CALL SITES stay in the recipe source on purpose: stage_prerun's X10 counts whole-VI reads from
+    the recipe source by call name (stage_prerun.py:2191 X10_SRC_READS). Self-test: tools/bench/selftest_t7_ring.py."""
+
+    def __init__(self, plan, pred, licence, census):
+        SX = pure("stagexec")
+        self.plan_path, self.pred_path, self.licence_path, self.census_path = plan, pred, licence, census
+        self.P = jload(plan)
+        self.BASE = jload(ROOT, self.P["finalized"]["base"]["path"])
+        self.A = self.P["actions"]
+        self.PRED = jload(pred)
+        self.REN = licence_renames(jload(licence))                                 # PD365(d): only echoed since PD366(f)
+        self.NC = sum(1 for a in self.A if a["op"] == "create" and a.get("as"))   # created objects, from the plan (FR gate)
+        self.DRY = bool(getattr(g.report_all, "_dry", False))
+        self.LAB = pure("jev_candidates").node_labels_default()
+        self.SRC = tuple(self.PRED["census"])
+        ops = SX.compile_plan(self.P)
+        self.BIND = set(k for k, o in enumerate(ops, 1) if o["kind"] in SX.BIND_KINDS)   # PD265(c): every op that creates/binds
+        self.CHECKPOINTS = SX.checkpoint_ops(ops)   # card 157-a1-1 (PD381(d)): {0, last} | BIND | every move_in op
+        self.FSPAIRS = self.BASE.get("fs_tunnel_pairs", self.BASE.get("fs_pairs"))
+        self.SG_CENSUS = [e for e in jload(census).get("sink_gate_census") or [] if e.get("needs_sink_gate")]   # PD366(e)
+        self.SIM_END = jload(ROOT, self.P["finalized"]["step_files"][-1]["path"])["state"]
+        self.SGS = [sink_gate_spec(e, self.A, self.BASE, self.SIM_END) for e in self.SG_CENSUS]
+        self.SINK_GATES = [{"gate": d["gate"], "sink": d["sink"]} for d in self.SGS]
+        self.SINK_FNS = dict((d["gate"], (lambda e, _d=d: self.sink_read(e, _d))) for d in self.SGS)
+        self.x = self.be = self.L = self.ti = None
+        self.made, self.on = [], []
+
+    def stem(self):
+        """The plan file's name without .json (gate labels name it). Returns a str."""
+        return os.path.splitext(os.path.basename(self.plan_path))[0]
+
+    def sink_read(self, e, d):
+        """(ok, detail) of sink_gate_read on this session's executor and last read; (True, 'dry') in a dry run."""
+        if self.DRY:
+            return True, "dry"
+        return sink_gate_read(e, d, self.x, getattr(self.be, "last_terms", None), len(self.A))
+
+    def census_snapshot(self, s):
+        """{uid: class} of s.census_snapshot() kept to the pred's census classes (the recipes' `snap`). ONE whole-VI read."""
+        return dict((u, c) for u, c in s.census_snapshot().items() if c in self.SRC)
+
+    def handles(self):
+        """LabVIEW's handle count now (bench_prep.labview_handles); None in a dry run is the caller's business."""
+        return mod("bench_prep").labview_handles()
+
+    def gate_l0(self, s):
+        """L0 (FATAL): plan final + open_rows_match + plan_in == <plan>_in; base graph md5 == pred == file; bed md5 == pred; plan end
+        cdiff == pred; pred keyed to this plan's md5."""
+        P, PRED, fz = self.P, self.PRED, self.P["finalized"]
+        st = self.stem()
+        s.gate("L0 plan FINAL, open_rows_match, plan_in = {0}_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan".format(st),
+               P.get("final") is True and fz.get("open_rows_match") is True and os.path.splitext(fz["plan_in"]["path"])[0].endswith(st + "_in")
+               and fz["base"]["md5"] == PRED["graph"]["md5"] == md5(os.path.join(ROOT, fz["base"]["path"])) and self.BASE["md5"] == PRED["bed_md5"]
+               and sorted(fz["end_cdiff_rows"]) == PRED["cdiff_rows"] and PRED["plan"]["md5"] == md5(self.plan_path),
+               (md5(self.plan_path), fz["base"], self.BASE["md5"]), fatal=True)
+
+    def executor(self, s):
+        """SG (FATAL: one declared sink gate per census row) -> the backend (stagexec.DryPlanBE in a dry run, else the SGBackend
+        with the sink gates) -> stagexec.Executor (checkpoints, name gate) -> L1 (FATAL: actions compile into the pred's op kinds,
+        each action once). Returns the Executor (also self.x; the backend is self.be)."""
+        SX = pure("stagexec")
+        sg = SX.check_sink_gates(self.SINK_GATES, self.SINK_FNS)                   # card 147-a2-1: the same check LVBackend makes
+        SGS = self.SGS
+        s.gate("SG one declared sink gate per census row ({0} rows of {1}): {2}; per row: sink term(s), plan action(s), source, source name {3}".format(
+            len(self.SG_CENSUS), os.path.basename(self.census_path), sg, [(d["row"], d["terms"], [a["id"] for a in d["acts"]], [a["src"] for a in d["acts"]], d["src_name"]) for d in SGS]),
+               len(sg) == len(self.SG_CENSUS) == len(SGS) and len(set(d["gate"] for d in SGS)) == len(SGS)
+               and all(sg[k]["sink"] == d["sink"] == d["census_sink"] and len(d["terms"]) == 1 and len(d["acts"]) == 1 and len(d["src_name"]) == 1
+                       and not str(d["src_name"][0]).startswith("UNRESOLVED") for k, d in enumerate(SGS)), sg, fatal=True)
+        self.be = SX.DryPlanBE(s, self.P, self.plan_path, self.BASE) if self.DRY else sink_gate_backend_class()(
+            s, self.FSPAIRS, sink_gates=self.SINK_GATES, gates=self.SINK_FNS, mem_stop_mb=SX.MEM_STOP_MB)
+        self.x = SX.Executor(self.plan_path, self.be, log=lambda m: print(m, flush=True), checkpoints=self.CHECKPOINTS, name_gate=True)
+        x, A = self.x, self.A
+        s.gate("L1 the {0} actions compile into {1} real ops == pred kinds, each action once; checkpoints {2}".format(len(A), len(x.ops), self.CHECKPOINTS),
+               [o["kind"] for o in x.ops] == self.PRED["ops"] and sorted(n for o in x.ops for n in o["acts"]) == list(range(1, len(A) + 1)),
+               [o["kind"] for o in x.ops], fatal=True)
+        return x
+
+    def run(self, s):
+        """Run the executor: E1 (every checkpoint's real graph == its simulated step). On stagexec.ExecStop: save ops 1..k-1 for a
+        same-cycle resume (PD329(b)), write the stop report, return None. Returns the real end rows otherwise."""
+        SX, x = pure("stagexec"), self.x
+        try:
+            real = x.run()
+            s.gate("E1 every checkpoint's real graph == its simulated step ({0} ops)".format(len(x.ops)), True)
+        except SX.ExecStop as e:
+            try:
+                SX.save_for_resume(s, x, e)
+            except Exception as ee:                                                # noqa: BLE001 - the stop report must still be written
+                s.fact("RESUME save failed: {0!r}".format(ee))
+            SX.report_stop(s, x, self.be, e)
+            return None
+        s.R["stagexec"] = x.report
+        return real
+
+    def gates_ng_fr_d(self, s, real):
+        """NG (crossing ops' new tunnel names == the simulator's), FR (FATAL: created objects on the sim end's frames; real frames ==
+        the sim end's), D (new / lost wires == the sim's, position keys via term_identity_gates). Returns the term_identity dict."""
+        x, A, L = self.x, self.A, None
+        frames = lambda rows: set(int(r["frame_diagram"] or 0) for r in rows)      # noqa: E731
+        s.gate("NG every crossing op's NEW tunnel names == the simulator's (stagexec.tunnel_name_check, per op, from the step files): {0} op(s) {1}".format(
+            len(x.name_checks), [c["k"] for c in x.name_checks]), all(c["ok"] for c in x.name_checks), x.name_checks[:6])
+        L = self.L = x.step(len(A))["state"]
+        rb = lambda sym: x.bind["obj"].get(L["sym"][sym], x.bind["diag"].get(L["sym"][sym], L["sym"][sym]))   # noqa: E731
+        made = self.made = [rb("new:" + a["as"]) for a in A if a["op"] == "create" and a.get("as")]
+        on = self.on = sorted(set(int(r["frame_diagram"] or 0) for r in real if r["owner_uid"] in made))
+        sf = set(int(x.bind["diag"].get(f, f)) for f in frames(L["terminals"]))   # the simulated end's frames, through the diagram binding
+        NC = self.NC
+        s.gate("FR the {0} created objects sit on {1} frame(s) of the simulated end; real frames == the sim end's".format(len(made), on),
+               len(made) == NC and (on or NC == 0) and set(on) <= sf and frames(real) == sf,
+               {"on": on, "nc": NC, "extra": sorted(frames(real) - sf), "missing": sorted(sf - frames(real))}, fatal=True)
+        # card 158-a3-1 (PD386(b)): D is judged PAIR-KEYED (term_identity_pairs); source-only stubs are RECORDED, not compared
+        ti = self.ti = term_identity_pairs(self.BASE["terminals"], L["terminals"], real, renames=self.REN, bind={"term": x.bind["term"], "obj": x.bind["obj"]})
+        pz = ti["pairs"]
+        s.gate("D new (source, sink) pairs {0} == sim's {1}; lost {2} == sim's {3} (position pairs, stagekit.term_identity_pairs PD386(b)); source-only stubs RECORDED sim-only {4} real-only {5}; deleted uids re-used: noted {6}".format(
+            pz["new_real"], pz["new_sim"], pz["lost_real"], pz["lost_sim"], [d["wire"] for d in ti["stubs"]["sim_only"]], [d["wire"] for d in ti["stubs"]["real_only"]],
+            [n["wire"] for n in ti["reuse_noted"]]), ti["d_ok"], {"pairs": pz, "wires_new": ti["new"], "wires_lost": ti["lost_w"][:20], "reuse_noted": ti["reuse_noted"][:6]})
+        for d in ti["stubs"]["sim_only"] + ti["stubs"]["real_only"]:
+            s.fact("RECORD D source-only stub (no sink, carries nothing; PD386(b)) wire {0} sources {1} - {2} only".format(
+                d["wire"], d["sources"], "sim" if d in ti["stubs"]["sim_only"] else "real"))
+        return ti
+
+    def gate_cen2(self, s, c0, c1):
+        """CEN2: the new-object census between snapshots c0 and c1 == the pred's census. Returns s.census_gate's delta.
+        card 159-a4-1 (PD387(e)): in a DRY run c0 / c1 are the SIMULATED census of the plan's step_00 and of its simulated end
+        (sim_census_snapshot, the pred's classes), so CEN2 is computed, not stubbed; a census that does not cover every op of the
+        plan (census_unpredicted_reason) is UNPREDICTED, never a PASS."""
+        label = "CEN2 new-object census (classes of the pred) == {0} census".format(os.path.basename(self.pred_path))
+        if self.DRY:
+            c0 = sim_census_snapshot(jload(ROOT, self.P["finalized"]["step_files"][0]["path"])["state"], self.SRC)
+            c1 = sim_census_snapshot(self.SIM_END, self.SRC)
+        why = census_unpredicted_reason(self.PRED)
+        if why:
+            return s.census_gate(label, c0, c1, self.PRED["census"], unpredicted=why)
+        return s.census_gate(label, c0, c1, self.PRED["census"])
+
+    def gate_td(self, s, real):
+        """TD: every base terminal the sim keeps wired is still wired; identities lost == the plan's deletes (position key). Records
+        s.R['term_identity'] and s.R['real_end_rows']."""
+        ti = self.ti
+        s.gate("TD every base terminal the sim keeps wired is still wired; identities lost == the plan's deletes (key {0}, stagekit.term_identity_gates); renames {1}, unlicensed {2}".format(
+            ti.get("td_key", "uid/owner/name"), len(ti.get("renames") or []), ti.get("unlicensed_renames")),
+               ti["td_ok"], {"unwired": ti["unwired"][:20], "lost": ti["lost"][:20], "plan_deletes": ti["gone"][:20], "recycled_uids": ti["recycled"][:20],
+                             "raw_lost": ti["raw_lost"][:20], "renames": (ti.get("renames") or [])[:10], "unlicensed_renames": ti.get("unlicensed_renames"),
+                             "unwired_recorded": ti.get("unwired_recorded")})
+        for k in ti.get("unwired_recorded") or []:                                 # card 158-a3-1 (PD386(b))
+            s.fact("RECORD TD base key {0} unwired in real: its sim-end wire is a source-only stub (no sink; PD386(b))".format(k))
+        s.R["term_identity"] = ti
+        s.R["real_end_rows"] = [[r["term_uid"], r.get("owner_uid"), r.get("term_name"), r.get("wire_uid"), bool(r.get("is_source"))] for r in real]   # review c141-2 s4.2
+
+    def gate_pb(self, s, real):
+        """PB (FATAL, before save): pb_check(S1, real end) - by POSITION (fp-70). The real end's rows get the sim end's names on kept
+        base nodes first (pb_rename_rows, PD366(e)); objects = the backend's last read. Returns the cdiff sink list."""
+        # card 158-a3-1 (PD386(a)): pb_386 - real PB == the sim end's PB re-keyed by the run's bindings (frame uids, not ordinals); a
+        # pred-extra row that differs from S1 only by a plan-frame tag with S1's source terminal uids is RECORDED; anything else BLOCKS
+        L, be = self.L, self.be
+        r = pb_386(self.BASE["terminals"], L, real, getattr(be, "last_objs", None) or be.st["objs"], run_bind(bind=self.x.bind), self.P,
+                   self.PRED["cdiff_rows"], self.P["open_rows"], self.LAB, self.FSPAIRS, self.REN)
+        o = r["old"]
+        for x in r["recorded"]:
+            s.fact("RECORD PB {0}: {1} (PD386(a)) - after {2}".format(x["sink"], x["why"], x["after"]))
+        s.gate("PB frame-keyed cdiff(S1, real end) by POSITION (owner, index, class) == the sim end's re-keyed by the run's bindings ({0} rows) and == the pred's {1} rows ({2} slots) + {3} RECORDED tag-only row(s), the plan's {4} open (node, term) pairs; no unlicensed rename (FATAL, before save)".format(
+            r["n_rows"], o["pred_rows"], o["slots_want"], len(r["recorded"]), len(self.P["open_rows"])), r["ok"],
+               {"eq_diff": r["eq_diff"][:6], "blocked": r["blocked"][:6], "pairs_extra_left": r["pairs_extra_left"], "pairs_missing": r["pairs_missing"],
+                "recorded": [x["sink"] for x in r["recorded"]], "move_frames": r["move_frames"], "restored": r["restored"], "unlicensed": r["unlicensed"]}, fatal=True)
+        return o["rows"]
+
+    def finish(self, s, h0, rk, dc, key, level, save=True):
+        """PH / HB (handles open -> save <= +700, PD236(b)), the rule-6 GUI save (broken by design), PS (saved, md5 differs, input
+        unchanged), the work copy kept, and s.R[key] = {final, md5, cdiff_rows, handles, census_delta, frames, errorlist totals,
+        level}; s.dump(). Returns the saved md5 (None when not saved)."""
+        h1 = None if self.DRY else self.handles()
+        s.fact("PH handles: post-open {0} -> before-save {1}".format(h0, h1))
+        s.gate("HB open->save handle growth <= +700 (PD236(b) band; refs balance is H5)", self.DRY or (h1 is not None and h0 is not None and h1 - h0 <= 700), (h0, h1))
+        m = s.save(broken_ok=True) if save else None
+        if save:
+            s.gate("PS artefact saved, md5 differs from the input; input unchanged", m and m != s.input_md5 and md5(s.input_vi) == s.input_md5, m)
+        if m and m != s.input_md5 and s.work in s.scratches:
+            s.scratches.remove(s.work)
+        el = self.PRED["errorlist"]                                                 # in-between file: checked False, no EL file written
+        s.R[key] = {"final": s.work if m else None, "md5": m, "cdiff_rows": rk, "handles": [h0, h1], "census_delta": dc, "frames": self.on,
+                    "errorlist_predicted_total": el["predicted_total"], "errorlist_alternative_total": el["alternative_total"], "level": level}
+        s.dump()
+        return m
+
+
+# ---------------------------------------------------------------------------------------------- THE SCRATCH RUN (its _scratch.py pair)
+def pred_x10(pred_path, plan_path):
+    """The X10 prediction of a plan: its pred file's memory_pred.peak_mb, ONLY when pred.plan.md5 == md5(plan) (the scratch
+    recipes' x10()). Returns a float or None. Self-test: tools/bench/selftest_t7_ring.py."""
+    try:
+        pr = jload(pred_path)
+        if (pr.get("plan") or {}).get("md5") != md5(plan_path):
+            return None
+        v = (pr.get("memory_pred") or {}).get("peak_mb")
+        return float(v) if v is not None else None
+    except (OSError, ValueError):
+        return None
+
+
+_CENSUS_ALL = {"snaps": [], "on": False}
+
+
+def census_all_install(stage_cls=None):
+    """Wrap Stage.census_snapshot / census_gate (once) so every snapshot is kept and every census gate also prints the CENSUS-ALL
+    lines (net delta / new uids by class / lost uids, all classes) and stores s.R['census_all'] - the scratch recipes' snap_keep /
+    cg_print. Returns the dict of kept snapshots. Self-test: tools/bench/selftest_t7_ring.py."""
+    cls = stage_cls or Stage
+    if getattr(cls, "_census_all", False):
+        return _CENSUS_ALL
+    _snap, _cg = cls.census_snapshot, cls.census_gate
+
+    def snap_keep(self, target=None):
+        d = _snap(self, target)
+        _CENSUS_ALL["snaps"].append(dict(d))
+        return d
+
+    def cg_print(self, label, before, after, declared, **kw):
+        got = _cg(self, label, before, after, declared, **kw)                       # card 159-a4-1: unpredicted= passes through
+        if isinstance(before, dict) and isinstance(after, dict) and len(_CENSUS_ALL["snaps"]) >= 2:
+            b, a = _CENSUS_ALL["snaps"][0], _CENSUS_ALL["snaps"][-1]
+            cnt = lambda d: dict((c, sum(1 for v in d.values() if v == c)) for c in set(d.values()))   # noqa: E731
+            cb, ca = cnt(b), cnt(a)
+            delta = dict((c, ca.get(c, 0) - cb.get(c, 0)) for c in sorted(set(cb) | set(ca)) if ca.get(c, 0) != cb.get(c, 0))
+            nb = {}
+            for u in set(a) - set(b):
+                nb[a[u]] = nb.get(a[u], 0) + 1
+            print("  CENSUS-ALL net delta (every class) {0}".format(json.dumps(delta, sort_keys=True)), flush=True)
+            print("  CENSUS-ALL new uids by class (every class) {0}".format(json.dumps(nb, sort_keys=True)), flush=True)
+            print("  CENSUS-ALL lost uids {0}".format(len(set(b) - set(a))), flush=True)
+            self.R["census_all"] = {"net_delta": delta, "new_by_class": nb, "lost": len(set(b) - set(a))}
+        return got
+    cls.census_snapshot, cls.census_gate, cls._census_all = snap_keep, cg_print, True
+    return _CENSUS_ALL
+
+
+EL_OCR_ALIASES = (("vl", "vi"), ("v", "y"))                                         # == errorlist_check.OCR_ALIASES
+EL_TOTAL_TOL = 3                                                                    # PD354(a): RETURN when |total diff| > 3
+
+
+def el_norm_ocr(s):
+    """An Error List text -> lower-case alphanumerics with the OCR aliases applied (== errorlist_check.norm). Returns a str."""
+    import re as _re
+    k = _re.sub(r"[^a-z0-9]", "", (s or "").lower())
+    for a, b in EL_OCR_ALIASES:
+        k = k.replace(a, b)
+    return k
+
+
+def el_class(it):
+    """One Error List item {raw, detail} -> its class: elrule.item_class's local / cond / sr, else input, else
+    'other:<el_norm_ocr(raw)>' (the scratch recipes' elcls). Self-test: tools/bench/selftest_t7_ring.py."""
+    c = pure("elrule").item_class("{0} {1}".format(it.get("raw", ""), it.get("detail", "")))
+    if c:
+        return c
+    k = el_norm_ocr(it.get("raw"))
+    if "unwiredorbadterminal" in k or ("requiredinput" in k and "notwired" in k):
+        return "input"
+    return "other:" + k
+
+
+def el_advisory(items, pred_path, plan_path, pred=None):
+    """(rc, report) for one Error List read (its items) against the pred's errorlist.per_class (PD354(a), ADVISORY): rc 1 only for
+    a class in neither the start read nor the prediction, or |total diff| > EL_TOTAL_TOL; rc 2 when the pred (read from pred_path
+    when `pred` is None) is not keyed to plan_path's md5 or has no per_class block; else 0 (the difference is recorded).
+    Self-test: el_advisory_selftest / tools/bench/selftest_t7_ring.py."""
+    import collections
+    pr = pred if pred is not None else jload(pred_path)
+    el = pr.get("errorlist") or {}
+    pc = el.get("per_class") or {}
+    if pred is None and (pr.get("plan") or {}).get("md5") != md5(plan_path):
+        return 2, {"why": "pred not keyed to plan md5"}
+    if not pc.get("predicted"):
+        return 2, {"why": "pred has no errorlist.per_class"}
+    start, want = pc["start_read"]["classes"], pc["predicted"]
+    got = collections.Counter(el_class(x) for x in items or [])
+    diff = dict((c, got.get(c, 0) - want.get(c, 0)) for c in sorted(set(got) | set(want)) if got.get(c, 0) != want.get(c, 0))
+    unseen = sorted(c for c in got if c not in start and c not in want)
+    td = len(items or []) - int(el["predicted_total"])
+    rc = 1 if (unseen or abs(td) > EL_TOTAL_TOL) else 0
+    return rc, {"read_total": len(items or []), "pred_total": el["predicted_total"], "total_diff": td, "per_class_diff": diff, "unseen": unseen,
+                "verdict": "RETURN" if rc else "RECORDED"}
+
+
+def el_advisory_print(rc, rep):
+    """Print the one EL-ADVISORY line of an el_advisory result."""
+    print("EL-ADVISORY total read {0} pred {1} diff {2:+}; per-class diff (read - pred) {3}; unseen classes {4}; verdict {5} rc {6}".format(
+        rep.get("read_total"), rep.get("pred_total"), rep.get("total_diff", 0), json.dumps(rep.get("per_class_diff"), sort_keys=True),
+        rep.get("unseen"), rep.get("verdict", rep.get("why")), rc), flush=True)
+
+
+def el_advisory_selftest(pred_path, plan_path):
+    """Four synthetic Error List reads built from the pred's predicted per-class counts (offline, the scratch recipes'
+    el_selftest): unseen class -> 1; total +4 -> 1; total +2 known -> 0; the prediction itself -> 0. Prints the RESULT line and
+    returns 0 / 1."""
+    pr = jload(pred_path)
+    want = pr["errorlist"]["per_class"]["predicted"]
+    txt = {"local": "Local Variable: This variable is not connected to anything.", "sr": "Shift Register: unwired from inside the loop",
+           "cond": "While Loop: Conditional terminal is not wired", "input": "Index Array 'Index Array': Contains unwired or bad terminal"}
+    mk = lambda c: {"raw": txt[c] if c in txt else c.split(":", 1)[1], "detail": ""}   # noqa: E731
+    base = [mk(c) for c, n in sorted(want.items()) for _ in range(n)]
+    rt = all(el_class(mk(c)) == c for c in want)
+    known = sorted(c for c in want if c.startswith("other:"))[0]
+    cases = [("A unseen class (+1 'Feedback Node: Initializer terminal is not wired')", base + [{"raw": "Feedback Node: Initializer terminal is not wired", "detail": ""}], 1),
+             ("B total +4 of a known class ({0})".format(known), base + [mk(known)] * 4, 1),
+             ("C total +2 of a known class ({0})".format(known), base + [mk(known)] * 2, 0),
+             ("D the prediction itself", base, 0)]
+    ok = rt
+    print("EL-SELFTEST synthetic classes round-trip through elcls: {0} ({1} classes, {2} items)".format(rt, len(want), len(base)), flush=True)
+    for name, items, exp in cases:
+        rc, rep = el_advisory(items, pred_path, plan_path, pr)
+        el_advisory_print(rc, rep)
+        print("EL-SELFTEST case {0}: rc {1} expected {2} -> {3}".format(name, rc, exp, "PASS" if rc == exp else "FAIL"), flush=True)
+        ok = ok and rc == exp
+    print("RESULT " + json.dumps({"schema": "result-line/1", "status": "PASS" if ok else "FAIL", "gates": {"pass": 5 if ok else 0, "fail": 0 if ok else 1},
+                                  "first_fail": None if ok else "EL-SELFTEST", "artefacts": []}), flush=True)
+    return 0 if ok else 1
+
+
+def scratch_offline_modes(argv, pred_path, plan_path):
+    """The scratch recipes' two OFFLINE modes, before any K.Stage: `--el-advisory-selftest` -> el_advisory_selftest's rc;
+    `--el-advisory <read json>` -> EL-ADVISORY of that read's items, its rc. Returns None when neither flag is given."""
+    if "--el-advisory-selftest" in argv:
+        return el_advisory_selftest(pred_path, plan_path)
+    if "--el-advisory" in argv:
+        rc, rep = el_advisory(jload(argv[argv.index("--el-advisory") + 1]).get("items") or [], pred_path, plan_path)
+        el_advisory_print(rc, rep)
+        return rc
+    return None
+
+
+def scratch_tail(st, rc, gone, key, tag, log, base_vi, base_md5, pred_path, plan_path, card, sum_json, fail_mb, launch_mb=680.0):
+    """After K.run of a scratch: peak private MB from the log's METER lines vs the pinned X10 (pred_x10), and the gates MEM (peak <=
+    fail_mb and <= X10 + 10, PD285(d)/PD328(a)), MEML (peak <= launch_mb, PD331(c)), IN (bed md5 unchanged), GONE (LabVIEW gone);
+    writes sum_json. Returns the process rc (rc, else 1 when MEM/IN/GONE fail). The scratch recipes' tail, as calls."""
+    import re as _re
+    mbs = [float(m) for m in _re.findall(r"METER \w+\s+k\s+\d+\s+private ([\d.]+) MB", open(log, encoding="utf-8", errors="replace").read())] \
+        if os.path.exists(log) else []
+    peak, X = (max(mbs) if mbs else None), pred_x10(pred_path, plan_path)
+    res = st.R.get(key) or {}
+    fin = res.get("final")
+    print("SCRATCH-{0} peak {1} MB (X10 {2}, d {3}); final {4} md5 {5}; bed md5 {6}".format(
+        tag, peak, X, None if peak is None or X is None else round(peak - X, 1), fin, res.get("md5"), md5(base_vi)), flush=True)
+    ok_mem = peak is not None and X is not None and peak <= fail_mb and peak <= X + 10.0
+    ok_in = md5(base_vi) == base_md5
+    print("GATE MEM peak <= {1} and peak <= X10 + 10 (PD285(d), PD328(a)): {0}".format("PASS" if ok_mem else "FAIL", fail_mb), flush=True)
+    print("GATE MEML peak <= {1:g} (launch condition, PD331(c)): {0}".format("PASS" if peak is not None and peak <= launch_mb else "FAIL", launch_mb), flush=True)
+    print("GATE IN bed md5 unchanged: {0}".format("PASS" if ok_in else "FAIL"), flush=True)
+    print("GATE GONE LabVIEW gone: {0}".format("PASS" if gone else "FAIL"), flush=True)
+    with open(sum_json, "w", encoding="utf-8") as f:
+        json.dump({"card": card, "rc": rc, "peak_mb": peak, "x10": X, "final": fin, "final_md5": res.get("md5"),
+                   "inputs_ok": ok_in, "gone": gone, "census_all": st.R.get("census_all")}, f, indent=1)
+    return rc or (0 if (ok_mem and ok_in and gone) else 1)
+# ---
+# labview: build
+# hardware: none
+# ---

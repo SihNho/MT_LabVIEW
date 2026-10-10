@@ -1,0 +1,18 @@
+ATTACK this claim about a failed prediction in tools/bench/diag_c164_a3_5_graph.py (log tools/bench/diag_c164_a3_5_graph.log, card 164-3-5).
+
+Facts: the read-only graph read of the ADOPTED step-4 file claudeDev\D1_ring_p5s02d_20261010_152518.vi (md5 6dcd5c3d) failed ONE gate, E5
+(diag_c164_a3_5_graph.log:304-305): "deleted_nodes_present: [23501]"; made objects 7 with the right classes, deleted wires absent, new wires present.
+E5 checks `uid in cls` over all objects of the graph (diag_c164_a3_5_graph.py:65). The plan (tools/bench/diag_c164_a3_5_graph_plan.json, written by
+diag_c164_a3_5_mkgraph.py) lists deleted_nodes [23042, 23501] = the two delete_object rows of the scratch (diag_c164_p5s02d_scratch.log:90 Comparison
+#23042, :98 LoopTunnel #23501). In the base graph tools/bench/graph_ring_p5s02c_20261010_131658.json, 23501 is {"class": "LoopTunnel", owner WhileLoop}.
+In the adopted graph tools/bench/graph_ring_p5s02d_20261010_154830.json, 23501 is {"class": "ParameterTerminal", "owner": "Comparison"}: term 'y' of
+the NEW Comparison #12170 (created at op 7, log :143-153), on wire 31744. The scratch's CENSUS-ALL net delta has LoopTunnel -1 (log :222); scratch
+log :167 shows `connect #23474->#23501` at op 9 (w_eq7_y), i.e. the run itself addressed 23501 after deleting the tunnel.
+
+CLAIM: the VI is right and E5's prediction was wrong: LabVIEW re-used the freed uid 23501 for a terminal of the new Equal? node (it also re-used low
+uids 12150/12169/12170 for new objects), so "deleted node absent" must be checked by uid AND class (LoopTunnel #23501 absent), not by uid alone.
+
+Give: the strongest reason the claim is wrong (e.g. the tunnel survived under another uid, or the op-9 connect landed on the wrong terminal);
+an alternative explanation; what would falsify it; the cheapest discriminating test using only the two graph json files and the scratch log /
+tools/bench/diag_c164_p5s02d_scratch.json (no LabVIEW). Also say whether the w_eq7_y connect to 23501 is what the plan intended
+(tools/bench/plan_ring_p5s02d.json, look up w_eq7_y).

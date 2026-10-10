@@ -1,0 +1,38 @@
+BGRUN START 2026-10-10 02:28:28 limit 20.0 min: py tools/prior_art_review.py --plan-file tools/bench/diag_c158_a3_2_priorart_plan.md --slug c158-a3-2-p5s02a-retry --trigger cycle-start --recipe tools/recipes/stage_d1_ring_p5s02a_scratch.py
+BGRUN PID 4840
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c158-a3-2-p5s02a-retry.txt (68776 chars)
+   review card tools\bench\cards\review_priorart-c158-a3-2-p5s02a-retry.json
+OUTCOME: ANSWERED (45s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-10-10-priorart-c158-a3-2-p5s02a-retry.md
+COST: $1.0339  in 10 / out 3342 / cache-create 109339 / cache-read 461660  (42s, 7 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c158-a3-2-p5s02a-retry verdict=novel -> tools\bench\cards\verdict_priorart-c158-a3-2-p5s02a-retry.json
+--- ANSWER ---
+**Verdict: novel.** Nothing in the project makes this retry unnecessary, and every part the question asks about already reuses a shared helper. Nothing here is hand-rolled.
+
+**PART A — direction**
+- **A1 (already settled):** The retry is not prior art. It is what the current judgement asked for. `docs/d1/ring-p5.md:339-343` (PD386(e), 2026-10-10) says the scratch writes its own log `tools/bench/diag_c158_p5s02a_scratch.log`, the second run is a `retry_of` card, and a failure on any BLOCK gate is handed back with no third run. The plan carries out that decision; it is not repeating an earlier answer.
+- **A2 (refuted already):** Nothing found. The last attempt, c158-a2-2, failed on gate conventions, not on the build: "real end == sim end in topology except wire 24091's source-only stub" (`ring-p5.md:321-322`). PD386(a)–(c) (`ring-p5.md:323-335`) changes exactly those gates, so the retry deals with the recorded cause rather than repeating it.
+- **A3 (contradicted):** None found. The plan's census source (CEN2 = the c158-a2-2 measured census) matches `ring-p5.md:333-335`, and the precedent cited there is `tools/bench/diag_c148_a2_4_census.py:52`.
+- **A4 (unread evidence):** None. The plan cites the documents it needed: PD386, `diag_c158_a2_2_facts.md` / `diag_c158_a2_3_facts.md`, and the c156 prior-art review.
+
+**PART B — the artifact**
+- **B1 / B3 (already built / helper exists):** The recipe is the standard shared template (`stage_d1_ring_p5s02a_scratch.py:7-10`), built from stagekit calls. It only calls shared functions; it re-implements none:
+  - Per-op class census: `K.op_class_census_install` / `op_class_census_print` (`stagekit.py:2107-2143`). These wrap the existing `op_class_census` (`stagekit.py:~2090-2104`) and the existing `sink_gate_backend_class` read, so no extra LabVIEW read is added.
+  - Retry-card print: `retry_card_arg` (`stagekit.py:2146-2159`) reuses `stage_prerun.RETRY_CARD_RE` and `stage_key`, the same pattern the launch gate reads.
+  - PB keyed by bound frame: `pb_check_bound` / `pb_386` (`docs/toolkit-capabilities.md:2498-2499`) build on the existing `pb_check` (`stagekit.py:1806`, chat-T7).
+  - D/TD keyed by pair: `term_identity_pairs` (`toolkit-capabilities.md:2501`) builds on `wire_ends_pos` and `term_identity_pos`.
+  
+  No older helper doing the same job under another name was found.
+- **B2 (already failed):** The same build ran as c158-a2-2 and stopped before save on the old PB/D/TD/CEN2 gates, not on the build (E1 diff 0, all 17 ops). The new gates are aimed at that cause. The mutation re-score (`ring-p5.md:336-338`) is the check that the new gates are not loosened too far.
+- **B4 (already measured):** The scratch is what produces the per-op census of ops 16/17 for this case. PD385(b) lists it as "owed" (`ring-p5.md:335`), so it has not been recorded yet.
+- **Note, not a finding:** `SCRATCH = "scratch_c156_p5s02a"` (recipe line 31) still has the c156 name, while the log and json moved to c158. This is only a label, but readers that match on that name will mix the two runs.
+
+**PART C — user rules**
+- **C1:** No contradiction. This is scratch editing of a claudeDev byte copy: no queue, no camera or serial path, and no VI run. Rule U1 is explicitly relied on (`ring-p5.md:314-315`).
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c158-a3-2-p5s02a-retry","verdict":"novel","alternative":"Retry is the act PD386(e) prescribes; helpers (op_class_census_install/print, retry_card_arg, pb_check_bound, term_identity_pairs) are shared stagekit functions built on existing op_class_census/pb_check/wire_ends_pos, not duplicates.","discriminating_test":"grep tools/ for another per-op census print or bound-frame PB helper predating 158-a3-1; none found beyond stagekit.py:2090-2159 and toolkit-capabilities.md:2498-2504.","violations":[],"sources":["docs/d1/ring-p5.md:313-343","tools/stagekit.py:2107-2159","tools/stagekit.py:1806","docs/toolkit-capabilities.md:2498-2504","tools/recipes/stage_d1_ring_p5s02a_scratch.py:28-52"],"note":"Cosmetic: SCRATCH name still scratch_c156_p5s02a (recipe line 31) while log/json are c158."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c158-a3-2-p5s02a-retry.md
+   STOP RECORD: none - 2026-10-10-priorart-c158-a3-2-p5s02a-retry.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_ring_p5s02a_scratch.py sha 3d820dd7d682 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 48s

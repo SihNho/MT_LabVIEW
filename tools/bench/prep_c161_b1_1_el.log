@@ -1,0 +1,22 @@
+BGRUN START 2026-10-10 08:56:36 limit 1.0 min: py -u tools/bench/prep_c160_c3_1_el.py
+BGRUN PID 28600
+GATE PASS | M0 pins {'errorlist_expected_D1_ring_p5s02a_20261010_023239.json': '1fd016bf', 'plan_ring_p5s02b.json': 'f4520b10', 'prep_c160_b3_1_session.json': 'e5279899', 'graph_ring_p5s02a_20261010_032547.json': '7ac24924'}; read md5 == expected file's measured_md5 | {'errorlist_expected_D1_ring_p5s02a_20261010_023239.json': '1fd016bf', 'plan_ring_p5s02b.json': 'f4520b10', 'prep_c160_b3_1_session.json': 'e5279899', 'graph_ring_p5s02a_20261010_032547.json': '7ac24924'}
+GATE PASS | B compare(read 56 items, the 56 expected rows) extra 0 missing 0 (baseline) | ([], [])
+FACT CLEARED item 0 notconnected uid 10394 by dw_a13 - delete_wire 10394 (plan action dw_a13)
+FACT CLEARED item 1 nosource uid 24264 by dw_go - delete_wire 24264 (plan action dw_go) (STALE 56-row clears_by 'A32 w_gr' changed)
+FACT CLEARED item 2 nosource uid 24300 by dw_ho - delete_wire 24300 (plan action dw_ho) (STALE 56-row clears_by 'A39 w_hr' changed)
+FACT CLEARED item 3 looseends uid 24285 by A28 w_gl - MERGE onto t24190, one ok wire, uid 24285 expected
+FACT CLEARED item 5 looseends uid 24312 by A35 w_hl - MERGE onto t24288, one ok wire, uid 24312 expected
+GATE PASS | CL 5 step-2 rows (items [0, 1, 2, 3, 5]) each mapped to its clearing action; none outside step 2 touched | []
+FACT STALE 56-row clears_by changed (PD391(a)(d): A32/A39 are delete + fresh connect, not MERGE): [(1, 'A32 w_gr', 'dw_go'), (2, 'A39 w_hr', 'dw_ho')]
+GATE PASS | SIM deleted wires gone at the sim end; each MERGE uid carries a source and a sink there | [('dw_a13', 10394, 'gone at sim end', True), ('dw_go', 24264, 'gone at sim end', True), ('dw_ho', 24300, 'gone at sim end', True), ('A28 w_gl', 24285, 'sim end rows [(-8, False), (24190, True)]', True), ('A35 w_hl', 24312, 'sim end rows [(-20, False), (24288, True)]', True)]
+FACT ELRULE new [] closed [] uncertain base [] uncertain subvi []
+GATE PASS | R every elrule new item (0) attributed to an action and has a text key; closed [] | []
+GATE PASS | U unpredicted actions (new structure class, read from the session compile + base graph): ['UNPREDICTED:A32 w_gr', 'UNPREDICTED:A39 w_hr'] | [{'action': 'UNPREDICTED:A32 w_gr', 'id': 'w_gr', 'op_group': ['t_go', 'w_gout', 'w_gr'], 'why': "PD391(c)(e) new structure class: a BASE RightShiftRegister inner face (t24139) through connect_term_uid register_end_case_border; whether the verb's SelectorTunnel / purged Invokes leave an Error List item (tunnel, wire, missing assignment) is not decidable offline - the step-2 scratch measures it"}, {'action': 'UNPREDICTED:A39 w_hr', 'id': 'w_hr', 'op_group': ['t_ho', 'w_hout', 'w_hr'], 'why': "PD391(c)(e) new structure class: a BASE RightShiftRegister inner face (t24235) through connect_term_uid register_end_case_border; whether the verb's SelectorTunnel / purged Invokes leave an Error List item (tunnel, wire, missing assignment) is not decidable offline - the step-2 scratch measures it"}]
+GATE PASS | F compare(read minus the 5 cleared = 51 items, the 51 predicted rows) extra 0 missing 0 (raised rows are synthetic: 0) | ([], [], [])
+GATE PASS | PC per-class predicted total 51 == item total 51 (start 56 - cleared 5 + raised 0 - elrule closed 0) | {'input': 1, 'other:looptunnelwireconnectedtoanundirectedtunnel': 2, 'other:thiswireconnectsoneormoredatasinksbuthasnosource': 3, 'other:thiswireisnotconnectedtoanything': 22, 'other:wirewirehaslooseends': 21, 'other:youhayeconnectedaninputofwhilelooptoaninputofsubyichangeonetoanoutputoraddasource': 1, 'other:youhayeconnectedtwoterminalsofdifferenttypes': 1}
+EL COUNTS cleared 5 raised 0 unpredicted 2 standing 51 total 51 (upper 53)
+GATE PASS | W predicted file written, 51 rows == total | 
+FACT md5 79ec32079ceee2b99dac24e554d86856 tools/bench/errorlist_predicted_D1_ring_p5s02b_end.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":9,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/bench/errorlist_predicted_D1_ring_p5s02b_end.json","md5":"79ec32079ceee2b99dac24e554d86856"}],"card":"161-b1-1","labview":"none"}
+BGRUN END rc=0 after 1s

@@ -1,0 +1,33 @@
+{"schema": "result/1", "id": "164-a2-3", "status": "FAIL", "gates": {"pass": 3, "fail": 1},
+ "first_fail": "pass item 4: prior-art verdict settled-already + contradicted, not novel (tools/bench/prep_c164_a2_3_priorart.log:48-49); STOP RECORDs armed on both recipes (:53-54)",
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/recipes/stage_d1_ring_p5s02d.py", "md5": "61998a986f518eaf146ca93f6ac5b857"},
+  {"path": "tools/recipes/stage_d1_ring_p5s02d_scratch.py", "md5": "750ee02fe565bdf6b71379320c4d48a4"},
+  {"path": "tools/bench/plan_ring_p5s02d_pred.json", "md5": "37cfa1bce95e6288fde35b43e26db8a7"},
+  {"path": "tools/bench/plan_ring_p5s02d_licence.json", "md5": "ace1f32ea0f1859f0df8ef7df623fcba"},
+  {"path": "tools/bench/errorlist_predicted_D1_ring_p5s02d_end.json", "md5": "653712a889c21fd77027ef71376a2806"},
+  {"path": "tools/bench/prep_c164_a2_3_session.json", "md5": "dbacb66649ff7812ee3d896f900838a1"},
+  {"path": "tools/bench/prep_c164_a2_3_lib.py", "md5": "c82d4062299ee7e962af49d3440069de"},
+  {"path": "tools/bench/diag_c164_a2_3_facts.md", "md5": "5061f4d84016ed8c7703a0312e68d617"},
+  {"path": "archive/peer/2026-10-10-priorart-priorart-c164-a2-3-p5s02d.md", "md5": "1759c0454137a05ed0dc73efbfa9e6c9"}
+ ],
+ "facts": [
+  "dry main PASS-UNVERIFIED (CEN2 only) rc 0, PB PASS + 5 RECORD rows (classes 1,3,1,1,3), no BLOCK: prep_c164_a2_3_dry.log:62-72; scratch dry same :80-95",
+  "prerun PASS 16/0 both: X10 MAIN 642.5<=675, X17, X8 PASS; X14 WARN 17 rows > budget 15 (not proven): prep_c164_a2_3_prerun.log:74-98",
+  "--scratch-required rc 3 CENSUS-UNPREDICTED rows [1..17]: prep_c164_a2_3_scrreq.log:3",
+  "check_launch full scratch cmd: own card REFUSE (no DRY-UNVERIFIED-OK) :6, stand-in task_163-a2-2.json ALLOW :10 (prep_c164_a2_3_checklaunch.log)",
+  "pred 17/0: E1 cps [0,1,4,5,9,10,12,13] == session, DW 1 / DO 2 / OBJ 6 / WS 8 / RT PASS: prep_c164_a2_3_pred.log:22-58",
+  "EL predicted: cleared 0 raised 0 unpredicted 4 (A64,A67 reb; A54,A55 delete_object with wires) total 53 upper 57; stale items 4,6,7,8,49,50: prep_c164_a2_3_el.log:7-22",
+  "prior-art A1: PD321(b)/PD323(a) delete_wire every wire on a node before delete_object; plan drops #23042/#23501 with 23460/23519 on: prep_c164_a2_3_priorart.log:12-26",
+  "prior-art A3: ring-p5c.md:57 'delete_object has no passing launch' contradicted by diag_c140_3_facts.md:14,22",
+  "md5 UNCHANGED 14/14 (tools, memory_model, plan 872822f3, graph 3d5196ab, EL 26d45c71, 5 VIs): prep_c164_a2_3_md5.log; LabVIEW never launched",
+  "makers are inputs + one call into the new shared prep_c164_a2_3_lib.py (163 makers are non-importable top-level scripts): prep_c164_a2_3_lib.py:1-15"
+ ],
+ "open": [
+  "Prior-art A1: add delete_wire rows (23519; 23460 if its sinks are only #23501) under the sink-subset gate and re-make plan_ring_p5s02d, or REFUTE in writing? Both recipes stay STOP-RECORDed (prep_c164_a2_3_priorart.log:53-54).",
+  "The step-4 launch card must name 'DRY-UNVERIFIED-OK: CEN2 new-object census' for check_launch to ALLOW (stage_prerun.py:3432-3456).",
+  "docs/d1/ring-p5c.md:57 premise (no passing delete_object launch) is contradicted - correct it?"
+ ],
+ "cost": {"usd": null, "minutes": 19, "labview_runs": 0},
+ "note": "Offline only. Returned at the first unexpected result (prior-art not novel); no plan/tool/hook edit. Disposition written in the review file, no FIXED/REFUTED release."}

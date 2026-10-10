@@ -1,0 +1,81 @@
+{
+  "schema": "task/1",
+  "id": "160-c3-1",
+  "kind": "build",
+  "goal": "PD391(d)(e): p5s02b recipe pair on RingSession + pred (A28/A35 MERGE, A32/A39 delete+fresh) + licence + predicted step-2-end Error List; dry/prerun/scratch-required gates. Not launched.",
+  "why": "Cycle 161's first act is ONE step-2 scratch on a byte copy of 94ffff94; the recipe, prediction and Error List expectation must exist and pass the offline gates first.",
+  "inputs": [
+    {"path": "tools/bench/cards/brief_160-c3-1.md", "md5": "111bf3bd5481f801a1be19f0bfcbacf0"},
+    {"path": "docs/d1/ring-p5b.md", "md5": "2b48132924000a80f2afc15659ba8258"},
+    {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+    {"path": "tools/bench/diag_c160_b3_1_facts.md", "md5": "e38a4f74fd60a2cbe97825268906fe98"},
+    {"path": "tools/bench/plan_ring_p5s02b.json", "md5": "f4520b101baad70f065ba5d6c9d14925"},
+    {"path": "tools/bench/plan_ring_p5s02b_in2.json", "md5": "927b805c90d3aa2507aa682bc54db17c"},
+    {"path": "tools/bench/prep_c160_b3_1_session.json", "md5": "e52798990ee33799d8bbd50a6c1290b6"},
+    {"path": "tools/bench/graph_ring_p5s02a_20261010_032547.json", "md5": "7ac24924f979afde964e63fb27957b45"},
+    {"path": "tools/bench/errorlist_expected_D1_ring_p5s02a_20261010_023239.json", "md5": "1fd016bfec093c8bf488cc31d325d2fb"},
+    {"path": "tools/bench/prep_c156_a1_1_pred.py", "md5": "27fc52dcdda01f39ea542d4ab8e5ab05"},
+    {"path": "tools/bench/prep_c156_a1_1_licence.py", "md5": "43e40d7b5793171b9389ffcf120af2fd"},
+    {"path": "tools/bench/prep_c156_a1_1_lib.py", "md5": "fc6ce5f6f5094b15fc0e78229946e723"},
+    {"path": "tools/recipes/stage_d1_ring_p5s02a.py", "md5": "b52b9ff56390bb6777d8f5401e8ef183"},
+    {"path": "tools/recipes/stage_d1_ring_p5s02a_scratch.py", "md5": "64b4f18b8a4931277e3d465bfbfd41b0"},
+    {"path": "tools/bench/memory_model.json", "md5": "5b87de43b3b3653c9ed1d9a576ddd167"},
+    {"path": "tools/stagesim.py", "md5": "95a162baec5324ff037a8d23bd7ef46d"},
+    {"path": "tools/stagexec.py", "md5": "ddf23a31b10767015da246be8ceaa2e2"},
+    {"path": "tools/stagekit.py", "md5": "1441bb4ca75eb5a59afaa3555690db37"},
+    {"path": "tools/stage_prerun.py", "md5": "7605116f1dfe1c6fd4963dbfcf259de1"}
+  ],
+  "pass": [
+    "pred plan_ring_p5s02b_pred.json: A28/A35 MERGE with expected uid; A32/A39 stub delete + fresh connect, uid not predicted; delete rows own entries; CEN2 by ends; E1 checkpoints; MAIN limit 675",
+    "licence + recipe pair stage_d1_ring_p5s02b{,_scratch}.py are inputs-only on stagekit.RingSession (PD390(c)); base path/md5 read from the plan graph; copied blocks listed OPEN",
+    "predicted step-2-end Error List: cleared items with action AND raised items with action or UNPREDICTED:<action>; cleared/raised/unpredicted/total counts + row ids quoted; compare() accepts the form",
+    "dry PASS unverified 0 + prerun PASS (X10 <=675, X14, X17, X8) + check-launch on final tool md5s (stagesim 95a162ba, stagexec ddf23a31, stagekit, stage_prerun) quoted",
+    "stage_prerun --scratch-required exit code for the p5s02b recipe quoted (expected 3, reason line); NOT launched, tasklist shows no LabVIEW",
+    "md5 unchanged: plan f4520b10, in/in2, graph, VIs s09/P5-1a/P5-1/94ffff94, tools; no tool or hooks edit; hook false positives logged via gate_fp"
+  ],
+  "outputs": [
+    "tools/bench/plan_ring_p5s02b_pred.json",
+    "tools/bench/plan_ring_p5s02b_licence.json",
+    "tools/bench/errorlist_predicted_D1_ring_p5s02b_end.json",
+    "tools/recipes/stage_d1_ring_p5s02b.py",
+    "tools/recipes/stage_d1_ring_p5s02b_scratch.py",
+    "tools/bench/diag_c160_c3_1_facts.md"
+  ],
+  "flags": {
+    "labview": "none",
+    "gui": false,
+    "hardware": "none",
+    "run_vi": false,
+    "write": [
+      "tools/bench/prep_c160_c3_1*",
+      "tools/bench/plan_ring_p5s02b_pred.json",
+      "tools/bench/plan_ring_p5s02b_licence.json",
+      "tools/bench/errorlist_predicted_D1_ring_p5s02b*",
+      "tools/recipes/stage_d1_ring_p5s02b*",
+      "tools/bench/sim/ring_p5s02b/**",
+      "tools/bench/diag_c160_c3_1*",
+      "tools/bench/prerun_records.jsonl",
+      "tools/bench/gate_fp_queue.jsonl",
+      "tools/bench/jev_*"
+    ],
+    "status_edit": false,
+    "git_commit": false,
+    "peers": []
+  },
+  "budget": {
+    "failures": 2,
+    "minutes": 75
+  },
+  "rules": [
+    "Offline; NO --launch; no LabVIEW process; no tools/*.py edit; no tools/hooks edit; no env bypass",
+    "Rows only from the plan; uids read from graph/plan, none retyped; expected values only from PRED",
+    "Call shared functions (RingSession, elrule, el_class); copied blocks are OPEN lines, not new copies",
+    "Stale template expectation: change and report, never loosen silently",
+    "Hook false positive: py tools/gate_fp.py log, report; never edit a hook"
+  ],
+  "advances": ["M3", "M8", "R1"],
+  "requires": [
+    {"kind": "file", "name": "tools/bench/plan_ring_p5s02b.json"},
+    {"kind": "file", "name": "tools/bench/prep_c160_b3_1_session.json"}
+  ]
+}

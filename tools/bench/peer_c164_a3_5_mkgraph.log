@@ -1,0 +1,49 @@
+BGRUN START 2026-10-10 15:36:30 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c164-a3-5-mkgraph-termidentity -TaskFile tools/bench/diag_c164_a3_5_peer_task.txt
+BGRUN PID 25416
+OUTCOME: ANSWERED (144s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-10-c164-a3-5-mkgraph-termidentity.md
+COST: $1.2494  in 24 / out 10388 / cache-create 102796 / cache-read 1096062  (140s, 19 turn(s))
+--- ANSWER ---
+**Verdict: the claim mostly holds, but one of its three supporting examples is wrong, and the proposed fix is too loose to keep.** The count does come out right: 9 = 7 newly created wire uids + 2 old wire uids that were re-ended. But 12150 is not an old wire; it is one of the 7 new ones.
+
+**What the code does.** `term_identity_pos` (`tools/stagekit.py:1506-1519`) computes `new` as the wire end-pairs found in the read-back graph but not in the base graph. It then reports `new` as the real wire uids holding those pairs: `uids(re_, new)` at `:1511` and `:1519`. So yes, an old uid whose ends changed lands in `new`, and its old end-pair lands in `lost_w` (`:1508`). The mechanism the claim relies on is real.
+
+## 1. Strongest reason the claim is wrong: 12150 is a new wire
+- 12150 appears **nowhere** in the base graph `tools/bench/graph_ring_p5s02c_20261010_131658.json`. A grep for it found 0 matches.
+- It is also **not** in `wires_lost` (`diag_c164_p5s02d_scratch.log:220`). A pre-existing wire that "gained or lost an end" would show up in both `wires_new` and `wires_lost`.
+- Its ends in the scratch JSON (`diag_c164_p5s02d_scratch.json:9874-9885`): source is term 31816 on the new register 31807, sink is term 31810 'file progress' on the new tunnel 31803. That makes it the step's own new wire `w_k3pass`. LabVIEW gave it a low recycled uid, just as it gave 12169 and 12170 to the new Local and Equal? nodes (log :113, :143).
+- The correct split, checked against the base graph:
+
+| group | uids | evidence |
+|---|---|---|
+| new (7) | 12150, 31744, 31749, 31792, 31818, 31825, 31884 | none in the base graph; matches CENSUS-ALL Wire 7 (log :223) |
+| re-ended (2) | 23519, 31712 | in the base graph, and in **both** `wires_new` and `wires_lost` (log :220) |
+
+- The step-3 comparison holds: there `wires_lost` was `[]` and `wires_new` was 6 = CENSUS Wire 6 (`diag_c163_p5s02c_scratch.log:139,142`).
+
+So the diagnosis "a helper prediction error, not a defect in the VI" survives. The stated reasoning does not, and it should be corrected before it goes into the plan's cite text.
+
+## 2. Alternative explanation (now ruled out)
+- **A duplicate wire.** Two real uids holding the same end-pair would make the uid list longer than the pair count. That would show up as a new uid that is not counted in CENSUS-ALL, or as old uids in `new` that are missing from `lost_w`. Neither happened: 7 new uids match the census exactly, and the 2 old uids are both in `lost_w`.
+- **A wire that should have been deleted survived.** Also ruled out. `lost_w` minus `new` gives 23460, 23489 and 24330. 24330 is the base wire from term 5704 (SubVI 376 'file progress') to control terminal 3453. It was replaced when op 14 connected #5704 into the K3 register (log :203). The D gate's lost pairs, 4 == sim's 4, show the simulator expected that loss.
+- **One loose end:** the helper's DW gate (`diag_c164_a3_5_mkgraph.py:76`) never names 24330. That is not a defect, but it is an unchecked loss.
+
+## 3. What would falsify the claim
+Any of these:
+- an uid in `new` that is in the base graph but not in `lost_w` (an old wire that kept its ends yet was counted as new, which would mean a duplicate);
+- the count of uids in `new` that are absent from the base graph differing from CENSUS-ALL "Wire" new uids;
+- an old uid appearing in `new` but missing from `wires_lost`.
+
+None of these occurs in the recorded data.
+
+## 4. Cheapest discriminating test, and why the fix is too weak
+Done above with three greps. The proposed gate, `len(new) >= 7`, would also pass on 10 uids with a real duplicate wire in them, so it hides exactly the alternative it is meant to rule out. Gate W should check the split itself:
+- `N = set(new) − base_wire_uids`, with `len(N) == CENSUS-ALL Wire` (7);
+- `O = set(new) ∩ base_wire_uids`, with `O ⊆ set(lost_w)` (here {23519, 31712});
+- D gate `pairs 8 == 8` still required.
+
+The helper on disk already carries the `>= 7` form (`diag_c164_a3_5_mkgraph.py:73-74`). It should be tightened to the check above, and the wording "12150 pre-existing" should be dropped from any record.
+
+**What would change my mind:** a base graph other than `graph_ring_p5s02c_20261010_131658.json` turning out to be the true base for step 4, if that graph contains 12150.
+
+I did not run anything. Evidence is local files only; no web claims were needed.
+BGRUN END rc=0 after 145s

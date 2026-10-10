@@ -304,23 +304,32 @@ class Stage(object):
             return {}
         return dict((int(o["uid"]), str(o["class"])) for o in g.report_all(target or self.work, "GObject"))
 
-    def census_gate(self, label, before, after, declared):
+    def census_gate(self, label, before, after, declared, unpredicted=None, judged=None):
         """Compare the measured NEW-object census (after - before, by class) with `declared` {class: n} (e.g. the plan's
         `<plan>_pred.json` census block). DRY run -> prints 'UNVERIFIED-DRY' and returns None: a stubbed census is never a
-        PASS. Real run -> a gate (PASS iff every class of either side matches), returns the measured {class: n}."""
-        if not declared:
+        PASS. Real run -> a gate (PASS iff every class of either side matches), returns the measured {class: n}.
+        card 159-a4-1 (PD387(e)): two SimCensus snapshots (sim_census_snapshot, a stagesim state) are compared in a dry run
+        too - the gate runs on the SIMULATED end. `unpredicted` = census_unpredicted_reason(pred): a declaration that does not
+        cover every op of the plan is UNPREDICTED like an empty one, never a partial PASS.
+        card 159-e1-1 (PD389(b)): `judged` = {class: (ok, detail)} for classes judged by another rule (CEN2's Wire by end pairs,
+        cen2_wire_ends): they leave the uid diff, their ok joins the verdict and their detail the gate's detail; their uid count
+        stays in the returned `measured`. judged=None is the uid census exactly as before. Self-test: selftest_c159_cen2_ends.py."""
+        dry = getattr(g.report_all, "_dry", False)
+        sim = isinstance(before, SimCensus) and isinstance(after, SimCensus)
+        if not declared or unpredicted:
             # card 134-1 (PD287(a)): an EMPTY declared set predicts nothing - CEN2 passed on two empty sets
             # (stage_d1_ring_p3b2a_scratch_c133_6.log:354). Never a PASS: printed UNPREDICTED, returns the measured census.
             got = None
-            if not getattr(g.report_all, "_dry", False) and isinstance(before, dict) and isinstance(after, dict):
+            if (sim or not dry) and isinstance(before, dict) and isinstance(after, dict):
                 got = {}
                 for u in set(after) - set(before):
                     got[after[u]] = got.get(after[u], 0) + 1
-            print(_a("  UNPREDICTED  {0}  (declared set empty {1!r}; measured {2})".format(
-                label, declared, json.dumps(got, sort_keys=True) if got is not None else "not in a dry run")), flush=True)
+            why = "declared set empty {0!r}".format(declared) if not declared else "declaration does not cover the plan: {0}".format(unpredicted)
+            print(_a("  UNPREDICTED  {0}  ({1}; measured {2})".format(
+                label, why, json.dumps(got, sort_keys=True) if got is not None else "not in a dry run")), flush=True)
             self.R.setdefault("unpredicted", []).append(label)
             return got
-        if getattr(g.report_all, "_dry", False) or not isinstance(before, dict) or not isinstance(after, dict):
+        if (dry and not sim) or not isinstance(before, dict) or not isinstance(after, dict):
             print(_a("  UNVERIFIED-DRY  {0}  (census not measured in a dry run; declared {1})".format(
                 label, json.dumps(declared, sort_keys=True))), flush=True)
             return None
@@ -328,9 +337,15 @@ class Stage(object):
         got = {}
         for u in new:
             got[after[u]] = got.get(after[u], 0) + 1
+        jd = judged or {}
         diff = dict((c, (got.get(c, 0), int(declared.get(c, 0)))) for c in set(got) | set(declared or {})
-                    if got.get(c, 0) != int((declared or {}).get(c, 0)))
-        self.gate(label, not diff, {"measured": got, "declared": declared, "diff (measured, declared)": diff}, kind="census")
+                    if c not in jd and got.get(c, 0) != int((declared or {}).get(c, 0)))
+        det = {"measured": got, "declared": declared, "diff (measured, declared)": diff}
+        if sim:
+            det["source"] = "stagesim simulated end (sim_census_snapshot), card 159-a4-1"
+        if jd:
+            det["judged by ends (PD389(b))"] = dict((c, d) for c, (_ok, d) in jd.items())
+        self.gate(label, not diff and all(bool(ok) for ok, _d in jd.values()), det, kind="census")
         return got
 
     def safe(self, label, fn, default=None):
@@ -1832,6 +1847,536 @@ def pb_check(S1f, G1, Gpred, pred_rows, open_rows, unlicensed=(), V=None):
             "open_rows": op, "unlicensed": list(unlicensed or []), "cd": cd}
 
 
+# ---------------------------------------------------------------------------------------------- PD386 (card 158-a3-1): BLOCK vs RECORD
+# docs/d1/ring-p5.md item 386 (steer debate:plan-overall-02 items 4/10: BLOCK = computation / save / safety invariant, RECORD =
+# representation). Scratch c158-a2-2 built the planned graph (E1 diff 0) and failed PB / D / TD / CEN2 on convention
+# (tools/bench/diag_c158_a2_3_facts.md): (a) PB's frame tag `@<tunnel>/f<ordinal>` ranks frames by uid (vigraph.py:322), so negative
+# sim uids reverse the ordinal; the tag is now resolved to the FRAME UID on its own graph and the real PB is compared with the sim-end
+# PB re-keyed by the run's bindings; a row whose only difference from S1 is that tag is RECORDED iff its source terminal uids equal
+# S1's and every tag's frame is the plan's frame for the move. (b) D / TD compare (source, sink) position pairs; a wire with no sink
+# (a source-only stub) carries nothing and is dropped on both sides and RECORDED (wire 24091: the sim keeps it, LabVIEW deletes it).
+# Pure functions, no LabVIEW. Self-test: tools/bench/selftest_c158_gates386.py (recorded c158-a2-2 data + BLOCK mutations).
+def run_bind(bind=None, report=None):
+    """The run's bindings as ONE {sim uid: real uid} map: an Executor's x.bind ({obj, term, diag}) merged, plus the union of a recorded
+    run's per-op `bound` dicts (x.report / a scratch json's `stagexec` list = the log's `bound {...}` lines). Returns a dict.
+    Self-test: tools/bench/selftest_c158_gates386.py."""
+    M = {}
+    for kind in ("obj", "term", "diag"):
+        for k, v in ((bind or {}).get(kind) or {}).items():
+            M[_iv(k)] = _iv(v)
+    for o in report or []:
+        for k, v in (o.get("bound") or {}).items():
+            M[_iv(k)] = _iv(v)
+    return M
+
+
+def real_rows_from_record(rows5, sim_terms, flat):
+    """(rows, record): the 5-column real end rows a run records (RingSession.gate_td `real_end_rows`: term uid, owner uid, name, wire,
+    is_source) as full terminal rows. term_class / owner_class / frame_diagram come from the sim end row of the SAME term uid, else from an
+    unused sim row (negative uid) of the same bound owner, first by (name, direction), then by direction in read order; frame_diagram is
+    mapped through `flat` (the AL rule of tools/bench/diag_c158_a2_3_measure.py:74-112, extracted here). record = {same_uid, by_name,
+    by_order, unmatched}. Self-test: tools/bench/selftest_c158_gates386.py."""
+    by_uid = dict((_iv(s["term_uid"]), s) for s in sim_terms)
+    neg = {}
+    for s in sim_terms:
+        if _iv(s["term_uid"]) < 0:
+            o = _iv(s["owner_uid"])
+            neg.setdefault(flat.get(o, o), []).append(s)
+    rec, pick = {"same_uid": 0, "by_name": 0, "by_order": 0, "unmatched": []}, {}
+    for q in rows5:
+        if _iv(q[0]) in by_uid:
+            rec["same_uid"] += 1
+            pick[_iv(q[0])] = by_uid[_iv(q[0])]
+    for q in rows5:
+        if _iv(q[0]) in pick:
+            continue
+        c = neg.get(_iv(q[1]), [])
+        m = [s for s in c if s["term_name"] == q[2] and bool(s["is_source"]) == bool(q[4])]
+        if m:
+            rec["by_name"] += 1
+        else:
+            m = [s for s in c if bool(s["is_source"]) == bool(q[4])]
+            rec["by_order"] += 1 if m else 0
+        if m:
+            pick[_iv(q[0])] = m[0]
+            c.remove(m[0])
+        else:
+            rec["unmatched"].append(list(q))
+    fd = lambda v: flat.get(_iv(v), _iv(v)) if v not in (None, "") else v           # noqa: E731
+    rows = [{"term_uid": _iv(q[0]), "owner_uid": _iv(q[1]), "term_name": q[2], "wire_uid": _iv(q[3] or 0), "is_source": bool(q[4]),
+             "term_class": pick[_iv(q[0])].get("term_class"), "owner_class": pick[_iv(q[0])].get("owner_class"),
+             "frame_diagram": fd(pick[_iv(q[0])].get("frame_diagram"))} for q in rows5 if _iv(q[0]) in pick]
+    return rows, rec
+
+
+def frame_tag_map(G):
+    """{(tunnel node uid, frame ordinal): frame diagram uid} of a FRAME-KEYED vigraph graph - what a tag '<tunnel>/f<k>' means on THAT
+    graph (the ordinal is the rank of the frame uid, vigraph.py:322, so it is only meaningful inside one graph). Returns a dict.
+    Self-test: tools/bench/selftest_c158_gates386.py."""
+    V, out = pure("vigraph"), {}
+    for k in G.get("frame_inner") or ():
+        n, _c, _nm, o = V.key_parts(k)
+        f = G["rows"][k].get("frame_diagram")
+        if f not in (None, ""):
+            out[(n, o)] = _iv(f)
+    return out
+
+
+def frame_src_resolve(src, fmap):
+    """One frame-keyed effective source '<key>' or '<key>@<tunnel>/f<k>+...' -> (key, frozenset((tunnel uid, frame diagram uid))): every
+    tag's ordinal resolved on its own graph (fmap = frame_tag_map(G)); an ordinal the map lacks stays '?f<k>'. Negative (simulated) tunnel
+    uids are accepted. Self-test: tools/bench/selftest_c158_gates386.py."""
+    base, tags = src, []
+    if "@" in src:
+        b, t = src.rsplit("@", 1)
+        parts = t.split("+")
+        if all("/f" in x and x.rsplit("/f", 1)[0].lstrip("-").isdigit() and x.rsplit("/f", 1)[1].isdigit() for x in parts):
+            base, tags = b, parts
+    out = []
+    for x in tags:
+        tn, o = x.rsplit("/f", 1)
+        out.append((int(tn), fmap.get((int(tn), int(o)), "?f" + o)))
+    return base, frozenset(out)
+
+
+def case_move_frames(plan, sim_end, flat):
+    """{node uid: {frame diagram uid}} - for every plan `move_in` whose dest_diagram is a frame 'new:<as>.f<k>' of a CaseStructure the SAME
+    plan creates: the frame's simulated uid (sim_end['sym']) mapped through `flat` (the run's bindings). The frame a moved node's tag must
+    name (PD386(a) condition (ii)). Self-test: tools/bench/selftest_c158_gates386.py."""
+    acts = plan.get("actions") or []
+    cases = set(a["as"] for a in acts if a.get("op") == "create" and a.get("class") == "CaseStructure" and a.get("as"))
+    sym, out = sim_end.get("sym") or {}, {}
+    for a in acts:
+        d = a.get("dest_diagram")
+        if a.get("op") != "move_in" or not isinstance(d, str) or not d.startswith("new:") or d[4:].rsplit(".f", 1)[0] not in cases:
+            continue
+        u = sym.get(d)
+        if u is None:
+            continue
+        for n in a.get("nodes") or []:
+            out.setdefault(_iv(n), set()).add(flat.get(_iv(u), _iv(u)))
+    return out
+
+
+def pb_bound_rows(cd, G, V=None):
+    """{sink: frozenset of (source POSITION key, frozenset((tunnel, frame uid)))} of a frame-keyed cdiff's rows on graph G (its `after`
+    side): names out (fp-70), tag ordinals resolved to frame uids. Two graphs in the SAME uid space compare equal iff their PB agrees.
+    Self-test: tools/bench/selftest_c158_gates386.py."""
+    V = V or pure("vigraph")
+    P, fm, out = V.pos_keys(G), frame_tag_map(G), {}
+    for y in cd["rows"]:
+        if y["after"] is None:
+            out[y["sink"]] = None
+            continue
+        s = set()
+        for x in y["after"]:
+            b, tags = frame_src_resolve(x, fm)
+            s.add((P.get(b, ("?", b)), tags))
+        out[y["sink"]] = frozenset(s)
+    return out
+
+
+def pb_check_bound(S1f, G1, Gpred, Gsimb, pred_rows, open_rows, move_frames, unlicensed=(), V=None, inherit=None):
+    """PB of PD386(a): pb_check(S1f, G1 = the real end, Gpred, ...) PLUS (1) the real PB == the PB of Gsimb = the sim end re-keyed by the
+    run's bindings (pb_bound_rows, frame uids) - any difference BLOCKS; (2) a pred-extra row of PB(S1, real) is RECORDED iff its only
+    difference from S1 is the frame tag: sources untagged == S1's with the SAME source terminal uids, and every tag's frame uid is a
+    plan frame (move_frames, case_move_frames) of the sink's or the source's node; (3) card 161-a3-1: a row (2) does not record is
+    RECORDED as class 1 / class 2 when `inherit` (pb_inherit_ctx) is given and pb_inherited_row says so (PD394(a), PD395(b));
+    every other extra / missing row BLOCKS.
+    Returns {ok, old (pb_check's dict), eq_diff, recorded, blocked, pairs_extra_left, pairs_missing, n_rows}.
+    Self-tests: tools/bench/selftest_c158_gates386.py, tools/bench/selftest_c161_pbinherit.py."""
+    V = V or pure("vigraph")
+    r = pb_check(S1f, G1, Gpred, pred_rows, open_rows, unlicensed, V)
+    cs = V.computation_diff_frame(S1f, Gsimb)
+    R_, S_ = pb_bound_rows(r["cd"], G1, V), pb_bound_rows(cs, Gsimb, V)
+    eq_diff = sorted(k for k in set(R_) | set(S_) if R_.get(k) != S_.get(k))
+    by, fm = dict((y["sink"], y) for y in r["cd"]["rows"]), frame_tag_map(G1)
+    tu = lambda G, k: _iv((G["rows"].get(k) or {}).get("term_uid"))                # noqa: E731
+    recorded, blocked = [], [{"sink": s, "why": "missing: a pred row the real end lacks"} for s in r["missing_sinks"]]
+    for s in r["extra_sinks"]:
+        y, why = by.get(s), None
+        if y is None or y["before"] is None or y["after"] is None:
+            why = "sink absent on one side"
+        else:
+            res = [frame_src_resolve(x, fm) for x in y["after"]]
+            nodes = set([_iv(s.split("|", 1)[0])]) | set(_iv(b.split("|", 1)[0]) for b, _t in res)
+            allowed = set().union(*[move_frames.get(n, set()) for n in nodes])
+            tags = set(t for _b, ts in res for t in ts)
+            if sorted(tu(S1f, b) for b in y["before"]) != sorted(tu(G1, b) for b, _t in res):
+                why = "source terminal uids {0} != S1's {1}".format(sorted(tu(G1, b) for b, _t in res), sorted(tu(S1f, b) for b in y["before"]))
+            elif not tags:
+                why = "untagged difference from S1"
+            elif not all(f in allowed for _tn, f in tags):
+                why = "frame tag(s) {0} not the plan's frame(s) {1} for node(s) {2}".format(sorted(tags, key=str), sorted(allowed), sorted(nodes))
+            if why and inherit:                                                     # card 161-a3-1 (PD394(a) class 1, PD395(b) class 2)
+                c, w2, act = pb_inherited_row(s, y, res, G1, S1f, R_.get(s), inherit)
+                if c:
+                    recorded.append({"sink": s, "why": w2, "after": y["after"], "class": c, "action": act})
+                    continue
+                why = "{0} | {1}".format(why, w2)
+        (blocked if why else recorded).append({"sink": s, "why": why or "tag only: S1 source uids, plan frame", "after": y and y["after"]})
+    rp = set((_iv(x["sink"].split("|", 1)[0]), x["sink"].split("|")[2]) for x in recorded)
+    left = [p for p in r["pairs_extra"] if tuple(p) not in rp]
+    ok = not eq_diff and not blocked and not left and not r["pairs_missing"] and list(unlicensed or []) == []
+    return {"ok": ok, "old": r, "eq_diff": eq_diff, "recorded": recorded, "blocked": blocked, "pairs_extra_left": left,
+            "pairs_missing": r["pairs_missing"], "n_rows": [len(R_), len(S_)]}
+
+
+# ---------------------------------------------------------------------------------------------- PD394(a) / PD395(b) (card 161-a3-1)
+# docs/d1/ring-p5b.md items 394 / 395: PB records a pred-extra row of a case an ADOPTED earlier step created - class 1 (inherited row,
+# unchanged since the base) and class 2 (an unwired base sink this plan wires into that case through its own tunnels). The adopted
+# chain's frames come from each step's recorded run bindings (adopted_scratch.jsonl -> scratch json `stagexec`), never from where
+# nodes sit now. Measured basis: tools/bench/diag_c161_a2_1_facts.md. Self-test: tools/bench/selftest_c161_pbinherit.py.
+PD374D_PASSTHROUGH = ((376, "error in"), (376, "total data array in"))   # PD374(d) (ring-p5.md:48-53): #376 t0 / t1 pass-through registers
+
+
+def pb_inherit_ctx(plan, flat, base_vi_md5=None, labels=None, fs_pairs=None, S1f=None, V=None, adopt_path=None):
+    """The context pb_inherited_row needs, from files only (PD394(a), PD395(b)). Returns {frames {node: {frame uid}} inherited from the
+    adopted chain (case_move_frames of every adopted plan, its frames through THAT run's bindings), cases {case uid: [frame uids]} of every
+    CaseStructure an adopted plan created, made {uid: action id} / tunnel_case {uid: loop uid} of this plan's created objects (sim uid and
+    through `flat`), connects {(node, term name): action id} of this plan's wires onto a base terminal, R0 / after0 = the base graph's
+    (plan step 0) pb_bound_rows / cdiff `after` per sink, chain, missing, chain_connects {(node, term name): (adopted plan, action id)} of
+    every adopted plan's wires onto a base terminal (newest plan wins), chain_tunnel_case {real tunnel uid: (adopted plan, case uid)}
+    (card 163-a1-4, fp-86)}. The chain is walked in adopted_scratch.jsonl from the base VI's
+    md5 (base_vi_md5, else the plan's finalized base graph 'md5') through each record's input md5; a record whose plan md5 differs from
+    the recorded one, whose json is absent or whose frame stays unbound goes to `missing` and adds nothing.
+    Self-test: tools/bench/selftest_c161_pbinherit.py."""
+    V = V or pure("vigraph")
+    labels = labels if labels is not None else pure("jev_candidates").node_labels_default()
+    fz = plan.get("finalized") or {}
+    if base_vi_md5 is None or fs_pairs is None:
+        bg = jload(ROOT, fz["base"]["path"])
+        base_vi_md5 = base_vi_md5 or bg.get("md5")
+        fs_pairs = fs_pairs if fs_pairs is not None else bg.get("fs_tunnel_pairs", bg.get("fs_pairs"))
+    out = {"frames": {}, "cases": {}, "made": {}, "tunnel_case": {}, "connects": {}, "R0": {}, "after0": {}, "chain": [], "missing": [],
+           "chain_connects": {}, "chain_tunnel_case": {}}
+    recs = [json.loads(x) for x in open(adopt_path or os.path.join(BENCH, "adopted_scratch.jsonl"), encoding="utf-8") if x.strip()]
+    by_art = dict((r["artefact"]["md5"], (i + 1, r)) for i, r in enumerate(recs))
+    cur, seen = base_vi_md5, set()
+    while cur in by_art and cur not in seen:
+        seen.add(cur)
+        ln, r = by_art[cur]
+        cur = (r.get("input") or {}).get("md5")
+        pp, pm = list(r["plan_md5s"].items())[0]
+        sj = os.path.join(ROOT, r["log"].replace("\\", "/")[:-4] + ".json")
+        if not os.path.exists(os.path.join(ROOT, pp)) or md5(os.path.join(ROOT, pp)) != pm or not os.path.exists(sj):
+            out["missing"].append({"line": ln, "plan": pp, "why": "plan md5 changed or plan / scratch json absent"})
+            continue
+        pl, fl = jload(ROOT, pp), run_bind(report=jload(sj).get("stagexec") or [])
+        sym = (jload(ROOT, pl["finalized"]["step_files"][-1]["path"])["state"].get("sym")) or {}
+        mf = case_move_frames(pl, {"sym": sym}, fl)
+        for a in pl.get("actions") or []:
+            if a.get("op") == "create" and a.get("class") == "CaseStructure" and a.get("as") and sym.get("new:" + a["as"]) is not None:
+                fr = sorted((k, fl.get(_iv(v), _iv(v))) for k, v in sym.items() if k.startswith("new:" + a["as"] + ".f"))
+                out["cases"][fl.get(_iv(sym["new:" + a["as"]]), _iv(sym["new:" + a["as"]]))] = [u for _k, u in fr]
+        bad = sorted(u for f in list(mf.values()) + list(out["cases"].values()) for u in f if u < 0)
+        if bad:
+            out["missing"].append({"line": ln, "plan": pp, "why": "frame uid(s) unbound in the step's record: {0}".format(bad)})
+            continue
+        for n, fs in mf.items():
+            out["frames"].setdefault(n, set()).update(fs)
+        for a in pl.get("actions") or []:                                           # card 163-a1-4 (fp-86): what THIS adopted plan wired
+            u, d = (sym.get("new:" + a["as"]) if a.get("as") else None), a.get("dst")
+            if a.get("op") == "tunnel" and u is not None and a.get("loop") is not None:
+                out["chain_tunnel_case"][fl.get(_iv(u), _iv(u))] = (pp, _iv(a["loop"]))
+            if a.get("op") == "wire" and isinstance(d, dict) and isinstance(d.get("uid"), int) and d.get("term"):
+                out["chain_connects"].setdefault((int(d["uid"]), d["term"]), (pp, a.get("id")))   # newest adopted plan first
+        out["chain"].append({"line": ln, "plan": pp, "move_frames": dict((n, sorted(f)) for n, f in mf.items())})
+    sym = (jload(ROOT, fz["step_files"][-1]["path"])["state"].get("sym")) or {}
+    for a in plan.get("actions") or []:
+        u = sym.get("new:" + a["as"]) if a.get("as") else None
+        if u is not None:
+            for x in (_iv(u), flat.get(_iv(u), _iv(u))):
+                out["made"][x] = a.get("id")
+                if a.get("op") == "tunnel" and a.get("loop") is not None:
+                    out["tunnel_case"][x] = _iv(a["loop"])
+        d = a.get("dst")
+        if a.get("op") == "wire" and isinstance(d, dict) and isinstance(d.get("uid"), int) and d.get("term"):
+            out["connects"][(int(d["uid"]), d["term"])] = a.get("id")
+    G0 = pred_end_graph(jload(ROOT, fz["step_files"][0]["path"])["state"], labels, fs_pairs)
+    cd0 = V.computation_diff_frame(S1f or s1_frame_graph(labels), G0)
+    out["R0"], out["after0"] = pb_bound_rows(cd0, G0, V), dict((y["sink"], y["after"]) for y in cd0["rows"])
+    return out
+
+
+def pb_inherited_row(sink, y, res, G1, S1f, bound_end, ctx):
+    """Class 1 / class 2 of ONE pred-extra PB row (docs/d1/ring-p5b.md PD394(a), PD395(b)); y = its cdiff row, res = its `after` sources
+    resolved (frame_src_resolve on G1), bound_end = pb_bound_rows(..., G1)[sink], ctx = pb_inherit_ctx(...). Class 1 (inherited row): the base
+    PB row == bound_end, source terminal uids == S1's (multiset), every tag's frame an inherited frame of the sink's or a source's node.
+    Class 2 (plan-wired into an inherited case): base `after` [] and a wire action of this plan onto the sink (named); the SET of source uids
+    == S1's, each uid's multiplicity 1, or the case's frame count when a tag sits on a frame other than the sink node's inherited frame,
+    which only PD374D_PASSTHROUGH sinks may; every tag = (a tunnel this plan creates on that case, a frame of a case an adopted plan
+    created). Class 3 (card 163-a1-4, fp-86: class 2 CARRIED to a later step): no connect of this plan, but the newest adopted plan with a
+    wire action onto the sink (ctx chain_connects) - base PB == bound_end, (ii) / (iv) as class 2, every tag = (a tunnel THAT plan created
+    on the case, ctx chain_tunnel_case, a frame of that adopted case). Returns (1 | 2 | 3 | None, why, action id or None).
+    Self-tests: tools/bench/selftest_c161_pbinherit.py, tools/bench/selftest_c163_pbchain.py."""
+    import collections as _co
+    node, name = _iv(sink.split("|", 1)[0]), sink.split("|")[2]
+    tu = lambda G, k: _iv((G["rows"].get(k) or {}).get("term_uid"))                # noqa: E731
+    su, eu = sorted(tu(S1f, b) for b in y["before"] or []), sorted(tu(G1, b) for b, _t in res)
+    tags = set(t for _b, ts in res for t in ts)
+    nodes = set([node]) | set(_iv(b.split("|", 1)[0]) for b, _t in res)
+    if not tags:
+        return None, "class 1/2: untagged", None
+    inh = set().union(*[ctx["frames"].get(n, set()) for n in nodes])
+    if ctx["R0"].get(sink) is not None and ctx["R0"].get(sink) == bound_end and su == eu and all(f in inh for _tn, f in tags):
+        return 1, "class 1 (PD394(a)): inherited row - base PB == end, S1 source uids {0}, inherited frame(s) {1}".format(su, sorted(inh)), None
+    w1 = "class 1: base==end {0}, S1 uids {1}, frames {2} in inherited {3}".format(
+        ctx["R0"].get(sink) == bound_end, su == eu, sorted(f for _t, f in tags), sorted(inh))
+    act, own = ctx["connects"].get((node, name)), ctx["frames"].get(node, set())
+    # card 163-a1-4 (fp-86) class 3 = class 2 CARRIED: the sink has no connect of THIS plan but an ADOPTED plan's wire action onto it
+    # (chain_connects); (i) becomes base PB == end (the row is untouched since that step), (iii) uses THAT plan's tunnels; (ii) / (iv) unchanged.
+    cc = None if act else ctx.get("chain_connects", {}).get((node, name))
+    tcase = ctx["tunnel_case"] if cc is None else dict((u, c) for u, (p, c) in ctx["chain_tunnel_case"].items() if p == cc[0])
+    cases = set(tcase.get(tn) for tn, _f in tags)
+    case = list(cases)[0] if len(cases) == 1 else None
+    cf = ctx["cases"].get(case) or []
+    other = set(f for _tn, f in tags if f not in own)
+    mult = set(_co.Counter(eu).values())
+    want = set([len(cf)]) if other else set([1])
+    c1 = (("(i) base after {0} != [] or no connect action".format(ctx["after0"].get(sink, "absent")), ctx["after0"].get(sink) == [] and act)
+          if cc is None else ("(i) carried: base PB != end", ctx["R0"].get(sink) is not None and ctx["R0"].get(sink) == bound_end))
+    fails = [x for x, ok in (
+        c1,
+        ("(ii) source uid set {0} != S1's {1}".format(sorted(set(eu)), sorted(set(su))), set(eu) == set(su) and eu),
+        ("(ii) multiplicity {0} != {1}".format(sorted(mult), sorted(want)), mult == want),
+        ("(iii) tags {0} not ({1} tunnel, frame of its adopted case {2})".format(sorted(tags, key=str), "this plan's" if cc is None else cc[0] + "'s", cf),
+         case is not None and all(tn in tcase and (cc is not None or tn in ctx["made"]) and f in cf for tn, f in tags)),
+        ("(iv) frame(s) {0} beside the sink node's inherited {1} on a non-pass-through sink".format(sorted(other), sorted(own)),
+         own and (not other or (node, name) in PD374D_PASSTHROUGH))) if not ok]
+    if fails:
+        return None, "{0}; class 2{1}: {2}".format(w1, "" if cc is None else " carried", "; ".join(fails)), None
+    if cc is not None:
+        return 3, "class 3 (fp-86): wired by adopted {0} action {1} into adopted case {2} frame(s) {3}, base PB == end, S1 source uids {4} x{5}".format(
+            cc[0], cc[1], case, sorted(set(f for _t, f in tags)), sorted(set(su)), sorted(mult)), cc[1]
+    return 2, "class 2 (PD395(b)): wired by action {0} into adopted case {1} frame(s) {2}, S1 source uids {3} x{4}".format(
+        act, case, sorted(set(f for _t, f in tags)), sorted(set(su)), sorted(mult)), act
+
+
+def pb_386(base_terms, L, real, objs, flat, plan, pred_rows, open_rows, labels, fs_pairs, renames=None, S1f=None, V=None, inherit=None):
+    """The whole PD386(a) PB from a run's pieces - what RingSession.gate_pb calls: L = the sim end (sim uids), real = the read-back end
+    rows, objs = the real objects, flat = run_bind(...). Builds G1 (pb_rename_rows, the sim end's loops re-keyed by the bindings), Gsimb
+    (stagexec.bind_state of L), Gpred (L as is) and returns pb_check_bound's dict + {G1, restored, unlicensed, unbound, move_frames,
+    inherit_frames, inherit_missing}. inherit None = pb_inherit_ctx(plan, flat, ...) (card 161-a3-1, PD394(a)/PD395(b)); False = off.
+    Self-tests: tools/bench/selftest_c158_gates386.py, tools/bench/selftest_c161_pbinherit.py."""
+    import copy as _copy
+    V, SX = V or pure("vigraph"), pure("stagexec")
+    S1f = S1f or s1_frame_graph(labels)
+    Lb, unbound = SX.bind_state(L, {"obj": flat, "term": {}, "diag": {}})
+    pbr, restored, unlic = pb_rename_rows(base_terms, L["terminals"], real, renames)
+    G1 = V.build4(pbr, objs, _copy.deepcopy(Lb["loops"]), labels, fs_pairs, frame_keyed=True)
+    mf = case_move_frames(plan, L, flat)
+    ih = pb_inherit_ctx(plan, flat, labels=labels, fs_pairs=fs_pairs, S1f=S1f, V=V) if inherit is None else (inherit or None)
+    r = pb_check_bound(S1f, G1, pred_end_graph(L, labels, fs_pairs), pred_end_graph(Lb, labels, fs_pairs),
+                       pred_rows, open_rows, mf, unlic, V, inherit=ih)
+    r.update({"G1": G1, "restored": restored, "unlicensed": unlic, "unbound": sorted(unbound),
+              "move_frames": dict((n, sorted(f)) for n, f in mf.items()),
+              "inherit_frames": dict((n, sorted(f)) for n, f in (ih or {}).get("frames", {}).items()), "inherit_missing": (ih or {}).get("missing")})
+    return r
+
+
+def wire_pairs_pos(rows, ob=None, tb=None, base_nodes=None):
+    """(Counter of (source end, sink end) pairs, {wire uid: sorted source ends} of source-only stubs) of one terminal table, ends = position
+    keys (_pos_rows, nodes mapped through ob / tb). An end on a node NOT in base_nodes (a created object) drops its index (-1) when its
+    (node, class, direction) is unique on that node: the simulator's terminal order on a created object is not LabVIEW's (kept_nodes;
+    the created shift register 31347's two faces swap index 0/1, diag_c158_a2_3_facts.md:171-172). A wire with sinks but no source pairs
+    as (None, sink). Self-test: tools/bench/selftest_c158_gates386.py."""
+    import collections as _co
+    P = _pos_rows(rows, ob, tb)
+    grp = _co.Counter((k[0], k[2], k[3]) for k in P)
+    bn = base_nodes
+    end = lambda k: (k[0], -1, k[2], k[3]) if bn is not None and k[0] not in bn and grp[(k[0], k[2], k[3])] == 1 else k   # noqa: E731
+    pairs, stubs = _co.Counter(), {}
+    for w, (a, b) in wire_ends_pos(rows, ob, tb).items():
+        if not b:
+            stubs[w] = sorted(end(x) for x in a)
+            continue
+        for x in (sorted(a) or [None]):
+            for y in sorted(b):
+                pairs[(end(x) if x is not None else None, end(y))] += 1
+    return pairs, stubs
+
+
+def term_identity_pairs(base, sim, real, bind=None, renames=None):
+    """D / TD of PD386(b): term_identity_pos's dict with d_ok / td_ok re-judged PAIR-KEYED. D: the new and the lost (source, sink) pairs
+    (wire_pairs_pos, sim owners via `bind`) of real == the sim's, as multisets, else BLOCK; source-only stubs are dropped on both sides
+    and RECORDED (`stubs` sim_only / real_only / both, by source ends). TD: an `unwired` base key whose wire in the sim end is a
+    source-only stub is RECORDED (`unwired_recorded`); moved, lost != gone, or any other unwired key BLOCKS. Adds `pairs` (counts,
+    one-sided pairs) and `d_key`. Self-test: tools/bench/selftest_c158_gates386.py."""
+    ti = term_identity_pos(base, sim, real, bind=bind, renames=renames)
+    tb, ob = _bind_maps(bind)
+    bn = set(k[0] for k in _pos_rows(base))
+    Pb, _Hb = wire_pairs_pos(base, base_nodes=bn)
+    Ps, Hs = wire_pairs_pos(sim, ob, tb, bn)
+    Pr, Hr = wire_pairs_pos(real, base_nodes=bn)
+    ns, nr, ls, lr = Ps - Pb, Pr - Pb, Pb - Ps, Pb - Pr
+    d_ok = ns == nr and ls == lr
+    stubs = stub_sides(Hs, Hr)                                                       # card 159-e1-1: the block that stood here, as a call
+    S = _pos_rows(sim)
+    rec = [k for k in ti["unwired"] if k in S and _iv(S[k].get("wire_uid") or 0) in Hs]
+    unw = [k for k in ti["unwired"] if k not in rec]
+    st = lambda C: sorted(map(str, C.elements()))[:12]                              # noqa: E731
+    out = dict(ti)
+    out.update({"d_ok": d_ok, "td_ok": not unw and not ti["moved"] and set(ti["lost"]) == set(ti["gone"]), "unwired": unw,
+                "unwired_recorded": rec, "stubs": stubs, "d_key": "(source, sink) position pairs; source-only stubs RECORDED (PD386(b))",
+                "pairs": {"new_real": sum(nr.values()), "new_sim": sum(ns.values()), "lost_real": sum(lr.values()), "lost_sim": sum(ls.values()),
+                          "new_only_real": st(nr - ns), "new_only_sim": st(ns - nr), "lost_only_real": st(lr - ls), "lost_only_sim": st(ls - lr)}})
+    return out
+
+
+def stub_sides(hs, hr):
+    """card 159-e1-1: the one-sided source-only stubs of a sim side and a real side - hs / hr = {wire uid: source ends} -> {sim_only:
+    [{wire, sources}], real_only: [...], both: n}; a stub is one-sided when no stub of the other side has the SAME source ends (wire uids
+    are never compared). The block term_identity_pairs carried inline (PD386(b)) as one call for D and CEN2.
+    Self-test: tools/bench/selftest_c159_cen2_ends.py (and selftest_c158_gates386.py through term_identity_pairs)."""
+    hs, hr = dict((w, tuple(v)) for w, v in hs.items()), dict((w, tuple(v)) for w, v in hr.items())
+    vs, vr = set(hs.values()), set(hr.values())
+    return {"sim_only": [{"wire": w, "sources": list(v)} for w, v in sorted(hs.items(), key=str) if v not in vr],
+            "real_only": [{"wire": w, "sources": list(v)} for w, v in sorted(hr.items(), key=str) if v not in vs],
+            "both": len(vs & vr)}
+
+
+def wire_end_pairs(rows, base_terms, base_frames):
+    """card 159-e1-1 (PD389(b), docs/d1/ring-p5b.md): (Counter of (source key, sink key, frame) end pairs, {wire uid: sorted source keys}
+    of source-only stubs) of one terminal table (vigraph.dedupe_rows first). Terminal key = its term uid when `base_terms` {term uid:
+    owner class} holds it with the SAME OWNER CLASS (a re-issued uid on another kind of node is not base; the owner UID is not compared:
+    a moved control terminal's owner is its new diagram, real 31506 vs sim 23405 for 3453, diag_c159_e1_1_probe.log:25-27), else ('new',
+    owner class) - a created object's uids are the simulator's own; frame = the wire's frame_diagram (one per wire: 0 multi-frame wires in the 94ffff94 read and
+    the p5s02a sim end, diag_c159_e1_1_probe.log:10-11) when in `base_frames`, else 'new'. A wire with sinks and no source pairs as
+    (None, sink, frame). Wire uids are in no key (LabVIEW re-issues them, diag_c159_cen2_wire.md:19-26). The per-end key of
+    diag_c159_b1_1.py:309-319 as a shared call. Self-test: tools/bench/selftest_c159_cen2_ends.py."""
+    import collections as _co
+    rows, _rec = pure("vigraph").dedupe_rows(rows or [])
+    bf = set(_iv(f) for f in base_frames)
+    tk = lambda r: (_iv(r["term_uid"]) if base_terms.get(_iv(r["term_uid"]), object()) == str(r.get("owner_class") or "")   # noqa: E731
+                    else ("new", str(r.get("owner_class") or "")))
+    by = {}
+    for r in rows:
+        w = _iv(r.get("wire_uid") or 0)
+        if _on(w):
+            e = by.setdefault(w, ([], [], set()))
+            e[0 if r.get("is_source") else 1].append(tk(r))
+            e[2].add(_iv(r.get("frame_diagram") or 0))
+    pairs, stubs = _co.Counter(), {}
+    for w, (a, b, fr) in by.items():
+        fk = [f if f in bf else "new" for f in sorted(fr, key=str)]
+        f = fk[0] if len(fk) == 1 else tuple(fk)
+        if not b:
+            stubs[w] = sorted(a, key=str)
+            continue
+        for x in (sorted(a, key=str) or [None]):
+            for y in sorted(b, key=str):
+                pairs[(x, y, f)] += 1
+    return pairs, stubs
+
+
+def cen2_wire_ends(base, sim, real, base_frames=()):
+    """card 159-e1-1 (PD389(b), docs/d1/ring-p5b.md): CEN2's Wire class judged by ENDS. base / sim / real = terminal rows (base = c0's
+    graph, sim = the simulated end, real = the run's end); base_frames = extra base frame uids (a graph's `owners` keys) beside the base
+    rows' own frames. New pairs = wire_end_pairs of an end minus base's (multisets); ok iff the sim's new pairs == the real's. Source-only
+    stubs are in no pair and are RECORDED one-sided by stub_sides (PD386(b)). Returns {ok, new_sim, new_real, only_sim, only_real,
+    stubs, key}. Self-test: tools/bench/selftest_c159_cen2_ends.py."""
+    bt = dict((_iv(r["term_uid"]), str(r.get("owner_class") or "")) for r in pure("vigraph").dedupe_rows(base or [])[0])
+    bf = set(_iv(r.get("frame_diagram") or 0) for r in base or []) | set(_iv(k) for k in base_frames or ())
+    Pb, _hb = wire_end_pairs(base, bt, bf)
+    Ps, Hs = wire_end_pairs(sim, bt, bf)
+    Pr, Hr = wire_end_pairs(real, bt, bf)
+    ns, nr = Ps - Pb, Pr - Pb
+    el = lambda C: sorted(C.elements(), key=str)                                      # noqa: E731
+    return {"ok": ns == nr, "new_sim": sum(ns.values()), "new_real": sum(nr.values()), "only_sim": el(ns - nr), "only_real": el(nr - ns),
+            "stubs": stub_sides(Hs, Hr),
+            "key": "(source, sink, frame): base term uid on its base owner class / ('new', owner class); base frame / 'new' (PD389(b))"}
+
+
+def scratch_census(log_path, sum_json=None, key="CENSUS-ALL new uids by class (every class) "):
+    """(census {class: n}, whole-file line number, last-segment start line) from the ONE `key` line in the LAST bgrun segment of a
+    scratch log (tools/bench/diag_c148_a2_4_census.py:31-40 as a call); ValueError when there is not exactly one such line, or when
+    sum_json's census_all.new_by_class differs. Self-test: tools/bench/selftest_c158_gates386.py."""
+    lines = open(log_path, encoding="utf-8", errors="replace").read().splitlines()
+    seg0 = max([i for i, ln in enumerate(lines) if ln.startswith("BGRUN START")] or [0])
+    hit = [(i + 1, ln) for i, ln in enumerate(lines) if i >= seg0 and key in ln]
+    if len(hit) != 1:
+        raise ValueError("scratch_census: {0} '{1}' lines in the last segment of {2}".format(len(hit), key.strip(), log_path))
+    meas = json.loads(hit[0][1].split(key, 1)[1])
+    if sum_json:
+        sj = (jload(sum_json).get("census_all") or {}).get("new_by_class")
+        if sj != meas:
+            raise ValueError("scratch_census: log line {0} != {1} census_all.new_by_class {2}".format(meas, sum_json, sj))
+    return meas, hit[0][0], seg0 + 1
+
+
+def op_class_census(prev_rows, rows):
+    """Class census between two whole-VI terminal reads (no extra LabVIEW read): {terms: {term class: n new term uids}, owners: {owner
+    class: n new owner uids}, wires: n new wire uids, lost_terms, lost_owners, lost_wires}. Self-test: tools/bench/selftest_c158_gates386.py."""
+    def idx(rs):
+        t, o, w = {}, {}, set()
+        for r in rs or []:
+            t[_iv(r["term_uid"])] = r.get("term_class")
+            o[_iv(r["owner_uid"])] = r.get("owner_class")
+            if _on(_iv(r.get("wire_uid") or 0)):
+                w.add(_iv(r["wire_uid"]))
+        return t, o, w
+    (ta, oa, wa), (tb_, ob_, wb) = idx(prev_rows), idx(rows)
+    cnt = lambda d, ks: dict(sorted(__import__("collections").Counter(str(d[k]) for k in ks).items()))   # noqa: E731
+    return {"terms": cnt(tb_, set(tb_) - set(ta)), "owners": cnt(ob_, set(ob_) - set(oa)), "wires": len(wb - wa),
+            "lost_terms": len(set(ta) - set(tb_)), "lost_owners": len(set(oa) - set(ob_)), "lost_wires": len(wa - wb)}
+
+
+def op_class_census_install(rs, ops=(16, 17)):
+    """PRINTING ONLY (PD386(c), the PD385(b) per-op census owed): wrap the ring backend's read (sink_gate_backend_class) so the whole-VI
+    terminal reads taken after ops k-1 and k (k in `ops`; the op = len(rs.x.report) + 1 at read time) are KEPT - no extra read, no act
+    change. op_class_census_print prints them. Returns the holder dict. Self-test: tools/bench/selftest_c158_gates386.py."""
+    cls = sink_gate_backend_class()
+    want = set(ops) | set(k - 1 for k in ops)
+    H = {"rs": rs, "ops": tuple(ops), "want": want, "reads": {}}
+    if not getattr(cls, "_opc_base", None):
+        cls._opc_base = cls.read
+
+        def read(self):
+            rows = cls._opc_base(self)
+            h = getattr(cls, "_opc", None)
+            x = h and getattr(h["rs"], "x", None)
+            if x is not None:
+                k = len(getattr(x, "report", None) or []) + 1
+                if k in h["want"]:
+                    h["reads"][k] = list(rows or [])
+            return rows
+        cls.read = read
+    cls._opc = H
+    return H
+
+
+def op_class_census_print(h):
+    """Print one `OPCENSUS op <k>` line per op of an op_class_census_install holder (or why it was not measured). Returns the dict."""
+    out = {}
+    for k in h["ops"]:
+        a, b = h["reads"].get(k - 1), h["reads"].get(k)
+        if a is None or b is None:
+            print("  OPCENSUS op {0} not measured (whole read after op {1}: {2}, after op {0}: {3}; dry run or op not reached)".format(
+                k, k - 1, a is not None, b is not None), flush=True)
+            continue
+        out[k] = op_class_census(a, b)
+        print("  OPCENSUS op {0} (terminal reads after op {1} -> op {0}, no extra read) {2}".format(k, k - 1, json.dumps(out[k], sort_keys=True)),
+              flush=True)
+    return out
+
+
+def retry_card_arg(argv, script):
+    """PRINTING ONLY: the `--retry-card <path>` / `RETRY_CARD=<path>` judgement card in a recipe's own argv (stage_prerun.RETRY_CARD_RE,
+    the form the launch gate reads) -> {path, id, retry_of, matches: retry_of == stage_prerun.stage_key(script)}; {'path': None} when the
+    card rides on the bgrun line instead (bgrun / the launch gate read it there). Never refuses. Self-test: selftest_c158_gates386.py."""
+    SP = pure("stage_prerun")
+    m = SP.RETRY_CARD_RE.search(" ".join(argv or []))
+    if not m:
+        return {"path": None, "note": "not in this process's argv (a bgrun --retry-card is read by the launch gate and bgrun)"}
+    p = m.group(1) if os.path.isabs(m.group(1)) else os.path.join(ROOT, m.group(1))
+    try:
+        c = jload(p)
+    except (OSError, ValueError) as e:
+        return {"path": m.group(1), "error": str(e)[:160]}
+    return {"path": m.group(1), "id": c.get("id"), "retry_of": c.get("retry_of"), "matches": c.get("retry_of") == SP.stage_key(script)}
+
+
 # ---------------------------------------------------------------------------------------------- SINK GATES (PD355(b), PD366(e))
 def sink_gate_spec(e, actions, base, sim_end):
     """One sink-gate census row (prep_*_session.json `sink_gate_census`, needs_sink_gate) -> its declared sink gate spec
@@ -1905,6 +2450,51 @@ def sink_gate_backend_class():
 
 
 # ---------------------------------------------------------------------------------------------- ONE RING SESSION (the recipe body)
+class SimCensus(dict):
+    """card 159-a4-1 (PD387(e)): a {uid: class} census snapshot taken from a stagesim STATE, not from LabVIEW; Stage.census_gate
+    compares two of them even in a dry run. Self-test: tools/bench/selftest_c159_a4_1.py."""
+    source = "stagesim"
+
+
+def sim_census_snapshot(state, classes=None):
+    """card 159-a4-1 (PD387(e)): the SimCensus {uid: class} of one stagesim state - objs by class, terminals by term_class, every
+    wire uid on a terminal row as 'Wire', every diagram uid as 'Diagram' - kept to `classes` when given (as RingSession.census_snapshot
+    keeps the pred's classes). Returns a SimCensus. Self-test: tools/bench/selftest_c159_a4_1.py."""
+    d = SimCensus()
+    for o in state.get("objs") or []:
+        d[int(o["uid"])] = str(o["class"])
+    for r in state.get("terminals") or []:
+        d[int(r["term_uid"])] = str(r.get("term_class") or "Terminal")
+        if r.get("wire_uid"):
+            d[int(r["wire_uid"])] = "Wire"
+    for k in state.get("diagrams") or {}:
+        d.setdefault(int(k), "Diagram")
+    if classes is not None:
+        keep = set(classes)
+        for u in [u for u, c in d.items() if c not in keep]:
+            del d[u]
+    return d
+
+
+def census_unpredicted_reason(pred):
+    """card 159-a4-1 (PD387(e), docs/violation-decisions.md device-failed 2026-10-10 03:2x): None when a pred's census block covers
+    every op of its plan, else why it is UNPREDICTED - an empty census, census_overall UNPREDICTED or absent, or any non-measured
+    verdict with rows left in census_unpredicted. A MEASURED-* census (one whole-run measurement) covers every op. Returns None or a
+    str. Self-test: tools/bench/selftest_c159_a4_1.py."""
+    pred = pred or {}
+    un = list(pred.get("census_unpredicted") or [])
+    ov = str(pred.get("census_overall") or "")
+    if not pred.get("census"):
+        return "census block empty"
+    if ov.startswith("MEASURED"):
+        return None
+    if not ov:
+        return "census_overall absent - coverage of the plan's ops not stated"
+    if ov == "UNPREDICTED" or un:
+        return "census_overall {0}, {1} plan row(s) not predicted {2}".format(ov, len(un), un[:6])
+    return None if ov == "PASS" else "census_overall {0}".format(ov)
+
+
 class RingSession(object):
     """The inputs of one ring stage session and the gates its body runs - stage_d1_ring_p5s01a.py:31-191 as calls. A recipe builds
     ONE RingSession at module level from its four input files and calls, in body(s): gate_l0 -> start/discard_work -> handles ->
@@ -1933,7 +2523,7 @@ class RingSession(object):
         self.SGS = [sink_gate_spec(e, self.A, self.BASE, self.SIM_END) for e in self.SG_CENSUS]
         self.SINK_GATES = [{"gate": d["gate"], "sink": d["sink"]} for d in self.SGS]
         self.SINK_FNS = dict((d["gate"], (lambda e, _d=d: self.sink_read(e, _d))) for d in self.SGS)
-        self.x = self.be = self.L = self.ti = None
+        self.x = self.be = self.L = self.ti = self.real = None
         self.made, self.on = [], []
 
     def stem(self):
@@ -1955,12 +2545,12 @@ class RingSession(object):
         return mod("bench_prep").labview_handles()
 
     def gate_l0(self, s):
-        """L0 (FATAL): plan final + open_rows_match + plan_in == <plan>_in; base graph md5 == pred == file; bed md5 == pred; plan end
-        cdiff == pred; pred keyed to this plan's md5."""
+        """L0 (FATAL): plan final + open_rows_match + plan_in == <plan>_in or <plan>_in<N> (plan_in_matches_stem); base graph md5 == pred == file;
+        bed md5 == pred; plan end cdiff == pred; pred keyed to this plan's md5."""
         P, PRED, fz = self.P, self.PRED, self.P["finalized"]
         st = self.stem()
-        s.gate("L0 plan FINAL, open_rows_match, plan_in = {0}_in; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan".format(st),
-               P.get("final") is True and fz.get("open_rows_match") is True and os.path.splitext(fz["plan_in"]["path"])[0].endswith(st + "_in")
+        s.gate("L0 plan FINAL, open_rows_match, plan_in = {0}_in[N]; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan".format(st),
+               P.get("final") is True and fz.get("open_rows_match") is True and plan_in_matches_stem(fz["plan_in"]["path"], st)
                and fz["base"]["md5"] == PRED["graph"]["md5"] == md5(os.path.join(ROOT, fz["base"]["path"])) and self.BASE["md5"] == PRED["bed_md5"]
                and sorted(fz["end_cdiff_rows"]) == PRED["cdiff_rows"] and PRED["plan"]["md5"] == md5(self.plan_path),
                (md5(self.plan_path), fz["base"], self.BASE["md5"]), fatal=True)
@@ -2007,6 +2597,7 @@ class RingSession(object):
         """NG (crossing ops' new tunnel names == the simulator's), FR (FATAL: created objects on the sim end's frames; real frames ==
         the sim end's), D (new / lost wires == the sim's, position keys via term_identity_gates). Returns the term_identity dict."""
         x, A, L = self.x, self.A, None
+        self.real = real                                                           # card 159-e1-1: gate_cen2's Wire ends (PD389(b))
         frames = lambda rows: set(int(r["frame_diagram"] or 0) for r in rows)      # noqa: E731
         s.gate("NG every crossing op's NEW tunnel names == the simulator's (stagexec.tunnel_name_check, per op, from the step files): {0} op(s) {1}".format(
             len(x.name_checks), [c["k"] for c in x.name_checks]), all(c["ok"] for c in x.name_checks), x.name_checks[:6])
@@ -2019,15 +2610,49 @@ class RingSession(object):
         s.gate("FR the {0} created objects sit on {1} frame(s) of the simulated end; real frames == the sim end's".format(len(made), on),
                len(made) == NC and (on or NC == 0) and set(on) <= sf and frames(real) == sf,
                {"on": on, "nc": NC, "extra": sorted(frames(real) - sf), "missing": sorted(sf - frames(real))}, fatal=True)
-        ti = self.ti = term_identity_gates(self.BASE["terminals"], L["terminals"], real, renames=self.REN, bind={"term": x.bind["term"], "obj": x.bind["obj"]})
-        s.gate("D new wires {0} == sim's {1}; lost {2} == sim's {3} (wire uid + source identity, stagekit.wire_keys_356); deleted uids re-used: noted {4}, bad {5}".format(
-            ti["d_new"], len(ti["sim_new"]), ti["d_lost"], len(ti["sim_lost_w"]), [n["wire"] for n in ti["reuse_noted"]], [n["wire"] for n in ti["reuse_bad"]]), ti["d_ok"],
-            {"new": ti["new"], "lost": ti["lost_w"][:20], "reuse_noted": ti["reuse_noted"][:6], "reuse_bad": ti["reuse_bad"][:6]})
+        # card 158-a3-1 (PD386(b)): D is judged PAIR-KEYED (term_identity_pairs); source-only stubs are RECORDED, not compared
+        ti = self.ti = term_identity_pairs(self.BASE["terminals"], L["terminals"], real, renames=self.REN, bind={"term": x.bind["term"], "obj": x.bind["obj"]})
+        pz = ti["pairs"]
+        s.gate("D new (source, sink) pairs {0} == sim's {1}; lost {2} == sim's {3} (position pairs, stagekit.term_identity_pairs PD386(b)); source-only stubs RECORDED sim-only {4} real-only {5}; deleted uids re-used: noted {6}".format(
+            pz["new_real"], pz["new_sim"], pz["lost_real"], pz["lost_sim"], [d["wire"] for d in ti["stubs"]["sim_only"]], [d["wire"] for d in ti["stubs"]["real_only"]],
+            [n["wire"] for n in ti["reuse_noted"]]), ti["d_ok"], {"pairs": pz, "wires_new": ti["new"], "wires_lost": ti["lost_w"][:20], "reuse_noted": ti["reuse_noted"][:6]})
+        for d in ti["stubs"]["sim_only"] + ti["stubs"]["real_only"]:
+            s.fact("RECORD D source-only stub (no sink, carries nothing; PD386(b)) wire {0} sources {1} - {2} only".format(
+                d["wire"], d["sources"], "sim" if d in ti["stubs"]["sim_only"] else "real"))
         return ti
 
-    def gate_cen2(self, s, c0, c1):
-        """CEN2: the new-object census between snapshots c0 and c1 == the pred's census. Returns s.census_gate's delta."""
-        return s.census_gate("CEN2 new-object census (classes of the pred) == {0} census".format(os.path.basename(self.pred_path)), c0, c1, self.PRED["census"])
+    def gate_cen2(self, s, c0, c1, real=None):
+        """CEN2: the new-object census between snapshots c0 and c1 == the pred's census. Returns s.census_gate's delta.
+        card 159-a4-1 (PD387(e)): in a DRY run c0 / c1 are the SIMULATED census of the plan's step_00 and of its simulated end
+        (sim_census_snapshot, the pred's classes), so CEN2 is computed, not stubbed; a census that does not cover every op of the
+        plan (census_unpredicted_reason) is UNPREDICTED, never a PASS.
+        card 159-e1-1 (PD389(b)): the Wire class is judged by ENDS - cen2_wire_ends(base rows, sim end rows, real end rows): the new
+        (source, sink, frame) pairs of the sim end == the real end's; real = `real` or the rows gates_ng_fr_d kept. The Wire uid
+        counts are printed as a UID-REUSE fact and one-sided source-only stubs as RECORD facts (not counted); every other class keeps
+        the uid census. Without real rows (gates_ng_fr_d not run) or without Wire in the pred's classes: the uid census as before."""
+        label = "CEN2 new-object census (classes of the pred) == {0} census".format(os.path.basename(self.pred_path))
+        if self.DRY:
+            c0 = sim_census_snapshot(jload(ROOT, self.P["finalized"]["step_files"][0]["path"])["state"], self.SRC)
+            c1 = sim_census_snapshot(self.SIM_END, self.SRC)
+        why = census_unpredicted_reason(self.PRED)
+        if why:
+            return s.census_gate(label, c0, c1, self.PRED["census"], unpredicted=why)
+        rows = real if real is not None else self.real
+        if rows is None or "Wire" not in self.SRC:
+            return s.census_gate(label, c0, c1, self.PRED["census"])
+        e = cen2_wire_ends(self.BASE["terminals"], self.SIM_END["terminals"], rows, self.BASE.get("owners") or {})
+        sw = sim_census_snapshot(jload(ROOT, self.P["finalized"]["step_files"][0]["path"])["state"], ("Wire",))
+        n_sim = sum(1 for u in sim_census_snapshot(self.SIM_END, ("Wire",)) if u not in sw)
+        n_got = sum(1 for u, c in (c1 or {}).items() if c == "Wire" and u not in (c0 or {}))
+        s.fact("UID-REUSE CEN2 Wire by uid: {0} new uid(s) c0->c1, declared {1}, sim end {2}; by ends new pairs sim {3} / real {4} - "
+               "the Wire verdict is the end pairs (PD389(b))".format(n_got, self.PRED["census"].get("Wire"), n_sim, e["new_sim"], e["new_real"]))
+        for side in ("sim_only", "real_only"):
+            for d in e["stubs"][side]:
+                s.fact("RECORD CEN2 source-only stub (no sink, in no end pair; PD386(b) / PD389(b)) wire {0} sources {1} - {2} only".format(
+                    d["wire"], d["sources"], side.split("_")[0]))
+        det = {"new_pairs_sim": e["new_sim"], "new_pairs_real": e["new_real"], "only_sim": e["only_sim"][:12], "only_real": e["only_real"][:12],
+               "uid_counts (c0->c1, declared, sim)": [n_got, self.PRED["census"].get("Wire"), n_sim], "key": e["key"]}
+        return s.census_gate(label, c0, c1, self.PRED["census"], judged={"Wire": (e["ok"], det)})
 
     def gate_td(self, s, real):
         """TD: every base terminal the sim keeps wired is still wired; identities lost == the plan's deletes (position key). Records
@@ -2036,24 +2661,29 @@ class RingSession(object):
         s.gate("TD every base terminal the sim keeps wired is still wired; identities lost == the plan's deletes (key {0}, stagekit.term_identity_gates); renames {1}, unlicensed {2}".format(
             ti.get("td_key", "uid/owner/name"), len(ti.get("renames") or []), ti.get("unlicensed_renames")),
                ti["td_ok"], {"unwired": ti["unwired"][:20], "lost": ti["lost"][:20], "plan_deletes": ti["gone"][:20], "recycled_uids": ti["recycled"][:20],
-                             "raw_lost": ti["raw_lost"][:20], "renames": (ti.get("renames") or [])[:10], "unlicensed_renames": ti.get("unlicensed_renames")})
+                             "raw_lost": ti["raw_lost"][:20], "renames": (ti.get("renames") or [])[:10], "unlicensed_renames": ti.get("unlicensed_renames"),
+                             "unwired_recorded": ti.get("unwired_recorded")})
+        for k in ti.get("unwired_recorded") or []:                                 # card 158-a3-1 (PD386(b))
+            s.fact("RECORD TD base key {0} unwired in real: its sim-end wire is a source-only stub (no sink; PD386(b))".format(k))
         s.R["term_identity"] = ti
         s.R["real_end_rows"] = [[r["term_uid"], r.get("owner_uid"), r.get("term_name"), r.get("wire_uid"), bool(r.get("is_source"))] for r in real]   # review c141-2 s4.2
 
     def gate_pb(self, s, real):
         """PB (FATAL, before save): pb_check(S1, real end) - by POSITION (fp-70). The real end's rows get the sim end's names on kept
         base nodes first (pb_rename_rows, PD366(e)); objects = the backend's last read. Returns the cdiff sink list."""
-        import copy as _copy
+        # card 158-a3-1 (PD386(a)): pb_386 - real PB == the sim end's PB re-keyed by the run's bindings (frame uids, not ordinals); a
+        # pred-extra row that differs from S1 only by a plan-frame tag with S1's source terminal uids is RECORDED; anything else BLOCKS
         L, be = self.L, self.be
-        V = pure("vigraph")
-        pbr, restored, unlic = pb_rename_rows(self.BASE["terminals"], L["terminals"], real, self.REN)
-        G1 = V.build4(pbr, getattr(be, "last_objs", None) or be.st["objs"], _copy.deepcopy(L["loops"]), self.LAB, self.FSPAIRS, frame_keyed=True)
-        r = pb_check(s1_frame_graph(self.LAB), G1, pred_end_graph(L, self.LAB, self.FSPAIRS), self.PRED["cdiff_rows"], self.P["open_rows"], unlic)
-        s.gate("PB frame-keyed cdiff(S1, real end) by POSITION (owner, index, class) == the pred's {0} rows ({1} slots) and the plan's {2} open (node, term) pairs; no unlicensed rename (FATAL, before save)".format(
-            r["pred_rows"], r["slots_want"], len(self.P["open_rows"])), r["ok"],
-               {"extra": r["extra_sinks"], "missing": r["missing_sinks"], "pairs_extra": r["pairs_extra"], "pairs_missing": r["pairs_missing"],
-                "restored": restored, "unlicensed": unlic}, fatal=True)
-        return r["rows"]
+        r = pb_386(self.BASE["terminals"], L, real, getattr(be, "last_objs", None) or be.st["objs"], run_bind(bind=self.x.bind), self.P,
+                   self.PRED["cdiff_rows"], self.P["open_rows"], self.LAB, self.FSPAIRS, self.REN)
+        o = r["old"]
+        for x in r["recorded"]:
+            s.fact("RECORD PB {0}: {1} (PD386(a)) - after {2}".format(x["sink"], x["why"], x["after"]))
+        s.gate("PB frame-keyed cdiff(S1, real end) by POSITION (owner, index, class) == the sim end's re-keyed by the run's bindings ({0} rows) and == the pred's {1} rows ({2} slots) + {3} RECORDED tag-only row(s), the plan's {4} open (node, term) pairs; no unlicensed rename (FATAL, before save)".format(
+            r["n_rows"], o["pred_rows"], o["slots_want"], len(r["recorded"]), len(self.P["open_rows"])), r["ok"],
+               {"eq_diff": r["eq_diff"][:6], "blocked": r["blocked"][:6], "pairs_extra_left": r["pairs_extra_left"], "pairs_missing": r["pairs_missing"],
+                "recorded": [x["sink"] for x in r["recorded"]], "move_frames": r["move_frames"], "restored": r["restored"], "unlicensed": r["unlicensed"]}, fatal=True)
+        return o["rows"]
 
     def finish(self, s, h0, rk, dc, key, level, save=True):
         """PH / HB (handles open -> save <= +700, PD236(b)), the rule-6 GUI save (broken by design), PS (saved, md5 differs, input
@@ -2105,8 +2735,8 @@ def census_all_install(stage_cls=None):
         _CENSUS_ALL["snaps"].append(dict(d))
         return d
 
-    def cg_print(self, label, before, after, declared):
-        got = _cg(self, label, before, after, declared)
+    def cg_print(self, label, before, after, declared, **kw):
+        got = _cg(self, label, before, after, declared, **kw)                       # card 159-a4-1: unpredicted= passes through
         if isinstance(before, dict) and isinstance(after, dict) and len(_CENSUS_ALL["snaps"]) >= 2:
             b, a = _CENSUS_ALL["snaps"][0], _CENSUS_ALL["snaps"][-1]
             cnt = lambda d: dict((c, sum(1 for v in d.values() if v == c)) for c in set(d.values()))   # noqa: E731
@@ -2241,6 +2871,155 @@ def scratch_tail(st, rc, gone, key, tag, log, base_vi, base_md5, pred_path, plan
         json.dump({"card": card, "rc": rc, "peak_mb": peak, "x10": X, "final": fin, "final_md5": res.get("md5"),
                    "inputs_ok": ok_in, "gone": gone, "census_all": st.R.get("census_all")}, f, indent=1)
     return rc or (0 if (ok_mem and ok_in and gone) else 1)
+
+
+# ---- step-N mapping of a split plan onto the REAL graph of the previous step's adopted file (card 160-b1-1, PD390(c)) -----------------------
+# Moved from tools/bench/prep_c159_c1_1_lib.py (card 159-c1-1, left in place as history); bodies unchanged. Self-test:
+# tools/bench/selftest_c160_stagemap.py (155-a2-1's recorded case + stagekit == prep_c159_c1_1_lib on every function).
+import copy                                                                        # noqa: E402
+import re                                                                          # noqa: E402
+FRAME_SYM = re.compile(r"\.f[0-9]+$")
+
+
+def made_symbols(acts):
+    """The 'new:' symbols the rows create: every `as` alias, plus <as>L / <as>R of an add_shift_reg; returns a set.
+    Self-test: tools/bench/selftest_c160_stagemap.py."""
+    return set("new:" + a["as"] for a in acts if a.get("as")) | set("new:" + a["as"] + s for a in acts if a.get("op") == "add_shift_reg" for s in "LR")
+
+
+def _head(x):
+    return x if FRAME_SYM.search(x) else x.split(".", 1)[0]
+
+
+def used_symbols(acts, made):
+    """Sorted earlier-step symbols the rows reference: 'new:X' (address heads) or 'new:X.f<k>' (frame diagrams), minus `made`; returns a list.
+    Self-test: tools/bench/selftest_c160_stagemap.py."""
+    acc = set()
+
+    def walk(x):
+        if isinstance(x, str) and x.startswith("new:"):
+            acc.add(_head(x))
+        elif isinstance(x, dict):
+            for v in x.values():
+                walk(v)
+        elif isinstance(x, list):
+            for v in x:
+                walk(v)
+    walk(acts)
+    return sorted(s for s in acc if s not in made)
+
+
+def map_symbols(used, sym, bound, graph):
+    """(REAL, bad, lines): each used symbol -> sim uid (sym) -> real uid (bound); a frame symbol's real uid must be an owners entry
+    ['CaseStructure', <the mapped case>], any other must own terminal rows or an obj in `graph`. Self-test: tools/bench/selftest_c160_stagemap.py."""
+    own = graph.get("owners") or {}
+    objs = set(int(o["uid"]) for o in graph.get("objs") or [])
+    REAL, bad, lines = {}, [], []
+    for s in used:
+        su = sym.get(s)
+        ru = bound.get(su) if su is not None else None
+        if ru is None:
+            bad.append((s, su, "no sim uid / no bound entry"))
+            continue
+        if FRAME_SYM.search(s):
+            ow = own.get(str(ru))
+            cs = s.rsplit(".", 1)[0]
+            ok = bool(ow) and ow[0] == "CaseStructure" and int(ow[1]) == REAL.get(cs, bound.get(sym.get(cs)))
+            lines.append("MAP {0} -> sim {1} -> real diagram #{2}; owners entry {3}".format(s, su, ru, ow))
+        else:
+            rr = [r for r in graph["terminals"] if int(r["owner_uid"]) == int(ru) or int(r["term_uid"]) == int(ru)]
+            ok = bool(rr) or int(ru) in objs
+            lines.append("MAP {0} -> sim {1} -> real #{2} ({3} rows; obj {4})".format(s, su, ru, len(rr), int(ru) in objs))
+        REAL[s] = ru
+        if not ok:
+            bad.append((s, su, ru))
+    return REAL, bad, lines
+
+
+def map_frames(acts, all_acts, sym, bound, owners, default_frames=("False", "True")):
+    """(FMAP {(action id, end uid): {...,'addr': '#<uid>'}}, bad, lines): a `frame` name on an end whose tunnel (`tunnel` action in all_acts)
+    sits on a case created in all_acts -> index in that case's `frames` -> '<case>.f<k>' -> sim -> real diagram, checked against
+    stagesim.base_case_frames(owners, real case)[k]. A tunnel made by the rows on a case they also make is not mapped (left as written).
+    Self-test: tools/bench/selftest_c160_stagemap.py."""
+    import stagesim as SS
+    tun_case = dict(("new:" + a["as"], a.get("loop")) for a in all_acts if a.get("op") == "tunnel" and a.get("as"))
+    case_fr = dict(("new:" + a["as"], list(a.get("frames") or default_frames)) for a in all_acts
+                   if a.get("op") == "create" and a.get("class") == "CaseStructure" and a.get("as"))
+    made = made_symbols(acts)
+    FMAP, bad, lines = {}, [], []
+    for a in acts:
+        for e in (a.get("src"), a.get("dst")):
+            if not (isinstance(e, dict) and e.get("frame") is not None):
+                continue
+            cs = tun_case.get(e.get("uid"))
+            if cs in made:
+                continue
+            fl = case_fr.get(cs) or []
+            if cs is None or e["frame"] not in fl:
+                bad.append((a["id"], e))
+                continue
+            k = fl.index(e["frame"])
+            fs = "{0}.f{1}".format(cs, k)
+            ru, rc = bound.get(sym.get(fs)), bound.get(sym.get(cs))
+            gfr = SS.base_case_frames(owners, rc) if rc is not None else []
+            ok = ru is not None and len(gfr) > k and gfr[k] == ru
+            FMAP[(a["id"], e["uid"])] = {"case_sym": cs, "frame_name": e["frame"], "index": k, "frame_sym": fs, "sim": sym.get(fs),
+                                         "real_frame": ru, "real_case": rc, "graph_frames": gfr, "ok": ok, "addr": "#{0}".format(ru)}
+            lines.append("FRM {0} end {1}: frame {2!r} = index {3} of {4} -> {5} -> sim {6} -> real #{7}; graph frames of #{8} {9}: {10}".format(
+                a["id"], e["uid"], e["frame"], k, cs, fs, sym.get(fs), ru, rc, gfr, ok))
+            if not ok:
+                bad.append((a["id"], e, ru, gfr))
+    return FMAP, bad, lines
+
+
+def apply_map(acts, REAL, FMAP):
+    """The rows with earlier-step symbols -> real uids (string address 'new:X.t' in src/dst -> {'uid': real, 'term': 't'}) and mapped frame
+    names -> '#<uid>'; returns a new list (inputs not changed). Self-test: tools/bench/selftest_c160_stagemap.py."""
+    def sub(x, key=None):
+        if isinstance(x, str) and x.startswith("new:"):
+            h = _head(x)
+            if h in REAL:
+                if key in ("src", "dst") and "." in x:
+                    return {"uid": REAL[h], "term": x.split(".", 1)[1]}
+                return REAL[h]
+            return x
+        if isinstance(x, dict):
+            return dict((k, sub(v, k)) for k, v in x.items())
+        if isinstance(x, list):
+            return [sub(v) for v in x]
+        return x
+    out = []
+    for r in acts:
+        a = sub(copy.deepcopy(r))
+        for k_ in ("src", "dst"):
+            if isinstance(r.get(k_), dict) and r[k_].get("frame") is not None and (r["id"], r[k_]["uid"]) in FMAP:
+                a[k_] = dict(a[k_], frame=FMAP[(r["id"], r[k_]["uid"])]["addr"])
+        out.append(a)
+    return out
+
+
+def bound_from_cmap(path):
+    """(head, {sim uid: real uid}) over the obj / diag / term entries of ONE creation-map/1 file, read by stage_prerun.read_creation_map; a sim id
+    in two kinds with different real uids raises ValueError. Self-test: tools/bench/selftest_c160_stagemap.py (T4, on the 94ffff94 run's map)."""
+    import stage_prerun as SPR
+    _h, ent, _s = SPR.read_creation_map(path)
+    out = {}
+    for k in ("obj", "diag", "term"):
+        for s, e in ent[k].items():
+            if s in out and out[s] != int(e["real"]):
+                raise ValueError("creation map {0}: sim {1} -> {2} and {3}".format(path, s, out[s], e["real"]))
+            out[s] = int(e["real"])
+    return _h, out
+
+
+def plan_in_matches_stem(path, stem):
+    """True when the basename of `path` without its extension is exactly <stem>_in or <stem>_in<ASCII digits> (a numbered revision of the
+    same plan's input, gate-fp fp-82); anything else (_inx, _in_2, _in2b, another stem, no suffix, a prefix) is False. RingSession.gate_l0
+    calls it. Self-test: tools/bench/selftest_c160_l0stem.py."""
+    b = os.path.splitext(os.path.basename(path.replace("\\", "/")))[0]
+    head = stem + "_in"
+    tail = b[len(head):]
+    return b.startswith(head) and all(c in "0123456789" for c in tail)
 # ---
 # labview: build
 # hardware: none

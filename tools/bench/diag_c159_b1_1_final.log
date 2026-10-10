@@ -1,0 +1,32 @@
+BGRUN START 2026-10-10 04:27:39 limit 15.0 min: py -u tools/bench/diag_c159_b1_1.py
+BGRUN PID 11104
+---------- [K] pins
+GATE PASS | K every card input md5 == card pin; plan_in af3e925d, pred ed84b5fd, stored sim end b1892ad9 | {}
+GATE PASS | V0 VI pins before {"94ffff94 base 023239": "94ffff9413599d5153a5e6fb409294ab", "s09": "eb1d0f3107bbba49c9ae67a47c0ee50f", "P5-1a": "2482fe7bf3426e18b0801c77ec629073", "P5-1": "7f2582ae54dc5bc42c3df0bdf3c72d2e"} | {'failed_152721': 'MISSING'}
+FACT | termless P5-1 22 / P5-2a 23; P5-2a-only [10394] | 
+FACT | source-only P5-1 [10103, 12256] / P5-2a [10103, 12256, 24285, 24312] | 
+---------- [E] expected Error List of 94ffff94, item by item
+GATE PASS | E1 56 observed items, each in exactly one class {"notconnected": 23, "nosource": 5, "looseends": 23, "undirected": 2, "unwiredinput": 1, "twotypes": 1, "whilesubvi": 1} | {'notconnected': [0, 12, 14, 15, 16, 17, 18, 19, 20, 22, 23, 24, 25, 26, 27, 29, 30, 31, 33, 34, 35, 36, 37], 'nosource': [1, 2, 4, 6, 50], 'looseends': [3, 5, 11, 13, 21, 28, 32, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 51, 52, 53, 54, 55], 'undirected': [7, 8], 'unwiredinput': [9], 'twotypes': [10], 'whilesubvi': [49]}
+FACT | A24..A80 actions naming #2626 / its terminals | []
+GATE PASS | E2 per class objects == items and every object has a clears_by | {}
+GATE PASS | E3 written expected file licenses the 56 observed items exactly (errorlist_check.compare) | {'extra': [], 'missing': []}
+FACT | clears_by kinds | {"delete_wire": 1, "action": 10, "standing": 45}
+FACT | per class | {"notconnected": 23, "nosource": 5, "looseends": 23, "undirected": 2, "unwiredinput": 1, "twotypes": 1, "whilesubvi": 1}
+FACT | per action | {"delete_wire 10394 s2": 1, "A32 w_gr s2": 1, "A39 w_hr s2": 1, "A28 w_gl s2": 1, "A70 w_k3f s3": 3, "A35 w_hl s2": 1, "A80 w_k4f s3": 3}
+GATE PASS | E4 totals 56; after step 2 = 51 (pred 51); after step 3 = 45 (pred 45) | 
+---------- [C] CEN2: regenerate the p5s02a simulated end, diff its new wires with the real 94ffff94 graph
+FACT | simulate final True failed None; 40 log lines | 
+GATE PASS | C1 regenerated sim end == stored step_23 state (step_23_wire.json) and sim census Wire == 11 (got 11) | {'Wire': 11, 'InnerTerminal': 10, 'OuterTerminal': 6, 'SelectorTunnel': 3, 'Tunnel': 1, 'Diagram': 2, 'CaseStructure': 1, 'Terminal': 1, 'DigitalNumericConstant': 1, 'ParameterTerminal': 13, 'Function': 2, 'RightShiftRegister': 1, 'LeftShiftRegister': 1}
+GATE PASS | C2 real new Wire objects (P5-2a graph minus P5-1 graph, by uid) == 12 (got 12; gone 2) | {'new': [11774, 31343, 31391, 31392, 31396, 31443, 31491, 31530, 31537, 31551, 31562, 31587], 'gone': [24091, 24153]}
+FACT | CEN2 real-only new wires | [{"wire": 31562, "ends": [{"src": false, "owner": 31546, "cls": "SelectorTunnel", "term_uid": 31559, "term": "", "frame": 23405}, {"src": true, "owner": 24357, "cls": "LoopTunnel", "term_uid": 24360, "term": "", "frame": 23405}], "pos": [15683, 11868]}, {"wire": 31587, "ends": [{"src": false, "owner": 31557, "cls": "SelectorTunnel", "term_uid": 31577, "term": "", "frame": 23405}, {"src": true, "owner": 24361, "cls": "LoopTunnel", "term_uid": 24367, "term": "", "frame": 23405}], "pos": [15675, 11868]}]
+FACT | CEN2 sim-only new wire keys | [[[false, 3453, "new"], [true, 5704, "new"]]]
+FACT | CEN2 counterparts (same endpoint key on the other side, any uid; None = no wire with those ends) | {"real_only_in_sim": {"31562": 24330, "31587": 24153}, "sim_only": [{"sim_wire": [-37], "ends": [[true, 376, "SubVI", 5704, "file progress", -29], [false, 23405, "Diagram", 3453, "file progress", -29]], "real_wire_same_key": 24330}]}
+FACT | whole termed-wire set: sim end 2049 / real 2048; real-only keys 0; sim-only keys 1 | {"real_only": [], "sim_only": [[[true, 25235, 23405]]]}
+FACT | termless: sim end objs carry the base's Wire objects; real P5-2a termless 23, P5-1 termless 22, real-only termless [10394] | 
+GATE FAIL | C3 keyed diff of the census-scope new wires: one real-only wire, no sim-only (real-only [31562, 31587]) | {'real_only': [31562, 31587], 'sim_only': [((False, 3453, 'new'), (True, 5704, 'new'))]}
+---------- [D] delete the failed copy and its resume record
+FACT | failed copy md5 MISSING; resume record tools\bench\resume\resume_plan_ring_p5s02a_20261009_153334.json file=None; already deleted True | 
+GATE PASS | D1 failed copy md5 == cac5236b (got MISSING), resume record names it; both deleted (every earlier gate but C3 passed), or both already gone | {'deleted': [], 'already': True}
+GATE PASS | V1 VI pins after == before {"94ffff94 base 023239": "94ffff9413599d5153a5e6fb409294ab", "s09": "eb1d0f3107bbba49c9ae67a47c0ee50f", "P5-1a": "2482fe7bf3426e18b0801c77ec629073", "P5-1": "7f2582ae54dc5bc42c3df0bdf3c72d2e"} | 
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":10,"fail":1},"first_fail":"C3 keyed diff of the census-scope new wires: one real-only wire, no sim-only (real-only [31562, 31587])","artefacts":[{"path":"tools/bench/errorlist_expected_D1_ring_p5s02a_20261010_023239.json","md5":"1fd016bfec093c8bf488cc31d325d2fb"},{"path":"tools/bench/diag_c159_b1_1_raw.json","md5":"9156fe394e84a8d77826fa59c9a2687f"}],"card":"159-b1-1","labview":"none"}
+BGRUN END rc=1 after 43s

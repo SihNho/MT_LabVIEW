@@ -1,0 +1,34 @@
+{"schema": "result/1", "id": "164-3-1", "status": "FAIL",
+ "gates": {"pass": 77, "fail": 1},
+ "first_fail": "END1 w23460 absent in the sim end graph: rows [], objs [{'uid': 23460, 'class': 'Wire'}] (prep_c164_a3_1_mk.log:138)",
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/bench/plan_ring_p5s02d.json", "md5": "725cd68ef36865c430a83a5dc0120d6f"},
+  {"path": "tools/bench/plan_ring_p5s02d_prev872822f3.json", "md5": "872822f34540998acde238144b9be61a"},
+  {"path": "tools/bench/plan_ring_p5s02r_in.json", "md5": "9dadb0c1d3faeeb52f109a0af36929b5"},
+  {"path": "tools/bench/plan_ring_p5s02r_in_pre164r3.json", "md5": "4d93c82dfb10e2954196e3ee2364171b"},
+  {"path": "tools/bench/diag_c164_a3_1_facts.md", "md5": "7b0ec0d442f5906b4cc38f69e77b02da"},
+  {"path": "tools/bench/prep_c164_a3_1_mk.py", "md5": "c9f18e2bf1626a4d682fc96e49a0fbaa"},
+  {"path": "tools/bench/prep_c164_a3_1_mk.log", "md5": "2b43b860888c7b75c027b66ce91d8673"},
+  {"path": "tools/bench/prep_c164_a3_1_census.json", "md5": "bb30814ae6bfc61fcc9b266e36fd9fa4"},
+  {"path": "tools/bench/prep_c164_a3_1_session.json", "md5": "2aeaef243858a7cffeecfee2894a7743"}
+ ],
+ "facts": [
+  "All 19 card inputs + 5 claudeDev VIs equal their pins (prep_c164_a3_1_hash.log:3-46); tools/model/graph/EL/VIs unchanged after (prep_c164_a3_1_post.log:3-18)",
+  "W1 PASS: w23460 = t23505 src #23501, sinks t23481/t23477 #23042 only; W2 PASS: w23519 sinks outside = {7606,23241,23450} (hash.log:47-57)",
+  "r_in 4d93c82d -> 9dadb0c1: exactly +dw_23460 (A54) +rle_23519 (A57); rest deep-equal; later actions renumber +1/+2, no numeric refs (cmp.log:15-24)",
+  "Maker census = c156 session with J + 2 ids (bb30814a); GRP J 53-62 (10), K3 63-71 (9) (prep_c164_a3_1_mk.log:5-6)",
+  "X10 START 581.8: J 10 rows MAIN 633.3; J+K3 19 rows MAIN 647.8 <= 675 -> plan = J+K3 A53..A71 (mk.log:35,38,41)",
+  "plan_ring_p5s02d.json 725cd68e by simulate: final True, 19/19, 0 provisional, route PASS, 0 UNROUTABLE; C-OUT/IDS/X8/X17 PASS (mk.log:117-122)",
+  "Compile 15 ops incl. delete_wire[1],[2], wire_remove_loose_ends[5]; checkpoints [0,1,2,6,7,11,12,14,15] (mk.log:37,39)",
+  "END1 FAIL: sim end step_19 w23460 has 0 terminal rows (from step 2, mk.log:129) but its Wire object stays in objs (mk.log:138)",
+  "w23489 (dw_cond) same: 0 rows, Wire object kept; stagesim drops the object only for a sourceless wire (tools/stagesim.py:1461-1463)",
+  "w23519 end = src t8494 + sinks t23450, t23241, t7606 exactly (mk.log:134-137) = prediction; END2 not evaluated (END1 fatal)"
+ ],
+ "open": [
+  "PD399(a) 'w23460 ABSENT' (docs/d1/ring-p5c.md:122-123): 0 terminal rows (met) or also no Wire object in objs (not met, tools/stagesim.py:1461-1463)?",
+  "plan_ring_p5s02d.json is now 725cd68e (final True) though the card is FAIL: keep it, or restore 872822f3 from plan_ring_p5s02d_prev872822f3.json?",
+  "Jev ladder: no JEV-LADDER row for prep_c164_a3_1_mk.log in tools/bench/jev_gate.log yet; NEXT-ACTION not available"
+ ],
+ "cost": {"usd": null, "minutes": 7, "labview_runs": 0},
+ "note": "Offline only; tasklist shows 0 LabVIEW processes. Step stopped at the first unexpected result; no diagnosis/retry. Gates: hash 23/0, cmp 8/0 (a first cmp run crashed on a brace in my own label, cmp.log:1-12), mk 30/1, post 16/0."}

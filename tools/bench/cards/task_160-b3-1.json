@@ -1,0 +1,70 @@
+{
+  "schema": "task/1",
+  "id": "160-b3-1",
+  "kind": "build",
+  "goal": "PD391(a)(f): plan_ring_p5s02b.json FINAL on real 94ffff94 = del w10394, A24..A40, del w24264 before A32, del w24300 before A39 (20 actions); route check 0 UNROUTABLE; MAIN<=675.",
+  "why": "Card 160-a2-1 made routes 4/7 routable; the step-2 plan can now become final. Offline json only; the recipe, prediction and prior-art cards read it.",
+  "inputs": [
+    {"path": "tools/bench/cards/brief_160-b3-1.md", "md5": "d80ad29f187d1b3686a01f214dc39ad7"},
+    {"path": "docs/d1/ring-p5b.md", "md5": "2b48132924000a80f2afc15659ba8258"},
+    {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+    {"path": "tools/bench/diag_c160_a2_1_facts.md", "md5": "4a1d31e915ffec30271c9e692706137b"},
+    {"path": "tools/bench/prep_c160_b1_1_mk.py", "md5": "4fe22a40769304c44b96c6b06fa6cd29"},
+    {"path": "tools/bench/selftest_c160_regface.py", "md5": "fb8f0b3fb80fc22b88c21aaf3a8d6f29"},
+    {"path": "tools/bench/graph_ring_p5s02a_20261010_032547.json", "md5": "7ac24924f979afde964e63fb27957b45"},
+    {"path": "tools/bench/plan_ring_p5s02b_in.json", "md5": "56bfddd3c519d793b676865185bc14c6"},
+    {"path": "tools/bench/plan_ring_p5s02b.json", "md5": "09ebc7a6c08f466997ba472ec0c64109"},
+    {"path": "tools/bench/plan_ring_p5s02b_c159.json", "md5": "caef7e1c8a4a331c1a3f3337653052ba"},
+    {"path": "tools/stagesim.py", "md5": "95a162baec5324ff037a8d23bd7ef46d"},
+    {"path": "tools/stagexec.py", "md5": "ddf23a31b10767015da246be8ceaa2e2"},
+    {"path": "tools/stagekit.py", "md5": "1441bb4ca75eb5a59afaa3555690db37"},
+    {"path": "tools/stage_prerun.py", "md5": "7605116f1dfe1c6fd4963dbfcf259de1"}
+  ],
+  "pass": [
+    "prep_c160_b3_1_mk.py written from the b1 mk flow; plan_ring_p5s02b_in2.json = input + 2 delete_wire rows, uids read from the graph; b1 plan kept as plan_ring_p5s02b_b1.json",
+    "plan_ring_p5s02b.json final True on 94ffff94: 20/20 replayed, failed None, 0 PROVISIONAL, route check PASS with 0 UNROUTABLE (route rows quoted)",
+    "rows == input + the two deletes only; A28/A35 MERGE expected uid at sim end; A32/A39 stub deleted + fresh connect, uid not predicted",
+    "compile op list + checkpoints quoted; planned MAIN <= 675 at START 603.4 quoted; X8 and X17 clean",
+    "md5 unchanged: in.json, c159 plan, graph, VIs s09/P5-1a/P5-1/94ffff94, tools; no tool edit; no hooks edit"
+  ],
+  "outputs": [
+    "tools/bench/prep_c160_b3_1_mk.py",
+    "tools/bench/plan_ring_p5s02b_in2.json",
+    "tools/bench/plan_ring_p5s02b.json",
+    "tools/bench/plan_ring_p5s02b_b1.json",
+    "tools/bench/diag_c160_b3_1_facts.md"
+  ],
+  "flags": {
+    "labview": "none",
+    "gui": false,
+    "hardware": "none",
+    "run_vi": false,
+    "write": [
+      "tools/bench/prep_c160_b3_1*",
+      "tools/bench/plan_ring_p5s02b.json",
+      "tools/bench/plan_ring_p5s02b_in2.json",
+      "tools/bench/plan_ring_p5s02b_b1.json",
+      "tools/bench/sim/ring_p5s02b/**",
+      "tools/bench/diag_c160_b3_1*"
+    ],
+    "status_edit": false,
+    "git_commit": false,
+    "peers": []
+  },
+  "budget": {
+    "failures": 2,
+    "minutes": 45
+  },
+  "rules": [
+    "Offline json only; no LabVIEW process; no tools/ edit at all; no tools/hooks edit",
+    "Plan is written ONLY by stagesim.simulate; never retype a uid, read stub wires from graph rows",
+    "A stale b1 expectation is changed and reported, never loosened silently",
+    "UNROUTABLE, final False or MAIN>675 -> FAIL with the line, no workaround",
+    "Call shared functions, no pasted blocks; a new function carries a docstring naming its self-test"
+  ],
+  "advances": ["M3", "M8", "R1"],
+  "requires": [
+    {"kind": "file", "name": "tools/bench/graph_ring_p5s02a_20261010_032547.json"},
+    {"kind": "file", "name": "tools/bench/plan_ring_p5s02b_in.json"}
+  ]
+}

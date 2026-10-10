@@ -1,0 +1,22 @@
+{"schema":"result/1","id":"158-a2-3","status":"PASS","gates":{"pass":4,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/bench/diag_c158_a2_3_facts.md","md5":"a33be02778249a0bf8106164942840d1"},
+{"path":"tools/bench/diag_c158_a2_3_measure.py","md5":"d5622cec8c2b639ff6df531ed3b7a2f4"},
+{"path":"tools/bench/diag_c158_a2_3_measure.log","md5":"2152820b4f0a6ff41f2721d233d9151e"},
+{"path":"tools/bench/diag_c158_a2_3_measure.json","md5":"04cffa7b0dbf891fd56961af90733f8b"}],
+"facts":[
+"Tag flips /f1->/f0 once real uids are bound (-29 ranks 1, 31506 ranks 0); real end == sim+real uids: 3391@31546/f0, 1766@31557/f0 (measure.log:126-147)",
+"PB extra rows appear on ALL graphs incl. the unmodified sim end: pb_check(S1, sim end, sim end) extra 376 cal cluster path / file size (measure.log:154-157)",
+"Merged-mode cdiff (stagesim's, stagesim.py:2665-2667) of sim end AND real end == pred's 29 rows exactly; PB is frame-keyed (stagekit.py:1816) (log:159-160)",
+"Same source terminals as S1 on all graphs (3391 string, 1766 32bit integer); the tunnel tag vs S1's untagged source is the extra row (measure.log:130-153)",
+"Pairs base/sim/real 2400 each; new 12/12, lost 12/12; only one-sided: SR 31347 term index 0/1 swap (created) + sim-only source end (25223,1) (log:164-177)",
+"D 22 vs 21 and TD unwired (25223,1) both = wire 24091's source end: kept by sim, deleted by LabVIEW (measure.log:178-180, 205, 218)",
+"CEN2 declared = Case op only (pred.json:15-22, census_overall UNPREDICTED :23); FAIL from stagekit.py:333 via :2030; empty-only branch :311-322",
+"CEN2 measured (pred classes, stagekit.py:1949-1951): InnerTerminal 10, Wire 12, OuterTerminal 6, Diagram 2, CaseStructure 1, Tunnel 1 (scratch log:553)",
+"FATE: 5760/5778 wired via tunnels in both (real new outer wires 31562/31587); 24091 gone in real; 24285/24312 source-only both; 5787/5683/5782 open (log:183-221)",
+"Real graph rebuilt from real_end_rows + sim columns by term uid (6113 same, 30 by owner, 0 unmatched, log:123); reproduces logged PB, D 21/22, TD (log:158,163)"],
+"open":[
+"PB (frame-keyed) vs pred cdiff rows (merged, stagesim) disagree by the two tagged #376 rows: which mode is the contract for a move into a new 2-frame case?",
+"D/TD differ from the sim only by the 24091 source-only end (sim keeps, LabVIEW deletes): simulator model gap or accepted difference?",
+"CEN2 declared census covers the Case op only: should this scratch's measured census (scratch log:553-555) become the pred's?"],
+"cost":{"usd":null,"minutes":12,"labview_runs":0},
+"note":"Offline only; no tool/recipe/plan/pred/gate/hook edited; pins stagekit 0d8f6d25, stagexec 7a712ccb, vigraph a7eb58c7, pred 31d8e9be unchanged. measure.log runs 1-2 and probe.log = my script build errors (not measurements); RULE-OFFLINE-CARD: not gated (jev_gate.log). No LabVIEW process."}

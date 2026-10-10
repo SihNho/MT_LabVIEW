@@ -1,0 +1,28 @@
+{"schema": "result/1", "id": "164-3-3", "status": "PASS",
+ "gates": {"pass": 21, "fail": 0},
+ "first_fail": null,
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/bench/diag_c164_a3_3_facts.md", "md5": "08beb042ca290522bc16399c0859aec3"},
+  {"path": "tools/bench/diag_c164_a3_3_dw.py", "md5": "1f4816cc4e0b1d50d4fe593851bce9c9"},
+  {"path": "tools/bench/diag_c164_a3_3_dw.log", "md5": "898c67281952545692d9c3392ee40a9b"},
+  {"path": "tools/bench/diag_c164_a3_3_peek.py", "md5": "8a87212660589868666f2fd028034fb0"}
+ ],
+ "facts": [
+  "17 delete_wire wires in adopted plans: p4 s01 x2, s02 x5 (same in s02v18), s06 x1, s07 x4, s08 x2, p5s02b x3; 0 in p4 s03-05/s09, p5s01/01a/01b/02a/02c (diag_c164_a3_3_dw.log:20-219)",
+  "Sim end graph: all 17 have 0 terminal rows; the Wire object stays in objs for 14, is dropped for 3 (p5s02b w10394, w24264, w24300) (dw.log:170,186,204)",
+  "Those 3 had 0 rows or sink rows only in base p5s02a (dw.log:169,185,203) = stagesim termless/sourceless branches (tools/stagesim.py:1440-1442,1461-1463)",
+  "Real graph after the stage: 15 of 17 absent as object and rows, e.g. p4s02 eda9db40 x5 (dw.log:32-48), p4s07 71935a84 x4 (:106-133), p4s08 44858dbf x2 (:145,155)",
+  "Real exception 1: w23807 (p4_rbA_dw) still in p4s06 a3ecb92b as an object with 3 of its 6 rows (t10975, t5171 src, t3173) (dw.log:85-86)",
+  "Real exception 2: w24264 (dw_go) still in p5s02b 431cfd83 as an object with 2 rows, new source t31639 #31593 + sink t24139 (dw.log:199)",
+  "New plan: dw_cond w23489 and dw_23460 w23460 have 0 rows + Wire object in sim end step_19 (dw.log:224,242); base 3d5196ab Y/3 rows each (:223,:241)",
+  "plan_ring_p5s02d.json 725cd68e and plan_ring_p5s02r_in.json 9dadb0c1 unchanged before/after (dw.log:3-4,258-259)",
+  "Table stage|wire|sim rows|sim object|real object|real rows: tools/bench/diag_c164_a3_3_facts.md:15-35 (40 lines)"
+ ],
+ "open": [
+  "w23489 / w23460 (plan p5s02d): no real graph after P5-2d exists, so real object/rows are not measurable yet",
+  "p4 s01 real-after graph p4s01 f697a0b2 is an in-between-file read (dw.log:5); w28296/w29144 appear in none of the 14 graphs read",
+  "No shared 'Wire object in objs' function exists (inline at tools/stagesim.py:625,637 and in diag_c164_a3_3_dw.py has_wire_obj); extraction is outside this card's write globs"
+ ],
+ "cost": {"usd": null, "minutes": 8, "labview_runs": 0},
+ "note": "Offline only, no LabVIEW process. Jev ladder: no failed step, no row owed. A peek script (diag_c164_a3_3_peek.py) read file structure first."}

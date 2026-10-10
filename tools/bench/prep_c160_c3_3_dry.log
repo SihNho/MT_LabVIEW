@@ -1,0 +1,56 @@
+BGRUN START 2026-10-10 08:17:46 limit 10.0 min: py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_ring_p5s02b.py
+BGRUN PID 26852
+stage_d1_ring_p5s02b - card 160-c3-1 (WRITTEN, NOT LAUNCHED), RING P5-2 step 2 (docs/d1/ring-p5b.md PD388(a), PD390(c)(f), PD391): on the
+saved p5s02a file (claudeDev\D1_ring_p5s02a_20261010_023239.vi 94ffff94, path/md5 read from the plan's base graph 7ac24924), apply the 20
+actions of plan_ring_p5s02b.json = delete_wire w10394, A24..A40 (groups F3 G H) and the two PD391(a) sink-only stub deletes w24264 / w24300
+before A32 / A39 (tools/bench/prep_c160_b3_1_mk.py; numbers in plan_ring_p5s02b_pred.json, prep_c160_c3_1_pred.py). Licence
+plan_ring_p5s02b_licence.json; sink-gate census prep_c160_c3_1_session.json (0 rows).
+Shape = the pair shape of stage_d1_ring_p5s02a.py on stagekit.RingSession (PD390(c), docs/script-writing.md rules 1-2): only plan / pred / licence
+/ census file / names / output name differ; every gate is CALLED.
+FRESH LabVIEW -> claudeDev\D1_ring_p5s02b_<ts>.vi (rule-6 GUI save, ExecState 0 by design) = an in-between file of step P5-2 (not counted,
+D-2026-10-02-02). The FIRST run is the full SCRATCH run on a byte copy (stage_d1_ring_p5s02b_scratch.py). ROWS ONLY FROM PLAN; expected values
+only from PRED.
+PREDICTION (numbers in PRED): SG 0 sink gates; L1 20 actions -> 10 ops == pred kinds; E1 every checkpoint [0,2,3,5,7,9,10] == sim; NG; PRIM; FR;
+D; TD; CEN2 (Wire by ENDS, PD389(b); census UNPREDICTED until the scratch measures it); PB by POSITION (FATAL, before save); HB handles <= +700;
+PS saved, input unchanged.
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/launch_c161_p5s02b.log -- py -u tools/recipes/stage_d1_ring_p5s02b.py
+  PASS  L0 plan FINAL, open_rows_match, plan_in = plan_ring_p5s02b_in[N]; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan  ('f4520b101baad70f065ba5d6c9d14925', {'path': 'tools/bench/graph_ring_p5s02a_20261010_032547.json', 'md5': '7ac24924f979afde964e63fb27957b45'}, '94ffff9413599d5153a5e6fb409294ab')
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 94ffff9413599d5153a5e6fb409294ab  got 94ffff9413599d5153a5e6fb409294ab
+  PASS  DRY graph JSON for input md5 94ffff9413599d5153a5e6fb409294ab  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_ring_p5s02a_20261010_032547.json
+  PASS  SG one declared sink gate per census row (0 rows of prep_c160_c3_1_session.json): []; per row: sink term(s), plan action(s), source, source name []
+  PASS  L1 the 20 actions compile into 10 real ops == pred kinds, each action once; checkpoints (0, 2, 3, 5, 7, 9, 10)  ['delete_wire', 'tunnel', 'tunnel', 'delete_wire', 'connect_term_uid', 'case_frame_wire', 'tunnel', 'delete_wire', 'connect_term_uid', 'case_frame_wire']
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 2 touched diagram(s) [23405, 31506]: one-side-only Nodes[] entries 0
+  PRIME 0 terminal indexes proved at base; 0 ControlTerminal end(s) by 179(b); unprovable []
+  CHECKPOINTS whole-VI read+diff after ops [2, 3, 5, 7, 9, 10] of 10
+  FACT  OP delete_wire [1] -> err '' (0.0 s)
+  STEPX 01 delete_wire    acts [1] ids ['dw_a13'] diff skipped (not a checkpoint)
+  FACT  OP wire_tunnel [2, 3, 4] -> err '' (0.0 s)
+  STEPX 02 tunnel         acts [2, 3, 4] ids ['t_in3', 'w_in3_t', 'w_in3_376'] bound {-1: 10000003} diff 0
+  FACT  OP wire_tunnel [5, 6, 7] -> err '' (0.0 s)
+  STEPX 03 tunnel         acts [5, 6, 7] ids ['t_gi', 'w_gl', 'w_g376'] bound {-7: 10000008} diff 0
+  FACT  OP delete_wire [8] -> err '' (0.0 s)
+  STEPX 04 delete_wire    acts [8] ids ['dw_go'] diff skipped (not a checkpoint)
+  FACT  OP wire_connect_term_uid [9, 10, 11] -> err '' (0.0 s)
+  STEPX 05 connect_term_uid acts [9, 10, 11] ids ['t_go', 'w_gout', 'w_gr'] bound {-12: 10000014} diff 0
+  FACT  OP wire_case_frame_wire [12] -> err '' (0.0 s)
+  STEPX 06 case_frame_wire acts [12] ids ['w_gpass'] diff skipped (not a checkpoint)
+  FACT  OP wire_tunnel [13, 14, 15] -> err '' (0.0 s)
+  STEPX 07 tunnel         acts [13, 14, 15] ids ['t_hi', 'w_hl', 'w_h376'] bound {-19: 10000020} diff 0
+  FACT  OP delete_wire [16] -> err '' (0.0 s)
+  STEPX 08 delete_wire    acts [16] ids ['dw_ho'] diff skipped (not a checkpoint)
+  FACT  OP wire_connect_term_uid [17, 18, 19] -> err '' (0.0 s)
+  STEPX 09 connect_term_uid acts [17, 18, 19] ids ['t_ho', 'w_hout', 'w_hr'] bound {-24: 10000026} diff 0
+  FACT  OP wire_case_frame_wire [20] -> err '' (0.0 s)
+  STEPX 10 case_frame_wire acts [20] ids ['w_hpass'] bound {} diff 0
+  FACT  RESUME save failed: ExecStop('RESUME: the saved scratch C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p5s02b_20261010_081747.vi does not exist')
+STOP {"schema":"stop-line/1","kind":"execstop","message":"UNROUTABLE 2 row(s): acts [9, 10, 11] ['t_go', 'w_gout', 'w_gr']: connect_term_uid: the sink #24139 is already wired (w24264); acts [17, 18, 19] ['t_ho', 'w_hout', 'w_hr']: connect_term_uid: the sink #24235 is already wired (w24300)","t":"2026-10-10 08:18:27","op":10,"op_kind":"case_frame_wire","card":"160-c3-3"}
+  FACT  UNROUTABLE acts [9, 10, 11] ids ['t_go', 'w_gout', 'w_gr']: connect_term_uid: the sink #24139 is already wired (w24264)
+  FACT  UNROUTABLE acts [17, 18, 19] ids ['t_ho', 'w_hout', 'w_hr']: connect_term_uid: the sink #24235 is already wired (w24300)
+  UNVERIFIED  E1 the run reached its last op (record mode; stopped IN op {'k': 10, 'op': 'case_frame_wire', 'acts': [20], 'ids': ['w_hpass']})  (dry: stub input, after mutation Stage._op delete_wire)
+
+=== DRY FAIL: first_fail=EXECUTOR-STOP tools/bench/plan_ring_p5s02b.json: executed 9 of 10 ops, stopped IN op {'k': 10, 'op': 'case_frame_wire', 'ids': ['w_hpass']}: ExecStop: UNROUTABLE 2 row(s): acts [9, 10, 11] ['t_go', 'w_gout', 'w_gr']: connect_term_uid: the sink #24139 is already wired (w24264); acts [17, 18, 19] ['t_ho', 'w_hout', 'w_hr']: connect_term_uid: the sink #24235 is already wired (w24300) coverage 30/36 lines, first mutation Stage._op delete_wire, unverified 1, graph tools/bench/graph_ring_p5s02a_20261010_032547.json
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"EXECUTOR-STOP tools/bench/plan_ring_p5s02b.json: executed 9 of 10 ops, stopped IN op {'k': 10, 'op': 'case_frame_wire', 'ids': ['w_hpass']}: ExecStop: UNROUTABLE 2 row(s): acts [9, 10, 11] ['t_go', 'w","artefacts":[],"card":"160-c3-3","labview":"none"}
+BGRUN END rc=1 after 41s

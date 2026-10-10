@@ -1,0 +1,79 @@
+{
+ "schema": "task/1",
+ "id": "161-a3-1",
+ "kind": "build",
+ "goal": "Offline: one shared stagekit fn records PB class 1 (inherited row) and class 2 (plan-wired into inherited case), PD394(a)/PD395(b), with self-test; then pred MAIN peak on SX.checkpoint_ops.",
+ "why": "161-a2-1 measured that 2 of the 5 extra #376 rows are inherited (class 1) and 3 are wired by p5s02b itself into p5s02a's case (class 2); the dry refuses the launch until PB records both (judgement PD395).",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_161-a3-1.md", "md5": "a5163d1ae7077b80ab6b5f04e57624df"},
+  {"path": "tools/bench/diag_c161_a2_1_facts.md", "md5": "8a96416e7780f6eb95867ba7159d973f"},
+  {"path": "tools/bench/diag_c161_a2_1_measure.json", "md5": "e7f4a15d797587d9ed86308c96faa812"},
+  {"path": "tools/bench/prep_c161_a2_1_measure.py", "md5": "eb72c9c4841e42db0e8c030ff098c4b7"},
+  {"path": "docs/d1/ring-p5b.md", "md5": "93dcb778db320dbecc813cd8e156cb1c"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+  {"path": "tools/stagekit.py", "md5": "0b5bb678169d659feed7408648a63354"},
+  {"path": "tools/stagesim.py", "md5": "95a162baec5324ff037a8d23bd7ef46d"},
+  {"path": "tools/stagexec.py", "md5": "a4df7e15c495b9fcbcdadf0d8047bc69"},
+  {"path": "tools/stage_prerun.py", "md5": "7605116f1dfe1c6fd4963dbfcf259de1"},
+  {"path": "tools/bench/plan_ring_p5s02b.json", "md5": "f4520b101baad70f065ba5d6c9d14925"},
+  {"path": "tools/bench/plan_ring_p5s02b_pred.json", "md5": "187294099b3d8ced0e1c0b29b7c3a959"},
+  {"path": "tools/bench/plan_ring_p5s02b_licence.json", "md5": "f61a2514c47913557531c9862018b850"},
+  {"path": "tools/bench/errorlist_predicted_D1_ring_p5s02b_end.json", "md5": "79ec32079ceee2b99dac24e554d86856"},
+  {"path": "tools/bench/prep_c156_a1_1_lib.py", "md5": "fc6ce5f6f5094b15fc0e78229946e723"},
+  {"path": "tools/bench/prep_c160_c3_1_pred.py", "md5": "773c7db16619e6ede2f27fa7172d9c36"}
+ ],
+ "pass": [
+  "ONE shared stagekit function (docstring naming its self-test) records PB class 1 and class 2 (PD395(b) (i)-(iv)); pb_check extended not duplicated; PB call sites quoted",
+  "selftest_c161_pbinherit: p5s02b sim end -> 5 #376 rows RECORDED (2 class 1, 3 class 2 with named action), PB ok, pairs_extra_left []; counts",
+  "selftest_c161_pbinherit: changed source uid / frame of a non-adopted case / f1 tag outside (iv) / class-2 row with no connect action / multiplicity not 1 or frame count -> each BLOCKS; counts",
+  "selftest_c161_pbinherit: stored p5s01a, p5s01b, p5s02a PB results reproduce unchanged; old vs new row counts quoted",
+  "Pin sweep of stagekit-pinning self-tests listed BEFORE editing, only differing md5 re-pinned, counts before/after; delckpt 11/0, s4 24/0, invcheck 20/0, c157 13/0",
+  "Pred MAIN peak via SX.checkpoint_ops quoted vs 675 (>675 = hand back); new pred md5 + cause; plan f4520b10, stagesim, stagexec, stage_prerun, EL 79ec3207 md5 unchanged"
+ ],
+ "outputs": [
+  "tools/bench/diag_c161_a3_1_facts.md",
+  "tools/bench/selftest_c161_pbinherit.py"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagekit.py",
+   "tools/bench/selftest_c161_pbinherit*",
+   "tools/bench/selftest_c1*",
+   "tools/bench/prep_c156_a1_1_lib.py",
+   "tools/bench/prep_c160_c3_1_*",
+   "tools/bench/prep_c160_b3_1_mk.py",
+   "tools/bench/plan_ring_p5s02b_pred.json",
+   "tools/bench/plan_ring_p5s02b_licence.json",
+   "tools/bench/errorlist_predicted_D1_ring_p5s02b_end.json",
+   "tools/bench/diag_c161_a3_1*",
+   "tools/bench/prep_c161_a3_1*",
+   "docs/toolkit-capabilities.md",
+   "docs/fn_descriptions.json",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/jev_*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 70
+ },
+ "rules": [
+  "Offline; no LabVIEW process; no --launch; no tools/hooks edit; no env bypass",
+  "Do not widen the rule: no open_rows for the 5 rows, no change to the pred maker's non-frame cdiff, no gate loosened",
+  "A shared function is CALLED, never pasted (docs/script-writing.md); extend pb_check, do not write a second PB",
+  "Plan f4520b10 and predicted EL unchanged; MAIN > 675 or a row in neither class = hand back",
+  "Hook false positive: py tools/gate_fp.py log, report; never edit a hook"
+ ],
+ "advances": ["M3", "M8", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/stagekit.py"},
+  {"kind": "file", "name": "tools/bench/plan_ring_p5s02b.json"}
+ ]
+}

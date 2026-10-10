@@ -1,0 +1,31 @@
+{
+ "schema": "result/1",
+ "id": "164-3-2",
+ "status": "PASS",
+ "gates": {"pass": 5, "fail": 0},
+ "first_fail": null,
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/bench/diag_c164_a3_2_facts.md", "md5": "0312feb47fd796fdbda5f1e84727970e"},
+  {"path": "tools/bench/diag_c164_a3_2_rows.py", "md5": "2cb6eaf324a606b7ad3e5e5bd9b7fead"},
+  {"path": "tools/bench/diag_c164_a3_2_rows.log", "md5": "d9729a02ff19d50626d633ed40c0b791"}
+ ],
+ "facts": [
+  "w_k3f/w_k4f (A70/A80) = OK3/OK4.outer -> #5204 t8776 / #10404 t24342, no frame key, PD379(b) ring-p5.md:181-187; plan both164 4c8d3645 :849-858, :955-964",
+  "t8776/t24342 = InnerTerminal on 1.7 body 23405; stubs w10362/w25232 have ONE end each (no source): diag_c164_a3_2_rows.log:19-23,:33-36 (graph 3d5196ab)",
+  "Outer faces t9631/t24363 (686): w4337 -> #6384 t6480 + #2048 t3182, w9636 -> #6384 t6511, every end a sink, so nothing sources either net today: rows.log:26-32",
+  "Precedents: base LoopTunnel inner face as wire-0 SOURCE (diag_c158_p5s02a_scratch.log:254,262); base RSR inner SINK after stub delete (diag_c161_p5s02b_scratch.log:89,97)",
+  "Base LoopTunnel inner face as SINK: none found (diag_c1*_facts.md, creation_map/*.jsonl, docs/d1/*.md); stagexec.py:1928-1931 refuses any non-Outer face of a FACE_ROUTED owner",
+  "IndexMode 0 on #5204/#10404 measured on D1_s4_loop17 (stage_d1_l7_r_r2.log:128,203) = original #1929/#5020 (:37); not in 3d5196ab and not re-read since",
+  "Outer vs inner form: values equal if IndexMode 0 still holds (tunnel last value = last R.inner = R.outer, both on 686). Cannot be decided from 3d5196ab alone: facts.md item 4",
+  "Original: #1929 inner <- #376 'file progress', outer -> #2048 'length' + #6384 'actual # data points'; #5020 -> #6384 'file # to append' (d1-loop12-17-split-plan.md:195)",
+  "No plan delete_wire for stubs w10362/w25232 and no plan row deletes #5204/#10404 (diag_c164_a2_1_facts.md:32-33; both164 :854/:960 only)",
+  "bgrun reaped another card's log prep_c164_a3_1_hash.log pid 27112 as KILLED (diag_c164_a3_2_rows.log:14); not this card's process"
+ ],
+ "open": [
+  "IndexMode of #5204/#10404 on 564d8cbe is unmeasured since 2026-09-24; item 4's equal-value result depends on it",
+  "No adopted precedent for a BASE LoopTunnel inner face as a connect SINK, with or without deleting the stub first; the route decision belongs to judgement"
+ ],
+ "cost": {"usd": null, "minutes": 8, "labview_runs": 0},
+ "note": "Offline only, no LabVIEW. Helper first run failed on dedupe_rows' tuple return (my bug, rows.log:1-11), fixed in the build step. No route was chosen."
+}

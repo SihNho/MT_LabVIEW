@@ -1,0 +1,15 @@
+BGRUN START 2026-10-10 13:43:01 limit 3.0 min: py -u tools/bench/prep_c164_a1_1_cmp.py
+BGRUN PID 16600
+GATE PASS | PIN old copy md5 d84634bd | d84634bdbe0f4f94669d2443af116b8e
+FACT MD5 plan_ring_p5s02r_in.json d84634bdbe0f4f94669d2443af116b8e -> 4c8d3645435308b89853488bb0bb5a70
+GATE PASS | TOP top-level keys and non-action content equal | 
+GATE PASS | IDS same action count and ids in order (80) | 
+FACT RAW A69 w_k3pass: [('/dst', 'new:OK3.inner', None), ('/dst/frame', None, 'True'), ('/dst/side', None, 'inner'), ('/dst/uid', None, 'new:OK3'), ('/src', 'new:IK3.inner', None), ('/src/frame', None, 'True'), ('/src/side', None, 'inner'), ('/src/uid', None, 'new:IK3')]
+FACT RAW A79 w_k4pass: [('/dst', 'new:OK4.inner', None), ('/dst/frame', None, 'True'), ('/dst/side', None, 'inner'), ('/dst/uid', None, 'new:OK4'), ('/src', 'new:IK4.inner', None), ('/src/frame', None, 'True'), ('/src/side', None, 'inner'), ('/src/uid', None, 'new:IK4')]
+FACT NORM added keys [('A69', 'w_k3pass', '/dst/frame', None, 'True'), ('A69', 'w_k3pass', '/src/frame', None, 'True'), ('A79', 'w_k4pass', '/dst/frame', None, 'True'), ('A79', 'w_k4pass', '/src/frame', None, 'True')]
+FACT NORM other differences []
+GATE PASS | CMP normalised diff == exactly the 4 added `frame`='True' keys on A69/A79 src+dst | ([('A69', 'w_k3pass', '/dst/frame', None, 'True'), ('A69', 'w_k3pass', '/src/frame', None, 'True'), ('A79', 'w_k4pass', '/dst/frame', None, 'True'), ('A79', 'w_k4pass', '/src/frame', None, 'True')], [])
+FACT LAYOUT end key sets {'w_gpass': ['frame', 'side', 'uid'], 'w_hpass': ['frame', 'side', 'uid'], 'w_c7_pass': ['frame', 'side', 'uid'], 'w_k3pass': ['frame', 'side', 'uid'], 'w_k4pass': ['frame', 'side', 'uid'], 'w_gpass.dst': ['frame', 'side', 'uid'], 'w_hpass.dst': ['frame', 'side', 'uid'], 'w_c7_pass.dst': ['frame', 'side', 'uid'], 'w_k3pass.dst': ['frame', 'side', 'uid'], 'w_k4pass.dst': ['frame', 'side', 'uid']}
+GATE PASS | LAYOUT A69/A79 ends carry the A33/A40/A52 key layout {frame, side, uid} | {'w_gpass': ['frame', 'side', 'uid'], 'w_hpass': ['frame', 'side', 'uid'], 'w_c7_pass': ['frame', 'side', 'uid'], 'w_k3pass': ['frame', 'side', 'uid'], 'w_k4pass': ['frame', 'side', 'uid'], 'w_gpass.dst': ['frame', 'side', 'uid'], 'w_hpass.dst': ['frame', 'side', 'uid'], 'w_c7_pass.dst': ['frame', 'side', 'uid'], 'w_k3pass.dst': ['frame', 'side', 'uid'], 'w_k4pass.dst': ['frame', 'side', 'uid']}
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":5,"fail":0},"first_fail":null,"artefacts":[],"card":"164-a1-1","labview":"none"}
+BGRUN END rc=0 after 1s

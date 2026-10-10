@@ -1,0 +1,42 @@
+BGRUN START 2026-10-10 17:18:22 limit 20.0 min: py -u tools/prior_art_review.py --plan-file tools/bench/prep_c165_a3_3_priorart_plan.md --slug priorart-c165-a3-3-p5s02e --trigger new-op --recipe tools/recipes/stage_d1_ring_p5s02e_scratch.py --recipe tools/recipes/stage_d1_ring_p5s02e.py
+BGRUN PID 16240
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-c165-a3-3-p5s02e.txt (97342 chars)
+   review card tools\bench\cards\review_priorart-priorart-c165-a3-3-p5s02e.json
+OUTCOME: ANSWERED (97s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-10-10-priorart-priorart-c165-a3-3-p5s02e.md
+COST: $1.3564  in 16 / out 5969 / cache-create 131617 / cache-read 920160  (93s, 9 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-priorart-c165-a3-3-p5s02e verdict=novel -> tools\bench\cards\verdict_priorart-priorart-c165-a3-3-p5s02e.json
+--- ANSWER ---
+**Verdict: novel.** This plan is not already built, not already refuted, and not a duplicate. One precedent bears on question (b), and the plan already addresses its cause. Nothing below blocks the build.
+
+## Part A: the direction
+
+- **A1, settled already:** no. The direction was decided here only for this step. PD400(a) chose the inner-face form and rejected the outer-face rewrite (`docs/d1/ring-p5c.md:153-160`). PD401(a) named the precedent in force (`ring-p5c.md:191-199`). PD402(b) defines the PRIME skip (`ring-p5c.md:219-227`). The card executes these decisions; no earlier decision covers them.
+- **A2, refuted already:** no direction-level refutation. Question (b) does have a close precedent, covered under B2.
+- **A3, contradicted:** none found. PD400(b) cited `diag_c161_p5s02b_scratch.log:97` as the wired-source precedent, which was wrong. PD401(a) already corrects it (`ring-p5c.md:191-192`) and the card cites the corrected precedent (c127).
+- **A4, unread evidence:** PD402 does not cite the earlier PRIME-skip precedent: `docs/d1-loop12-17-split-plan.md:803` (PD186) and its retrospective, `archive/peer/2026-09-25-retrospective-cycle81.md:260,270,278,332`. This is advisory only, because the plan's safeguards already address that precedent's cause (B2).
+
+## Part B: the artifact
+
+- **(a) Sink onto an inner face of a While/For LoopTunnel.** The nearest precedent is cycle 158, ops 16/17. There, `connect_term_uid` joined an unwired loop-tunnel inner face (#24360/#24367) and the round-2 scratch built every op with E1 diff 0 (STATUS NEXT, cycle-158 round 3 line; PD385). That face was the SOURCE side (its partner was a `#376` input). No adopted stage has used one as a SINK after a delete, so (a) is new. The step-5 scratch is the measurement, as PD401(a)-(b) already say. No log on file records LabVIEW re-indexing a tunnel or raising unpredicted Error List items for this form.
+- **(b), already failed?** Yes, a PRIME skip has hidden a failure before. In cycle 81, a material session made PRIME skip ControlTerminal sinks (`d1-loop12-17-split-plan.md:803-804`). The result "PRIME 17/0" was then used to justify run 3, which died at op 31 on ControlTerminal #5634. The base proof would have caught that end (`retrospective-cycle81.md:260`, `:270`, `:278`). The cause was a skip based on inference, with no route and no re-read for the skipped end, decided inside a material session. Cycle 82 replaced the skip with a measured parity rule (`:332`).
+  - The new plan addresses each part of that cause:
+    - The skip is authorised by judgement (PD402(b)).
+    - It applies only to a LoopTunnel inner-face sink whose base wire is removed by an earlier `delete_wire` that is a checkpoint.
+    - The skipped end is proved at its own step on the post-delete read, through `loop_inner_face_sink`, which has its own self-test.
+    - Four negative cases still refuse.
+  - **Caution for acceptance:** a `PRIME-SKIP` line alone is not evidence. The scratch log must also show the step-time result for t8776/t24342: face wire 0 after the delete, then the connect's census and the net membership (PD401(b), `ring-p5c.md:200-203`).
+- **(c) Already-wired SelectorTunnel outer as the source.** OK3.outer (#31803) was made and wired to `w_k3r` inside step 4's register group: `STEPX 14 connect_term_uid … bound {-18: 31803} diff 0` (`tools/bench/diag_c164_p5s02d_scratch.log:208`). No log shows a second, separate connect from a SelectorTunnel's outer terminal after it is wired. The behaviour the verb needs, branching onto the existing wire, rests only on the Flat Sequence inner-face case in `diag_c127_1_fsinner.log:81-102`, as PD401(a) already says. Not a duplicate.
+- **(d) Duplicate wiring?** No. `docs/d1/ring-p5.md:51` and `:186` record that t3/t4 originally ran straight to out-tunnels #5204/#10404. The step-4 facts record that only sink-only stubs (w10362/w25232) with no source remain on t8776/t24342 (`ring-p5c.md:154`). No adopted step re-feeds them, so A72-A84 are not a duplicate.
+- **B1, already built / B3, helper exists:** the recipes use the existing shared calls: `gscript.connect_term_uid`, `stagexec.loop_inner_face_sink` (`tools/stagexec.py:6345`), the `register_end_case_border` groups, and the step-4 recipe pair's stagekit gates. Nothing is hand-rolled where a toolkit call exists.
+- **B4, already measured:** the census for this face pair has not been measured. PD401(b) makes it the scratch's own prediction.
+
+## Part C: user rules
+
+No contradiction. The plan adds no queue, no serial call and no camera wait. The rows A70/A80 are the designed wires (U1, PD400 USER-RULES line, `ring-p5c.md:142-144`). The deleted stubs have no source and carry no data.
+
+VERDICT {"schema":"verdict/1","id":"priorart-priorart-c165-a3-3-p5s02e","verdict":"novel","alternative":"Cycle 81's PRIME skip of ControlTerminal sinks hid an op-31 failure (retrospective-cycle81.md:260,278); a PRIME-SKIP line alone could again pass an end that the step-time route cannot address.","discriminating_test":"In the step-5 scratch log, quote for t8776/t24342: PRIME-SKIP line, face wire 0 after delete_wire, the connect_term_uid census in [{}, {'Wire':1}], and the face on OK3/OK4.outer's net with Is Broken? False (PD401(b)).","violations":[],"sources":["docs/d1/ring-p5c.md:153-160","docs/d1/ring-p5c.md:191-203","docs/d1/ring-p5c.md:219-227","docs/d1-loop12-17-split-plan.md:803","archive/peer/2026-09-25-retrospective-cycle81.md:260","archive/peer/2026-09-25-retrospective-cycle81.md:332","tools/bench/diag_c164_p5s02d_scratch.log:208","docs/d1/ring-p5.md:51"],"note":"Advisory only: PD402 does not cite the cycle-81 PRIME-skip precedent (PD186); its cause (skip by inference, no step-time proof) is addressed by the checkpointed delete + loop_inner_face_sink + negatives n1-n4. Inner face as SINK after delete is new; c158 ops 16/17 used it as source."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-c165-a3-3-p5s02e.md
+   STOP RECORD: none - 2026-10-10-priorart-priorart-c165-a3-3-p5s02e.md carries no blocking verdict
+   NOVEL RECORD not written for tools/recipes/stage_d1_ring_p5s02e_scratch.py: archive/peer/2026-10-10-priorart-priorart-c165-a3-3-p5s02e.md does not carry a pure `PRIOR-ART: novel` answer; no novel record written
+   NOVEL RECORD not written for tools/recipes/stage_d1_ring_p5s02e.py: archive/peer/2026-10-10-priorart-priorart-c165-a3-3-p5s02e.md does not carry a pure `PRIOR-ART: novel` answer; no novel record written
+BGRUN END rc=0 after 100s

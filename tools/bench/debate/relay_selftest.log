@@ -1,0 +1,36 @@
+BGRUN START 2026-10-09 20:12:11 limit 5.0 min: py -u tools/debate_relay.py selftest
+BGRUN PID 24264
+PASS  T1 first turn by Claude, file written
+PASS  T2 intervention reaches this speaker
+PASS  T3 ...and the other speaker on its next turn
+FAIL  T4 STOP mid-generation stops the step
+FAIL  T5 resumes after STOP with the same turn number
+PASS  T6 convergence reported
+RESULT {"schema": "result-line/1", "status": "FAIL", "gates": {"pass": 4, "fail": 2}}
+BGRUN END rc=1 after 13s
+BGRUN START 2026-10-09 20:12:54 limit 5.0 min: py -u tools/debate_relay.py selftest
+BGRUN PID 16996
+PASS  T1 first turn by Claude, file written
+PASS  T2 intervention reaches this speaker
+PASS  T3 ...and the other speaker on its next turn
+PASS  T4 STOP mid-generation stops the step
+PASS  T5 resumes after STOP with the same turn number
+PASS  T6 convergence reported
+RESULT {"schema": "result-line/1", "status": "PASS", "gates": {"pass": 6, "fail": 0}}
+BGRUN END rc=0 after 13s
+BGRUN START 2026-10-09 20:55:38 limit 5.0 min: py -u tools/debate_relay.py selftest
+BGRUN PID 2840
+PASS  T1 first turn by Claude, file written
+PASS  T2 intervention reaches this speaker
+PASS  T3 ...and the other speaker on its next turn
+PASS  T4 STOP mid-generation stops the step
+PASS  T5 resumes after STOP with the same turn number
+PASS  T6 convergence reported
+PASS  R1 both speakers wrote round 1 in parallel
+PASS  R2 an intervention reaches BOTH in the same round
+PASS  R3 round 2 prompt carried the other's round-1 text
+PASS  R4 STOP mid-round stops both
+PASS  R5 resumes at round 3
+PASS  R6 convergence when both done and no questions
+RESULT {"schema": "result-line/1", "status": "PASS", "gates": {"pass": 12, "fail": 0}}
+BGRUN END rc=0 after 21s

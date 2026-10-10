@@ -5,6 +5,9 @@ EXISTING checked first: tools/bench/selftest_c133_6_fr.py (FR base-set test, not
 PREDICTION:
   T1 133-3's session-a recipe bytes (md5 ababd4ed..., from git) -> `stage_prerun --dry` = FAIL, first_fail names FR.
   T2 the fixed bytes at tools/recipes/stage_d1_ring_p3b2a.py (md5 bb5ba064...) -> DRY PASS (no UNVERIFIED gate).
+     card 160-f3-1 (PD391(g)): T2a = full md5 0d1f0c15 AND the bytes without the trailing scope header == bb5ba064; T2 runs the dry
+     on a temp copy whose PB compares the stored pred rows / open pairs through stagekit.pb_check (PD370(b) converter) and expects
+     DRY PASS[-UNVERIFIED] with `unverified N`, N counted by PD387(e) (stage_prerun.dry_unverified_labels on the dry's output).
   T3 a fixture recipe whose only questionable gates read COM stubs -> DRY PASS-UNVERIFIED naming both.
   T4 check_launch refuses that PASS-UNVERIFIED record without --unverified-card; T5 allows it (dry part) with a card naming
      both gates; T6 refuses with a card naming only one.
@@ -78,10 +81,46 @@ if b is not None:
     rc, ln, out = dry(old)
     gate("T1 ababd4ed -> dry FAIL naming FR", ln.startswith("=== DRY FAIL") and "GATE FR" in ln, ln[:260])
 # T2 - the fixed bytes
+# card 160-f3-1 (PD391(g), docs/d1/ring-p5b.md:165-169): (a) since card chat-E3 the recipe carries the trailing scope header, so the
+# full-file md5 the gate computes is 0d1f0c15; the gate also proves the change is header-only (bytes without it == bb5ba064).
+# (b) its PB compares the stored NAME-keyed pred rows; vigraph a7eb58c7 (PD370(b), commit 18c241ec, ring-p4d.md:172-183) drops the
+# rename-only slot, so the dry end lacks the four '2626|Terminal|array|0..3' rows (diag_c160_f3_1_pb.log M2). PD370(b) keeps the
+# pred byte-unchanged and converts in the self-test: the dry runs on a TEMP COPY whose PB condition is the one line replaced by
+# stagekit.pb_check (pos_convert / pos_convert_open_rows, stagekit.py:1774-1802) on the same stored rows and open pairs.
+# (c) T2 counts unverified items by PD387(e) (stage_prerun.py:1074-1075): stage_prerun.dry_unverified_labels on the dry's output.
+PB_NAME = (b'rk == PRED["cdiff_rows"] and set((int(y["node"]), str(y["sink"]).split("|")[2]) for y in cd["rows"]) == '
+           b'set((int(y["node"]), y["term"]) for y in P["open_rows"]),')
+PB_POS = b'K.pb_check(S1f, G1, K.pred_end_graph(L, LAB, FSPAIRS), PRED["cdiff_rows"], P["open_rows"])["ok"],'
+
+
+def header_free_md5(b):
+    """md5 of a script's bytes without its trailing scope header (`# --- / # labview: .. / # hardware: .. / # ---`, card chat-E3);
+    None when it carries none. Self-test: tools/bench/selftest_c134_1_dry.py T2a."""
+    nl = b"\r\n" if b"\r\n" in b else b"\n"
+    lines = b.split(nl)
+    tail = lines[-5:]
+    if len(tail) == 5 and tail[0] == b"# ---" and tail[1].startswith(b"# labview:") and tail[2].startswith(b"# hardware:") \
+            and tail[3] == b"# ---" and tail[4] == b"":
+        return md5b(nl.join(lines[:-5]) + nl)
+    return None
+
+
 cur = os.path.join(ROOT, "tools", "recipes", "stage_d1_ring_p3b2a.py")
-gate("T2a fixed recipe md5 == bb5ba064", md5b(open(cur, "rb").read()).startswith("bb5ba064"), md5b(open(cur, "rb").read()))
-rc, ln, out = dry(cur)
-gate("T2 bb5ba064 -> DRY PASS (no unverified)", ln.startswith("=== DRY PASS:") and rc == 0 and "unverified 0" in ln, ln[:260])
+cb = open(cur, "rb").read()
+gate("T2a fixed recipe md5 == 0d1f0c15, header-only change of bb5ba064", md5b(cb).startswith("0d1f0c15")
+     and (header_free_md5(cb) or "").startswith("bb5ba064"), (md5b(cb), header_free_md5(cb)))
+conv = os.path.join(TMP, "pbpos")
+os.makedirs(conv)
+conv = os.path.join(conv, "stage_d1_ring_p3b2a.py")
+open(conv, "wb").write(cb.replace(PB_NAME, PB_POS))
+rc, ln, out = dry(conv)
+sys.argv = ["x"]
+import stage_prerun as SP                                            # noqa: E402
+unv = SP.merge_unverified([], SP.dry_unverified_labels(out.splitlines()))
+print("  FACT  T2 PB line replaced {0}x; dry unverified by PD387(e): {1}".format(cb.count(PB_NAME), unv), flush=True)
+gate("T2 bb5ba064 (+header), PB converted per PD370(b) -> DRY PASS, unverified == PD387(e) count {0}".format(len(unv)),
+     cb.count(PB_NAME) == 1 and rc == 0 and ln.startswith("=== DRY PASS") and "unverified {0},".format(len(unv)) in ln
+     and ("PASS-UNVERIFIED" in ln) == bool(unv), ln[:300])
 # card 136-P1 (fp-30): since 135-2 the recipe's CEN2 carries a DECLARED census (plan_ring_p3b2a_pred.json), and a dry run
 # prints it `UNVERIFIED-DRY  CEN2 ... (census not measured in a dry run; declared {...})`
 # (tools/bench/selftest_c134_1_dry_c136_p1_t2.log:75), no longer `UNPREDICTED`. The invariant this gate guards is
@@ -183,6 +222,6 @@ n_f = res.count(False)
 print(P.result_line(P.make_result(res.count(True), n_f, None if not n_f else "selftest_c134_1_dry")), flush=True)
 sys.exit(1 if n_f else 0)
 # ---
-# labview: read
+# labview: none
 # hardware: none
 # ---

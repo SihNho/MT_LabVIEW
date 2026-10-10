@@ -20,6 +20,7 @@ sys.path.insert(0, os.path.join(ROOT, "tools", "bench"))
 import stagexec as SX, stage_prerun as SPR, census_predict as CPR                        # noqa: E401,E402
 import elrule as ELR                                                                        # noqa: E402
 import stagekit as SK                                                                       # noqa: E402  el_class (shared)
+import stage_shared as SH                                                                   # noqa: E402  checkpoint_step_table (card 162-a2-3)
 import prep_c156_a1_1_lib as L                                                              # noqa: E402
 md5, rel, J = L.md5, L.rel, L.J
 B = os.path.join(ROOT, "tools", "bench")
@@ -75,11 +76,7 @@ ok17, det17 = SPR.x17_gate([p])
 gate("X17 over P5-2 step 1", ok17, det17)
 sf = fz.get("step_files") or []
 SFN = dict((int(x["n"]), x) for x in sf)
-cpe = []
-for k in cps:
-    an = max(ops[k - 1]["acts"]) if k else 0
-    x = SFN.get(an)
-    cpe.append({"op": k, "kind": ops[k - 1]["kind"] if k else "base", "action": an, "step_file": x and x["path"], "md5": x and x.get("md5")})
+cpe = SH.checkpoint_step_table(ops, cps, SFN)                                                # card 162-a2-3: tools/stage_shared.py, was a copied block
 gate("E1 every checkpoint ({0}) has a simulated step file with md5".format(len(cpe)), all(e["step_file"] and e["md5"] for e in cpe), cpe)
 MV = []
 for k, o in enumerate(ops, 1):

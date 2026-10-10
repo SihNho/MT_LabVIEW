@@ -1,0 +1,80 @@
+{
+ "schema": "task/1",
+ "id": "164-3-4",
+ "kind": "build",
+ "goal": "Offline per brief_164-3-4.md: step-4 recipe pair on plan 725cd68e, pred, licence, predicted Error List; dry, prerun, check-launch, scratch-required; prior-art release; STOP RECORDs; no launch.",
+ "why": "Purpose items 5-9 of assignment 164-3: gates and the predicted Error List must exist before the one scratch run on a byte copy of 564d8cbe (PD397(d), PD399).",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_164-3-4.md", "md5": "dcc55d54bf95b1e36b767e04eb6ab332"},
+  {"path": "tools/bench/plan_ring_p5s02d.json", "md5": "725cd68ef36865c430a83a5dc0120d6f"},
+  {"path": "tools/bench/prep_c164_a3_1_session.json", "md5": "2aeaef243858a7cffeecfee2894a7743"},
+  {"path": "tools/bench/diag_c164_a3_1_facts.md", "md5": "7b0ec0d442f5906b4cc38f69e77b02da"},
+  {"path": "tools/bench/diag_c164_a3_3_facts.md", "md5": "08beb042ca290522bc16399c0859aec3"},
+  {"path": "tools/bench/errorlist_expected_D1_ring_p5s02c_20261010_125755.json", "md5": "26d45c71638b97ca17165c378ca64040"},
+  {"path": "tools/bench/cards/brief_164-a2-3.md", "md5": "0d143a6496cf3b33911a83860606a502"},
+  {"path": "tools/bench/diag_c164_a2_3_facts.md", "md5": "5061f4d84016ed8c7703a0312e68d617"},
+  {"path": "tools/bench/prep_c164_a2_3_lib.py", "md5": "c82d4062299ee7e962af49d3440069de"},
+  {"path": "tools/bench/plan_ring_p5s02d_pred.json", "md5": "37cfa1bce95e6288fde35b43e26db8a7"},
+  {"path": "tools/bench/plan_ring_p5s02d_licence.json", "md5": "ace1f32ea0f1859f0df8ef7df623fcba"},
+  {"path": "tools/bench/errorlist_predicted_D1_ring_p5s02d_end.json", "md5": "653712a889c21fd77027ef71376a2806"},
+  {"path": "tools/recipes/stage_d1_ring_p5s02d.py", "md5": "61998a986f518eaf146ca93f6ac5b857"},
+  {"path": "tools/recipes/stage_d1_ring_p5s02d_scratch.py", "md5": "750ee02fe565bdf6b71379320c4d48a4"},
+  {"path": "archive/peer/2026-10-10-priorart-priorart-c164-a2-3-p5s02d.md", "md5": "1759c0454137a05ed0dc73efbfa9e6c9"},
+  {"path": "tools/stagekit.py", "md5": "dd57c1cac5d56b82c08c6ef9d7b1a22d"},
+  {"path": "tools/stage_prerun.py", "md5": "7605116f1dfe1c6fd4963dbfcf259de1"},
+  {"path": "docs/d1/ring-p5c.md", "md5": "1611e1e7d521453b6db49d51135ba99b"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"}
+ ],
+ "pass": [
+  "Recipe pair stage_d1_ring_p5s02d{,_scratch}.py inputs-only on stagekit.RingSession; dry on both PASS or PASS-UNVERIFIED with only CEN2; prerun PASS (X10, X14, X17, X8); PB RECORD rows quoted",
+  "--check-launch on the full scratch command PASS and --scratch-required exit code with its reason line quoted; exact scratch and real launch command lines in the facts",
+  "errorlist_predicted_D1_ring_p5s02d_end.json from the 26d45c71 file: cleared/raised cited to A53..A71, rest UNPREDICTED or STANDING; md5 and counts; errorlist_check.compare accepts it",
+  "Prior-art c164-a2-3 released: FIXED lines in the review file (A1 -> new plan rows, A3 -> ring-p5c.md:57) accepted by the gate, or a new review novel; gate output quoted",
+  "STOP RECORDs of both recipes cleared and the check_launch result after clearing quoted; no tool, hook or plan-doc edit; UNCHANGED md5 list; facts file written"
+ ],
+ "outputs": [
+  "tools/recipes/stage_d1_ring_p5s02d.py",
+  "tools/recipes/stage_d1_ring_p5s02d_scratch.py",
+  "tools/bench/plan_ring_p5s02d_pred.json",
+  "tools/bench/plan_ring_p5s02d_licence.json",
+  "tools/bench/errorlist_predicted_D1_ring_p5s02d_end.json",
+  "tools/bench/diag_c164_a3_4_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c164_a3_4*",
+   "tools/bench/prep_c164_a3_4*",
+   "tools/bench/plan_ring_p5s02d_pred.json",
+   "tools/bench/plan_ring_p5s02d_licence.json",
+   "tools/bench/errorlist_predicted_D1_ring_p5s02d*",
+   "tools/recipes/stage_d1_ring_p5s02d*",
+   "tools/bench/sim/ring_p5s02d/**",
+   "tools/bench/jev_*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/cards/result_164-3-4.json",
+   "archive/peer/**",
+   "archive/prior-art/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 90
+ },
+ "advances": ["M3", "M8", "R1"],
+ "rules": [
+  "Offline only: no LabVIEW/motor/camera, no --launch, no hooks edit, no edit of stage tools",
+  "Call shared functions, never copy them (docs/script-writing.md); limit 675 kept; memory_model.json untouched",
+  "A PB BLOCK in the dry = FAIL with the row; add no class (PD397(d))",
+  "Release prior art only by FIXED/REFUTED lines the gate accepts or a new novel review; never CYCLE_GUARD_OFF",
+  "Hook false positive on own command text: py tools/gate_fp.py log, report; no env bypass"
+ ]
+}

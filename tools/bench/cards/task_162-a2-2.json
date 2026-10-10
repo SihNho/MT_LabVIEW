@@ -1,0 +1,50 @@
+{
+ "schema": "task/1",
+ "id": "162-a2-2",
+ "kind": "build",
+ "retry_of_card": "162-a2-1",
+ "goal": "Offline: re-pin the one stale pred pin in selftest_c161_delckpt (a1fd43fb -> 4cef0a8c, a required census write), re-run it green, drain gate_fp row fp-84 with path:line + self-test.",
+ "why": "Retry of 162-a2-1, which drained fp-82 and fp-85 and returned only on fp-84: the pred was legitimately changed by the 162-a1-2 census write, so the self-test's pred pin is stale, not defective.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_162-a2-2.md", "md5": "b8b2a82b6d11ae0247b7022671466cb8"},
+  {"path": "tools/bench/diag_c162_a2_1_facts.md", "md5": "79a4e855c4a523a698fd92acb8c97974"},
+  {"path": "tools/bench/selftest_c161_delckpt.py", "md5": "9bd4889af10fb8a227f5e43da016894c"},
+  {"path": "tools/gate_fp.py", "md5": "1f427fb5b1735584c19a699c2314b826"},
+  {"path": "tools/stagexec.py", "md5": "a4df7e15c495b9fcbcdadf0d8047bc69"},
+  {"path": "tools/bench/plan_ring_p5s02b_pred.json", "md5": "4cef0a8cf59eca8d20d165095cf11ec0"}
+ ],
+ "pass": [
+  "Only unequal pin in selftest_c161_delckpt is :138 pred a1fd43fb vs 4cef0a8c; JSON compare vs pred_before_a1_2.json shows only census, census_overall, census_source differ",
+  "That ONE pin edited; selftest_c161_delckpt re-run on current bytes 11/0, content gates unchanged; any other result = RETURN with facts",
+  "fp-84 drained via gate_fp.py drain with the stagexec.py path:line and the self-test name; queue row before -> after quoted; hook rows and selftest_c159_a4_1.py untouched"
+ ],
+ "outputs": [
+  "tools/bench/diag_c162_a2_2_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c162_a2_2*",
+   "tools/bench/prep_c162_a2_2*",
+   "tools/bench/selftest_c161_delckpt*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/jev_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {
+  "failures": 1,
+  "minutes": 30
+ },
+ "advances": ["M3"],
+ "rules": [
+  "Offline only: no LabVIEW, no motor or camera; no tools/hooks/** edit, no stage-tool edit",
+  "ONE pin edit, no content-gate patch; selftest_c159_a4_1.py:300 is listed as an OPEN line only"
+ ]
+}

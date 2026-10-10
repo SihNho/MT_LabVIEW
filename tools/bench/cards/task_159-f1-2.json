@@ -1,0 +1,55 @@
+{
+ "schema": "task/1",
+ "id": "159-f1-2",
+ "kind": "diagnose",
+ "retry_of_card": "159-f1-1",
+ "goal": "Measure why selftest_c134_1_dry reads 9/2 (T2a recipe pin, T2 DRY FAIL at GATE PB) instead of 11/0: header-only diff, pre-edit stagekit, older addrcheck/stage_prerun. Facts only.",
+ "why": "Card 159-f1-1 failed on the one suite that is not equal to its last pass; the cause is not measured. Pass item 10 needs the cause (today's stagekit edit or an older change) before the judgement session decides a re-pin.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_159-f1-2.md", "md5": "ec7c971841f49ea6154ad2d566413b0a"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+  {"path": "tools/bench/diag_c159_f1_1_facts.md", "md5": "69cb8c31fec97130014b25d6bd8bb3e8"},
+  {"path": "tools/bench/selftest_c134_1_dry_c159_f1_1.log", "md5": "44aeb1d525deba97ef5be96ed289a3f0"},
+  {"path": "tools/bench/selftest_c134_1_dry.py", "md5": "10178208ac328a292d3573d1692ac01b"},
+  {"path": "tools/bench/selftest_c159_cen2_ends_stagekit_9cd8822e.txt", "md5": "9cd8822e7605cc6f6a1f899323c9d54b"},
+  {"path": "tools/stagekit.py", "md5": "ac3a8f5778c88c30168af4422f683f6c"},
+  {"path": "tools/stage_prerun.py", "md5": "7605116f1dfe1c6fd4963dbfcf259de1"}
+ ],
+ "pass": [
+  "T2a: diff of stage_d1_ring_p3b2a.py at pin bb5ba064 vs current 0d1f0c15 quoted: header-only or the non-comment changed lines listed",
+  "T2 with stagekit 9cd8822e in a scratch copy (tools/stagekit.py untouched): outcome and how it was run quoted",
+  "if T2 still fails: the single swap (older addrcheck / stage_prerun) that restores PASS, or 'none of them'; T2's expected vs obtained numbers listed",
+  "facts file; md5 of stagekit/stage_prerun/stagesim/stagexec unchanged; VIs 94ffff94/eb1d0f31/2482fe7b/7f2582ae unchanged; no tools/hooks or stage-tool edit"
+ ],
+ "outputs": [
+  "tools/bench/diag_c159_f1_2_facts.md"
+ ],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c159_f1_2*",
+   "tools/bench/selftest_c134_1_dry_c159_f1_2*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 1,
+  "minutes": 40
+ },
+ "rules": [
+  "MEASURE only: no stage-tool, recipe, tools/hooks or selftest_c134_1_dry.py edit; no re-pin in this card",
+  "Scratch copies live in a temp dir and are deleted at the end; tools/stagekit.py is never replaced in place",
+  "Facts and an OPEN line only; the re-pin or re-judge decision belongs to the judgement session",
+  "Rule 1a: no per-bead computation touched; no LabVIEW process started"
+ ],
+ "advances": ["M3", "M8"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/selftest_c134_1_dry_c159_f1_1.log"},
+  {"kind": "file", "name": "tools/bench/selftest_c159_cen2_ends_stagekit_9cd8822e.txt"}
+ ]
+}

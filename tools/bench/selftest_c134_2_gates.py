@@ -8,7 +8,7 @@ PREDICTION:
   B4 an action naming an UNMEASURED tunnel uid -> FAIL naming it; B5 a route naming one of its FACE terminals -> FAIL
   B6 a carried entry key '<face>|<frame>' -> FAIL; B7 a graph without fs_measured -> PASS, nothing listed
   D1 a dry PASS record without dry_rule (old rule) -> check_launch refused, text names PD288(c) and 'Re-dry'
-  D2 the same with dry_rule 2 (write_record's default) -> allowed; D3 dry_rule 1 explicitly -> refused
+  D2 the same with dry_rule 3 (write_record's default; re-pinned 159-f1-1 from 2) -> allowed; D3 dry_rule 1 explicitly -> refused
     py tools/bgrun.py --material --max-min 3 --log tools/bench/selftest_c134_2_gates.log -- py -u tools/bench/selftest_c134_2_gates.py"""
 import atexit, json, os, shutil, sys, tempfile, time                              # noqa: E401
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -88,9 +88,9 @@ lines = records(None)
 ok, why = SP.check_launch(LAUNCH)
 gate("D1 dry PASS without dry_rule -> refused, names PD288(c) + Re-dry", not ok and "PD288(c)" in why and "Re-dry" in why,
      why.splitlines()[0] if why else "")
-lines = records(2)
+lines = records(3)
 ok, why = SP.check_launch(LAUNCH)
-gate("D2 dry_rule 2 -> allowed (write_record default {0})".format(SP.DRY_RULE), ok, why)
+gate("D2 dry_rule 3 -> allowed (write_record default {0})".format(SP.DRY_RULE), ok, why)
 records(1)
 ok, why = SP.check_launch(LAUNCH)
 gate("D3 dry_rule 1 -> refused", not ok and "PD288(c)" in why, why.splitlines()[0] if why else "")

@@ -1,0 +1,59 @@
+{
+  "schema": "task/1",
+  "id": "160-f3-2",
+  "retry_of_card": "160-f3-1",
+  "kind": "build",
+  "goal": "Retry of 160-f3-1: measure the compile diff of plan_ring_p5s02r_all vs compile_before.json; if only t_go/t_ho register_end_case_border changed, re-baseline to a new file; passwire 20/0.",
+  "why": "Passwire gate D failed 19/1 after card 160-a2-1's adopted compile change; whether it is that change or a regression must be measured, not assumed.",
+  "inputs": [
+    {"path": "tools/bench/cards/brief_160-f3-2.md", "md5": "dd0b619bfc77a81bd72f5d07f3a38b97"},
+    {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+    {"path": "tools/bench/diag_c160_a2_1_facts.md", "md5": "4a1d31e915ffec30271c9e692706137b"},
+    {"path": "tools/bench/diag_c160_f3_1_facts.md", "md5": "c59e2093fe18ab67fba7f21bfb883d41"},
+    {"path": "tools/bench/selftest_c156_passwire.py", "md5": "321ef700c2c19278b4d5cf98f7f76836"},
+    {"path": "tools/bench/sim/ring_p5s02pw/compile_before.json", "md5": "7ca1c4c4811dd0651f1c2e7599d85baf"},
+    {"path": "tools/bench/plan_ring_p5s02r_all.json", "md5": "15da9551b4e1ab8620f4fa815c224da3"},
+    {"path": "tools/stagesim.py", "md5": "95a162baec5324ff037a8d23bd7ef46d"},
+    {"path": "tools/stagexec.py", "md5": "ddf23a31b10767015da246be8ceaa2e2"},
+    {"path": "tools/stagekit.py", "md5": "1441bb4ca75eb5a59afaa3555690db37"}
+  ],
+  "pass": [
+    "Op-by-op diff of the 40-op compile of plan_ring_p5s02r_all vs compile_before.json printed (index, before, after); decision adopted/regression stated with evidence",
+    "If only t_go/t_ho ops changed with equal count and checkpoints: new compile_before_c160a2.json written by the existing writer, old file untouched, gate D re-pointed; RESULT 20/0 quoted",
+    "If any other op differs: NO re-baseline; FAIL with the diff lines",
+    "md5 unchanged: tools (stagesim, stagexec, stagekit, stage_prerun), compile_before.json, plan_ring_p5s02r_all.json, plan_ring_p5s02b*.json; no hooks edit"
+  ],
+  "outputs": [
+    "tools/bench/selftest_c156_passwire.py",
+    "tools/bench/sim/ring_p5s02pw/compile_before_c160a2.json",
+    "tools/bench/diag_c160_f3_2_facts.md"
+  ],
+  "flags": {
+    "labview": "none",
+    "gui": false,
+    "hardware": "none",
+    "run_vi": false,
+    "write": [
+      "tools/bench/selftest_c156_passwire*",
+      "tools/bench/sim/ring_p5s02pw/compile_before_c160a2.json",
+      "tools/bench/diag_c160_f3_2*"
+    ],
+    "status_edit": false,
+    "git_commit": false,
+    "peers": []
+  },
+  "budget": {
+    "failures": 2,
+    "minutes": 30
+  },
+  "rules": [
+    "Offline; self-test file + one new baseline only; no tools/*.py edit; no hooks edit",
+    "Re-baseline ONLY if the measured diff is exactly the t_go/t_ho change; else FAIL",
+    "Never overwrite compile_before.json; call the existing writer, no second serialiser",
+    "Call shared functions, no pasted blocks; a new function carries a docstring naming its self-test"
+  ],
+  "advances": ["M3", "M8", "R1"],
+  "requires": [
+    {"kind": "file", "name": "tools/bench/selftest_c156_passwire.py"}
+  ]
+}

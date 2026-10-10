@@ -1,0 +1,61 @@
+{
+ "schema": "task/1",
+ "id": "162-a2-1",
+ "kind": "build",
+ "goal": "Offline tooling after the p5s02b scratch: ONE pin sweep over the scripts to be edited, then drain gate_fp rows fp-82, fp-84 and fp-85 with tools/gate_fp.py drain (path:line + self-test).",
+ "why": "Cycle-162 purpose items 8 and 9 (PD393(e)): pin sweep before any edit, then drain the three non-hook gate false-positive rows. Hook rows stay for the chat.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_162-a2-1.md", "md5": "48e004581eb720b7c9f7fd889a5b089e"},
+  {"path": "docs/d1/ring-p5b.md", "md5": "93dcb778db320dbecc813cd8e156cb1c"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+  {"path": "tools/gate_fp.py", "md5": "1f427fb5b1735584c19a699c2314b826"},
+  {"path": "tools/stagekit.py", "md5": "9b8f82c1a0150bcaacaf9c56e003c335"},
+  {"path": "tools/stagexec.py", "md5": "a4df7e15c495b9fcbcdadf0d8047bc69"},
+  {"path": "tools/stagesim.py", "md5": "95a162baec5324ff037a8d23bd7ef46d"},
+  {"path": "tools/stage_prerun.py", "md5": "7605116f1dfe1c6fd4963dbfcf259de1"},
+  {"path": "tools/bench/selftest_c157_innerface.py", "md5": "c6c5a2f96daec0becc014e8966ab9574"},
+  {"path": "tools/bench/selftest_c160_l0stem.py", "md5": "ca61ea47d5beafac9c657ade2bb00450"},
+  {"path": "tools/bench/selftest_c161_delckpt.py", "md5": "9bd4889af10fb8a227f5e43da016894c"},
+  {"path": "tools/bench/selftest_c158_runcheck.py", "md5": "0335088f9e45647cc9ed8567cfe79a06"},
+  {"path": "archive/peer/2026-10-10-retrospective-cycle160.md", "md5": "ce64a79baa7ca4cd7f27315bd0c9d57b"}
+ ],
+ "pass": [
+  "ONE pin sweep script + table run BEFORE any edit: pinned vs current md5 of stagekit/stagexec/stagesim/stage_prerun/plan/ring-p5b for every script to be edited or called; stale pins listed",
+  "fp-85: the one stale stagesim pin in selftest_c157_innerface fixed, self-test green, drained via gate_fp.py drain with path:line and the self-test name",
+  "fp-82 and fp-84: self-tests selftest_c160_l0stem and selftest_c161_delckpt re-run on current bytes, green, each row drained with the fixing path:line; any content-gate FAIL = RETURN",
+  "Queue status before -> after quoted for fp-82/84/85; hook rows fp-75/80/81/83 untouched; delckpt peer review file has its disposition filled; originals and hooks untouched"
+ ],
+ "outputs": [
+  "tools/bench/diag_c162_a2_1_facts.md",
+  "tools/bench/prep_c162_a2_1_pinsweep.log"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c162_a2_1*",
+   "tools/bench/prep_c162_a2_1*",
+   "tools/bench/selftest_c157_innerface*",
+   "tools/bench/selftest_c160_l0stem*",
+   "tools/bench/selftest_c161_delckpt*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/jev_*",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "advances": ["M3"],
+ "rules": [
+  "Offline only: no LabVIEW, no motor or camera; no tools/hooks/** edit, no stagekit/stagexec/stagesim/stage_prerun edit",
+  "Pin sweep first, then ONE pin edit per stale pin named in the brief; a content-gate failure is returned, not patched",
+  "Call shared functions, never copy them (docs/script-writing.md)"
+ ]
+}

@@ -1,0 +1,22 @@
+{"schema":"result/1","id":"164-3-7","status":"PASS","gates":{"pass":23,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+{"path":"tools/bench/memory_model.json","md5":"ff0fabca220686e7222cfcb27aa622cd"},
+{"path":"tools/bench/plan_ring_p5s02d_pred.json","md5":"5a7bfc81979b15d19117c7d91be400a1"},
+{"path":"tools/bench/diag_c164_a3_7_facts.md","md5":"2f75bd904909fbac34499e1041374026"},
+{"path":"tools/bench/prep_c164_a3_7_ident.py","md5":"48846e6f17bf4fd82201e7e462177303"},
+{"path":"tools/bench/prep_c164_a3_7_ident.log","md5":"371671a04d61ff3db83561f695e05cca"},
+{"path":"tools/bench/prep_c164_a3_7_write.py","md5":"e05d99ffca2fec0fc888c2d7ba36f315"},
+{"path":"tools/bench/prep_c164_a3_7_write.log","md5":"30971ed5fb7a025e324b1f8f01b9c632"}],
+"facts":[
+"#23042 base Comparison/Diagram/23405/(15713,30518): no adopted object with that identity -> IDENTITY GONE yes (prep_c164_a3_7_ident.log:5)",
+"#23501 base LoopTunnel/WhileLoop 23041/(15675,11867); adopted uid 23501 = ParameterTerminal 'y' of #12170; no base-identity match -> GONE yes (ident.log:6)",
+"uid 23481 re-used: base 'x' of #23042 -> adopted 'x = y?' of #12170, base owner identity gone (ident.log:7); LoopTunnel identities base-adopted = #23501 only, adopted-base none (ident.log:9-10)",
+"Structural condition HOLDS: G1/G2/G3/FS1/B/X PASS graph.log:308-314, EL 53 == 2c1edf78 el.log:88-89 elexp.log:5-6, w23460 absent, w23519 sinks == prediction (ident.log:14-32)",
+"memory_model.json 8fb432e4 -> ff0fabca: one load_by_vi key 6dcd5c3d... = 603.9 (graph.log:24); only that key differs, fail_above_mb 680.0 (prep_c164_a3_7_write.log:13,18)",
+"pred 87a65b89 -> 5a7bfc81: census = scratch log :223 via stagekit.scratch_census; only census/census_overall/census_source change, plan md5 same (write.log:14,19)",
+"Write run 1 wrote LF instead of CRLF (content identical, write_run1_lf.log); restored from byte copies, run 2 kept CRLF (write.log:20)",
+"gate_fp: fp-87 E5 by uid (diag_c164_a3_5_graph.py:65), fp-88 reuse detectors scope (stagekit.py:1499,1512-1514), fp-89 guard_bash flagged a script name in gate_fp --cmd text (guard_card.log:1015)",
+"VI pins equal before/after incl. adopted 6dcd5c3d and original 2a78e17c (write.log:10,29); LabVIEW process count 0; no tool/hook/detector edit"],
+"open":["E5 and the D/TD reuse detectors still compare by uid / position key; a later adopted-file graph read fails E5 again whenever LabVIEW re-uses a deleted uid (fp-87, fp-88 queued, unfixed)"],
+"cost":{"usd":null,"minutes":12,"labview_runs":0},
+"note":"offline only; facts tools/bench/diag_c164_a3_7_facts.md"}

@@ -1,0 +1,34 @@
+BGRUN START 2026-10-10 12:55:49 limit 20.0 min: py -u tools/prior_art_review.py --plan-file tools/bench/prep_c163_a2_2_priorart_plan.md --slug priorart-c163-a2-2-p5s02c --trigger new-op --recipe tools/recipes/stage_d1_ring_p5s02c_scratch.py --recipe tools/recipes/stage_d1_ring_p5s02c.py
+BGRUN PID 15956
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-c163-a2-2-p5s02c.txt (87264 chars)
+   review card tools\bench\cards\review_priorart-priorart-c163-a2-2-p5s02c.json
+OUTCOME: ANSWERED (66s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-10-10-priorart-priorart-c163-a2-2-p5s02c.md
+COST: $1.3635  in 16 / out 4919 / cache-create 134278 / cache-read 954273  (62s, 12 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-priorart-c163-a2-2-p5s02c verdict=novel -> tools\bench\cards\verdict_priorart-priorart-c163-a2-2-p5s02c.json
+--- ANSWER ---
+**Verdict: `novel`.** The 1.7 record counter has not been built anywhere in this project. It reuses a pattern that P5-1a already ran cleanly, and it fills a `#376` input that every earlier plan left open on purpose.
+
+### Part A: the direction
+- **A1 (settled already):** The direction itself was decided in PD374(b) (`docs/d1/ring-p5.md:34-35`, 2026-10-09): `#376`'s 'frame index' is fed by a record counter in loop 1.7. PD396(b)(c) (`docs/d1/ring-p5b.md:341-348`) puts it in step 3. The plan carries out those decisions; it does not repeat a finished one. No finding.
+- **A2 (refuted already):** Nothing found. The only argument about 'frame index' was where the original gets it from. PD372(a) settled that the original equals S1 (w3268 ← #644, loop i; `docs/d1/ring-p4d.md:204`), and PD374(b) changed the source for t7 knowingly.
+- **A3 (contradicted):** None. The base plan lists `#376 'frame index'` as an open row at step 0 (`tools/bench/plan_ring_p5s02b.json:83-87`), which matches the plan wiring it now.
+- **A4 (unread evidence):** None. The plan cites the P5-1a and P5-1b logs and PD396.
+
+### Part B: the artifact
+- **(a) / B1 (already built?):** The same build pattern exists, on a different loop. P5-1a did add_shift_reg `sr_n` on loop 10170, plus `c_k0` (const_donor `DonorSRInit_v0.vi` uid 248) and `c_inc` (`$work` uid 1978) (`tools/bench/plan_ring_p5s01a.json:321-379`). That run passed 23/0 with E1, D, TD, PB and FR all PASS, and kept Increment #31078 with 0 wires and no loose end (`tools/bench/diag_c154_p5s01a_scratch.log:204-240,271`). That counter belongs to loop 1.2. This plan's counter goes on loop 1.7 (#23041), so it is a new instance, not a duplicate. One quirk to watch: P5-1's `c_k0` showed census diff 0 with no new uid, yet bound -44 → 31015 (`diag_c154_p5s01a_scratch.log:188,191`). Expect `c_k07` to do the same.
+- **(b) Increment into an inherited case frame:** No record found. In P5-1a, `c_inc` went into a case frame made by the same plan (`new:CQ1.f1`, `plan_ring_p5s01a.json:361`). Here `c_inc7` goes into frame 31506, which an earlier step (p5s02a) made. Earlier work only wired into inherited frames: p5s02b's pass wires on `#31517` (`plan_ring_p5s02b.json:249-254,334-339`) and the PD395 class-2 rows. Neither created a node there. This is new; the scratch run is the planned check.
+- **(c) `register_end_case_border` onto a register made in the same step:** Already run. P5-1a ran it with its register and tunnels made in the same plan, and LabVIEW matched the simulation (diff 0; `docs/d1/ring-p5b.md:142-143`). The pred already expects possible extra 'loose ends' items from this verb, carried over from step 2 (`plan_ring_p5s02c_pred.json:574,589`). That is the right handling.
+- **(d) / B3 (helper exists?):** No shared function or adopted step already wires 'frame index' from a counter. It was open at the step-2 base (`plan_ring_p5s02b.json:83-87`). The recipes call the shared stagekit functions and copy no blocks (`stage_d1_ring_p5s02c_scratch.py:38-65`).
+- **B2 (already failed), B4 (already measured):** Nothing found.
+
+### Part C: the user's rules
+No contradiction. The plan has no queue on a control signal, no serial call, no wait in the camera loop, and no change to any per-bead number. 'frame index' changing to a record counter is the PD374(b) amendment, which already went through the U1 check.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-priorart-c163-a2-2-p5s02c","verdict":"novel","alternative":"Counter pattern already ran 23/0 in P5-1a on loop 1.2 (sr_n/c_k0/c_inc); this is a new instance on loop 1.7. Only new part: $work Increment created INTO an inherited case frame (31506); earlier steps only wired into inherited frames.","discriminating_test":"The step-3 scratch: PRIM-GATE PASS for c_inc7 with its read-back diagram == 31506, E1 diff 0 at op 4, FR frames == sim end; c_k07 may show census diff 0 like c_k0 (diag_c154_p5s01a_scratch.log:188).","violations":[],"sources":["tools/bench/plan_ring_p5s01a.json:321-379","tools/bench/diag_c154_p5s01a_scratch.log:188-240","docs/d1/ring-p5b.md:142-143","tools/bench/plan_ring_p5s02b.json:83-87","docs/d1/ring-p5.md:34-35"],"note":"No adopted step wires #376 frame index; it is open at the p5s02b base."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-c163-a2-2-p5s02c.md
+   STOP RECORD: none - 2026-10-10-priorart-priorart-c163-a2-2-p5s02c.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_ring_p5s02c_scratch.py sha f65c91bad569 -> these bytes are released by this review; editing them again re-arms the gate
+   NOVEL RECORD written: tools/recipes/stage_d1_ring_p5s02c.py sha e596ea2316b8 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 69s

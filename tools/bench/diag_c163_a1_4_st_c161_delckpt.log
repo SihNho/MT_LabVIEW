@@ -1,0 +1,24 @@
+BGRUN START 2026-10-10 12:29:28 limit 10.0 min: py -u tools/bench/selftest_c161_delckpt.py
+BGRUN PID 4004
+---------- (i) p5s02b: delete_wire ops are checkpoints
+  PASS  D1 p5s02b 10 ops; delete_wire ops == [1, 4, 8]  (10, ['delete_wire', 'tunnel', 'tunnel', 'delete_wire', 'connect_term_uid', 'case_frame_wire', 'tunnel', 'delete_wire', 'connect_term_uid', 'case_frame_wire'])
+  PASS  D2 checkpoint_ops(p5s02b) == (0, 1, 2, 3, 4, 5, 7, 8, 9, 10) == stored pred sets == x10 record [0, 1, 2, 3, 4, 5, 7, 8, 9, 10] == old (0, 2, 3, 5, 7, 9, 10) | {8, 1, 4}  {'cp': (0, 1, 2, 3, 4, 5, 7, 8, 9, 10), 'req': {'bind': [2, 3, 5, 7, 9], 'delete_wire': [1, 4, 8], 'move_in_run': [], 'last': [10]}, 'stored': ((0, 1, 2, 3, 4, 5, 7, 8, 9, 10), (0, 1, 2, 3, 4, 5, 7, 8, 9, 10))}
+---------- (ii) the Executor refuses a p5s02b set lacking a delete_wire op before op 1
+  PASS  V1 set (0, 1, 2, 3, 4, 5, 7, 8, 9, 10), non-collecting dry: no CHECKPOINT stop (accepted)  ('PASS', 'None')
+  PASS  V2 set [0, 1, 2, 3, 5, 7, 8, 9, 10]: FAIL 'CHECKPOINT' naming [4] (delete_wire), no op dispatched  ('FAIL', 'CHECKPOINT: set [0, 1, 2, 3, 5, 7, 8, 9, 10] lacks binding/last/move_in-run-closing/delete_wire op(s) or is out of range: [4] (need [1, 2, 3, 4, 5, 7, 8, 9, 10]); delete_wire op(s) not in the set: [4] (PD393(a)) - stop before op 1', 0)
+  PASS  V3 set [0, 1, 2, 3, 4, 5, 7, 9, 10]: FAIL 'CHECKPOINT' naming [8] (delete_wire), no op dispatched  ('FAIL', 'CHECKPOINT: set [0, 1, 2, 3, 4, 5, 7, 9, 10] lacks binding/last/move_in-run-closing/delete_wire op(s) or is out of range: [8] (need [1, 2, 3, 4, 5, 7, 8, 9, 10]); delete_wire op(s) not in the set: [8] (PD393(a)) - stop before op 1', 0)
+  PASS  V5 set [0, 2, 3, 4, 5, 7, 8, 9, 10]: FAIL 'CHECKPOINT' naming [1] (delete_wire), no op dispatched  ('FAIL', 'CHECKPOINT: set [0, 2, 3, 4, 5, 7, 8, 9, 10] lacks binding/last/move_in-run-closing/delete_wire op(s) or is out of range: [1] (need [1, 2, 3, 4, 5, 7, 8, 9, 10]); delete_wire op(s) not in the set: [1] (PD393(a)) - stop before op 1', 0)
+  PASS  V4 set [0, 2, 3, 5, 7, 9, 10]: FAIL 'CHECKPOINT' naming [1, 4, 8] (delete_wire), no op dispatched  ('FAIL', 'CHECKPOINT: set [0, 2, 3, 5, 7, 9, 10] lacks binding/last/move_in-run-closing/delete_wire op(s) or is out of range: [1, 4, 8] (need [1, 2, 3, 4, 5, 7, 8, 9, 10]); delete_wire op(s) not in the set: [1, 4, 8] (PD393(a)) - stop before op 1', 0)
+FACT p5s02b dry new set: status PASS; ops reported [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; reads_real [1, 2, 3, 4, 5, 7, 8, 9, 10]; reads_skipped [6]; first fail None
+FACT p5s02b dry new set past ops 5 and 9: True
+---------- (iii) stored p5s01a / p5s01b / p5s02a sets
+  PASS  S p5s01a: 0 delete_wire ops; required delete_wire set empty; checkpoint_ops == pre-161 rule (0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14); stored-set CHECKPOINT rows carry no delete_wire reason  ('PASS', 'None', [])
+FACT p5s01a stored pred sets memory_pred (0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14) / e1 (0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14); validates UNCHANGED (accepted)
+  PASS  S p5s01b: 0 delete_wire ops; required delete_wire set empty; checkpoint_ops == pre-161 rule (0, 2, 4, 6, 7, 8); stored-set CHECKPOINT rows carry no delete_wire reason  ('PASS', 'None', [])
+FACT p5s01b stored pred sets memory_pred (0, 2, 4, 6, 7, 8) / e1 (0, 2, 4, 6, 7, 8); validates UNCHANGED (accepted)
+  PASS  S p5s02a: 0 delete_wire ops; required delete_wire set empty; checkpoint_ops == pre-161 rule (0, 1, 3, 6, 8, 9, 12, 15, 16, 17); stored-set CHECKPOINT rows carry no delete_wire reason  ('FAIL', 'UNROUTABLE 1 row(s): acts [] []: CHECKPOINT: set [0, 1, 3, 6, 8, 9, 15, 16, 17] lacks binding/last/move_in-run-closing/delete_wire op(s) or is out of range: [12] (need [1, 3, 6, 8, 9, 12, 15, 1', ['CHECKPOINT: set [0, 1, 3, 6, 8, 9, 15, 16, 17] lacks binding/last/move_in-run-closing/delete_wire op(s) or is out of range: [12] (need [1, 3, 6, 8, 9, 12, 15, 16, 17])'])
+FACT p5s02a stored pred sets memory_pred (0, 1, 3, 6, 8, 9, 15, 16, 17) / e1 (0, 1, 3, 6, 8, 9, 15, 16, 17); validates NO - refused before and after this card; lacks [12] = move_in run-closing/BIND/last op(s) of the card 158-a1-2 rule, not delete_wire
+  FAIL  P pins unchanged  {'tools/stagesim.py': '95a162ba', 'tools/stagekit.py': 'dd57c1ca', 'tools/stage_prerun.py': '7605116f', 'tools/bench/plan_ring_p5s02b.json': 'f4520b10', 'tools/bench/plan_ring_p5s02b_pred.json': '4cef0a8c'}
+FACT md5 stagexec a4df7e15c495b9fcbcdadf0d8047bc69
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":10,"fail":1},"first_fail":"P pins unchanged","artefacts":[],"card":"163-a1-4","labview":"none"}
+BGRUN END rc=1 after 30s

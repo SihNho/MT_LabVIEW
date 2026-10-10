@@ -1,0 +1,65 @@
+BGRUN START 2026-10-10 12:29:01 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c163-a1-4-pbchain -TaskFile tools/bench/diag_c163_a1_4_peer_task.md
+BGRUN PID 14040
+OUTCOME: ANSWERED (230s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-10-c163-a1-4-pbchain.md
+COST: $1.3819  in 18 / out 19883 / cache-create 100565 / cache-read 774662  (226s, 10 turn(s))
+--- ANSWER ---
+I found no row in the current step-3 data that class 3 records wrongly, but class 3 is weaker than the card claims. It trusts a row because some earlier adopted plan has a `wire` action onto that terminal. It never checks that any earlier gate actually accepted the row. In this instance an earlier gate did accept both rows, but that is not something the code checks.
+
+**What the machine recorded.** Step 2's own scratch run recorded exactly these two rows as class 2, with the same `after` lists:
+- `tools/bench/diag_c161_p5s02b_scratch.log:158` and `:161`: 'error in' via `w_g376` and 'total data array in' via `w_h376`, both on case 31308, frames [31506, 31517], each source counted twice.
+- They match `tools/bench/diag_c163_a1_4_ctx.log:10` and `:13`.
+- `R0 == end` is True for both (`diag_c163_a1_4_ctx.log:9,12`).
+
+So the fp-86 rows are a real false positive, and accepting them is right.
+
+## 1. Strongest reason the claim is wrong in general
+
+Class 3 decides where a row came from by reading plan files, not gate records.
+- `pb_inherit_ctx` adds a plan's wire to `chain_connects` (`tools/stagekit.py:2078-2083`) for **every** adopted plan in the chain. That chain runs 12 plans deep, back to `plan_ring_p4_s02v18` (`diag_c163_a1_4_ctx.log:3`).
+- The P4 steps were adopted in cycles c143–c152 (`adopted_scratch.jsonl` lines 1–8). That was before PB-by-frame (c158) and before classes 1 and 2 existed (c161). No PB gate ever recorded the rows those plans wired.
+- For such a row, class 3 drops class 2's condition (i), "this plan wired a sink that was unwired at the base". It replaces it with `R0 == bound_end`, which only says step 3 did not change the row. It says nothing about whether the row was right when it reached the base.
+- So the only thing left that compares the row with the original computation (S1) is checks (ii)–(iv). Check (ii) is weak:
+  - **The multiplicity rule matches by coincidence.** It requires each source to appear exactly as many times as the case has frames. In the real data the count of 2 comes from how the feedback paths are enumerated. Two paths go through both frames and two go through frame 31506 only (`ctx.log:10`). It is not "one path per frame".
+  - **Nothing checks that every frame delivers S1's source.**
+  - **The frame list is stale.** `cf = ctx["cases"][case]` is the frame list from when the case was *created* (`stagekit.py:2069-2071`), not from the current graph.
+
+A failure that gets through: a frame whose output tunnel is unwired with "Use Default If Unwired" set. LabVIEW then outputs the type's default (an empty error cluster, an empty array) in that frame, and the VI is **not** broken. So `ExecState` would not catch it ([NI forum](https://forums.ni.com/t5/LabVIEW/Do-you-use-output-tunnel-default-values/td-p/947691), [qizhen notes](https://lv.qizhen.xyz/en/structure_cond_seq/)). The surviving paths would then all be tagged on the sink's own frame, so the rule expects one path per source, finds one, and the row is recorded. The error and data chains would silently reset whenever frame 31517 runs.
+
+That is a real change to the computation, and it is not new to class 3: class 1 already accepts the same row. What class 3 adds is that this blind spot now also covers sinks wired by old, never-gated plans.
+
+## 2. Alternative explanation of the same evidence
+
+The self-test passes and fp-86 clears for two reasons: these two rows really are step 2's recorded class-2 rows, and the multiplicity of 2 happens to equal the frame count of case 31308. Neither reason shows that the class-3 rule is correct for other topologies. With a 3-frame case, or a feedback path enumerated differently, the count may not equal the frame count, and the rule could block a good row or accept a bad one.
+
+## 3. What would falsify the claim
+
+Any of these would show class 3 loosens the gate:
+- A sink in the chain that was wired by a pre-c158 plan, has `R0 == end`, and is recorded as class 3, while neither that step's scratch log nor any later one has a `RECORD PB <sink>` line.
+- A row recorded as class 3 where some frame in the case delivers a source set different from S1's.
+
+## 4. Your specific questions
+
+- **A newer plan that re-routed or deleted the sink's wire:** only `wire` operations are collected. But a re-route through that plan's own tunnels fails check (iii), and a re-route from a wrong source fails check (ii). This direction blocks, so it is safe.
+- **A step-3 disturbance on the source side:** the source node's input sinks have their own PB rows. A replaced source node gets a new uid and fails check (ii). Safe.
+- **Reused tunnel uids:** `chain_tunnel_case` is plainly overwritten while the chain is walked from newest to oldest (`stagekit.py:2081`), so the **oldest** plan wins. `chain_connects` uses `setdefault`, so the **newest** plan wins. Mixing the two blocks rather than accepts, but they should be made consistent.
+- **Records listed in `missing`:** they add nothing, as claimed. But the walk keeps going past them (`stagekit.py:2059`, which sets `cur` before the `continue`), so an *older* plan can claim a sink that the missing record re-wired. `inherit_missing` is only reported (`stagekit.py:2174`) and never blocks. It is fail-safe only to the extent that check (iii) catches it.
+- **Did classes 1 and 2 loosen?** No. The class-1 code is unchanged. For class 2, `act` being set means `cc` is `None`, so `tcase` and `c1` are what they were, and the new `tn in tcase` follows from `case` being a single non-None value.
+- **Is `R0 == bound_end` enough to say "untouched"?** It is enough to say step 3 did not change this sink's resolved row. Two caveats:
+  - It is a frozenset, so duplicate paths collapse.
+  - It cannot see changes to tunnel properties (Use Default If Unwired) or to the frame list, such as a frame added to 31308 with an unwired, default-valued output.
+
+## 5. Cheapest discriminating test (offline, no LabVIEW)
+
+1. Add a provenance condition to class 3: the adopted step's scratch log must contain `RECORD PB <sink>` (class 2 or tag-only) with `after` equal to `ctx["after0"][sink]`. The two real rows pass this today (`p5s02b_scratch.log:158,161`).
+2. Replace the multiplicity rule with a per-frame check. For each frame in `cf`, the set of sources whose tags include that frame must equal S1's set. On the real data, frame 31517 → {376 error out, 4910 error out} and frame 31506 → both, so it passes.
+3. Re-run `selftest_c163_pbchain.py` with one added negative: drop the frame-31517 path entries from `res` while keeping `R0 == end`. The current code records that row; the per-frame check blocks it.
+
+If both additions pass the positive case and block the new negative, the rows are confirmed for the right reason rather than by coincidence.
+
+**What would change my mind:** if `frame_src_resolve` provably emits one path per (source, frame) for every case topology, the multiplicity rule would amount to a coverage check. Its own output in `ctx.log:10` shows paths spanning two frames, so today it does not.
+
+Sources:
+- [NI Community – Do you use output tunnel default values?](https://forums.ni.com/t5/LabVIEW/Do-you-use-output-tunnel-default-values/td-p/947691)
+- [Case and Sequence Structures (qizhen notes)](https://lv.qizhen.xyz/en/structure_cond_seq/)
+- [NI Idea Exchange – use default if unwired](https://forums.ni.com/t5/LabVIEW-Idea-Exchange/use-default-if-unwired/idi-p/2918980)
+BGRUN END rc=0 after 231s

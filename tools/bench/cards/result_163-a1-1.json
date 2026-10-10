@@ -1,0 +1,26 @@
+{"schema":"result/1","id":"163-a1-1","status":"PASS","gates":{"pass":22,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+{"path":"tools/bench/plan_ring_p5s02c.json","md5":"014c7d5277b100761a8a6f4abcca915e"},
+{"path":"tools/bench/plan_ring_p5s02c_in.json","md5":"caa0f639d8b5f074953f4015ed594fae"},
+{"path":"tools/bench/prep_c163_a1_1_session.json","md5":"1d6f61ba40c33c7a255d60dfad71d08f"},
+{"path":"tools/bench/prep_c163_a1_1_hash.log","md5":"bb5267c1dbf3d54f09df3e6a039c44d3"},
+{"path":"tools/bench/prep_c163_a1_1_hash.py","md5":"7a7300ddcb44f11b4da724a2c0ccb814"},
+{"path":"tools/bench/prep_c163_a1_1_mk.py","md5":"b6ea142991ced859f2610b927efe9807"},
+{"path":"tools/bench/prep_c163_a1_1_mk.log","md5":"54d0ff7ec2918e0174a1745b5baac5a8"},
+{"path":"tools/bench/diag_c163_a1_1_facts.md","md5":"115b5fad33a7570351d4c391640c2447"}],
+"facts":[
+"Part 1: all 17 inputs (card pins, brief values, 4 claudeDev VIs) md5 EQUAL, 0 changed - prep_c163_a1_1_hash.log:3-19",
+"X10 at START 601.2 (load_by_vi f9ae7751): I+J MAIN 671.1 (peak 666.0, N16 R10) <= 675; I alone MAIN 652.5 -> plan = A41..A60 - prep_c163_a1_1_mk.log:26,29,32",
+"At x10_start 607.1 (601.2 + op-0 read 5.9, memory_model start_rule): I+J MAIN 677.0 > 675, I 658.3 - the rule would flip to group I - prep_c163_a1_1_mk.log:26,29",
+"plan_ring_p5s02c.json 014c7d52 by stagesim.simulate: final True, failed None, 20/20, 0 PROVISIONAL, route PASS, 0 UNROUTABLE - prep_c163_a1_1_mk.log:113-114",
+"Symbols: new:CQ7 -> #31308, CQ7.f0 -> #31506 via p5s02a creation map; frames False #31506 / True #31517; none made by p5s02b - prep_c163_a1_1_mk.log:8-14",
+"Compile 16 ops, checkpoints [0,1,2,4,5,7,9,12,13,16]; delete_wire op 9 is a checkpoint - prep_c163_a1_1_mk.log:25,27,115",
+"Group J delete_object: own op kind delete_object (no variant), ops 10-11, route delete_object, NOT checkpoints; targets #23042 Comparison, #23501 LoopTunnel - prep_c163_a1_1_mk.log:23,106-107",
+"No base sink stub: A48 sink t5763 unwired; cond wire w23489 (#23042 x=y? -> #23405) is removed by A53 dw_cond; insert_stub_deletes not used - prep_c163_a1_1_mk.log:21-24",
+"Gates X8 clean, X17 PASS, SPLIT no group split, IDS A41..A60, ROWS only symbol/frame leaves mapped, U all pins unchanged, no tool edit - prep_c163_a1_1_mk.log",
+"24 open pairs tied from the probe (26 end rows, 0 untied) into plan_ring_p5s02c_in.json - prep_c163_a1_1_mk.log:36-37"],
+"open":[
+"START convention: brief/PD396(c) say START = load_by_vi 601.2 (ring-p5b.md:345-346), memory_model.json:119 start_rule adds op-0 read 5.9; at 607.1 MAIN(I+J) 677.0 > 675 and the rule picks group I. Which start does the step-3 X10 gate use?",
+"Margin of the chosen plan: MAIN 671.1 is 3.9 MB under 675 (step-2 scratch peak matched X10 within 0.9, ring-p5b.md:333)."],
+"cost":{"usd":null,"minutes":7,"labview_runs":0},
+"note":"Offline only; no LabVIEW process (tasklist 0). Extra probe tools/bench/diag_c163_a1_1_probe.py (+log) read plan structure only. Probe sim files under tools/bench/sim/ring_p5s02c/_probe."}

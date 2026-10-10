@@ -1,0 +1,52 @@
+{
+ "schema": "task/1",
+ "id": "160-f2-1",
+ "kind": "build",
+ "goal": "PD390(g): re-pin stale tool md5 pins in selftest_c156_passwire, selftest_c155_basecase_frame, selftest_c156_b2_2_invcheck; run each, counts equal last pass.",
+ "why": "Tool edits of cycles 158-160 moved the pinned md5s, so three suites stop at their pin gate; the purpose asks for them re-pinned and run with counts quoted.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_160-f2-1.md", "md5": "8771930cd370729c7ee78d40713da1f7"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+  {"path": "tools/stagekit.py", "md5": "1441bb4ca75eb5a59afaa3555690db37"},
+  {"path": "tools/stagesim.py", "md5": "a3261b56216d83f975d730dcaf3ad47b"},
+  {"path": "tools/stagexec.py", "md5": "c4a6e0b6e36d5c0a21cfab9e223be1fb"},
+  {"path": "tools/stage_prerun.py", "md5": "7605116f1dfe1c6fd4963dbfcf259de1"}
+ ],
+ "pass": [
+  "each suite: old pin -> new pin prefix listed with file:line; only tool-md5 prefixes edited",
+  "results quoted: passwire 20/0, basecase_frame 21/0, invcheck 20/0 (counts equal last pass) or an OPEN line with gate, expected, found, file:line",
+  "md5 unchanged: stagekit, stagesim, stagexec, stage_prerun, addrcheck, vigraph, gscript, VIs; tools/hooks untouched"
+ ],
+ "outputs": [
+  "tools/bench/diag_c160_f2_1_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/selftest_c156_passwire*",
+   "tools/bench/selftest_c155_basecase_frame*",
+   "tools/bench/selftest_c156_b2_2_invcheck*",
+   "tools/bench/diag_c160_f2_1*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 1,
+  "minutes": 30
+ },
+ "rules": [
+  "Offline; no LabVIEW process; no tool, recipe, plan or tools/hooks edit",
+  "Re-pin only tool md5 prefixes; a count differing from the last pass is a FAIL, not a re-pin",
+  "A failing gate that is not a tool pin: OPEN line, suite left otherwise unedited",
+  "Rule 1a: no computation touched"
+ ],
+ "advances": ["M3", "M8", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/selftest_c156_passwire.py"}
+ ]
+}

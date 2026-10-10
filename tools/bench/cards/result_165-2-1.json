@@ -1,0 +1,35 @@
+{
+ "schema": "result/1",
+ "id": "165-2-1",
+ "status": "FAIL",
+ "gates": {"pass": 47, "fail": 1},
+ "first_fail": "SB REALSIM FINAL: route check FAIL, UNROUTABLE 2 (w_k3f #8776, w_k4f #24342: 'INNER face of LoopTunnel ... only the outer face's owner route is measured')",
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/bench/diag_c165_a2_1_facts.md", "md5": "c4bbe91068943c341fa3832baa6a0177"},
+  {"path": "tools/bench/cards/result_160-c3-2.json", "md5": "0df5a91efa5bc57a12af2f002e0f66e0"},
+  {"path": "tools/bench/plan_ring_p5s02e.json", "md5": "20bde81acb42794ccd64294a01ba1029"},
+  {"path": "tools/bench/plan_ring_p5s02e_in.json", "md5": "b5b35f8ac748e0d326ded3300ae98149"},
+  {"path": "tools/bench/prep_c165_a2_1_census.json", "md5": "f9c8aaf54ea8fa8c5976913788519083"},
+  {"path": "tools/bench/prep_c165_a2_1_mk.py", "md5": "70f7e553d0221843acce4cf5446df067"}
+ ],
+ "facts": [
+  "Part 1: 22 card inputs + VI 6dcd5c3d all == pins, no drift (prep_c165_a2_1_hash.log 23/0); same 23/0 after the maker (prep_c165_a2_1_hash_post.log)",
+  "c127 precedent: diag_c127_1_fsinner.log:81-102 three connect_term_uid <- #32868 each returned wire 32859, census {} (:83,:93); covers wired-source branch, not face classes",
+  "160-c3-2 closed: result_160-c3-2.json status PASS (SKIP not in schema enum), validate OK + CLOCK-UNMEASURED warn; open_card_pins(stagexec.py) -> [] (prep_c165_a2_1_close.log)",
+  "Groups in r_in 0b895983: K3f A72-73, K4 A74-82, K4f A83-84 (prep_c165_a2_1_mk.log:7); new:OK3 -> #31803 == diag_c164_p5s02d_scratch.log:208 (mk.log:18)",
+  "MAIN per prefix (START 609.8 = x10_start(6dcd5c3d)): K3f 642.6 / 2 rows; K3f+K4 657.1 / 11; K3f+K4+K4f 665.0 / 13 -> chosen full (mk.log:38,41,44,47)",
+  "C compile PASS all 3 prefixes, every delete_wire a checkpoint: full = 9 ops, cps [0,1,3,4,6,7,8,9], delete_wire ops [1,8] (mk.log:43-45)",
+  "SB FAIL: REALSIM 13/13 ok, 0 provisional, but route check UNROUTABLE 2: w_k3f t8776 / w_k4f t24342 'ADDRESS ... INNER face of LoopTunnel' (mk.log:68,75,101)",
+  "Refusal text is tools/stagexec.py:1934 (_triple: FACE_ROUTED owner with term_class != OuterTerminal), raised by the route check's base ADDRESS step",
+  "plan_ring_p5s02e.json 20bde81a written by stagesim.simulate with final False (mk.log:100) - not usable; no earlier plan existed (mk.log:4)",
+  "Not reached: C-OUT/IDS/X8/X17, PD401(b) file, part-5 end-graph check; PD401(b) prediction stated in diag_c165_a2_1_facts.md"
+ ],
+ "open": [
+  "loop_inner_face_sink (stagexec 6ea6637f) compiles A73/A84 but the route check's base ADDRESS check (stagexec.py:1929-1935) still refuses the inner face: tool fix owed before step 5?",
+  "plan_ring_p5s02e.json 20bde81a (final False) is on disk: keep or remove before the retry?",
+  "prep_c164_a3_1_mk.py is module-level (import re-runs step 4); its args were followed in one make_step_plan call, census extension inline at prep_c165_a2_1_mk.py:44-53 - OK?"
+ ],
+ "cost": {"usd": null, "minutes": 8, "labview_runs": 0},
+ "note": "Offline only; no LabVIEW process. Returned at the first unexpected result (SB route check), no retry. Jev ladder: no JEV-LADDER row for prep_c165_a2_1_mk.log."
+}

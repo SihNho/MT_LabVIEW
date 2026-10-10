@@ -1,0 +1,25 @@
+BGRUN START 2026-10-10 03:49:24 limit 6.0 min: py -u tools/doc_lint.py
+BGRUN PID 5632
+  WARN  L1 frontmatter present and valid: 358/1230 ok; 872 missing, 0 incomplete. Fix with `py tools/frontmatter.py`. first: ['archive/peer/2026-09-15-priorart-ownerchain.md', 'archive/peer/2026-09-16-delete-object-noop-failed-prediction.md', 'archive/peer/2026-09-16-delete-silent-noop2.md', 'archive/peer/2026-09-16-flatseq-frame-unreachable.md', 'archive/peer/2026-09-16-load-vs-editmode-23c-r2.md']
+  FAIL  L2 every cited project path exists: 2 DANGLING of 4103 citations checked:
+       docs/d1/ring-p4.md:131 -> tools/bench/build_oploopendref_v0.py
+       docs/d1/ring-p5.md:378 -> tools/bench/plan_ring_p5s02b.json
+
+  WARN  L2c plan documents cite files that do not exist yet: 18 forward reference(s) in plan documents (expected while the cycle is open): ['docs/cycle14-plan.md:95 -> tools/recipes/build_opflatseqdiagrams_v0.py', 'docs/cycle14-plan.md:106 -> tools/bench/opflatseqdiagrams_labels.json', 'docs/cycle14-plan.md:168 -> tools/recipes/build_opflatseqdiagrams_v0.py', 'docs/cycle14-plan.md:169 -> tools/bench/build_opflatseqdiagrams_v0.log', 'docs/cycle14-plan.md:169 -> tools/bench/opflatseqdiagrams_labels.json', 'docs/cycle14-plan.md:170 -> tools/bench/diag_a3_complete.py']
+  PASS  L2b cited line numbers are in range: no citation points past a file's end
+  WARN  L3 STATUS.md stays one screen: STATUS.md:133 lines > 110. CLAUDE.md rule 4: move the narrative to archive/<date>-status-<topic>.md, keep lock, hardware, state, OPEN, NEXT.
+  PASS  L4 at most one current plan per family: ['docs/d1/INDEX.md'] current
+  PASS  L8 the current plan has a `## Pre-decided` section: docs/d1/INDEX.md ok
+  PASS  L5 superseded documents are not still current: no `supersedes:` target is still marked current
+  FAIL  L6 archived reviews are disposed: 857/1052 disposed; 195 still blank or placeholder (87 closed as `disposition: legacy`, skipped). first: ['archive/peer/2026-09-27-c103-scratch-selftest.md', 'archive/peer/2026-09-27-outcome-review-20260927.md', 'archive/peer/2026-09-29-g1-g1-claude-r1.md', 'archive/peer/2026-09-29-g1-g1-claude-r2.md', 'archive/peer/2026-09-29-g1-g1-gemini-pro-r1.md']
+  WARN  L7 decision/measurement sentences carry a mark: 786 unmarked line(s); a fact stated without `DECIDED:`/`MEASURED:`/`DECISION:` has to be inferred rather than extracted. first: ['docs/NAMES.md:404', 'docs/NAMES.md:421', 'docs/NAMES.md:455', 'docs/NAMES.md:601', 'docs/NAMES.md:723']
+  FAIL  L8 decision headers carry HH:MM: 2 header(s) dated >= 2026-09-28 without a parseable HH:MM (violations.py DEC_RE reads them as bare dates): ['docs/violation-decisions.md:1875', 'docs/violation-decisions.md:2019']
+  WARN  L9 new Pre-decided items carry a USER-RULES: line: 2 item(s) >= 238 without `USER-RULES:` (read docs/user-rules.md and cite the rows relied on, or write `USER-RULES: none apply`): ['docs/d1/result-gates.md:18 (item 366)', 'docs/d1/tooling.md:145 (item 329)']
+  FAIL  L10 active docs stay <= 400 lines: 2 doc(s) over the cap: ['docs/chat-handoff.md 576', 'docs/d1/ring-p3b.md 419']. Freeze in place (`status: frozen` + footer, tools/bench/freeze_docs_d1.py) and index what is in force, or split into linked topic files.
+  WARN  L10a reference tables over the cap (exempt): docs/NAMES.md 1405; docs/camera-acquisition-facts.md 759; docs/toolkit-capabilities.md 5145
+  WARN  L10b grandfathered docs over the cap (judgement: freeze, split or exempt): docs/frame-loop-wire-graph.md 472; docs/gpu-backend.md 444; docs/keystone-op-spec.md 608; docs/main-vi-panel-map.md 621; docs/restructure-plan-4.6.md 495
+  WARN  L11 frozen docs carry a FROZEN footer: 1 without one: ['docs/d1/ring-p4.md']
+  WARN  L12 function table matches the code: stale 5 (stagekit.op:connect_nested_v1, stagekit.op:connect_term_uid, stagekit.op:wire_const_sr, stagekit.op:wire_control, stagekit.op:wire_ctlsink) - run py tools/gen_capabilities.py
+DOC-LINT FAIL: 4 fail, 9 warn, 4 pass
+
+BGRUN END rc=1 after 16s

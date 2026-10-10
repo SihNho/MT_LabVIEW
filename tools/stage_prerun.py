@@ -669,7 +669,10 @@ def fake_com():
     return out
 
 
-PURE_MODS = ("vigraph", "jev_candidates", "protocol", "stagekit", "allterms", "wiki_build", "jev_pairs", "jev_rowcheck")
+# card 159-a4-1 (PD387(e)): + addrcheck (pure: json/os/re, header `labview: none`, addrcheck.py:23-25,377). Wrapped, its pos_table
+# returned a stub, so RingSession's D / TD / PB position keys (stagekit._pos_rows) were computed on stub data in every dry and D read
+# "pairs 0 == sim's 0" (tools/bench/diag_c159_a4_1_taint.log: 13 taint sites, all addrcheck.pos_table under gates_ng_fr_d / gate_pb).
+PURE_MODS = ("vigraph", "jev_candidates", "protocol", "stagekit", "allterms", "wiki_build", "jev_pairs", "jev_rowcheck", "addrcheck")
 
 
 def wrap_module(mod):
@@ -810,6 +813,13 @@ def patch_stagekit():
         # gate after the first mutation UNVERIFIED (`not ok and (D.mutated or tainted)`) and hid FR three times (133-3).
         # Only a gate whose inputs touched a COM stub (taint moved since the previous gate; a read of the STATIC base
         # graph after a mutation counts as stub data, _graph_call) may stay UNVERIFIED.
+        # card 159-a4-1 (PD387(e), docs/violation-decisions.md device-failed 2026-10-10 03:2x): a RESULT gate (PB, D, TD, CEN2) is
+        # run on the simulated end in a dry; one whose statement touched a COM stub is never a PASS, TRUE or FALSE - UNVERIFIED-DRY.
+        if ok and tainted and str(label).startswith(DRY_RESULT_GATES):
+            D.unverified.append(label)
+            print("  UNVERIFIED-DRY  {0}  (dry: TRUE on stub input; a result gate is not passed on stub data, card 159-a4-1)".format(
+                label), flush=True)
+            return True
         if not ok and tainted:
             D.unverified.append(label)
             print("  UNVERIFIED  {0}  (dry: stub input{1})".format(label, ", after mutation " + D.mutated if D.mutated
@@ -933,26 +943,65 @@ def _jev_stub(name):
 
 
 UNROUTABLE_RE = re.compile(r"^\s*(?:FACT\s+|FAIL\s+)?UNROUTABLE\s+(?:acts\b|\d+\s+row)")
+# card 159-a4-1 (PD387(e), docs/violation-decisions.md device-failed 2026-10-10 03:2x): the dry's final `unverified N` counted only
+# the gates THIS module downgraded; stagekit.census_gate's `UNVERIFIED-DRY  CEN2 ...` line (diag_c158_a2_2_dry.log:70) was
+# printed and not counted. Every gate line of these forms is counted now: a line that STARTS with the token (a recipe docstring
+# that mentions the word is not a gate line). Results gates in a dry: DRY_RESULT_GATES (the four the decision names).
+DRY_UNV_RE = re.compile(r"^\s*(PASS|FAIL|SOFT|UNVERIFIED-DRY|UNVERIFIED|UNPREDICTED)  +(\S.*)$")
+DRY_UNV_TOKENS = ("UNVERIFIED-DRY", "UNVERIFIED", "UNPREDICTED")
+DRY_RESULT_GATES = ("PB ", "D ", "TD ", "CEN2 ")
+
+
+def dry_unverified_labels(lines):
+    """card 159-a4-1 (PD387(e)): the gate labels a dry's output lines leave unverified - every `UNVERIFIED-DRY` / `UNVERIFIED` /
+    `UNPREDICTED` gate line and every PASS/FAIL/SOFT gate line whose text says `UNVERIFIED-DRY`; label = the text up to the first
+    double space. Used by dry() on its own stdout and by the self-test on stored logs. Returns a list of str, in order, no repeats.
+    Self-test: tools/bench/selftest_c159_a4_1.py."""
+    out = []
+    for ln in lines:
+        m = DRY_UNV_RE.match(str(ln).rstrip("\r\n"))
+        if not m or (m.group(1) not in DRY_UNV_TOKENS and "UNVERIFIED-DRY" not in m.group(2)):
+            continue
+        lab = m.group(2).split("  ")[0].strip()
+        if lab and lab not in out:
+            out.append(lab)
+    return out
+
+
+def merge_unverified(have, labels):
+    """card 159-a4-1: `have` (D.unverified) + every label of `labels` not already there (same label, or one is a prefix of the
+    other: stage_prerun's own 'address {...}' entry vs its printed 'address {...} after mutation ...'). Returns a new list."""
+    out = list(have)
+    for lab in labels:
+        if not any(lab == u or lab.startswith(u) or u.startswith(lab) for u in out):
+            out.append(lab)
+    return out
 
 
 class _UnroutableTap(object):
     """stdout pass-through that keeps every line an executor/Stage prints as an UNROUTABLE row (stagekit `FACT  UNROUTABLE
-    acts ...`, stagexec.dry_run `  UNROUTABLE acts ...`, the ExecStop text `UNROUTABLE n row(s)`), card 108-5."""
+    acts ...`, stagexec.dry_run `  UNROUTABLE acts ...`, the ExecStop text `UNROUTABLE n row(s)`), card 108-5.
+    card 159-a4-1: also every gate line dry_unverified_labels counts (self.unv)."""
 
     def __init__(self, inner):
-        self.inner, self.hits, self._buf = inner, [], ""
+        self.inner, self.hits, self._buf, self.unv = inner, [], "", []
+
+    def _line(self, ln):
+        if UNROUTABLE_RE.search(ln):
+            self.hits.append(ln)
+        if DRY_UNV_RE.match(ln):
+            self.unv.append(ln)
 
     def write(self, s):
         self._buf += s
         while "\n" in self._buf:
             ln, self._buf = self._buf.split("\n", 1)
-            if UNROUTABLE_RE.search(ln):
-                self.hits.append(ln)
+            self._line(ln)
         return self.inner.write(s)
 
     def flush_tail(self):
-        if self._buf and UNROUTABLE_RE.search(self._buf):
-            self.hits.append(self._buf)
+        if self._buf:
+            self._line(self._buf)
         self._buf = ""
 
     def flush(self):
@@ -979,6 +1028,12 @@ def dry(recipe, graph=None):
     except SyntaxError as e:
         D.fails.append("PY SyntaxError: {0}".format(e))
     hit = set()
+    rdir = os.path.normcase(os.path.join(HERE, "recipes"))
+
+    def other_recipe(frame, event, arg):
+        if event == "line":
+            D.line_taint = D.taint
+        return other_recipe
 
     def tracer(frame, event, arg):
         if frame.f_code.co_filename == path:
@@ -986,6 +1041,10 @@ def dry(recipe, graph=None):
             if event == "line":
                 D.line_taint = D.taint            # card 134-1: the gate's taint is scoped to its statement
             return tracer
+        # card 159-a4-1: a scratch recipe runs its pair's body (`return R.body(s)`, stage_d1_ring_p5s02a_scratch.py:50); the pair's
+        # statements are recipe statements too, else every gate of R.body shared ONE statement's taint (D/TD/PB tainted by s.es)
+        if os.path.normcase(os.path.dirname(os.path.abspath(frame.f_code.co_filename))) == rdir:
+            return other_recipe(frame, event, arg)
         return None
     t0 = time.time()
     if not D.fails:
@@ -1012,6 +1071,8 @@ def dry(recipe, graph=None):
         # after the first mutation and is downgraded to UNVERIFIED. An unroutable row is a plan fact, not stub data.
         for ln in tap.hits:
             D.fails.append("UNROUTABLE " + ln.split("UNROUTABLE", 1)[1].strip()[:200])
+        # card 159-a4-1 (PD387(e)): the final `unverified N` counts EVERY gate line that printed UNVERIFIED-DRY / UNPREDICTED
+        D.unverified[:] = merge_unverified(D.unverified, dry_unverified_labels(tap.unv))
         # card 130-5 (PD268(b), docs/d1/tooling.md:20-38): an Executor that stopped before its plan's last op made the dry
         # PASS anyway (the recipe's E1 is downgraded to UNVERIFIED in a dry run): c128b stopped at op 48 of 63 and PASSed.
         # A dry that does not cover every op is no evidence for a launch -> FAIL. (Probe mode stops at the first Executor.)
@@ -3171,17 +3232,52 @@ def vi_modifying_calls(path):
         return []
     imports = False
     calls = set()
+    skip = offline_override_delegations(tree)                 # card 159-a4-1 (fp-77)
     for n in ast.walk(tree):
         if isinstance(n, ast.Import) and any(a.name.split(".")[0] == "stagekit" for a in n.names):
             imports = True
         elif isinstance(n, ast.ImportFrom) and (n.module or "").split(".")[0] == "stagekit":
             imports = True
-        elif isinstance(n, ast.Call):
+        elif isinstance(n, ast.Call) and id(n) not in skip:
             f = n.func
             name = f.attr if isinstance(f, ast.Attribute) else (f.id if isinstance(f, ast.Name) else None)
             if name in MODIFY_VERBS:
                 calls.add(name)
     return sorted(calls) if imports else []
+
+
+# card 159-a4-1 (gate-fp fp-77): selftest_c157_innerface.py (labview none) subclassed stagexec.SimBackend - the OFFLINE simulator
+# backend - overrode `connect` and delegated to the parent; the delegation `super().connect(...)` is an ast.Call named `connect`,
+# so the offline self-test was refused as VI-modifying. NOT counted now: ONLY a delegation to the parent's same-named method
+# (`super(...).<m>(...)` / `<Base>.<m>(self, ...)`) inside `def <m>` of a class whose EVERY base is one of OFFLINE_BACKENDS.
+# A subclass of LVBackend (or any other base, or a mixed base list) still counts; every other call site still counts.
+OFFLINE_BACKENDS = frozenset(("SimBackend", "DryPlanBE"))
+
+
+def _base_name(b):
+    return b.attr if isinstance(b, ast.Attribute) else (b.id if isinstance(b, ast.Name) else None)
+
+
+def offline_override_delegations(tree):
+    """card 159-a4-1 (fp-77): {id(ast.Call)} of every parent delegation inside an override method of a class derived ONLY from
+    stagexec's offline simulator backends (OFFLINE_BACKENDS). Returns a set. Self-test: tools/bench/selftest_c159_a4_1.py."""
+    out = set()
+    for c in ast.walk(tree):
+        if not (isinstance(c, ast.ClassDef) and c.bases and all(_base_name(b) in OFFLINE_BACKENDS for b in c.bases)):
+            continue
+        bases = set(_base_name(b) for b in c.bases)
+        for fn in c.body:
+            if not isinstance(fn, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                continue
+            for n in ast.walk(fn):
+                if not (isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute) and n.func.attr == fn.name):
+                    continue
+                v = n.func.value
+                if isinstance(v, ast.Call) and isinstance(v.func, ast.Name) and v.func.id == "super":
+                    out.add(id(n))                             # super().m(...) / super(Cls, self).m(...)
+                elif _base_name(v) in bases and n.args and isinstance(n.args[0], ast.Name) and n.args[0].id == "self":
+                    out.add(id(n))                             # SX.SimBackend.m(self, ...)
+    return out
 
 
 def is_vi_modifying(path):
@@ -3335,7 +3431,7 @@ COUNTED_BY = "bgrun"
 # card 134-1 (PD287(a)): dry rule 2 = a FALSE gate on non-stub data fails the dry; stub-input gates stay UNVERIFIED and
 # the dry ends PASS-UNVERIFIED, which check_launch refuses unless the card on `--unverified-card <path>` names each gate
 # in a `rules`/`pass` string "DRY-UNVERIFIED-OK: <label prefix>; <label prefix>".
-DRY_RULE = 2
+DRY_RULE = 3
 UNVERIFIED_CARD_RE = re.compile(r"(?:^|\s)--unverified-card(?:\s+|=)['\"]?([^\s'\";|&]+)")
 UNVERIFIED_OK_RE = re.compile(r"^\s*DRY-UNVERIFIED-OK:\s*(.+)$")
 

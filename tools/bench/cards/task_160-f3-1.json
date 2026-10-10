@@ -1,0 +1,64 @@
+{
+  "schema": "task/1",
+  "id": "160-f3-1",
+  "kind": "build",
+  "goal": "PD391(g): selftest_c134_1_dry via PD370(b) converter + T2a pin 0d1f0c15 + T2 per PD387(e) -> 11/0; invcheck reads ring-p5.md md5 at run time -> 20/0; re-pin passwire/basecase_frame.",
+  "why": "Stale pins and an unconverted stored-pred check keep three suites red; the launch gate and the prior-art card rely on them. Self-test files only, no tool edit.",
+  "inputs": [
+    {"path": "tools/bench/cards/brief_160-f3-1.md", "md5": "1e3803a500816b1938d9ab51d1834e49"},
+    {"path": "docs/d1/ring-p5b.md", "md5": "2b48132924000a80f2afc15659ba8258"},
+    {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+    {"path": "tools/bench/diag_c160_a2_1_facts.md", "md5": "4a1d31e915ffec30271c9e692706137b"},
+    {"path": "tools/bench/selftest_c134_1_dry.py", "md5": "10178208ac328a292d3573d1692ac01b"},
+    {"path": "tools/bench/selftest_c156_b2_2_invcheck.py", "md5": "c6460301cb081d9177d42688ee9a895d"},
+    {"path": "tools/bench/selftest_c156_passwire.py", "md5": "6ad1e1bdc588e13e5e69a6974d0a64e3"},
+    {"path": "tools/bench/selftest_c155_basecase_frame.py", "md5": "7286edd86746dfed9d64acab7bd1f665"},
+    {"path": "docs/d1/ring-p5.md", "md5": "99c812e6800d73ecace89270b1ec8f37"},
+    {"path": "tools/stage_prerun.py", "md5": "7605116f1dfe1c6fd4963dbfcf259de1"},
+    {"path": "tools/stagekit.py", "md5": "1441bb4ca75eb5a59afaa3555690db37"}
+  ],
+  "pass": [
+    "selftest_c134_1_dry: before-run result, the two failing gates named with values; PD370(b) converter CALLED (file:line); T2a pin 0d1f0c15; T2 per PD387(e); RESULT 11/0 or each FAIL named",
+    "selftest_c156_b2_2_invcheck: ring-p5.md md5 read from disk at run time; moved tool pins re-pinned; RESULT 20/0 quoted",
+    "passwire and basecase_frame: only moved tool prefixes re-pinned; RESULT before/after quoted, counts equal to the last pass",
+    "md5 unchanged: stagesim 95a162ba, stagexec ddf23a31, stagekit, stage_prerun, ring-p5.md, all plan_ring_* files; no tool edit; no hooks edit"
+  ],
+  "outputs": [
+    "tools/bench/selftest_c134_1_dry.py",
+    "tools/bench/selftest_c156_b2_2_invcheck.py",
+    "tools/bench/selftest_c156_passwire.py",
+    "tools/bench/selftest_c155_basecase_frame.py",
+    "tools/bench/diag_c160_f3_1_facts.md"
+  ],
+  "flags": {
+    "labview": "none",
+    "gui": false,
+    "hardware": "none",
+    "run_vi": false,
+    "write": [
+      "tools/bench/selftest_c134_1_dry*",
+      "tools/bench/selftest_c156_b2_2_invcheck*",
+      "tools/bench/selftest_c156_passwire*",
+      "tools/bench/selftest_c155_basecase_frame*",
+      "tools/bench/diag_c160_f3_1*"
+    ],
+    "status_edit": false,
+    "git_commit": false,
+    "peers": []
+  },
+  "budget": {
+    "failures": 2,
+    "minutes": 40
+  },
+  "rules": [
+    "Offline; self-test files only; no tools/*.py edit; no tools/hooks edit; no plan or pred file edit",
+    "Call the existing PD370(b) converter; do not write a second one",
+    "A suite count that differs from its last pass is a FAIL, not a re-pin",
+    "A named FAIL is acceptable; silently loosening a gate is not",
+    "Call shared functions, no pasted blocks; a new function carries a docstring naming its self-test"
+  ],
+  "advances": ["M3", "M8", "R1"],
+  "requires": [
+    {"kind": "file", "name": "tools/bench/selftest_c134_1_dry.py"}
+  ]
+}

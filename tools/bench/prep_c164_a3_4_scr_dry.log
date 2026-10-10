@@ -1,0 +1,48 @@
+BGRUN START 2026-10-10 15:04:31 limit 10.0 min: py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_ring_p5s02d_scratch.py
+BGRUN PID 27184
+stage_d1_ring_p5s02d_scratch - card 164-3-4 (WRITTEN, NOT LAUNCHED; re-made from card 164-a2-3's scratch for the re-made plan): the ONE
+SCRATCH RUN of RING P5-2 step 4 (docs/d1/ring-p5c.md PD397(d), PD399, D-2026-10-01-01: a full scratch before every ring step) on
+plan_ring_p5s02d.json 725cd68e (groups J in the P4 delete form + K3, A53..A71). Pair shape of stage_d1_ring_p5s02c_scratch.py on the shared
+stagekit calls (census_all_install, op_class_census_install, pred_x10, scratch_offline_modes / el_advisory, scratch_tail): only names, plan /
+pred paths, the log and the census ops differ (docs/script-writing.md rules 1-2).
+Runs tools/recipes/stage_d1_ring_p5s02d.py's OWN body (imported unchanged) on a dated byte copy claudeDev\D1_ring_p5s02d_<ts>.vi of the saved
+p5s02c file 564d8cbe. No VI is run; the bed is never edited. SAVE on (rule-6 gui_save of the work copy). First actions measured: dw_cond and
+dw_23460 (delete_wire #23489 / #23460, each a checkpoint). The two delete_object rows (ops 3 / 4: #23042, #23501), wire_remove_loose_ends
+#23519 (op 5), the case-frame connect w_eq7_x (op 8) and the two connect_term_uid register_end_case_border groups (ops 14 / 15: OK3 / IK3 onto
+the new SR SK3) are judged by wire ENDS (PD389(b)); PD399(a) expectations in the pred key `pd399a` (w23460 0 rows; w23519 sinks
+{t23450, t23241, t7606}). OPCENSUS ops 3 / 4 / 5 / 8 / 14 / 15 (printing only, reads the run takes anyway); an op whose previous op is not a
+checkpoint prints "not measured".
+Error List (next, separate run): `--el-advisory <read json>` against the pred (predicted 53, UNPREDICTED groups A66 t_k3o / A69 t_k3i and
+delete row A56 do_23501, upper 56); `--el-advisory-selftest`.
+PREDICTION (numbers in plan_ring_p5s02d_pred.json): every recipe gate PASS incl. PRIM; peak private MB <= SX.X10_FAIL_MB (680) and <= X10 + 10;
+bed md5 unchanged; LabVIEW gone.
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/diag_c164_p5s02d_scratch.log -- py -u tools/recipes/stage_d1_ring_p5s02d_scratch.py
+MEM_STOP_MB 680.0; X10 from the md5-pinned pred 642.7; declared sink gates []; retry card {'path': None, 'note': "not in this process's argv (a bgrun --retry-card is read by the launch gate and bgrun)"}
+stage_d1_ring_p5s02d - card 164-3-4 (WRITTEN, NOT LAUNCHED; re-made from card 164-a2-3's recipe for the re-made plan), RING P5-2 step 4
+(docs/d1/ring-p5c.md PD397(d), PD398, PD399): on the saved p5s02c file (claudeDev\D1_ring_p5s02c_20261010_125755.vi 564d8cbe, path/md5 read
+from the plan's base graph 3d5196ab), apply the 19 actions of plan_ring_p5s02d.json 725cd68e = groups J + K3 A53..A71 (J in the P4 delete
+form, PD399(a): delete the scaffold stop wire #23489, delete_wire #23460, delete scaffold stop #23042 and in-tunnel #23501,
+wire_remove_loose_ends #23519, Local read LR7 'records final (1.2 to 1.7)', Equal? EQ7 into the loop cond; K3: SR SK3 on loop #23041, init
+const KI3, case tunnels OK3 / IK3 through register_end_case_border and the pass wire w_k3pass on frame #31517; tools/bench/prep_c164_a3_1_mk.py;
+numbers in plan_ring_p5s02d_pred.json, prep_c164_a3_4_pred.py / _pd399.py). Licence plan_ring_p5s02d_licence.json; sink-gate census
+prep_c164_a3_4_session.json (0 rows).
+Shape = the pair shape of stage_d1_ring_p5s02c.py on stagekit.RingSession (PD390(c), docs/script-writing.md rules 1-2): only plan / pred / licence
+/ census file / names / output name differ; every gate is CALLED.
+FRESH LabVIEW -> claudeDev\D1_ring_p5s02d_<ts>.vi (rule-6 GUI save, ExecState 0 by design) = an in-between file of step P5-2 (not counted,
+D-2026-10-02-02). The FIRST run is the full SCRATCH run on a byte copy (stage_d1_ring_p5s02d_scratch.py). ROWS ONLY FROM PLAN; expected values
+only from PRED.
+PREDICTION (numbers in PRED): SG 0 sink gates; L1 19 actions -> 15 ops == pred kinds; E1 every checkpoint [0,1,2,6,7,11,12,14,15] == sim; NG;
+PRIM; FR; D; TD; CEN2 (Wire by ENDS, PD389(b); census UNPREDICTED until the scratch measures it); PB by POSITION (FATAL, before save); HB
+handles <= +700; PS saved, input unchanged.
+    py tools/bgrun.py --material --max-min 50 --log tools/bench/launch_c164_p5s02d.log -- py -u tools/recipes/stage_d1_ring_p5s02d.py
+  FAIL  L0 plan FINAL, open_rows_match, plan_in = plan_ring_p5s02d_in[N]; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan  ('725cd68ef36865c430a83a5dc0120d6f', {'path': 'tools/bench/graph_ring_p5s02c_20261010_131658.json', 'md5': '3d5196ab098c5fb1401037e5c3c49e2d'}, '564d8cbec316ea95f29f49d25ba5713e')
+  OPCENSUS op 3 not measured (whole read after op 2: False, after op 3: False; dry run or op not reached)
+  OPCENSUS op 4 not measured (whole read after op 3: False, after op 4: False; dry run or op not reached)
+  OPCENSUS op 5 not measured (whole read after op 4: False, after op 5: False; dry run or op not reached)
+  OPCENSUS op 8 not measured (whole read after op 7: False, after op 8: False; dry run or op not reached)
+  OPCENSUS op 14 not measured (whole read after op 13: False, after op 14: False; dry run or op not reached)
+  OPCENSUS op 15 not measured (whole read after op 14: False, after op 15: False; dry run or op not reached)
+
+=== DRY FAIL: first_fail=GATE L0 plan FINAL, open_rows_match, plan_in = plan_ring_p5s02d_in[N]; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan coverage 34/37 lines, first mutation None, unverified 0, graph None
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"GATE L0 plan FINAL, open_rows_match, plan_in = plan_ring_p5s02d_in[N]; base graph md5 == pred == file; bed md5 == pred; plan end cdiff == pred; pred keyed to this plan","artefacts":[],"card":"164-3-4","labview":"none"}
+BGRUN END rc=1 after 1s

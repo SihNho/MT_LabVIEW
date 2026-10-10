@@ -1,0 +1,58 @@
+{
+ "schema": "task/1",
+ "id": "163-a1-2",
+ "kind": "build",
+ "goal": "Keep the I+J step-3 plan aside, re-make plan_ring_p5s02c.json as group I alone (A41..A52) on graph 431cfd83; X10 under stage_prerun.x10_start; offline.",
+ "why": "Card 163-a1-1 used START 601.2 (I+J 671.1); the gate's x10_start gives 607.1 (I+J 677.0 > 675). PD396(c) then picks group I alone.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_163-a1-2.md", "md5": "5558dc22f438693b080b46d9405b4575"},
+  {"path": "tools/bench/diag_c163_a1_1_facts.md", "md5": "115b5fad33a7570351d4c391640c2447"},
+  {"path": "tools/bench/prep_c163_a1_1_mk.py", "md5": "b6ea142991ced859f2610b927efe9807"},
+  {"path": "tools/bench/plan_ring_p5s02c.json", "md5": "014c7d5277b100761a8a6f4abcca915e"},
+  {"path": "tools/bench/plan_ring_p5s02c_in.json", "md5": "caa0f639d8b5f074953f4015ed594fae"},
+  {"path": "docs/d1/ring-p5b.md", "md5": "70b89facff7e0e5f3ef6944a326be721"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+  {"path": "tools/bench/memory_model.json", "md5": "def9e640dec21836bdaab6f3e93e53dd"},
+  {"path": "tools/bench/graph_ring_p5s02b_20261010_111905.json", "md5": "431cfd833310cde7d66a238db3db16f8"},
+  {"path": "tools/stage_prerun.py", "md5": "7605116f1dfe1c6fd4963dbfcf259de1"}
+ ],
+ "pass": [
+  "I+J plan and in-file kept as plan_ring_p5s02c_ij*.json (byte copies, md5 quoted) before any rebuild",
+  "plan_ring_p5s02c.json rebuilt by stagesim.simulate on 431cfd83: A41..A52 only, final True, failed None, 0 PROVISIONAL, 0 UNROUTABLE; ROWS/SB/C/X8/X17 quoted PASS",
+  "X10 MAIN for I and for I+J quoted with START from stage_prerun.x10_start(f9ae7751) called, not typed; MAIN(I) <= 675 (else FAIL)",
+  "No tool edit, memory_model.json untouched; UNCHANGED md5 list; facts file written"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p5s02c.json",
+  "tools/bench/plan_ring_p5s02c_ij.json",
+  "tools/bench/diag_c163_a1_2_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c163_a1_2*",
+   "tools/bench/prep_c163_a1_2*",
+   "tools/bench/plan_ring_p5s02c*",
+   "tools/bench/sim/ring_p5s02c/**",
+   "tools/bench/jev_*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 45
+ },
+ "advances": ["M3", "M8", "R1"],
+ "rules": [
+  "Offline only: no LabVIEW, motor or camera; no hooks edit; no edit of the stage tools (stagekit/exec/sim/prerun/shared)",
+  "Call shared functions, never copy them (docs/script-writing.md); no group split; limit 675 kept",
+  "Hook false positive on own command text: py tools/gate_fp.py log, report; no env bypass"
+ ]
+}

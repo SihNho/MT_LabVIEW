@@ -18,6 +18,7 @@ sys.path.insert(0, os.path.join(ROOT, "tools"))
 sys.path.insert(0, os.path.join(ROOT, "tools", "bench"))
 import stage_prerun as SPR                                                                  # noqa: E402
 import stagekit as K                                                                        # noqa: E402  licence_renames (shared)
+import stage_shared as SH                                                                   # noqa: E402  base_sink_renames (card 162-a2-3)
 import prep_c156_a1_1_lib as L                                                              # noqa: E402
 md5, rel, J = L.md5, L.rel, L.J
 B = os.path.join(ROOT, "tools", "bench")
@@ -46,18 +47,8 @@ for n in nodes:
     tus = sorted(set(int(a["dst"]["term_uid"]) for a in A if a.get("id") in rows and isinstance(a.get("dst"), dict) and a["dst"].get("term_uid") is not None))
     rbu.append({"node": n, "term_uids": tus, "require": "every listed uid is an input of #{0} in the real end read with the same uid, unwired unless this session wires it".format(n),
                 "why": "X11 flags row(s) {0} on #{1} (PD365(d)); read from the plan, not typed".format(rows, n)})
-own, wr = collections.defaultdict(set), collections.defaultdict(list)
-for a in A:
-    if str(a.get("op")).lower() != "wire" or not isinstance(a.get("dst"), dict) or a["dst"].get("term_uid") is None:
-        continue
-    r = bt.get(int(a["dst"]["term_uid"]))
-    if r is None or r.get("is_source"):
-        continue
-    own[int(r["owner_uid"])].add(int(r["term_uid"]))
-    wr[int(r["owner_uid"])].append(a["id"])
-ren = [{"node": o, "term_uids": sorted(own[o]),
-        "why": "PD365(d) (chat-T6 rule, applied to P5-2 step 1 by card 156-a1-1): BASE sink terminal(s) of #{0} wired by P5-2 row(s) {1}; from/to unset".format(o, wr[o])}
-       for o in sorted(own)]
+ren, own, wr = SH.base_sink_renames(A, bt, "PD365(d) (chat-T6 rule, applied to P5-2 step 1 by card 156-a1-1): BASE sink terminal(s) of #{0} wired by P5-2 row(s) {1}; "
+                                           "from/to unset")   # card 162-a2-3: tools/stage_shared.py, was a copied block
 print("FACT renames {0} entr(y/ies), {1} term uid(s), owners {2}".format(len(ren), sum(len(e["term_uids"]) for e in ren), sorted(own)), flush=True)
 for e in ren:
     print("FACT  rename node #{0} term_uids {1} rows {2} names {3}".format(e["node"], e["term_uids"], wr[e["node"]], [bt[u]["term_name"] for u in e["term_uids"]]), flush=True)

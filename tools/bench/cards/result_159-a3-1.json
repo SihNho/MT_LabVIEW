@@ -1,0 +1,23 @@
+{"schema":"result/1","id":"159-a3-1","status":"PASS","gates":{"pass":6,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/bench/attrib_c159_p5s02a.md","md5":"f5a17ff88f891f32655e07c265c590f7"},
+{"path":"tools/bench/attrib_c159_p5s02a.json","md5":"d7c9ef00611b94fdb9a67bbbf2b05498"},
+{"path":"tools/bench/diag_c159_a3_1_attrib.py","md5":"88aa8b8df818fa950d64fd825959883b"},
+{"path":"tools/bench/diag_c159_a3_1_attrib.log","md5":"ab94819348ad7e92333929c323e579af"},
+{"path":"tools/bench/diag_c159_a3_1_raw.json","md5":"fca3b4faa538551c64bb0f6a584f14e8"}],
+"facts":[
+"join_wires+severed: P5-1 severed 24 (22 termless, 2 src-only), P5-2a 33 (23 termless, 4 src-only, 6 sink-only); 9 new, 0 resolved (diag_c159_a3_1_attrib.log:172-175)",
+"EL classes P5-1->P5-2a: nosource 0->5, undirected 0->2, while->subvi 0->1, not-connected 22->23, loose ends 21->23, others unchanged (diag_c159_a3_1_attrib.log:167)",
+"nosource 5 = sink-only wires 24264 (A32), 24300 (A39) [step 2], 10362 (A70), 25232 (A80), 4337 (A70 via #5204) [step 3]; item<->wire order unreadable (attrib_c159_p5s02a.md:30-34)",
+"undirected 2 = LoopTunnels #5204, #10404: no source terminal in P5-2a, had one in P5-1; cleared by A70 w_k3f / A80 w_k4f, step 3 (diag_c159_a3_1_attrib.log:177)",
+"item 49 While->SubVI = wire 9636 (#6384 'file # to append' + #10404 outer, no source), exact; A80 w_k4f, step 3 (diag_c159_a3_1_attrib.log:181)",
+"net +1 not-connected = termless w10394, ex P5-1 #3052 3060 -> #376 5772; A13 re-made it as new w11774; NO A24..A80 action clears it: UNATTRIBUTED (diag_c159_a3_1_attrib.log:196,204)",
+"net +2 loose ends = src-only stubs 24285 (LSR #24133 24190, A28 w_gl) and 24312 (LSR #24187 24288, A35 w_hl), step 2; count-level class match (diag_c159_a3_1_attrib.log:226)",
+"Review K3/K4 hypothesis supported; A48 frame index 5763 touches no new item; review falsifier not met by the 8 objects (attrib_c159_p5s02a.md:46-49)",
+"Screenshots bd_024222_after1.png / bd_025044_after49.png show only a selected dashed wire with a red X, no node or label: cannot pair items to objects",
+"Last line: ATTRIBUTED 8/8 (5+2 by class set, 1 exact); NET3 explained 3/3 (w10394 has no clearing action) (attrib_c159_p5s02a.md:57)"],
+"open":[
+"w10394 (termless remnant of the step-1 move, 1 not-connected item) is cleared by no A24..A80 action: add a delete / Remove Broken Wires to step 2, or carry it as owed?",
+"Do A28/A35/A32/A39/A70/A80 (connect onto a terminal already carrying a stub) merge the stub or leave a second item? Not measured; 24360/24367 end with one ok wire but their pre-A19/A22 state was not read",
+"Loose-end class is not 1:1 with source-only wires in the base (21 items vs 2 wires); is the +2 count match enough to set the step-2 expectation?"],
+"cost":{"usd":null,"minutes":14,"labview_runs":0},
+"note":"Offline only, no LabVIEW. No expected Error List written, nothing deleted, no tool/hook edit. A diag_c159_a3_1_probe.py/.log shape probe was also written."}

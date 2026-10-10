@@ -1,0 +1,30 @@
+{
+ "schema": "assign-result/1",
+ "cycle": 159,
+ "round": 1,
+ "status": "HANDBACK",
+ "cards": ["159-a1-1", "159-a2-1", "159-a3-1", "159-a4-1", "159-a5-1"],
+ "pass_evidence": [
+  {"item": 0, "met": true, "evidence": ["tools/bench/cards/result_159-a1-1.json", "tools/bench/diag_c159_a1_1_facts.md"]},
+  {"item": 1, "met": true, "evidence": ["tools/bench/graph_ring_p5s02a_20261010_032547.json", "tools/bench/diag_c159_a1_1_facts.md", "tools/bench/diag_c158_a3_2b_graph.log"]},
+  {"item": 2, "met": true, "evidence": ["tools/bench/memory_model.json", "tools/bench/diag_c158_a3_2b_memload.log", "tools/bench/diag_c159_a1_1_facts.md"]},
+  {"item": 3, "met": true, "evidence": ["tools/bench/attrib_c159_p5s02a.md:10-24", "tools/bench/attrib_c159_p5s02a.json", "tools/bench/diag_c159_a3_1_attrib.log:167-175"]},
+  {"item": 4, "met": true, "evidence": ["tools/bench/attrib_c159_p5s02a.md:25-39", "tools/bench/attrib_c159_p5s02a.md:57"]},
+  {"item": 5, "met": true, "evidence": ["tools/bench/attrib_c159_p5s02a.md:40-45", "tools/bench/diag_c159_a3_1_attrib.log:196-226"]},
+  {"item": 6, "met": false, "evidence": ["tools/bench/attrib_c159_p5s02a.md:41-43", "tools/bench/attrib_c159_p5s02a.md:53"]},
+  {"item": 7, "met": false, "evidence": ["tools/bench/attrib_c159_p5s02a.md:41-43", "tools/bench/attrib_c159_p5s02a.md:53"]},
+  {"item": 8, "met": true, "evidence": ["tools/bench/diag_c159_a4_1_facts.md:8-19", "tools/bench/selftest_c159_a4_1_final.log"]},
+  {"item": 9, "met": false, "evidence": ["tools/bench/diag_c159_a4_1_facts.md:20-32", "tools/bench/cards/result_159-a4-1.json"]},
+  {"item": 10, "met": false, "evidence": ["tools/bench/attrib_c159_p5s02a.md:53"]},
+  {"item": 11, "met": false, "evidence": ["tools/bench/diag_c159_a4_1_facts.md:35-38"]},
+  {"item": 12, "met": false, "evidence": ["tools/bench/attrib_c159_p5s02a.md:53"]},
+  {"item": 13, "met": true, "evidence": ["tools/bench/diag_c159_side_facts.md", "tools/bench/diag_c159_a4_1_facts.md:33-34", "tools/bench/gate_fp_queue.jsonl"]},
+  {"item": 14, "met": true, "evidence": ["docs/fn_descriptions.json", "tools/bench/diag_c159_a5_1_facts.md", "tools/bench/diag_c159_a5_1_check.log"]},
+  {"item": 15, "met": true, "evidence": ["tools/bench/diag_c159_a1_1_facts.md", "tools/bench/cards/result_159-a1-1.json"]}
+ ],
+ "handback": {
+  "reason": "PD387(d): 8/8 new items attributed, but net +1 not-connected item w10394 (termless, left by A13) is cleared by no A24..A80 action = UNATTRIBUTED; nothing deleted, no expected EL. Repaired dry also FAILS CEN2 on p5s02a (sim 11 vs measured 12).",
+  "question": null
+ },
+ "note": "Done: 94ffff94 graph read + load_by_vi 593.8 (LabVIEW gone, pins unchanged); attribution (attrib_c159_p5s02a.md: severed 24->33, 9 new/0 resolved; nosource 5 = sink-only wires 24264/24300 [A32/A39, step 2] + 10362/25232/4337 [A70/A80, step 3]; undirected #5204/#10404 and item 49 = w9636 cleared by A70/A80 step 3; loose ends +2 = stubs 24285/24312 cleared A28/A35 step 2; review K3/K4 hypothesis supported, A48 touches no new item); dry repair (stage_prerun.py:946-981,1075,816-822,672-675; stagekit.py:307-343,2244-2286,2414-2427; self-test 13/0; addrcheck.pos_table was a dry stub so D/TD/PB were computed on stub data in every dry - fixed); fp-77 drained; probe TypeError = diag_c158_a2_3_probe.py:39 vs protocol.py:285, pascope 'no scope' = pascope.py:17-18 / priorart_diff.py:20 (by design); 60 fn descriptions (185 -> 245). Not done: expected Error List file, failed-copy deletion, split check, plan_ring_p5s02b + recipes (all wait on the base decision). Judgement needs: (1) w10394 - add a delete_wire / Remove Broken Wires action to step 2 or carry as owed (expected Error List then lists it as a standing item); (2) p5s02a dry FAIL CEN2 sim 11 vs 12 - accept as the device working (then re-derive the census prediction) or record measured-vs-sim census differences as UNVERIFIED-DRY; (3) bump DRY_RULE (stage_prerun.py:3434) so pre-repair dry records stop satisfying check_launch; (4) memory plan start: load_by_vi 593.8 vs START_ASSUMED 603.4; (5) stage suites selftest_stagekit / selftest_c134_1_dry not run (guard_bash refused under a labview-none card, fp-80, a hook entry for the chat) and selftest_c158_runcheck 9/1, wire0face 23/1 fail only on the 'P pins unchanged' pin of stage_prerun 9decb20f - re-pin or accept; (6) whether stub/stagekit-built stored plans p3a_in, p4_v2..v6 (8 raise ExecStop) are pre-existing (stagexec 7a712ccb unchanged). Open fp-80 and other hook false positives stay with the chat."
+}

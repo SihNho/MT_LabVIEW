@@ -1,0 +1,16 @@
+BGRUN START 2026-10-10 16:26:40 limit 3.0 min: py -u tools/bench/prep_c165_a1_1_prec.py
+BGRUN PID 2084
+PLAN md5 f4520b101baad70f065ba5d6c9d14925
+ACT 8 {"op": "delete_wire", "id": "dw_go", "wire_uid": 24264, "why": "PD391(a): sink-only stub on the base register inner face, deleted before the group's connect"}
+ACT 9 {"op": "tunnel", "id": "t_go", "loop": 31308, "body": 31506, "parent": 23405, "dir": "out", "as": "TG2", "why": "PD374(d) existing SR of #376 (RSR #24083)"}
+ACT 10 {"op": "wire", "id": "w_gout", "src": {"uid": 376, "term": "error out", "term_uid": 3934}, "dst": "new:TG2.inner", "why": "PD374(d)"}
+ACT 11 {"op": "wire", "id": "w_gr", "src": "new:TG2.outer", "dst": {"uid": 24083, "term": "error out", "term_uid": 24139}, "why": "PD374(d) | stub deleted first (PD391); fresh connect to the register inner face; uid NOT predicted; CEN2 judges by ends"}
+STEP 8 tools/bench/sim/ring_p5s02b/step_08_delete_wire.json md5 3ead0987a80544e55fed38e87de761c1
+    {"term_uid": 3934, "term_name": "error out", "is_source": true, "wire_uid": 0, "owner_uid": 376, "owner_class": "SubVI", "frame_diagram": 31506, "term_class": "Terminal"}
+    {"term_uid": 24139, "term_name": "error out", "is_source": false, "wire_uid": 0, "owner_uid": 24083, "owner_class": "RightShiftRegister", "frame_diagram": 23405, "term_class": "InnerTerminal"}
+  FAIL  #3934 is a WIRED source before the op
+STEP 11 tools/bench/sim/ring_p5s02b/step_11_wire.json md5 62efa9539dea77c0124c75a5c250868c
+    {"term_uid": 3934, "term_name": "error out", "is_source": true, "wire_uid": -16, "owner_uid": 376, "owner_class": "SubVI", "frame_diagram": 31506, "term_class": "Terminal"}
+    {"term_uid": 24139, "term_name": "error out", "is_source": false, "wire_uid": -17, "owner_uid": 24083, "owner_class": "RightShiftRegister", "frame_diagram": 23405, "term_class": "InnerTerminal"}
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"precedent","artefacts":[],"card":"165-1-1","labview":"none"}
+BGRUN END rc=1 after 1s

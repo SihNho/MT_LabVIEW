@@ -1,0 +1,50 @@
+{
+ "schema": "task/1",
+ "id": "159-b2-1",
+ "kind": "build",
+ "goal": "PD388(d): bump DRY_RULE in tools/stage_prerun.py (2 -> 3, one constant) and self-test that check_launch refuses a dry record carrying the old rule and accepts the same record under the new rule.",
+ "why": "Card 159-a4-1 repaired the dry; dry records written before the repair (rule 2) must no longer satisfy check_launch before step 2's dry is run.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_159-b2-1.md", "md5": "db732e3077d63d421e0344fe406f405f"},
+  {"path": "docs/d1/ring-p5b.md", "md5": "48ade6d9230e76a47ece1985fa70c280"},
+  {"path": "tools/stage_prerun.py", "md5": "9ea1bdeb8afcd2eef4abfe6b3531f66f"},
+  {"path": "tools/stagekit.py", "md5": "9cd8822e7605cc6f6a1f899323c9d54b"},
+  {"path": "tools/bench/prerun_records.jsonl", "md5": "1452f9eede3a2404a30d7c0bdf84bb87"},
+  {"path": "tools/bench/selftest_c159_a4_1.py", "md5": "43d0ac89245f70a0968a1172d4cb93ae"}
+ ],
+ "pass": [
+  "tools/stage_prerun.py differs from 9ea1bdeb by the DRY_RULE constant only (diff quoted); new md5 quoted",
+  "selftest_c159_b2_1.py: check_launch refuses a dry record with dry_rule 2 and accepts it with 3; temp records file only, real prerun_records.jsonl md5 before == after",
+  "selftest_c159_a4_1 counts before == after the bump, both quoted; count of real records with dry_rule != 3 quoted; p5s02a recipes have no valid dry record afterwards",
+  "tools/bench/diag_c159_b2_1_facts.md written (<= 25 lines, facts only); no hook edit"
+ ],
+ "outputs": [
+  "tools/stage_prerun.py",
+  "tools/bench/selftest_c159_b2_1.py",
+  "tools/bench/diag_c159_b2_1_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stage_prerun.py",
+   "tools/bench/selftest_c159_b2_1*",
+   "tools/bench/diag_c159_b2_1*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 40
+ },
+ "rules": [
+  "Offline, no LabVIEW, no hook edit; change the one constant only",
+  "Never weaken check_launch; the self-test must fail if the rule comparison is removed",
+  "No copied blocks; call check_launch (docs/script-writing.md)"
+ ],
+ "advances": ["M3", "M8"]
+}

@@ -7043,3 +7043,375 @@ VIOLATION: device-failed | loss_min=8 | loss_usd=? | evidence=tools/bench/cards/
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle155","verdict":"refuted","alternative":"Cycle 155 proper (11:38-13:40) was clean; the only device failure is in cycle 154 inside the same window, and its loss is ~8 min, so the claim fails only on the threshold-1 device rule.","discriminating_test":"Diff docs/violation-decisions.md:1992 at HEAD~ vs HEAD and confirm cycle_154.json gates_due listed violations=DUE at 08:09:45, before the 10:04 refusal in result_154-a3-3.json.","violations":[{"slug":"device-failed","loss_min":8,"loss_usd":"?","evidence":"tools/bench/cards/result_154-a3-3.json:1"}],"sources":["tools/bench/cards/result_154-a3-3.json:1","tools/bench/cards/cycle_154.json:30","tools/bench/cycle_154_handback_2.log:271","docs/violation-decisions.md:1538","tools/bench/diag_c154_p5s01a_scratch.log:1"],"note":"Device = 2026-09-27 08:30 gates_due plus HH:MM header rule; fifth Mx header still at violation-decisions.md:1875."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle155.md
 BGRUN END rc=0 after 606s
+BGRUN START 2026-10-10 03:05:04 limit 20.0 min: C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\retrospective.py --cycle 158
+BGRUN PID 28508
+   window 2026-10-09 13:50:04 .. 2026-10-10 03:05:05 (795 min); 152 build logs, 24 machinery logs, 57 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle158.txt (49929 chars)
+   review card tools\bench\cards\review_retrospective-cycle158.json
+OUTCOME: ANSWERED (262s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-10-10-retrospective-cycle158.md
+COST: $1.7818  in 32 / out 24481 / cache-create 124231 / cache-read 1491067  (260s, 25 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle158 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle158.json
+--- ANSWER ---
+# Retrospective of cycle 158 (outcome reviewer)
+
+## Scope of the window
+
+The 13:50–03:05 window covers three runner cycles, not one. It holds cycle 156 (`cycle_156*.log`), cycle 157 (`cycle_157*.log`, stopped by the chat around 19:55, STATUS.md:8) and cycle 158 (22:52–03:05, `cycle_runner_main_20261009_2252.log`). It also holds the chat's chat-D2 work (`selftest_chatd2_*`, 21:58–22:20). That work is not part of any runner cycle.
+
+Neither cycle 156 nor cycle 157 has a retrospective of its own (`archive/peer/` stops at retrospective-cycle155). So the audit's C4c figure of $118.50 for judgement sessions spans three cycles and cannot be charged to cycle 158.
+
+Cycle 158's own spend, from the logs:
+- **Assignment rounds:** $14.76, $25.48 and $27.64 (`cycle_runner_main_20261009_2252.log:10,14,18`), $67.89 in total.
+- **Reviews:** $2.85 (`diag_c158_a2_2_peer.log:4`), $1.03 (`diag_c158_a3_2b_priorart.log:6`) and $2.13 (`peer_c158_a3_2b_el56.log:14`).
+
+## Outcome in one paragraph
+
+Cycle 158 did deliver its step-1 file. The retry scratch passed 23/0 (`diag_c158_p5s02a_scratch.log:315`) and the file was adopted as `D1_ring_p5s02a_20261010_023239.vi` 94ffff94 (`diag_c158_a3_2b_adopt.log:4,41`). Then the final Error List read 56 items where 45 were in P5-1 and 47 were predicted, with three new error classes (`diag_c158_a3_2b_el.log:91-94`). The cycle closed on its hand-back limit (`cycle_runner_main_20261009_2252.log:20`). Still not done (`assign_result_158_3.json:30`): attributing the 11 extra items, the expected Error List file, the graph json, `load_by_vi`, deleting the failed copy, and the step-2 plan. The hand-back slot that ran out was the one round 2 spent.
+
+## The most costly structural fault
+
+**A device failed: the 2026-10-02 10:10 dry-run rule ("an offline check must not pass what it did not verify"; an empty census declaration prints UNPREDICTED).** Round 2 sent a LabVIEW scratch through two gates that the offline dry never verified. Both of their failures could have been computed offline, and both fired in LabVIEW.
+
+**CEN2 (the census gate).**
+- The pred declared counts for the Case op only (Wire 1, InnerTerminal 2, OuterTerminal 1) for a 17-op stage. The pred's own `census_overall` reads `UNPREDICTED` (`diag_c158_a2_3_facts.md:31-32`).
+- The dry printed CEN2 as `UNVERIFIED-DRY` (`diag_c158_a2_2_dry.log:70`). But the final dry line counted only PB as unverified ("unverified 1", `:78`), so the launch gate never required a card to name CEN2.
+- `census_gate` never reads `census_overall`, and its UNPREDICTED branch runs only for an empty declared set (`diag_c158_a2_3_facts.md:35-36`). A partial declaration therefore got around the very rule the device added.
+- Result: CEN2 FAILed in LabVIEW with measured Wire 12 against declared 1 (`diag_c156_p5s02a_scratch.log:553`).
+
+**PB.**
+- The dry evaluated PB on stub input and left it UNVERIFIED (`diag_c158_a2_2_dry.log:73`). The card launched anyway by naming PB with `--unverified-card` (`diag_c156_p5s02a_scratch.log:285`). PD384(d) and steer_158 had called PB-unverified "a representation difference, RECORDED, not blocking", yet the gate stayed "FATAL, before save" (`:559-561`).
+- The round-2 offline recount then showed that PB fails on the simulator's own end: `pb_check(S1, sim end, sim end)` gives the same two extra #376 rows (`diag_c158_a2_3_facts.md:18`).
+- That check is offline and takes about a minute (`diag_c158_a2_3_measure.log`, 01:14–01:19). It was available before 00:50.
+- This is the "PASS when it verified nothing" class that the device was built to stop (`docs/violation-decisions.md:1846-1853`). The device both failed to fire (CEN2) and fired but was worked around (PB).
+
+**Loss: about 40 minutes plus one hand-back slot.**
+
+| Wasted step | Time | Evidence |
+|---|---|---|
+| Card 158-a2-2 (wasted scratch, 690 s of LabVIEW inside it) | 00:47:37–01:10:40, ≈23 min | `diag_c158_a2_2_inv_before.log`, `diag_c156_p5s02a_scratch.log:590` |
+| Offline recount 158-a2-3 | 01:14–01:19, ≈5 min | `diag_c158_a2_3_measure.log` |
+| Hand-back judgement | 01:31–01:34, ≈3 min | `cycle_runner_main_20261009_2252.log:14-16` |
+| Second dry, prerun, blocked launch and prior-art review in round 3 | 02:23–02:32, ≈9 min | `diag_c158_a3_2_*`, `diag_c158_a3_2b_priorart.log` |
+
+In dollars, only the $2.85 hypothesis review of the wrong-premise failure (`diag_c158_a2_2_peer.log:4`) can be traced to this fault. The rest of round 2's $25.48 is not split by card in any log, so the dollar loss is reported as unknown.
+
+**Counterfactual.** At 00:48 the dry had already shown declared Wire 1 and PB on stub input. Had card 158-a2-2 then run PB against the simulator's end and compared the declared census with the plan, as 158-a2-3 later did in 5 minutes, round 2 would have handed back by about 00:55 without touching LabVIEW. The PD386 gate rework (card 158-a3-1, about 43 minutes) would then have run in round 2. The only scratch, the adoption and the Error List read would have finished around 02:00 instead of 02:53. Round 3 would then have been free for the attribution and the step-2 plan, instead of the cycle closing at 03:05 with those items open.
+
+## FINDINGS
+
+**1. Repeated failure.** The same class recurs across all three cycles in the window: the planned step is right, but something the offline checks did not verify stops it in LabVIEW.
+- Cycle 156: an op-16 address stop (`diag_c156_p5s02a_scratch.log:255`).
+- Cycle 158 round 1: PD384(a) chose `connect_nested_v1` with "src = that face's triple on the body diagram". A 2-minute probe showed the face is listed in no `Diagram.Nodes[]` row (`prep_c158_a1_1_probe.log:3-8`). The judgement session wrote that address without measuring it.
+- Cycle 158 round 2: the gate failures described above.
+- Cycle 158 round 3: the Error List prediction was off by 11 items.
+
+Seventeen ops have now taken three cycles. The approach should have changed at round 2's start (00:05). The rule should be: before any scratch, every FATAL gate is run against the simulated end offline, and the census declaration is checked against the plan's op count.
+
+**2. Missing tool.** There is no reader that maps an Error List item to the object it points at. Every item's ID lookup reads "needs a Selection List[] 6349400 op (unbuilt)" (`peer_c158_a3_2b_el56.log:41`). The final hand-back is exactly that question: which of the 11 items belong to step-2 work still owed, and which are leftovers that would change what the VI computes under rule 1a. Screenshots exist (`errorlist_shots/bd_*_after*.png`), but nothing reads them. Error List checks have compared counts per class since P4, so diagnoses based on guesses about item classes keep coming back.
+
+**3. Unmeasured steps.**
+- Round 1's address (PD384(a)) and round 2's PB/CEN2 contract (see above) were both decided by inference while a cheap offline measurement existed.
+- The memory model is very conservative: the plan gave MAIN 674.7 against the 675 cap, and the measured peak was 621.1 (`diag_c158_a3_2b_adopt.log:3`). That is a finding for the model, not a loss in this cycle.
+
+**4. Rule compliance.**
+- CLAUDE.md:507-522 ("problems … all knowable offline" must be found offline) was met only on paper in round 2: the dry passed with gates unverified, and the card's naming of PB let the run through.
+- Rule 5 (read the Error List at cycle start) was met by reuse with the bed unchanged (`cycle_runner_main_20261009_2252.log:4`).
+- Audit A1's four non-bgrun logs are hook or chat logs, not cycle-158 builds. A4's blank file (`2026-10-09-c151-…-pindrift.md`) is old debt.
+- What the audit does not cover:
+  - a dry's UNVERIFIED-DRY lines that the "unverified N" count drops;
+  - a recipe writing into an earlier cycle's evidence log;
+  - the RESULT line disagreeing with the verdict line.
+
+**5. Ordering.**
+- Steer_158 put the mutation table "never before" the LabVIEW card. It ran at 01:27, after the failed scratch, in 91 seconds (`diag_c158_a2_4_mut.log:1,75`). It reported FALSE BLOCKS on uid renumbering for PB, D and TD (`:73`), which is the same family as round 2's failure. Run first, it would have been a cheap warning.
+- The steer was approved by the user, so this ordering is a finding about the steer, not a fault of the cycle.
+
+**6. What was not reported.**
+- Round 2's scratch appended to cycle 156's evidence log `diag_c156_p5s02a_scratch.log` (from line 285, file shows M in git), changing an earlier cycle's record. PD386(e) mentions this only as the cause of the METER misread.
+- The Error List run printed `RESULT … PASS 11/0` (`diag_c158_a3_2b_el.log:93`) next to `ERRORLIST-VERDICT: MISMATCH` (`:94`); only bgrun's forced rc=1 (`:95`) shows the truth.
+- Handles fell by 5,967, outside the 5,000 tolerance (`:90`), and the round-3 note does not mention it.
+- Round 1's probe timed out (`prep_c158_a1_1_probe.log:17`), so the step-16 check of #24367 never printed its gate line. The step-15 evidence was complete.
+
+**7. Judgement inside a material session.** Nothing structural.
+- In round 2 the assignment session called the failure "convention, not wiring" (`cycle_runner_main_20261009_2252.log:14`). It backed that with the 158-a2-3 measurement and the review, and left the three decisions as OPEN (`diag_c158_a2_3_facts.md:43-45`).
+- In round 3 its "by-design" reading of the Error List was sent to a hypothesis review, which partly refuted it, and the session handed back.
+- Writing the next card, 158-a3-3, came close to planning, but `guard_assign` refused it.
+
+## DEVICE EFFECT
+
+Devices that were tested inside the window:
+
+- **Failed: the dry-UNVERIFIED / census-UNPREDICTED rule (2026-10-02 10:10).** This is the fault above (`diag_c158_a2_2_dry.log:70,78`, `diag_c156_p5s02a_scratch.log:553,559`).
+- **Worked: the prior-art launch block (premature-build, 2026-09-16 19:16).** Card 158-a3-2 was BLOCKED for a missing prior-art review, cost about 5 minutes, and the review came back novel (`assign_result_158_3.json:30`, `diag_c158_a3_2b_priorart.log`).
+- **Worked: the bgrun scan for an inner FAIL, which forces rc=1 (unreported-fact / 2026-09-17 03:38).** It turned a PASS RESULT line into rc=1 (`diag_c158_a3_2b_el.log:95`).
+- **Worked: the Error List new-class RETURN (2026-10-08 01:16).** "BY-DESIGN check: STOP" (`diag_c158_a3_2b_el.log:91`) raised the hand-back correctly.
+- **Worked: the stop record's release on a novel prior-art verdict.** The retry launch was allowed after the novel review (`diag_c158_p5s02a_scratch.log:1-3`).
+
+The other devices on file were not tested by anything in the window.
+
+VIOLATION: device-failed | loss_min=40 | loss_usd=? | evidence=tools/bench/diag_c158_a2_2_dry.log:70
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle158","verdict":"refuted","alternative":"Round 2's gate failures were unforeseeable gate-convention issues, discoverable only after a live run, so the scratch was the cheapest probe.","discriminating_test":"Run pb_check(S1, sim_end, sim_end) and compare the pred's declared census against the plan's 17 ops on the 00:48 inputs: if PB shows the 2 #376 rows and Wire 1 vs 12, it was knowable offline (diag_c158_a2_3_facts.md:18,31 says yes).","violations":[{"slug":"device-failed","loss_min":40,"loss_usd":"?","evidence":"tools/bench/diag_c158_a2_2_dry.log:70"}],"sources":["tools/bench/diag_c158_a2_2_dry.log:70","tools/bench/diag_c158_a2_2_dry.log:78","tools/bench/diag_c156_p5s02a_scratch.log:553","tools/bench/diag_c156_p5s02a_scratch.log:559","tools/bench/diag_c158_a2_3_facts.md:18","tools/bench/diag_c158_a2_3_facts.md:35","docs/violation-decisions.md:1850","tools/bench/cycle_runner_main_20261009_2252.log:20","tools/bench/cards/assign_result_158_3.json:30"],"note":"Device = 2026-10-02 10:10 dry-UNVERIFIED/census-UNPREDICTED rule: CEN2 partial declaration escaped the UNPREDICTED path and the unverified count; PB was waved through via --unverified-card though offline-computable. Window spans cycles 156-158."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle158.md
+BGRUN END rc=0 after 282s
+BGRUN START 2026-10-10 08:20:39 limit 20.0 min: C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\retrospective.py --cycle 160
+BGRUN PID 21832
+   window 2026-10-10 03:09:46 .. 2026-10-10 08:20:40 (311 min); 138 build logs, 19 machinery logs, 58 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle160.txt (49061 chars)
+   review card tools\bench\cards\review_retrospective-cycle160.json
+OUTCOME: ANSWERED (376s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-10-10-retrospective-cycle160.md
+COST: $2.5461  in 84 / out 35380 / cache-create 125972 / cache-read 4151811  (375s, 53 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle160 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle160.json
+--- ANSWER ---
+# Retrospective, cycle 160 (window 2026-10-10 03:09:46 to 08:20:40)
+
+**The evidence contradicts the window.** The interval holds two cycles, not one:
+- **Cycle 159** ran 03:17 to 05:27. It had three hand-backs, ended at the hand-back limit, and its sessions cost $65.98 (`tools/bench/cycle_runner.log:1566-1586`).
+- **Cycle 160** ran 05:27 to 08:20 (`cycle_runner.log:1590-1611`).
+- The audit's C4c figure ($134.38, 296 min) covers the sessions of both cycles.
+- Cycle 159 never gets a retrospective of its own. The runner's `RETRO-DUE … cycle 159 | due and archived in the cycle (2026-10-10-retrospective-cycle158.md)` (`cycle_runner.log:1578`) counted cycle 158's retrospective as cycle 159's.
+
+I judge cycle 160 below and name cycle-159 evidence where it is relevant.
+
+**Cycle 160 cost**, from the logs:
+
+| Item | Cost | Source |
+|---|---|---|
+| Assignment round 1 | $24.16 | `cycle_160_assign_1.log:63` |
+| Assignment round 2 | $35.75 | `cycle_160_assign_2.log:63` |
+| Assignment round 3 | $3.19 | `cycle_160_assign_3.log:63` |
+| Judgement session | $1.87 | `cycle_160.log:281` |
+| Hand-back judgement 1 | $1.85 | `cycle_160_handback_1.log:283` |
+| Hand-back judgement 2 | $1.58 | `cycle_160_handback_2.log:283` |
+| Stuck discussion | $5.45 | `cycle_runner.log:1592` |
+| **Total** | **≈ $73.85** | |
+
+**What it produced:**
+- A final plan (`plan_ring_p5s02b.json`).
+- A recipe pair.
+- A predicted Error List.
+- A prior-art verdict of `novel`.
+
+**What it did not produce:** the dry run, prerun or launch check that were the point of the cycle's act (`cycle_runner.log:1585`). It ended at the hand-back limit on a dry run that FAILs (`prep_c160_c3_3_dry.log:54-56`).
+
+## The most costly structural fault: a naming gate was fixed by a tool edit before the dry run that decided the plan (wrong-ordering, about 70 min)
+
+**What happened, in order:**
+1. **06:52.** Card 160-b3-1 wrote the new plan input as `plan_ring_p5s02b_in2.json` (`prep_c160_b3_1_mk.log:27`). It kept b1's `_in.json` byte-unchanged. In the same run it renamed b1's plan to `plan_ring_p5s02b_b1.json` (`:4`), so the same trick was available for the input.
+2. **07:07:21.** The existing gate L0 requires `plan_in = <stem>_in`, so the recipe's dry run stopped before op 1 (`prep_c160_c3_1_dry.log:17-21`; gate-fp entry fp-82).
+3. **07:16 to 08:10.** Instead of a data-only fix (rename the input so the 41-second dry could run), round 2 ran a stagekit edit plus a full before/after regression:
+   - Card e4-1 took 40 min (`result_160-e4-1.json:21`, "suites ran 1120 s each").
+   - Its regression gate FAILed only on md5 pins (`handback_160_2.json:46`).
+   - Re-pin card e5-1 took 12 min (`guard_card.log:960,962`).
+   - The edit also made the predicate stricter than the old `endswith` check (`assign_result_160_2.json:29`).
+4. **08:11.** The dry-run retry, card c3-2, was then refused by a phrasing false positive in the out-of-purpose check: the word "edited" sat near "X10" in a negated pass line (`assign_result_160_2.json:26`, fp-83). That used up hand-back 2.
+5. **08:17:46.** Round 3 ran the dry run and found the real blocker: `UNROUTABLE 2 row(s) … sink #24139 is already wired (w24264) … #24235 … (w24300)` (`prep_c160_c3_3_dry.log:49-56`).
+
+**Why the dry run fails.** It is a real executor gap, not a dry-run artefact:
+- Ops 4 and 8 (`delete_wire`) are not checkpoints, so the executor keeps the stale read from before the delete (`tools/stagexec.py:2674-2687`).
+- `connect_term_uid` is not in `RETRY_KINDS = ("connect", "tunnel", "wire_sr")` (`stagexec.py:2198`), so the stale "already wired" stop at `stagexec.py:4158` is never retried.
+- A real launch would stop in the same place.
+
+**Loss:**
+- About 70 min: 07:08 to 08:18. This is the e4-1 and e5-1 detour, the false-positive hand-back, and a third round spent only on running the dry.
+- In dollars: every result card records `usd: null`. Only round 3 ($3.19) plus hand-back judgement 2 ($1.58), $4.77 in all, is logged directly. So the loss in dollars is unknown (`?`).
+
+**Counterfactual.** Suppose b3-1 had written its input under the stem the gate expects (as it already did for `_b1.json`), or c3-1's dry had been run on a renamed copy before e4-1 was dispatched at 07:16. Then:
+- The dry would have stopped on UNROUTABLE at about 07:08.
+- Round 2 would have handed back by about 07:15 with fp-84 as its finding.
+- Round 3, with a 180-min cap, would have started about 07:20 on a small fix: add `connect_term_uid` to `RETRY_KINDS`, or make ops 4 and 8 checkpoints. There is memory room for the extra checkpoints: MAIN 657.4 against a 675 cap, plus roughly 2 × 2.53 MB for the two extra reads (`prep_c160_b3_1_mk.log:104-106`).
+- It would then re-run the dry and prerun.
+
+The cycle would have ended about 08:20 with the dry blocker diagnosed and probably repaired. Instead it ended with the blocker only *suspected* (fp-84) and no rounds left.
+
+## Device effect
+
+**Failed: the 2026-10-08 20:50 device.** That decision called for one shared helper that finds the disposition heading at the start of a line and takes the last one, used at all four sites, guard_peer among them. It also says that "a disposition misread by any parser after the build is `device-failed` again" (`docs/violation-decisions.md:1960-1966`).
+- In this window, card 159-g1-1 measured that guard_peer's `undisposed()` still splits at the first substring match. It finds the inline quote at `retrospective-cycle158.md:147`, not the real heading at `:517` (`tools/bench/diag_c159_g1_1_facts.md:8`; code at `tools/hooks/guard_peer.py:849-851`). guard_peer does not import `tools/dispo.py`.
+- It reached the right verdict by luck, so it cost nothing this time. It is still a misread, and it is logged as fp-81 (`gate_fp_queue.jsonl:81`, 05:05:57).
+- The likely reason the fix never reached this site is the hook-edit ban for runner cycles (`CLAUDE.md:310`). In that case it was owed to the chat-session drain and was never done.
+
+**Held in this window:**
+- **The "collect every unroutable row" device (2026-09-25 16:10):** both rows were reported in one dry run (`prep_c160_c3_3_dry.log:50-51`).
+- **The retrospective-undisposed gates_due entry:** it fired (`cycle_runner.log:1562-1563`).
+- **The cost-line parser:** 1 seen, 1 parsed (audit C4b).
+- **bgrun rc on failure:** both dry runs ended rc=1.
+- **Prior-art before build:** the d4-1 review ran before any launch, and no stage was launched.
+
+**Weak but not counted as failed:**
+- **The scope-creep counter:** C7 lists 128 files against `docs/d1/ring-p5b.md`, including every card brief. That is noise a reader will learn to skip. It is a counter, not a refusal, so I record it as a finding only.
+- **The card-flag launch scope:** it refused c3-1 and c3-3 right after their dry runs (`guard_card.log:959,964`). The card says it refused "the first gate_fp --cmd text (stage_prerun path in an argument)", which was then reworded (`result_160-c3-3.json:24`). I could not read the literal command, so I do not count this as a launch-unit device failure. The next judgement should check it against `scope_header.launches` (`tools/scope_header.py:449`).
+
+## Findings
+
+**1. Repeated failure.**
+- **md5 pin drift:** three FAILs of one class in one cycle.
+  - f2-1: the doc md5 was not re-pinned (`handback_160_1.json:39`).
+  - f3-1: passwire after a stagesim re-pin (`handback_160_2.json:25`).
+  - e4-1: five suites differ only on the stagekit pin 1441bb4c (`:46`).
+  - The approach should have changed at attempt 2 (f3-1). A one-pass sweep of every pin of the tools about to be edited should have run before e4-1's stagekit edit.
+- **The G/H register rows (`t_go` / `t_ho`) were unroutable twice:**
+  - Round 1, as an address problem (`prep_c160_b1_1_mk.log:53`).
+  - Round 3, as a stale read (`prep_c160_c3_3_dry.log:49`).
+  - The mechanisms differ, but both turn on `delete_wire` semantics in the executor. Cycle 159 ended on the same subject: "delete_wire cannot remove termless w10394" (`cycle_runner.log:1575`).
+
+**2. Missing tool.** Nothing checks the plan's FINAL route against the executor's read schedule.
+- The stagesim route check said PASS (`prep_c160_b3_1_mk.log:95-96`) because it routes each step on fresh simulated state.
+- The executor routes on a read refreshed only at checkpoints (`stagexec.py:2674-2687`).
+- A finalize-time rule would have flagged op 5 at 06:52, 85 min before the dry did. The rule: any op not in `RETRY_KINDS` that follows a non-checkpoint state-changing op must be a checkpoint.
+
+**3. Unmeasured steps.**
+- The b3-1 brief chose the name `_in2` without running L0 on it, a 2-second check. L0 already existed with an `endswith` rule.
+- Round 2 closed with "Expect the dry to end PASS-UNVERIFIED" (`assign_result_160_2.json:29`). That was an inference; the measurement was 41 s away, and it came out FAIL.
+- Card a2-1 added a new `connect_term_uid` compile for base register inner faces (`brief_160-f3-2.md:10-11`). It had no self-test of a connect that follows a non-checkpoint `delete_wire`.
+
+**4. Rule compliance.**
+- **Deliverable first (`CLAUDE.md:307-309`)** was met only formally. The exception ("unless that very gate refuses the deliverable's launch") covered e4-1, but a data-only fix was available.
+- **Hooks were not edited**, as `CLAUDE.md:310` requires. The guard_assign hand-back (`CLAUDE.md:302-305`) worked as code, but on a false positive.
+- **Audit A3:** `prep_c160_c3_3_dry.log` and `diag_c160_e4_1_after.log` are failed results with no archived review.
+- **Audit A1** is itself a false positive: `capabilities_regen.log`, `fn_gate.log` and `guard_agent_exit.log` are runner or hook logs, not builds.
+- **Pass item 15** (VI md5s) was not met, because the permission layer refused `md5sum` on claudeDev (`assign_result_160_2.json:29`).
+- **What the audit does not cover:**
+  - The cost of gate false positives (fp-81 to fp-84).
+  - Hand-back slots used up by false positives.
+  - A window that spans two cycles.
+  - Per-card USD (null in every result card).
+  - Whether plan-time and executor routing agree.
+
+**5. Ordering.** The 41-second dry run should have come before the 52-minute stagekit and regression work. A pin sweep should have come before any edit to a pinned tool.
+
+**6. What was not reported.**
+- The hand-back reason in `handback_160_2.json:6` reads as a purpose violation; it was a phrasing false positive (`assign_result_160_2.json:26`).
+- The cycle-159 retrospective was skipped by the misattribution at `cycle_runner.log:1578`.
+- Cycles 159 and 160 ended at the hand-back limit back to back. Their topic is related but their failure differs, so the "same failure two cycles running" stop (`CLAUDE.md:319`) did not apply. That call deserves a sentence from the next judgement.
+- The c3-1 dry-run summary does not say that L0's stricter new predicate now refuses a prefix before `<stem>_in`.
+
+**7. Judgement inside a material session.**
+- `brief_160-f3-2.md:15-19` pre-scripted a choice between explanations to a material card: "only t_go/t_ho differ, so adopt and re-baseline gate D; otherwise regression". The criterion is mechanical and was checked (`f3-2` PASS), but whether to accept a compile change as adopted belonged to the judgement session.
+- `brief_160-d4-1.md:24` handled its case correctly ("judgement decides").
+
+VIOLATION: wrong-ordering | loss_min=70 | loss_usd=? | evidence=tools/bench/prep_c160_c3_1_dry.log:17
+VIOLATION: device-failed | loss_min=0 | loss_usd=? | evidence=tools/bench/diag_c159_g1_1_facts.md:8
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle160","verdict":"refuted","alternative":"The dry blocker (stale read after non-checkpoint delete_wire, stagexec.py:2198/2674-2687) would have cost the cycle anyway; the L0 detour only moved its discovery from 07:08 to 08:18.","discriminating_test":"Add connect_term_uid to RETRY_KINDS (or checkpoints 4,8) on a copy and re-run stage_prerun --dry on stage_d1_ring_p5s02b: if it passes in one card, the 70 min (and round 3) were the recoverable loss.","violations":[{"slug":"wrong-ordering","loss_min":70,"loss_usd":"?","evidence":"tools/bench/prep_c160_c3_1_dry.log:17"},{"slug":"device-failed","loss_min":0,"loss_usd":"?","evidence":"tools/bench/diag_c159_g1_1_facts.md:8"}],"sources":["tools/bench/prep_c160_c3_3_dry.log:49","tools/bench/cards/assign_result_160_2.json:26","tools/bench/cycle_runner.log:1605","tools/stagexec.py:2198","tools/hooks/guard_peer.py:851","docs/violation-decisions.md:1965"],"note":"Window spans cycles 159 and 160 (cycle_runner.log:1566-1611); cycle 159 never got its own retrospective (cycle_runner.log:1578). Device = 2026-10-08 20:50 shared disposition parser, not applied at guard_peer."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle160.md
+BGRUN END rc=0 after 397s
+BGRUN START 2026-10-10 13:27:09 limit 20.0 min: C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\retrospective.py --cycle 163
+BGRUN PID 26664
+   window 2026-10-10 08:27:16 .. 2026-10-10 13:27:10 (300 min); 146 build logs, 19 machinery logs, 58 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle163.txt (49408 chars)
+   review card tools\bench\cards\review_retrospective-cycle163.json
+OUTCOME: ANSWERED (205s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-10-10-retrospective-cycle163.md
+COST: $1.4438  in 28 / out 19622 / cache-create 102509 / cache-read 1156010  (203s, 24 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle163 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle163.json
+--- ANSWER ---
+# Retrospective of cycle 163
+
+## The evidence window covers three cycles, not one
+
+The window runs from 08:27:16 to 13:27:10. Three cycles fall inside it, not one:
+
+| Cycle | Start | Judgement + assignment cost |
+|---|---|---|
+| 161 | 08:27 | `cycle_161.log:273` $2.50, `_assign_1` $13.90, `_handback_1` $1.79, `_assign_2` $3.77, `_handback_2` $1.66, `_assign_3` $14.78 = **$38.40** |
+| 162 | 10:26 | `cycle_162.log:281` $1.77 + `_assign_1` $23.80 = **$25.56** |
+| 163 | 11:51:34 (`cycle_163.log:1`) | $2.42 (`cycle_163.log:273`) + $28.33 (`cycle_163_assign_1.log:63`) = **$30.75** |
+
+These sum to the audit's C4c figure of $94.72. Cycle 163 itself ran for 96 minutes and ended at 13:27:08 (`cycle_163_assign_1.log:64`, `BGRUN END rc=0 after 5536s`).
+
+I judge cycle 163, and I use the earlier part of the window only where cycle 163's fault started there.
+
+## What cycle 163 produced
+
+Cycle 163 met its purpose with evidence for all 12 pass items (`assign_result_163_1.json:5-19`):
+- **Adopted file:** `claudeDev\D1_ring_p5s02c_20261010_125755.vi` (md5 564d8cbe), from one scratch run with 21/0 gates (`diag_c163_p5s02c_scratch.log:186`).
+- **Memory:** peak 602.0 MB against a limit of 675 (`:188-190`).
+- **Error List:** it matches the 53-item prediction.
+
+This was worth doing: it is one real step toward the ring.
+
+## The one structural fault
+
+**The PB gate stopped work on the same #376 rows for the third time.** The fix made in cycle 161 could not have covered the next step.
+
+**Timeline:**
+- **Cycle 161, round 1:** handed back on 5 extra PB rows on #376 (`handback_161_1.json:6`).
+- **Cycle 161, round 2:** handed back again, because class 1 matched only 2 of the 5 rows (`handback_161_2.json:6`).
+- **Cycle 161, round 3:** PD395(b) added "class 2". It licenses a row only if that row is unwired at step 0 and wired by a connect action of *this* plan (`docs/d1/ring-p5b.md:304-305`).
+  - So the two rows step 2 wired ('error in' and 'total data array in') were licensed only for step 2. At step 3 they are wired at step 0, so neither class can cover them.
+- **Cycle 163 judgement:** PD396(b) asserted "PB knows … the plan-wired-into-inherited-case class" (`ring-p5b.md:343-344`).
+- **Cycle 163, 12:19:56:** the step-3 dry failed on exactly those two rows (`prep_c163_a1_3_dry.log:56-58`; `result_163-a1-3.json:4,21`).
+- **Cycle 163, 12:44:58:** prerun passed again after card 163-a1-4 added a "class 3" to `tools/stagekit.py`.
+
+**Cost:**
+- Card 163-a1-3 took 16 minutes (`result_163-a1-3.json:29`) and card 163-a1-4 took 26 (`result_163-a1-4.json:23`).
+- The hypothesis review cost $1.3819 (`archive/peer/2026-10-10-c163-a1-4-pbchain.md:7`).
+- The material sub-agents' share of the $28.33 assignment cost is not split out in any log, so the full dollar figure is unknown.
+
+**Side effects carried into the next cycle:**
+- **Stale pins:** the stagekit md5 pin now fails in three self-tests (`result_163-a1-4.json:13`), and the two `prep_c163_a1_3` scripts are stale too.
+- **Weaker gate:** class 3 trusts plan files rather than recorded gate decisions. The peer called this weaker than claimed (`pbchain.md:61,72-79`), and its three objections were not applied.
+
+**Counterfactual:** when PD395(b) was written after `cycle_161_handback_2`, it could have licensed rows by recorded provenance instead of by "a connect action of this plan". Recorded provenance means a `RECORD PB <sink>` line in an adopted step's scratch log, which is what the peer proposed at `pbchain.md:108`.
+- With that rule, the 12:19 dry would have passed.
+- The scratch would have launched around 12:30 instead of 12:57.
+- Cycle 163 would have ended around 13:02 instead of 13:27.
+- No gate would have been edited during a deliverable round.
+
+**Repeated-failure findings:**
+- **Approach change point:** this was the third attempt to stop on the same gate, node and rows. The approach should have changed at attempt 2 (161-a2-1, PD394(a)): from adding classes by the shape of a row to licensing by recorded provenance.
+- **Card 163-a2-1 (minor):** it was BLOCKED because the assignment session wrote `flags.peers ['hypothesis']` without `priorart`, although pass item 5 names the prior-art review (`result_163-a2-1.json:2`). This cost 6 minutes.
+
+## Findings
+
+1. **Repeated failure.** See above. The class-3 rule's multiplicity check also matches only by coincidence (`pbchain.md:77`), so a fourth PB stop is likely on a 3-frame case.
+
+2. **Missing tool.**
+   - **Launch pre-check:** `--check-launch` reported ALLOW (`diag_c163_a2_1_checklaunch.log`), but `guard_cycle` then refused the launch for a missing prior-art review (`result_163-a2-1.json:14`). No offline check predicts every hook refusal before a launch card is written. That cost 6 minutes.
+   - **PB pre-check:** a check that runs PB on the previous step's simulated end, asking whether every row the last step licensed is still licensed at step 0 of the next plan, would have caught the problem before 12:19.
+
+3. **Unmeasured steps.**
+   - **PD396(b):** "PB knows…" (`ring-p5b.md:343-344`) was an inference. An offline PB run on the p5s02c plan was cheap, and the dry 46 minutes later is what measured it.
+   - **Memory model:** PD396(a)(1) let the model stand because the peak matched within 0.9 MB. But the start value was already 15.7 MB off (`diag_c162_a1_2_memload.log:15`), and in this cycle it was 45 MB off the other way: 561.9 actual vs 607.1 predicted, and peak 602.0 vs 653.2 (`assign_result_163_1.json:22`).
+
+4. **Rule compliance.**
+   - **Gate fixed in place:** the deliverable-first clause allows a gate that refuses the deliverable's own launch to be fixed first, so the stagekit edit was allowed.
+   - **Review disposition met only formally:** the review's "What was done with it" section is filled in (`pbchain.md:127-133`), but its content is a deferral.
+   - **Pins left failing:** PD396(a)(4) says a pin is re-pinned if a gate runs that suite (`ring-p5b.md:337-338`). Three stagekit pins now fail and were not re-pinned (`result_163-a1-4.json:13`). The logs I read do not show whether a gate runs those suites.
+   - **What the audit does not cover:**
+     - It merges three cycles into one window.
+     - Its A3 flags `diag_c163_a2_2_scrreq.log` as a failure, but rc 3 there means "keep the scratch run", the expected result.
+     - C7's 524 files make the scope counter useless.
+     - It does not check whether a gate edit weakened a gate, or whether card flags match the purpose.
+
+5. **Ordering.** The order was defensible: plan, then offline gates, then one scratch, then the K3/K4 facts after the LabVIEW card. One slip: the prior-art review that pass item 5 named should have been sequenced before the launch card was written.
+
+6. **What was not reported.**
+   - **Group J:** the summary says "memory model ran high", but not that this probably cost group J.
+     - I+J was refused at a predicted 677.0 against the 675 limit (`assign_result_163_1.json:10`).
+     - The real peak came in 51.2 MB under its prediction (`diag_c163_p5s02c_scratch.log:188`).
+     - So A53..A60 now needs a separate step, p5s02d, with its own re-base.
+     - No counterfactual exists here: the rule was applied mechanically to a measured input.
+   - **Cost:** the assignment session's $28.33, of which $21.68 was Opus sub-agents, is not stated in its summary.
+
+7. **Judgement inside a material session.**
+   - **The material session behaved correctly:** it declined to rule on the peer's objections and handed them up (`pbchain.md:129-130`; `result_163-a1-4.json:21`).
+   - **The assignment session (a `claude -p` cell) decided two things:** to edit the shared PB gate, and to launch and adopt through it with the three objections not applied. It flagged both as "Assignment-session decision" (`assign_result_163_1.json:22`).
+   - In effect it rejected the review's findings for this round. The judgement session, or a hand-back, should have made that call.
+   - It did not harm this deliverable, because the peer confirmed both rows are correct (`pbchain.md:68`). So it is a finding, not the main fault.
+
+## Device effect
+
+No device failed inside the window:
+
+- **Prior-art launch gate (premature-build):** `guard_cycle` refused the unreviewed scratch launch, as designed (`result_163-a2-1.json:2`).
+- **Undisposed-review refusal:** A4 shows 10 of 10 reviews annotated.
+- **Cost-line parse:** C4b parsed 4 of 4 cost lines.
+- **bgrun FAIL scan:** the dry failure ended `rc=1` (`prep_c163_a1_3_dry.log:58`).
+- **Judgement/material split:** C6 shows 8 refused judgement-session attempts, and the assignment session dispatched 7 foreground material agents (`cycle_163_assign_1.log:63`).
+- **Unverified-dry device (2026-10-10):** the scratch ran on a dry of PASS-UNVERIFIED with CEN2 only, and the card named it.
+- **Scope counter C7:** it is noise, with 524 files, but scope creep did not actually occur, so this is a finding rather than a failed device.
+
+VIOLATION: repeated-failure-class | loss_min=25 | loss_usd=? | evidence=tools/bench/prep_c163_a1_3_dry.log:56
+
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle163","verdict":"refuted","alternative":"The PB stop at 12:19 was a new topology (rows wired by an earlier adopted step) that could not have been foreseen at PD395(b), so the 25 min were first-encounter discovery, not a repeat.","discriminating_test":"Replay PD395(b)'s class-2 rule offline on plan_ring_p5s02c at step 0: if it blocks the two #376 rows (wired at base, no connect in this plan), the failure was fixed by design at cycle 161 and the repeat was foreseeable.","violations":[{"slug":"repeated-failure-class","loss_min":25,"loss_usd":"?","evidence":"tools/bench/prep_c163_a1_3_dry.log:56"}],"sources":["tools/bench/prep_c163_a1_3_dry.log:56","tools/bench/cards/handback_161_1.json:6","tools/bench/cards/handback_161_2.json:6","docs/d1/ring-p5b.md:304","docs/d1/ring-p5b.md:344","tools/bench/cards/result_163-a1-4.json:13","archive/peer/2026-10-10-c163-a1-4-pbchain.md:108","tools/bench/cards/assign_result_163_1.json:22"],"note":"Window spans cycles 161-163; cycle 163 = 11:51-13:27, $30.75, PURPOSE_MET. No device failed. Assignment-session gate edit with 3 unapplied peer objections and 3 stale stagekit pins carried to cycle 164."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle163.md
+BGRUN END rc=0 after 239s

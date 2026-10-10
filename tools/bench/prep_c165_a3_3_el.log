@@ -1,0 +1,28 @@
+BGRUN START 2026-10-10 17:13:29 limit 3.0 min: py -u tools/bench/prep_c165_a3_3_el.py
+BGRUN PID 20024
+FACT NAMED item 4 nosource uid 4337 clears_by 'A70 w_k3f' (now A73 w_k3f) -> STANDING (uid not named by any action of this plan; lib el keeps the row)
+FACT NAMED item 6 nosource uid 10362 clears_by 'A70 w_k3f' (now A73 w_k3f) -> CLEARED by A72 dw_10362 (uid named)
+FACT NAMED item 7 undirected uid 5204 clears_by 'A70 w_k3f' (now A73 w_k3f) -> CLEARED by A73 w_k3f (uid named)
+FACT NAMED item 8 undirected uid 10404 clears_by 'A80 w_k4f' (now A84 w_k4f) -> CLEARED by A84 w_k4f (uid named)
+FACT NAMED item 49 whilesubvi uid 9636 clears_by 'A80 w_k4f' (now A84 w_k4f) -> STANDING (uid not named by any action of this plan; lib el keeps the row)
+FACT NAMED item 50 nosource uid 25232 clears_by 'A80 w_k4f' (now A84 w_k4f) -> CLEARED by A83 dw_25232 (uid named)
+GATE PASS | M0 pins {'errorlist_expected_D1_ring_p5s02d_20261010_152518.json': 'c74200f2', 'plan_ring_p5s02e.json': 'fd23974e', 'graph_ring_p5s02d_20261010_154830.json': '2a5fa0c4'} | {'errorlist_expected_D1_ring_p5s02d_20261010_152518.json': 'c74200f2', 'plan_ring_p5s02e.json': 'fd23974e', 'graph_ring_p5s02d_20261010_154830.json': '2a5fa0c4'}
+GATE PASS | M1 read md5 == expected file's measured_md5 7450dd98 | 7450dd98bcd4c57d56c0e7aedec63857
+GATE PASS | B compare(read 53 items, the 52 expected entries = 53 items) extra 0 missing 0 (baseline) | ([], [])
+FACT actions ['dw_10362', 'w_k3f', 'sr_k4', 'c_k4i', 'w_k4i', 't_k4o', 'w_k4out', 'w_k4r', 't_k4i', 'w_k4l', 'w_k4pass', 'dw_25232', 'w_k4f']; base uids named [(376, 'w_k4out'), (686, 'c_k4i'), (5204, 'w_k3f'), (5739, 'w_k4out'), (8776, 'w_k3f'), (10362, 'dw_10362'), (10404, 'w_k4f'), (23041, 'sr_k4'), (23405, 't_k4i'), (24342, 'w_k4f'), (25232, 'dw_25232'), (31308, 't_k4i'), (31506, 't_k4o'), (31517, 't_k4i'), (31803, 'w_k3f')]
+FACT CLEARED item 6 nosource uid 10362 by A72 dw_10362 - action names #10362
+FACT CLEARED item 7 undirected uid 5204 by A73 w_k3f - action names #5204
+FACT CLEARED item 8 undirected uid 10404 by A84 w_k4f - action names #10404
+FACT CLEARED item 50 nosource uid 25232 by A83 dw_25232 - action names #25232
+GATE PASS | CL 4 row(s) cleared by an action of this plan (items [6, 7, 8, 50]) | [{'item': 6, 'class': 'nosource', 'object_uid': 10362, 'action': 'dw_10362', 'A': 72, 'how': 'action names #10362'}, {'item': 7, 'class': 'undirected', 'object_uid': 5204, 'action': 'w_k3f', 'A': 73, 'how': 'action names #5204'}, {'item': 8, 'class': 'undirected', 'object_uid': 10404, 'action': 'w_k4f', 'A': 84, 'how': 'action names #10404'}, {'item': 50, 'class': 'nosource', 'object_uid': 25232, 'action': 'dw_25232', 'A': 83, 'how': 'action names #25232'}]
+GATE PASS | ST 0 stale row(s) (items []): none names an action of this plan | []
+FACT ELRULE new [] closed [] uncertain base [] uncertain subvi []
+GATE PASS | R every elrule new item (0) attributed to an action and has a text key; closed [] | []
+GATE PASS | U unpredicted groups (session compile reb groups + delete_object rows with wires): [('UNPREDICTED:A77 t_k4o', ['t_k4o', 'w_k4out', 'w_k4r']), ('UNPREDICTED:A80 t_k4i', ['t_k4i', 'w_k4l', 'w_k4pass'])] | [{'action': 'UNPREDICTED:A77 t_k4o', 'id': 't_k4o', 'op_group': ['t_k4o', 'w_k4out', 'w_k4r'], 'A': [77, 78, 79], 'why': "connect_term_uid register_end_case_border (tunnel + register face through the case border, new SR SK4): step 2's same verb left +2 'Wire has loose ends.' items (diag_c162_a1_2_facts.md), step 3's left none (diag_c163_a2_2_facts.md:31); not decidable offline - the step-5 scratch measures it"}, {'action': 'UNPREDICTED:A80 t_k4i', 'id': 't_k4i', 'op_group': ['t_k4i', 'w_k4l', 'w_k4pass'], 'A': [80, 81, 82], 'why': "connect_term_uid register_end_case_border (tunnel + register face through the case border, new SR SK4): step 2's same verb left +2 'Wire has loose ends.' items (diag_c162_a1_2_facts.md), step 3's left none (diag_c163_a2_2_facts.md:31); not decidable offline - the step-5 scratch measures it"}]
+GATE PASS | F compare(read minus the 4 cleared = 49 items, the 48 predicted entries = 49 items) extra 0 missing 0 (raised rows are synthetic: 0) | ([], [], [])
+GATE PASS | PC per-class predicted total 49 == item total 49 (start 53 - cleared 4 + raised 0 - elrule closed 0) | {'input': 1, 'other:thiswireconnectsoneormoredatasinksbuthasnosource': 1, 'other:thiswireisnotconnectedtoanything': 22, 'other:wirewirehaslooseends': 23, 'other:youhayeconnectedaninputofwhilelooptoaninputofsubyichangeonetoanoutputoraddasource': 1, 'other:youhayeconnectedtwoterminalsofdifferenttypes': 1}
+EL COUNTS cleared 4 raised 0 unpredicted 2 standing 49 stale 0 total 49 (upper 51)
+GATE PASS | W predicted file written, 49 items == total; compare(read minus cleared, the file's own entries) extra 0 missing 0 == raised | 
+FACT md5 2a8e29840e9e36263e275f1c185f6547 tools/bench/errorlist_predicted_D1_ring_p5s02e_end.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":10,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/bench/errorlist_predicted_D1_ring_p5s02e_end.json","md5":"2a8e29840e9e36263e275f1c185f6547"}],"card":"165-3-3","labview":"none"}
+BGRUN END rc=0 after 1s

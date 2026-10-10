@@ -326,4 +326,14 @@ VERDICT {"schema":"verdict/1","id":"priorart-priorart-c156-a1-1-p5s02a","verdict
 
 ## What was done with it
 
-(Claude fills in)
+Filled by card 158-a1-3 (2026-10-09, material, offline). Verdict `novel`: nothing to release; one line per finding.
+- A1 settled: no action; the step-1 cut follows PD379(c) as cited (docs/d1/ring-p5.md:193-196); plan 4284c22a kept by PD384(b) (docs/d1/ring-p5.md:269-274).
+- A2 refuted: none found; no action.
+- A3 contradicted: no action, as PD379(e) says (docs/d1/ring-p5.md:199-201).
+- A4 unread evidence (cycles 97/98 termless case-frame moves): carried to the scratch card. The pred lists ops 10-12 as move_in E1 checks (tools/bench/plan_ring_p5s02a_pred.json:166-199); under PD384(b) the E1 read for the run (10,11,12) is at its closer op 12, with FATE lines for each move_in of the run (docs/d1/ring-p5.md:269-274; tools/stagexec.py:2044, :2602). Per-op localisation is lost, detection kept. Not yet measured live.
+- B1 already built: none; no action.
+- B2 already failed: none (cycle 155's plan never launched); no action.
+- B3 helper exists: none; no action.
+- B4(a) case-frame move_in: carried to the scratch card - the discriminating test (E1 graph == sim after the move_in run, against sim step files 10..12) is the first measurement; checkpoint list (0,1,3,6,8,9,12,15,16,17) per PD384(b).
+- B4(b) pass-wire in-tunnel (K3/K4): outside step 1; no action in this step (the stagexec pass-wire fix 25a1494c is PD380 accepted, docs/d1/ring-p5.md:209-210).
+- C user rules: none contradicted; no action.

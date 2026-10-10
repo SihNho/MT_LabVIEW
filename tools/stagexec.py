@@ -27,9 +27,9 @@ can create a bare one); every further wire out of the same tunnel = a branch off
 ControlTerminal = wire_indicators (branch onto the source's existing wire); any other wire = connect_from_wire when the
 source is wired, else connect_nested_v1; a wire with a `frame` end (a case tunnel's inner face in a named frame, card 124-2)
 = case_frame_wire (gscript.case_frame_wire, frame index = the case's frame order; variant 'branch' when its source is already
-wired by an earlier action, census {}, else 'new_wire', Wire +1 - card 124-6, measured R3/R4); a `tunnel` group on a plan-made
-CASE whose outside end is a plan-made register's INNER face = connect_term_uid (card 124-6, R1/R2: ONE SelectorTunnel, +2 Wire).
-delete_wire is resolved BY ITS TERMINALS (the plan's wire uid names a wire of
+wired by an earlier action, census {}, else 'new_wire', Wire +1 - card 124-6, measured R3/R4); a `tunnel` group on a plan-made or BASE
+CASE (155-a1-1) whose outside end is a register's INNER face - plan-made srR/srL, or a BASE register's (160-a2-1, not a wired source) - = connect_term_uid (124-6 R1/R2).
+delete_wire is resolved BY ITS TERMINALS, a Wire with 0 rows by its uid (160-a1-1), never 'already gone' when sourceless (160-a2-1); the plan's wire uid names a wire of
 the simulated state; LabVIEW re-creates a source's wire under a new uid on connect_from_wire - opmodels/connect_from_wire).
 COMPARE (pure): terminal-uid sets, edges (src term -> sink term, joined by wire inside ONE read), dangling terminals (on
 a wire with no source or no sink); new objects through the binding; a source terminal the step marks `allow_either`
@@ -327,6 +327,8 @@ for _n, _v in SS._cross_variants().items():
 # requires ROUTE_CENSUS == census_samples.json's recorded variants, and the FS-exit sample (U6/U6') is not in that file yet;
 # like fs_border, the fs_exit op carries stagesim's per-row census (stagesim.FS_EXIT) as op['sim_census'] (FS_VARIANT_HOW)
 ROUTE_CENSUS["connect_term_uid"]["fs_inner_face_branch"] = {}
+# card 158-a2-1: the UNMEASURED variant 'loop_inner_face_wire0' (LOOP_FACE_WIRE0, loop_face_wire0_act) is NOT added here either
+# (U01, as fs_exit): its census is predicted per op from the dst's position on the graph
 CONNECT_TERM_UID_HOW = ("gscript.connect_term_uid(target, sink_uid, src_uid) - OpConnectTermUid_v0, any terminal -> any "
                         "terminal by uid; the register inner face <-> node in a case frame makes ONE SelectorTunnel (R1/R2, "
                         "diag_c124_p3a_scratch.log:53,61); junk Invokes purged inside the verb")
@@ -626,17 +628,53 @@ def plan_base_owners(plan):
     plan['finalized']['base'] ({path, md5}); a graph JSON's 'owners', or a step file's state['owners']. Returns {} when the
     plan names no base, the file is missing, or its md5 differs from the pin (then a base case is not seen: the old
     behaviour). compile_plan reads it ONLY to recognise a BASE-graph case. Self-test: selftest_c155_basecase_frame.py."""
-    for ref in (plan.get("base"), (plan.get("finalized") or {}).get("base")):
-        p = _abs(ref["path"]) if isinstance(ref, dict) and ref.get("path") else None
-        if not p or not os.path.isfile(p) or (ref.get("md5") and md5(p) != ref["md5"]):
-            continue
-        d = _j(p)
+    for d in plan_base_docs(plan):
         own = d.get("owners") if isinstance(d, dict) else None
         if own is None and isinstance(d, dict) and isinstance(d.get("state"), dict):
             own = d["state"].get("owners")
         if isinstance(own, dict):
             return own
     return {}
+
+
+def plan_base_docs(plan):
+    """card 160-a2-1 (extracted from plan_base_owners, card 155-a1-1): yields the loaded JSON of the plan's pinned BASE file(s),
+    plan['base'] then plan['finalized']['base'] ({path, md5}); a missing file or an md5 that differs from the pin is skipped.
+    Used by plan_base_owners and plan_base_state. Self-test: tools/bench/selftest_c160_regface.py (R2), selftest_c155_basecase_frame.py."""
+    for ref in (plan.get("base"), (plan.get("finalized") or {}).get("base")):
+        p = _abs(ref["path"]) if isinstance(ref, dict) and ref.get("path") else None
+        if not p or not os.path.isfile(p) or (ref.get("md5") and md5(p) != ref["md5"]):
+            continue
+        yield _j(p)
+
+
+def plan_base_state(plan):
+    """card 160-a2-1 (PD391(c)): stagesim.base_state of the plan's pinned BASE graph (a graph JSON, or a step file's `state`) -
+    the first plan_base_docs entry that carries terminal rows; None when the plan names no readable base. compile_plan reads
+    it ONLY for a tunnel group whose outside end is a plain (non-symbol) end. Self-test: tools/bench/selftest_c160_regface.py."""
+    for d in plan_base_docs(plan):
+        g = d if isinstance(d, dict) and isinstance(d.get("terminals"), list) else (d.get("state") if isinstance(d, dict) else None)
+        if isinstance(g, dict) and isinstance(g.get("terminals"), list):
+            return SS.base_state(g)
+    return None
+
+
+def base_register_end(st, end, want_source):
+    """card 160-a2-1 (docs/d1/ring-p5b.md PD391(c)): 'srR' / 'srL' when the plain plan end `end` names, on the BASE state `st`
+    (stagesim.resolve_addr), the INNER face of a RightShiftRegister / LeftShiftRegister listed by base_registers(st) with that
+    class - the end then compiles like a plan-made srR / srL symbol (connect_term_uid register_end_case_border). '' for a
+    `new:` symbol, no state, an unresolvable end, any other face, and a WIRED SOURCE face (an LSR inner source on a wire is
+    routed by that wire, 'cfw' - PD391(d), A28 / A35 unchanged). Self-test: tools/bench/selftest_c160_regface.py (R1-R4)."""
+    if st is None or not isinstance(end, dict) or _sym_of(end)[0]:
+        return ""
+    try:
+        r = SS.resolve_addr(st, end, want_source)
+    except SS.SimError:
+        return ""
+    reg = base_registers(st).get(r["owner_uid"])
+    if r["term_class"] != "InnerTerminal" or not reg or reg["cls"] != r["owner_class"] or (r["is_source"] and r["wire_uid"]):
+        return ""
+    return "srR" if r["owner_class"] == "RightShiftRegister" else "srL"
 
 
 def _base_case_wire(A, i, fr, owners):
@@ -808,12 +846,17 @@ def compile_plan(plan, owners=None):
     read from `owners` (the base graph's owner map) or, when None, lazily from the plan's pinned base (plan_base_owners) -
     only when such a shape occurs. Self-test: tools/bench/selftest_c155_basecase_frame.py."""
     A = plan["actions"]
-    _own = [owners]
+    _own, _bst = [owners], []
 
     def base_owners():
         if _own[0] is None:
             _own[0] = plan_base_owners(plan)
         return _own[0]
+
+    def base_st():                                       # card 160-a2-1: read lazily, only for a plain outside end
+        if not _bst:
+            _bst.append(plan_base_state(plan))
+        return _bst[0]
     check_symbols(A)
     fsw = fs_wire_ops(A)                                 # card 126-3: Flat Sequence wires (pure, from the plan)
     # card 133-1 (PD280(c)): a wire into a frame of a Flat Sequence the plan did NOT create (carried / base FS) cannot be
@@ -860,14 +903,18 @@ def compile_plan(plan, owners=None):
                                "(LabVIEW makes a tunnel only by wiring across the border)".format(i, t))
             # card 124-6 (PD250(c)): the OUTSIDE end is the one paired with the tunnel's outer face; a plan-made register's
             # INNER face there, on a plan-made case's tunnel = connect_term_uid (R1 dir in / R2 dir out, measured)
-            outside = A[ins[0] - 1]["src"] if _sym_of(A[ins[0] - 1]["dst"])[1] == "outer" else A[outs[0] - 1]["dst"]
+            out_src = _sym_of(A[ins[0] - 1]["dst"])[1] == "outer"
+            outside = A[ins[0] - 1]["src"] if out_src else A[outs[0] - 1]["dst"]
             oh, oside = _sym_of(outside)
             reg = created.get(oh, ("",))[0] if oh else ""
+            if not oh and isinstance(outside, dict):     # card 160-a2-1 (PD391(c)): a BASE register's inner face = srR / srL
+                reg = base_register_end(base_st(), outside, out_src)
+                oside = "inner" if reg else oside
             if oside == "inner" and reg in ("srL", "srR") and (created.get(a.get("loop"), ("",))[0] == "case" or (
                     a.get("loop") not in created and base_case_named(base_owners(), a.get("loop")))):   # card 155-a1-1
                 if (reg == "srL") != (a.get("dir", "in") == "in"):
                     raise ExecStop("action {0}: tunnel {1} dir {2!r} with the register end {3} (srL feeds an INPUT tunnel, an "
-                                   "OUTPUT tunnel feeds srR)".format(i, t, a.get("dir", "in"), oh))
+                                   "OUTPUT tunnel feeds srR)".format(i, t, a.get("dir", "in"), oh or outside))
                 ops.append({"kind": "connect_term_uid", "acts": [i, i + 1, i + 2], "tunnel": t, "in_act": ins[0],
                             "out_act": outs[0], "case": a["loop"], "variant": "register_end_case_border"})
                 i += 3
@@ -1484,6 +1531,10 @@ def connect_route(addr, real, src, dst, loop_of):
             info.update(ct=addr.ct(real, dst)[0], src=st_, src_how=hs, src_term=st_[2])
             return "ctlsink", rs, rd, info
         return "indicator", rs, rd, info
+    sink = loop_inner_face_sink(real, rs, rd, addr.owners)   # card 165-1-1 (PD400(b)): an UNWIRED While/For inner face as dst
+    if sink is not None:
+        info.update(sink)
+        return "connect_term_uid", rs, rd, info
     dt, hd = addr.triple(real, dst, False, loop_of)
     info.update(dst=dt, dst_how=hd)
     if rs["wire_uid"]:
@@ -1645,11 +1696,54 @@ def loop_inner_face_route(rows, rs, owners):
         "src_loop_cls": ent[0][1], "src_wire0": True}
 
 
-def route_on_state(st, src, dst, zero_terms=()):
-    """card 157-a1-1: connect_route on a simulated / recorded STATE, addressed as the dry backend addresses it (Addr over
-    SimReader, the state's owners, base_registers as loop_of), after setting the wire uid of every terminal in `zero_terms`
-    to 0 (a read in which LabVIEW dropped those wires). The state is not modified. Returns (route kind, info) or
-    ('STOP', ExecStop text). Self-test: tools/bench/selftest_c157_innerface.py (i)/(ii)."""
+def struct_parent_diags(rows, struct, owners):
+    """card 158-a2-1: the diagram uid(s) structure `struct` sits on, read from the graph alone - the OUTER faces of the tunnels
+    whose INNER faces lie on one of its frames (`owners`: str(frame uid) -> [class, structure uid]). Returns a sorted list
+    (empty when the structure has no tunnel). Self-test: tools/bench/selftest_c158_wire0face.py (iii) V0."""
+    frames = set(k for k, v in (owners or {}).items() if int(v[1] or 0) == int(struct))
+    tuns = set(r["owner_uid"] for r in rows if r["term_class"] == "InnerTerminal" and str(int(r["frame_diagram"] or 0)) in frames)
+    return sorted(set(int(r["frame_diagram"] or 0) for r in rows if r["owner_uid"] in tuns and r["term_class"] == "OuterTerminal"))
+
+
+# card 158-a2-1 (docs/d1/ring-p5.md PD385(a)(b)): the named connect_term_uid census variant of an UNWIRED While/For LoopTunnel
+# inner face as the SOURCE. UNMEASURED: its delta is a PREDICTION taken from where the dst sits on the graph (dst on the face's
+# own diagram -> {Wire 1}; dst on a frame of a CaseStructure sitting on the face's diagram -> R1's measured delta
+# 'register_end_case_border'); the scratch's census of the op is the measurement. Kept OUT of ROUTE_CENSUS['connect_term_uid']
+# the way 'fs_exit' is (card 138-1): selftest_case_frame_c124 U01 requires that table == census_samples.json's recorded
+# variants, and this variant has no recorded sample yet; the op result carries its predicted census and census_status.
+LOOP_FACE_WIRE0 = "loop_inner_face_wire0"
+LOOP_FACE_WIRE0_STATUS = ("UNMEASURED - predicted from the dst's position on the graph (PD385(b)); the scratch census of "
+                          "this op is the measurement")
+
+
+def loop_face_wire0_act(rows, rs, rd, owners):
+    """card 158-a2-1 (PD385(a)(b)): the act for an UNWIRED While/For LoopTunnel inner face routed 'cfw' by
+    loop_inner_face_route (info src_wire0) - ONE gscript.connect_term_uid(target, sink_uid, src_uid), src = the face's TERMINAL
+    uid, sink = the dst terminal uid, both from the read `rows` (the op's checkpoint read). Returns {act, src_term, dst_term,
+    variant LOOP_FACE_WIRE0, census (predicted delta, None = no rule), census_status, dst_pos}; a face / dst row missing from
+    the read raises ExecStop. Self-test: tools/bench/selftest_c158_wire0face.py (i)/(iii)."""
+    have = set(r["term_uid"] for r in rows)
+    miss = [u for u in (rs["term_uid"], rd["term_uid"]) if u not in have]
+    if miss:
+        raise ExecStop("ADDRESS: wire-0 loop face act: terminal(s) {0} not in the read".format(miss))
+    fd, dd = int(rs["frame_diagram"] or 0), int(rd["frame_diagram"] or 0)
+    own = (owners or {}).get(str(dd)) or [None, 0]
+    if dd == fd:
+        pos, census = "same diagram #{0} as the face".format(fd), {"Wire": 1}
+    elif own[0] == "CaseStructure" and struct_parent_diags(rows, own[1], owners) == [fd]:
+        pos = "frame #{0} of CaseStructure #{1} on the face's diagram #{2}".format(dd, own[1], fd)
+        census = dict(ROUTE_CENSUS["connect_term_uid"]["register_end_case_border"])
+    else:
+        pos, census = "#{0} ({1}), face on #{2}: no prediction rule".format(dd, own[0], fd), None
+    return {"act": "connect_term_uid", "src_term": int(rs["term_uid"]), "dst_term": int(rd["term_uid"]), "variant": LOOP_FACE_WIRE0,
+            "census": census, "census_status": LOOP_FACE_WIRE0_STATUS if census is not None else "UNPREDICTED", "dst_pos": pos}
+
+
+def state_addr(st, zero_terms=()):
+    """card 158-a2-1 (extracted from route_on_state, card 157-a1-1): a deep copy of a simulated / recorded STATE with the wire
+    uid of every terminal in `zero_terms` set to 0 (a read in which LabVIEW dropped those wires), addressed as the dry backend
+    addresses it. Returns (state copy, Addr over SimReader with the state's owners, loop_of from base_registers, deduped read).
+    Self-test: tools/bench/selftest_c158_wire0face.py (i), selftest_c157_innerface.py (i)/(ii) via route_on_state."""
     s = copy.deepcopy(st)
     z = set(int(t) for t in zero_terms)
     for r in s["terminals"]:
@@ -1657,8 +1751,17 @@ def route_on_state(st, src, dst, zero_terms=()):
             r["wire_uid"] = 0
     addr = Addr(SimReader(_StateHolder(s)), s.get("owners"))
     loop_of = dict((u, v["loop"]) for u, v in base_registers(s).items())
+    return s, addr, loop_of, dedupe(s["terminals"])
+
+
+def route_on_state(st, src, dst, zero_terms=()):
+    """card 157-a1-1: connect_route on a simulated / recorded STATE, addressed as the dry backend addresses it (Addr over
+    SimReader, the state's owners, base_registers as loop_of), after setting the wire uid of every terminal in `zero_terms`
+    to 0 (a read in which LabVIEW dropped those wires). The state is not modified. Returns (route kind, info) or
+    ('STOP', ExecStop text). Self-test: tools/bench/selftest_c157_innerface.py (i)/(ii)."""
+    _s, addr, loop_of, real = state_addr(st, zero_terms)   # card 158-a2-1: the setup is the shared state_addr
     try:
-        kind, _rs, _rd, info = connect_route(addr, dedupe(s["terminals"]), src, dst, loop_of)
+        kind, _rs, _rd, info = connect_route(addr, real, src, dst, loop_of)
         return kind, info
     except ExecStop as e:
         return "STOP", str(e)
@@ -2023,14 +2126,67 @@ def bound_owners(owners, bind):
 BIND_KINDS = ("add_sr", "tunnel", "create", "connect_term_uid")   # ops that make objects: a fresh read is required after each
 # (card 124-6: connect_term_uid makes the case's SelectorTunnel, bound by bind_case_faces)
 READ_KINDS = ("move_in",)   # card 157-a1-1 (PD379(e)/PD381(d)): ops whose read is recorded (FATE lines), binding nothing
+REREAD_KINDS = ("delete_wire",)   # card 161-a1-1 (PD393(a)): ops after which a fresh read is required, binding nothing (the next
+# op must not address a reused read that still shows the deleted wire, docs/d1/ring-p5b.md PD393)
+
+
+def _runs_in(ops, lo, hi):
+    """card 161-a1-1: the move_in runs (move_in_runs) cut to the dispatched range lo < k <= hi; empty cuts dropped. A run cut
+    by hi closes at its last op <= hi. Returns a list of tuples of op numbers."""
+    return [c for c in (tuple(x for x in r if lo < x <= hi) for r in move_in_runs(ops)) if c]
+
+
+def required_checkpoints(ops, lo=0, hi=None):
+    """card 161-a1-1 (docs/d1/ring-p5b.md PD393(a)): the ops a checkpoint set MUST hold when ops lo+1..hi of a compiled op
+    list are dispatched (hi None = the last op), by reason - a dict of sets of op numbers: 'bind' (kind in BIND_KINDS: a
+    fresh read binds what it made), 'delete_wire' (kind in REREAD_KINDS: the next op addresses a fresh read), 'move_in_run'
+    (the run-closing op of every run of consecutive move_in ops, _runs_in), 'last' ({hi}). The ONE rule shared by
+    checkpoint_ops and the Executor's CHECKPOINT validator. Self-test: tools/bench/selftest_c161_delckpt.py."""
+    lo = int(lo or 0)
+    hi = len(ops) if hi is None else int(hi)
+    kinds = lambda ks: set(k for k, o in enumerate(ops, 1) if o["kind"] in ks and lo < k <= hi)   # noqa: E731
+    return {"bind": kinds(BIND_KINDS), "delete_wire": kinds(REREAD_KINDS),
+            "move_in_run": set(r[-1] for r in _runs_in(ops, lo, hi)), "last": {hi}}
+
+
+def move_in_runs(ops):
+    """card 158-a1-2 (docs/d1/ring-p5.md PD384(b)): the maximal runs of consecutive READ_KINDS (move_in) ops of a compiled op
+    list - a list of tuples of op numbers (1-based), each tuple's LAST member is the run-closing op (a move_in followed by a
+    non-move_in op, or the plan's last op). Self-test: tools/bench/selftest_c158_runcheck.py (i)."""
+    runs, cur = [], []
+    for k, o in enumerate(ops, 1):
+        if o["kind"] in READ_KINDS:
+            cur.append(k)
+        elif cur:
+            runs.append(tuple(cur))
+            cur = []
+    if cur:
+        runs.append(tuple(cur))
+    return runs
 
 
 def checkpoint_ops(ops):
-    """card 157-a1-1 (docs/d1/ring-p5.md PD379(e), PD381(d)): the E1 checkpoint set of a compiled op list - 0, the last op,
-    every op whose kind is in BIND_KINDS (a fresh read binds what it made) and every op whose kind is in READ_KINDS (a move_in:
-    its read is compared with the sim and gives the FATE lines). Returns a sorted tuple of op numbers.
-    Self-test: tools/bench/selftest_c157_innerface.py (iv)."""
-    return tuple(sorted({0, len(ops)} | set(k for k, o in enumerate(ops, 1) if o["kind"] in BIND_KINDS + READ_KINDS)))
+    """card 157-a1-1 (docs/d1/ring-p5.md PD379(e), PD381(d)), rule changed by card 158-a1-2 (PD384(b)) and card 161-a1-1
+    (docs/d1/ring-p5b.md PD393(a)): the E1 checkpoint set of a compiled op list - 0, the last op, every op whose kind is in
+    BIND_KINDS (a fresh read binds what it made), every delete_wire op (REREAD_KINDS: the next op addresses a fresh read) and
+    the run-closing op of every run of consecutive move_in ops (move_in_runs; that one read gives the FATE lines of the whole
+    run) = {0} | every set of required_checkpoints(ops). Returns a sorted tuple of op numbers.
+    Self-tests: tools/bench/selftest_c158_runcheck.py (i), tools/bench/selftest_c161_delckpt.py."""
+    return tuple(sorted({0}.union(*required_checkpoints(ops).values())))
+
+
+def run_fate_lines(run, ops, step_of, read_rows, bind_term=None):
+    """card 158-a1-2 (docs/d1/ring-p5.md PD384(b)): the FATE lines of one run of consecutive move_in ops (`run` = op numbers,
+    its last = the op whose read `read_rows` is) - fate_lines of EVERY plan step of every op in the run, each compared with
+    the sim terminals BEFORE the run (step_of(<first act of the run's first op> - 1)['state']['terminals']); `step=<n>`
+    stays each move_in's own plan step. step_of: plan step n -> its step dict. Returns a list of str (format of fate_lines).
+    Self-test: tools/bench/selftest_c158_runcheck.py (iii)."""
+    prev_terms = step_of(ops[run[0] - 1]["acts"][0] - 1)["state"]["terminals"]
+    out = []
+    for k in run:
+        for n in ops[k - 1]["acts"]:
+            out.extend(fate_lines(n, step_of(n).get("effect"), prev_terms, read_rows, bind_term))
+    return out
 
 
 def fate_lines(n, eff, prev_terms, read_rows, bind_term=None):
@@ -2059,8 +2215,12 @@ def fate_lines(n, eff, prev_terms, read_rows, bind_term=None):
 
 class Executor(object):
     """PD193(a), card 86-4: `checkpoints` = the real-op numbers k after which the whole-VI read + step diff run. None =
-    every op (the default; unchanged behaviour). A set must hold every add_sr/tunnel op (bind_new needs the fresh read)
-    and the LAST op (the final state is always compared and returned); otherwise ExecStop CHECKPOINT before op 1.
+    every op (the default; unchanged behaviour). A set must hold every add_sr/tunnel op (bind_new needs the fresh read),
+    the LAST op (the final state is always compared and returned), the run-closing op of every run of consecutive
+    move_in ops (card 158-a1-2, PD384(b): its read gives the run's FATE lines, run_fate_lines) and every delete_wire op
+    (card 161-a1-1, docs/d1/ring-p5b.md PD393(a): the next op must not address a reused read that still shows the deleted
+    wire) - the rule is required_checkpoints, shared with checkpoint_ops; otherwise ExecStop CHECKPOINT before op 1, naming
+    any missing delete_wire op.
     Between checkpoints the last real read is reused; each op keeps its own connect read-back. A pre-mutation
     addressing ExecStop on a reused read gets ONE fresh read + one retry (connect/tunnel/wire_sr), as meter_l2a1_86d.py."""
     RETRY_KINDS = ("connect", "tunnel", "wire_sr")
@@ -2439,6 +2599,7 @@ class Executor(object):
         rightin |= set(i for i, a in enumerate(A, 1) if a["op"] == "wire" and a.get("dst") is not None
                        and base_sr_inner(a["dst"], False))
         primed, why, ct_primed = 0, [], 0
+        self.prime_skips = []                              # card 165-3-1 (PD402(b)): ends left to their own step
         why_acts = collections.OrderedDict()               # card 111-3: plan action -> its unprovable end(s)
         # card 126-3: a Flat Sequence wire addresses its ends by TERMINAL uid (connect_term_uid) - no Nodes[] triple to prove
         fs_acts = set(o["acts"][0] for o in self.ops if o["kind"] == "connect_term_uid" and str(o.get("variant", "")).startswith("fs_"))
@@ -2466,6 +2627,11 @@ class Executor(object):
                 if r["owner_class"] in SR_CLS and r["term_class"] == "InnerTerminal" and r["owner_uid"] in self.base_regs:
                     continue                               # card 112-1 T1: wire_sr addresses it by register index
                 if r["wire_uid"] and r["term_uid"] not in be.addr.cache:
+                    sk = prime_deleted_face_skip(A, self.ops, self.checkpoints, i, r, fs or 0)    # card 165-3-1 (PD402(b))
+                    if sk:
+                        self.prime_skips.append(sk)
+                        self.log("  PRIME-SKIP {0}".format(sk["line"]))
+                        continue
                     try:
                         be.addr.triple(real, r["term_uid"], r["is_source"])
                         primed += 1
@@ -2473,6 +2639,8 @@ class Executor(object):
                         why.append(str(x)[:160])
                         why_acts.setdefault(i, []).append(str(x)[:160])
         self.report[0]["primed"] = {"n": primed, "ct": ct_primed, "unprovable": why[:10]}
+        if self.prime_skips:                               # card 165-3-1: key only when a skip happened (stored dries byte-equal)
+            self.report[0]["primed"]["skipped"] = [s["line"] for s in self.prime_skips]
         self.log("  PRIME {0} terminal indexes proved at base; {1} ControlTerminal end(s) by 179(b); unprovable {2}".format(
             primed, ct_primed, why[:4] if not collect else why))
         if why:                                            # PD185(3): an unprovable end STOPS before op 1 (real backend)
@@ -2484,11 +2652,18 @@ class Executor(object):
         last_k = len(self.ops) if self.stop_after is None else self.stop_after
         if not (fs or 0) + 1 <= last_k <= len(self.ops):
             raise ExecStop("STOP-AFTER: {0} is outside {2}..{1} - stop before op {2}".format(last_k, len(self.ops), (fs or 0) + 1))
+        # card 158-a1-2 (PD384(b)): runs of consecutive move_in ops inside the dispatched range (fs, last_k]; a run cut by
+        # stop_after closes at last_k. run_of: run-closing op -> its run (its read gives the run's FATE lines)
+        run_of = dict((r[-1], r) for r in _runs_in(self.ops, fs or 0, last_k))
         if cp is not None:
-            need = set(k for k, o in enumerate(self.ops, 1) if o["kind"] in BIND_KINDS and (fs or 0) < k <= last_k) | {last_k}
+            req = required_checkpoints(self.ops, fs or 0, last_k)    # card 161-a1-1 (PD393(a)): the one shared rule
+            need = set().union(*req.values())
             bad = sorted(need - cp) + sorted(k for k in cp if not 0 <= k <= len(self.ops))
             if bad:
-                msg = "set {0} lacks binding/last op(s) or is out of range: {1} (need {2})".format(sorted(cp), bad, sorted(need))
+                msg = "set {0} lacks binding/last/move_in-run-closing/delete_wire op(s) or is out of range: {1} (need {2})".format(
+                    sorted(cp), bad, sorted(need))
+                if req["delete_wire"] - cp:
+                    msg += "; delete_wire op(s) not in the set: {0} (PD393(a))".format(sorted(req["delete_wire"] - cp))
                 if not collect:
                     raise ExecStop("CHECKPOINT: " + msg + " - stop before op 1")
                 # card 111-3: recorded; the dry run goes on with the set it needs (cp | need, out-of-range dropped), so
@@ -2540,13 +2715,9 @@ class Executor(object):
                 lost = be.addr.retrack()           # never add_sr/tunnel here (both are required checkpoints)
                 if lost:
                     res = dict(res or {}, lost_register_faces=lost)
-                for n in op["acts"]:
+                for n in op["acts"]:      # card 158-a1-2: a non-closing move_in's FATE lines come from its run-closing read
                     self.allow.update((self.step(n).get("effect") or {}).get("allow_either") or [])
-                    if op["kind"] in READ_KINDS and (self.step(n).get("effect") or {}).get("allow_either"):
-                        self.log("  FATE-UNREAD step={0} op {1} is not a checkpoint: ambiguous wires {2} not read (card 157-a1-1)".format(
-                            n, k, [x.get("wire") for x in (self.step(n).get("effect") or {}).get("only_sink") or []
-                                   if x.get("fate") == "ambiguous"]))
-                rec = {"k": k, "op": op["kind"], "acts": op["acts"], "ids": [A[n - 1].get("id") for n in op["acts"]],
+                rec ={"k": k, "op": op["kind"], "acts": op["acts"], "ids": [A[n - 1].get("id") for n in op["acts"]],
                        "result": res, "bound": {}, "diff": {"n": 0, "skipped": True}, "secs": round(time.time() - t0, 1)}
                 self.report.append(rec)
                 self.log("  STEPX {0:02d} {1:<14} acts {2} ids {3} diff skipped (not a checkpoint)".format(
@@ -2565,11 +2736,9 @@ class Executor(object):
                 self.reads_partial.append(k)
                 meter("read_part", k)
             stale = False
-            if op["kind"] in READ_KINDS:                   # card 157-a1-1 (PD381(c)): FATE lines from this checkpoint read
-                for n in op["acts"]:
-                    for ln in fate_lines(n, self.step(n).get("effect"), self.step(n - 1)["state"]["terminals"], real_new,
-                                         self.bind["term"]):
-                        self.log("  " + ln)
+            if k in run_of:                                # card 158-a1-2 (PD384(b)): the run-closing read gives the FATE
+                for ln in run_fate_lines(run_of[k], self.ops, self.step, real_new, self.bind["term"]):   # lines of its whole run
+                    self.log("  " + ln)
             made = {}
             cm_snap = self._cmap_snap()                    # card chat-T3: the creation map records what this op binds
             if op["kind"] == "create":                     # card 100-3: a loop owns no row - bound from the op's return
@@ -2757,8 +2926,16 @@ class Executor(object):
         if kind == "delete_wire":
             w = int(a["wire_uid"])
             ts = set(self.bind["term"].get(r["term_uid"], r["term_uid"]) for r in prev["terminals"] if r["wire_uid"] == w)
+            if not ts and SS.termless_wire(prev, w):       # card 160-a1-1 (PD390(a)): a Wire object with 0 terminal rows
+                lw = self.bind["obj"].get(w, w)
+                if any(r["wire_uid"] == lw for r in real):
+                    raise ExecStop("delete_wire w{0}: termless in the simulation, live wire {1} carries terminals".format(w, lw))
+                return be.delete_wire(lw, op, plan_wire=w)  # the uid path (stagekit.delete_wire; found == 1 or it fails)
+            # card 160-a2-1 (PD391(b)): a SOURCELESS Wire (sink rows only, SS.sourceless_wire) takes the terminal path below - its
+            # one live wire must carry exactly its sink terminals; the live act is the same uid call; it is never 'already gone'
             live = set(r["wire_uid"] for r in real if r["term_uid"] in ts and r["wire_uid"])
-            if not live and ts and ts <= set(self.bind["term"].get(t, t) for t in self.allow):   # card 104-2: sim -> real
+            if not live and ts and ts <= set(self.bind["term"].get(t, t) for t in self.allow) \
+                    and not SS.sourceless_wire(prev, w):   # card 104-2: sim -> real
                 return {"already_gone": "w{0}: every terminal is an allow_either only-sink source, bare in the live "
                                         "graph (LabVIEW deleted it with the node)".format(w)}
             if len(live) != 1:
@@ -3057,6 +3234,8 @@ class LVBackend(object):
             out = self._done(rec, "connect #{0}->#{1}".format(src, dst))
             out["how"] = ["ctlsink", info["dst_ct"], info["src_how"]]
             return out
+        if kind == "connect_term_uid":                     # card 165-1-1 (PD400(b)): wire-0 loop inner face as the sink
+            return self.loop_face_sink(info["act"], real, op)
         dt, hd = info["dst"], info["dst_how"]
         if kind == "ctltun":                               # card 112-1 T2: OpCtlSinkWire_v1, roles reversed (see connect_route)
             ci = self.s.uid_index("ControlTerminal", int(src))
@@ -3131,6 +3310,8 @@ class LVBackend(object):
             out = self._done(rec, "connect #{0}->#{1}".format(src, dst))
             out["how"] = ["const", info["const_how"], hd]
             return out
+        if kind == "cfw" and info.get("src_wire0"):        # card 158-a2-1 (PD385(a)): no wire to branch from
+            return self.loop_face_wire0(rs, rd, real, op)
         if kind == "cfw":
             rec = self._cfw(int(rs["wire_uid"]), V.node_of(rs) if V.node_class(rs) != FP else rs["owner_uid"], dt)
             how = ["cfw", hd]
@@ -3431,6 +3612,9 @@ class LVBackend(object):
         rd = next(r for r in real if r["term_uid"] == dst)
         if V.node_class(rd) == FP:
             return self.indicator(outer[0], rd)
+        sink = loop_inner_face_sink(real, outer[0], rd, self.addr.owners)   # card 165-1-1 (PD400(b))
+        if sink is not None:
+            return self.loop_face_sink(sink["act"], real, op)
         dt, hd = self.addr.triple(real, dst, False, loop_of)
         out = self._done(self._cfw(int(outer[0]["wire_uid"]), tun, dt), "branch #{0}".format(tun))
         out["how"] = ["cfw off tunnel outer", hd]
@@ -3482,8 +3666,27 @@ class LVBackend(object):
         # card 127-2: a border crossing may read Is Broken? True from a LOOSE joint (126-6 B2 w27927) - the plan's next
         # wire_remove_loose_ends row clears it (diag_c126_6_cross.log:61-65); recorded, not a stop here
         out.update(wire_uid=res["wire_uid"], purged=res.get("purged"), how=CONNECT_TERM_UID_HOW, variant=var,
-                   census=op.get("sim_census") if var in FS_VARIANT_HOW else ROUTE_CENSUS["connect_term_uid"].get(var),
+                   census=op.get("sim_census") if var in FS_VARIANT_HOW or var == LOOP_FACE_WIRE0
+                   else ROUTE_CENSUS["connect_term_uid"].get(var),
                    broken_until_rle=bool(res.get("broken")) if var in FS_VARIANT_HOW else None)
+        return out
+
+    def loop_face_wire0(self, rs, rd, real, op):
+        """card 158-a2-1 (PD385(a)): the live act for an UNWIRED While/For LoopTunnel inner face (connect_route 'cfw' with
+        src_wire0) - the spec from loop_face_wire0_act, run as ONE connect_term_uid with this class's result checks (a wire
+        came back; Is Broken? True; junk Invoke(s) left). Returns connect_term_uid's out + route, dst_pos, census_status.
+        Self-test: tools/bench/selftest_c158_wire0face.py (i) A1-A3."""
+        a = loop_face_wire0_act(real, rs, rd, self.addr.owners)
+        out = self.connect_term_uid(a["src_term"], a["dst_term"], real, dict(op, variant=a["variant"], sim_census=a["census"]))
+        out.update(route="connect_term_uid", dst_pos=a["dst_pos"], census_status=a["census_status"])
+        return out
+
+    def loop_face_sink(self, a, real, op):
+        """card 165-1-1 (PD400(b)): the live act for an UNWIRED While/For LoopTunnel inner face as the SINK (loop_inner_face_sink's
+        `act`), run as ONE connect_term_uid with this class's result checks (a wire came back; Is Broken? True; junk Invoke(s)
+        left). Returns connect_term_uid's out + route, dst_pos, census_status. Self-test: tools/bench/selftest_c165_innerface.py."""
+        out = self.connect_term_uid(a["src_term"], a["dst_term"], real, dict(op, variant=a["variant"], sim_census=a["census"]))
+        out.update(route="connect_term_uid", dst_pos=a["dst_pos"], census_status=a["census_status"])
         return out
 
     def rle(self, wires, op):
@@ -3868,8 +4071,13 @@ class SimBackend(object):
             if self.fault.get("kind") == "unroutable" and op["acts"][-1] in self.fault.get("at_acts", ()):
                 raise ExecStop("CONNECT-NO-VERB: injected unroutable row (self-test)")
             kind, _rs, _rd, info = connect_route(self.addr, real, src, dst, loop_of)   # PD187(b): the real backend's route
-            chk = None if kind == "indicator" else ({"src_triple": list(info["src"]), "how": info["src_how"]}
-                                                     if kind == "ctlsink" else self._check(real, dst, False, loop_of))
+            if kind == "connect_term_uid":                 # card 165-1-1 (PD400(b)): the act LVBackend.loop_face_sink runs
+                chk = {"how": info["dst_how"], "act": info["act"]}
+            else:
+                chk = None if kind == "indicator" else ({"src_triple": list(info["src"]), "how": info["src_how"]}
+                                                         if kind == "ctlsink" else self._check(real, dst, False, loop_of))
+            if kind == "cfw" and info.get("src_wire0"):    # card 158-a2-1 (PD385(a)): the act LVBackend.loop_face_wire0 runs
+                chk["act"] = loop_face_wire0_act(real, _rs, _rd, self.addr.owners)
         except ExecStop as e:
             return self._unroutable(op, e)
         if chk is not None:
@@ -3883,7 +4091,11 @@ class SimBackend(object):
             if len(f) != 1 or not f[0]["wire_uid"]:
                 raise ExecStop("branch: tunnel #{0} has no wired {1} source".format(tun, side))
             rd = next(r for r in real if r["term_uid"] == dst)
-            chk = None if is_ct(rd) else self._check(real, dst, False, loop_of)
+            sink = None if is_ct(rd) else loop_inner_face_sink(real, f[0], rd, self.addr.owners)   # card 165-1-1 (PD400(b))
+            if sink is not None:
+                chk = {"route": "connect_term_uid", "how": sink["dst_how"], "act": sink["act"]}
+            else:
+                chk = None if is_ct(rd) else self._check(real, dst, False, loop_of)
         except ExecStop as e:
             return self._unroutable(op, e)
         return self._apply(op, chk)
@@ -4554,9 +4766,12 @@ def kill_labview_at_exit():
     return gone
 
 
-def dry_run(plan_path, fault=None, log=print, model_dir=None, require_final=True, from_step=None, binding=None):
+def dry_run(plan_path, fault=None, log=print, model_dir=None, require_final=True, from_step=None, binding=None,
+            checkpoints=None):
     """(status, first_fail, executor). No LabVIEW. require_final=False = the DIAGNOSTIC routability run (card 100-3).
-    card 103-4: from_step=k + binding = the Part-B dry run, on the bound step-k state (from_step_state)."""
+    card 103-4: from_step=k + binding = the Part-B dry run, on the bound step-k state (from_step_state).
+    card 158-a1-2: checkpoints = the Executor's checkpoint set (None = every op, as before); self-test
+    tools/bench/selftest_c158_runcheck.py (ii)."""
     plan, _paths = load_final_plan(plan_path, require_final)
     base = _j(_abs(plan["finalized"]["base"]["path"]))
     models = SS.load_models(model_dir or SS.OPMODEL_DIR)
@@ -4564,7 +4779,8 @@ def dry_run(plan_path, fault=None, log=print, model_dir=None, require_final=True
     if from_step is None:
         SS.seed_base_flips_modelled(st, models)        # card 112-1 T3: the dry base == step_00 (saved flips seeded)
     be = SimBackend(plan, st, models, fault)
-    ex = Executor(plan_path, be, log, require_final=require_final, from_step=from_step, binding=binding)
+    ex = Executor(plan_path, be, log, require_final=require_final, from_step=from_step, binding=binding,
+                  checkpoints=checkpoints)
     ex.unroutable = be.unroutable
     try:
         ex.run()                                       # raises UNROUTABLE at the end when any row was unroutable
@@ -5353,15 +5569,20 @@ def selftest():
     mkbe = lambda fault=None: SimBackend(pl_, SS.base_state(_j(_abs(pl_["finalized"]["base"]["path"])), pl_.get("context")),  # noqa: E731
                                          SS.load_models(md), fault)
     opsx = compile_plan(pl_)
-    bindk = set(k for k, o in enumerate(opsx, 1) if o["kind"] in ("add_sr", "tunnel"))
+    bindk = (set(k for k, o in enumerate(opsx, 1) if o["kind"] in ("add_sr", "tunnel", "delete_wire"))   # card 161-a1-1 (PD393(a))
+             | set(r[-1] for r in move_in_runs(opsx)))   # card 158-a1-2 (PD384(b)): + move_in run-closing ops (required too)
     cps = bindk | {0, len(opsx)}
     exc_ = Executor(fin, mkbe(), log=q, checkpoints=cps)
     exc_.run()
     gate("T35 checkpoint set (binding ops + last): run PASS, whole-VI reads only at the set, the rest skipped",
          exc_.reads_real == sorted(cps - {0}) and exc_.reads_skipped == sorted(set(range(1, len(opsx) + 1)) - cps) and
          len(exc_.reads_skipped) > 0, (sorted(cps), exc_.reads_real, exc_.reads_skipped))
-    gate("T35d a stale-read addressing stop is recovered by ONE fresh read + retry (no unroutable row left)",
-         len(exc_.stale_retries) >= 1 and not exc_.be.unroutable, (exc_.stale_retries, exc_.be.unroutable))
+    # card 161-a1-1 (PD393(a)): until ddf23a31 this gate saw ONE stale retry at op 8 (ADDRESS #1041 'x' on a read reused across
+    # delete_wire op 7, diag_c104d_selftest.log:58); delete_wire is now a required checkpoint, so that stale read cannot occur
+    dws = [k for k, o in enumerate(opsx, 1) if o["kind"] == "delete_wire"]
+    gate("T35d every delete_wire op {0} is read fresh (in the set); no stale-read retry needed, no unroutable row".format(dws),
+         dws and set(dws) <= cps and set(dws) <= set(exc_.reads_real) and not exc_.stale_retries and not exc_.be.unroutable,
+         (dws, exc_.stale_retries, exc_.be.unroutable))
     fk = next((k for k in range(1, len(opsx)) if k not in cps and any(c > k for c in cps)), None)
     nxt = min(c for c in cps if fk is not None and c > fk) if fk else None
     try:
@@ -6118,6 +6339,73 @@ def case_pass_wire(A, i, k, created, base_owners):
     if tun is None or tun.get("loop") != loop or dside != "inner":
         raise ExecStop("{0}: dst {1!r} must be the INNER face of an earlier tunnel of the same case {2!r}".format(why, dst, loop))
     return True
+
+
+# card 165-1-1 (docs/d1/ring-p5c.md PD400(b)): the named connect_term_uid census variant of an UNWIRED While/For LoopTunnel inner
+# face as the SINK, fed from a WIRED source on the face's own body diagram (precedent of connect_term_uid from a wired source:
+# diag_c161_p5s02b_scratch.log:97). UNMEASURED: no recorded sample of this op onto a LoopTunnel inner face exists, so no census
+# is predicted; kept OUT of ROUTE_CENSUS['connect_term_uid'] like LOOP_FACE_WIRE0 (selftest_case_frame_c124 U01).
+LOOP_FACE_SINK = "loop_inner_face_sink"
+LOOP_FACE_SINK_STATUS = ("UNMEASURED - no recorded connect_term_uid sample onto a LoopTunnel inner face (PD400(b)); the scratch "
+                         "census of this op is the measurement")
+
+
+def loop_inner_face_sink(rows, rs, rd, owners):
+    """card 165-1-1 (PD400(b)): the connect_term_uid act when the DST is the INNER face of a While / For LoopTunnel with wire 0
+    in this read (i.e. after the plan's stub-delete checkpoint) - the sink-side twin of loop_inner_face_route, with the same
+    owner checks (tunnel -> its owner loop by tunnel_owner -> that loop's ONE body diagram and class in `owners`; the face
+    sits on that body) - and the SOURCE is a WIRED source terminal on that same body diagram. Returns {"dst_how", "dst_diag",
+    "dst_loop", "dst_loop_cls", "act": {act 'connect_term_uid', src_term, dst_term, variant LOOP_FACE_SINK, census None,
+    census_status, dst_pos}} or None (the caller's existing stop stands): a wired face, an outer face, a source face, any class
+    other than LoopTunnel (a Case or Flat Sequence tunnel's inner face), an owner that is not one While/For loop with one
+    body, an unwired source or a source on another diagram. Self-test: tools/bench/selftest_c165_innerface.py."""
+    if rd["owner_class"] not in LOOP_ROUTED or rd["term_class"] != "InnerTerminal" or rd["is_source"] \
+            or int(rd["wire_uid"] or 0):
+        return None
+    if not rs["is_source"] or not int(rs["wire_uid"] or 0):
+        return None
+    try:
+        loop = tunnel_owner(rows, rd["owner_uid"], owners)
+    except ExecStop:
+        return None
+    ent = [(int(k), v[0]) for k, v in (owners or {}).items() if int(v[1] or 0) == loop]
+    fd = int(rd["frame_diagram"] or 0)
+    if len(ent) != 1 or ent[0][1] not in ("WhileLoop", "ForLoop") or ent[0][0] != fd or int(rs["frame_diagram"] or 0) != fd:
+        return None
+    return {"dst_how": "inner face #{0} of LoopTunnel #{1}, wire 0: body #{2} of {3} #{4} (graph owners) <- wired source #{5} "
+                       "(w{6}) on the same body -> connect_term_uid".format(rd["term_uid"], rd["owner_uid"], fd, ent[0][1], loop,
+                                                                         rs["term_uid"], rs["wire_uid"]),
+            "dst_diag": fd, "dst_loop": loop, "dst_loop_cls": ent[0][1],
+            "act": {"act": "connect_term_uid", "src_term": int(rs["term_uid"]), "dst_term": int(rd["term_uid"]),
+                    "variant": LOOP_FACE_SINK, "census": None, "census_status": LOOP_FACE_SINK_STATUS,
+                    "dst_pos": "same diagram #{0} as the source".format(fd)}}
+
+
+def prime_deleted_face_skip(A, ops, checkpoints, i, r, lo=0):
+    """card 165-3-1 (docs/d1/ring-p5c.md PD402(b)): whether the Executor's base PRIME pass may leave plan action i's end `r`
+    (an SS.resolve_addr row on the base state) to its own step instead of address-proving it at base. Returns None (prime it as
+    before) unless ALL hold: r is a LoopTunnel (LOOP_ROUTED) InnerTerminal SINK whose base wire uid is the `wire_uid` of a
+    delete_wire action n_del < i whose compiled op k_del (in `ops`, dispatched: k_del > lo) comes before the op k_use holding
+    action i, and k_del is a checkpoint (`checkpoints` None = every op is one). Then returns {"term", "wire", "act", "del_act",
+    "del_op", "use_op", "line"}; the end is addressed at its step by loop_inner_face_sink on the post-delete read.
+    Self-test: tools/bench/selftest_c165_prime.py."""
+    if r["owner_class"] not in LOOP_ROUTED or r["term_class"] != "InnerTerminal" or r["is_source"]:
+        return None
+    w = int(r["wire_uid"] or 0)
+    op_of = dict((n, k) for k, o in enumerate(ops, 1) for n in o["acts"])
+    k_use = op_of.get(i)
+    if not w or k_use is None:
+        return None
+    for k, o in enumerate(ops, 1):
+        if o["kind"] != "delete_wire" or not lo < k < k_use or (checkpoints is not None and k not in checkpoints):
+            continue
+        for n in o["acts"]:
+            if n < i and A[n - 1].get("op") == "delete_wire" and int(A[n - 1].get("wire_uid") or 0) == w:
+                return {"term": int(r["term_uid"]), "wire": w, "act": i, "del_act": n, "del_op": k, "use_op": k_use,
+                        "line": "end #{0} (LoopTunnel #{1} inner sink, base w{2}) of action {3} ({4}, op {5}): left to its step - "
+                                "w{2} is deleted by checkpointed op {6} (action {7} {8})".format(
+                                    r["term_uid"], r["owner_uid"], w, i, A[i - 1].get("id"), k_use, k, n, A[n - 1].get("id"))}
+    return None
 
 
 if __name__ == "__main__":

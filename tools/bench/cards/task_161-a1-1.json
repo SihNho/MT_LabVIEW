@@ -1,0 +1,56 @@
+{
+  "schema": "task/1",
+  "id": "161-a1-1",
+  "kind": "build",
+  "goal": "stagexec: every delete_wire op is a required executor checkpoint (checkpoint_ops + validator), self-tested: p5s02b set without op 4 or 8 refused; stored p5s01a/b, p5s02a sets validate.",
+  "why": "PD393(a): the p5s02b dry stop is a real executor gap (stale read after delete_wire, stagexec.py:2196-2198, 2674-2687); this tool change gates the launch.",
+  "inputs": [
+    {"path": "tools/bench/cards/brief_161-a1-1.md", "md5": "19aba6b45030aee17efa4717a7b7cf2a"},
+    {"path": "docs/d1/ring-p5b.md", "md5": "f6da5fdf3bc4bc41becc7fff58488a5f"},
+    {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+    {"path": "tools/stagexec.py", "md5": "ddf23a31b10767015da246be8ceaa2e2"},
+    {"path": "tools/bench/plan_ring_p5s02b.json", "md5": "f4520b101baad70f065ba5d6c9d14925"}
+  ],
+  "pass": [
+    "checkpoint_ops includes every delete_wire op and the Executor validator refuses a set lacking one; self-test quoted: p5s02b set without op 4 refused, without op 8 refused, full set accepted",
+    "stored p5s01a/p5s01b/p5s02a checkpoint sets validate unchanged, or each newly refused set is named with its reason",
+    "pin sweep listed BEFORE the edit; executor-checkpoint suites re-run with counts; new stagexec md5 quoted; stagesim/stagekit/stage_prerun/plan md5 unchanged; no tools/hooks file touched"
+  ],
+  "outputs": [
+    "tools/bench/diag_c161_a1_1_facts.md",
+    "tools/bench/selftest_c161_delckpt.py"
+  ],
+  "flags": {
+    "labview": "none",
+    "gui": false,
+    "hardware": "none",
+    "run_vi": false,
+    "write": [
+      "tools/stagexec.py",
+      "tools/bench/selftest_c161_delckpt*",
+      "tools/bench/diag_c161_a1_1*",
+      "tools/bench/selftest_c15*",
+      "tools/bench/selftest_c16*",
+      "tools/bench/gate_fp_queue.jsonl",
+      "tools/bench/jev_*"
+    ],
+    "status_edit": false,
+    "git_commit": false,
+    "peers": []
+  },
+  "budget": {
+    "failures": 2,
+    "minutes": 60
+  },
+  "rules": [
+    "Offline; no LabVIEW process; no --launch; no tools/hooks edit; no env bypass",
+    "Only tools/stagexec.py is edited among the stage tools; stagesim/stagekit/stage_prerun/plan/pred/recipes are not touched",
+    "Rule 1a: only WHEN the executor reads changes; no action, wire or end graph changes",
+    "Hook false positive: py tools/gate_fp.py log, report; never edit a hook"
+  ],
+  "advances": ["M3", "M8", "R1"],
+  "requires": [
+    {"kind": "file", "name": "tools/stagexec.py"},
+    {"kind": "file", "name": "tools/bench/plan_ring_p5s02b.json"}
+  ]
+}

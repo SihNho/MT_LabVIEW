@@ -1,0 +1,22 @@
+BGRUN START 2026-10-10 06:18:31 limit 10.0 min: py -u tools/bench/diag_c160_g1_1.py
+BGRUN PID 27472
+GATE PASS | M0 pins | {'stagekit.py': '1441bb4c', 'stagesim.py': 'a3261b56', 'stagexec.py': 'c4a6e0b6', 'stage_prerun.py': '7605116f', 'plan_ring_p5s02b_in.json': '56bfddd3', 'graph_ring_p5s02a_20261010_032547.json': '7ac24924', 'memory_model.json': '5b87de43', 'plan_ring_p5s02r_in.json': 'd84634bd', 'plan_ring_p5s02a.json': '4284c22a', 'prep_c156_a1_1_session.json': 'e3117bf4'}
+GATE PASS | MAP symbols and frames map | ([], [])
+GATE PASS | C A24..A80 compiles to 35 ops; no op spans a group boundary | []
+GATE PASS | REPRO kinds == 159 log ops 1..24 and MAIN at group ends == log (prep_c159_c1_1_mk.log:48-71) | {'kinds_eq': True, 'main(now, log)': {'DEL': (632.3, 632.3), 'F3': (633.7, 633.7), 'G': (645.4, 645.4), 'H': (654.6, 654.6), 'I': (678.3, 678.3), 'J': (694.4, 694.4)}}
+GATE PASS | START_ASSUMED == 603.4 | 603.4
+FACT GROUP I OK A41..A52 actions 12 ops 8 kinds ['add_sr', 'create', 'connect', 'create', 'connect_term_uid', 'case_frame_wire', 'connect_term_uid', 'case_frame_wire'] fresh MAIN 654.6
+FACT GROUP J OK A53..A60 actions 8 ops 8 kinds ['delete_wire', 'delete_object', 'delete_object', 'create', 'create', 'branch', 'connect', 'stop'] fresh MAIN 647.1
+FACT GROUP K3 GAP A61..A69 actions 9 ops 5 kinds ['add_sr', 'create', 'connect', 'connect_term_uid', 'connect_term_uid'] fresh MAIN None
+FACT GROUP K3f BLOCKED A70..A70 actions 1 ops 1 kinds ['branch'] fresh MAIN None
+FACT GROUP K4 GAP A71..A79 actions 9 ops 5 kinds ['add_sr', 'create', 'connect', 'connect_term_uid', 'connect_term_uid'] fresh MAIN None
+FACT GROUP K4f BLOCKED A80..A80 actions 1 ops 1 kinds ['branch'] fresh MAIN None
+FACT STEP 1 groups ['I', 'J'] A41..A60 actions 20 ops 16 MAIN 670.7
+FACT STEP 2 groups ['K3'] A61..A69 actions 9 ops 5 MAIN none (GAP/BLOCKED)
+FACT STEP 3 groups ['K3f'] A70..A70 actions 1 ops 1 MAIN none (GAP/BLOCKED)
+FACT STEP 4 groups ['K4'] A71..A79 actions 9 ops 5 MAIN none (GAP/BLOCKED)
+FACT STEP 5 groups ['K4f'] A80..A80 actions 1 ops 1 MAIN none (GAP/BLOCKED)
+FACT PAIR I+J fresh MAIN 670.7 (limit 675.0)
+GATE PASS | U pins unchanged | 
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":6,"fail":0},"first_fail":null,"artefacts":[],"card":"160-g1-1","labview":"none"}
+BGRUN END rc=0 after 1s

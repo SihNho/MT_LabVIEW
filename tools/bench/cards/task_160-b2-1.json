@@ -1,0 +1,53 @@
+{
+ "schema": "task/1",
+ "id": "160-b2-1",
+ "kind": "diagnose",
+ "goal": "Offline facts: why the route check refuses routes 4 and 7 of plan_ring_p5s02b (RSR #24083/#24150 not in Nodes[]); precedent; options as facts, no choice.",
+ "why": "Card 160-b1-1 failed only at the route check of the two right-register MERGE rows; plan change or router change is the open question and needs the address facts first.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_160-b2-1.md", "md5": "e86edb5645f55123c5dd205e72aeb071"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+  {"path": "tools/bench/diag_c160_b1_1_facts.md", "md5": "e12b72d746e4e9de1874a7355411fc95"},
+  {"path": "tools/bench/prep_c160_b1_1_mk.log", "md5": "bbb2bc8e27a768575fd7a68bbc90dc49"},
+  {"path": "tools/bench/plan_ring_p5s02b.json", "md5": "09ebc7a6c08f466997ba472ec0c64109"},
+  {"path": "tools/bench/graph_ring_p5s02a_20261010_032547.json", "md5": "7ac24924f979afde964e63fb27957b45"},
+  {"path": "tools/stagexec.py", "md5": "c4a6e0b6e36d5c0a21cfab9e223be1fb"},
+  {"path": "tools/stagesim.py", "md5": "a3261b56216d83f975d730dcaf3ad47b"},
+  {"path": "tools/stagekit.py", "md5": "1441bb4ca75eb5a59afaa3555690db37"}
+ ],
+ "pass": [
+  "terminal rows t24139/t24235 and LSR contrast quoted (owner_class, term_class, is_source, wire_uid); the stagexec lines that fall through to Nodes[] quoted with file:line",
+  "route kind of act 10 and where it is decided; precedent of a passing wire onto a right-register face with file:line, or 'no precedent' with the searches",
+  "options table: plan-only vs router extension vs other, each with files touched, new LabVIEW measurement needed or not, rule 1a note; OPEN lines, no choice",
+  "md5 unchanged: stagekit, stagesim, stagexec, stage_prerun, plan input, VIs; tools/hooks untouched; only diag_c160_b2_1* written"
+ ],
+ "outputs": [
+  "tools/bench/diag_c160_b2_1_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c160_b2_1*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 1,
+  "minutes": 30
+ },
+ "rules": [
+  "Read-only: no edit of tools, recipes, plans or tools/hooks; no LabVIEW process",
+  "Facts and options only; do not choose, do not build (judgement belongs elsewhere)",
+  "Call shared readers (vigraph, stagesim); a throwaway reader is named diag_c160_b2_1*",
+  "Rule 1a: state for each option that no per-bead computation changes, or say it does"
+ ],
+ "advances": ["M3", "M8", "R1"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/graph_ring_p5s02a_20261010_032547.json"}
+ ]
+}

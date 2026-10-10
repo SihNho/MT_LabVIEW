@@ -1,0 +1,61 @@
+{
+ "schema": "task/1",
+ "id": "162-a2-3",
+ "kind": "build",
+ "goal": "Offline: move the 3 copied blocks (licence rename table, pred E1 table, stub-delete insertion) into new tools/stage_shared.py; callers call it; outputs equal; self-tests green.",
+ "why": "Cycle-162 pass item 9 (ring-p5b PD392(e)/PD393(e)): the pin sweep is done (162-a2-1/-2); scripts must call shared functions, never copy them (docs/script-writing.md).",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_162-a2-3.md", "md5": "287deae0f8a46ca17d6bb4091bfc1cdd"},
+  {"path": "docs/d1/ring-p5b.md", "md5": "93dcb778db320dbecc813cd8e156cb1c"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+  {"path": "tools/bench/diag_c162_a2_1_facts.md", "md5": "79a4e855c4a523a698fd92acb8c97974"},
+  {"path": "tools/bench/prep_c162_a2_1_pinsweep.py", "md5": "a90d0c7a96f643c142fdada3d94b22c9"},
+  {"path": "tools/bench/prep_c156_a1_1_licence.py", "md5": "43e40d7b5793171b9389ffcf120af2fd"},
+  {"path": "tools/bench/prep_c156_a1_1_pred.py", "md5": "27fc52dcdda01f39ea542d4ab8e5ab05"},
+  {"path": "tools/bench/selftest_c160_regface.py", "md5": "679e901c04b99d888262ddfe462dc56b"},
+  {"path": "tools/bench/plan_ring_p5s02b_pred.json", "md5": "4cef0a8cf59eca8d20d165095cf11ec0"}
+ ],
+ "pass": [
+  "Every copy of the 3 blocks found by grep, listed by script in prep_c162_a2_3_copies.log (identical or how it differs)",
+  "tools/stage_shared.py (new, labview none) has one function per block; old block vs new function JSON-equal on real inputs, script + log saved",
+  "Callers rewritten to call it; each edited file's self-test green with the same counts as before; md5 old -> new quoted; pin sweep re-run, new stale pins only re-pinned",
+  "Self-test selftest_c162_stage_shared.py green; plan/licence/pred/EL json, stage tools, recipes, hooks md5 unchanged before/after"
+ ],
+ "outputs": [
+  "tools/stage_shared.py",
+  "tools/bench/selftest_c162_stage_shared.py",
+  "tools/bench/prep_c162_a2_3_copies.log",
+  "tools/bench/diag_c162_a2_3_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stage_shared.py",
+   "tools/bench/diag_c162_a2_3*",
+   "tools/bench/prep_c162_a2_3*",
+   "tools/bench/selftest_c162_stage_shared*",
+   "tools/bench/prep_c156_a1_1_licence.py",
+   "tools/bench/prep_c156_a1_1_pred.py",
+   "tools/bench/selftest_c160_regface.py",
+   "tools/bench/selftest_c1*",
+   "tools/bench/prep_c1*",
+   "tools/bench/jev_*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "advances": ["M3"],
+ "rules": [
+  "Offline only: no LabVIEW, no motor or camera; no tools/hooks/** edit",
+  "No edit of stagekit/stagexec/stagesim/stage_prerun, recipes, plan/licence/pred/EL json",
+  "Output equality old block vs new function is checked before any caller is rewritten (rule 1a spirit)"
+ ]
+}

@@ -1,0 +1,72 @@
+{
+ "schema": "task/1",
+ "id": "159-a1-1",
+ "kind": "measure",
+ "goal": "PD387(a)(b): read-only graph read of the adopted file D1_ring_p5s02a_20261010_023239.vi (94ffff94) with the prepared diag_c158_a3_2b_graph.py, then its load_by_vi entry; no scratch, no rebuild.",
+ "why": "94ffff94 has Error List 56 vs P5-1 45 and is not yet the step-2 base; the offline attribution (next card) needs its real graph and the load MB for step 2's memory plan.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_159-a1-1.md", "md5": "0d8c03d6d11e9d24bf50389ad655404c"},
+  {"path": "tools/bench/diag_c158_a3_2b_facts.md", "md5": "25d8f853f97c004fd3b3da24f425fa90"},
+  {"path": "tools/bench/diag_c158_a3_2b_graph.py", "md5": "c4a0ef66eef1050cf0afe5ecd3988feb"},
+  {"path": "tools/bench/diag_c158_a3_2b_graph_plan.json", "md5": "91fcfbecb484f9098d04d746cad71f5d"},
+  {"path": "tools/bench/diag_c158_a3_2b_memload.py", "md5": "0a0745db30f267225d8ec63523301d4f"},
+  {"path": "tools/bench/diag_c158_p5s02a_scratch_sum.json", "md5": "861e5ce549417e87589175b87336637c"},
+  {"path": "tools/bench/graph_ring_p5s01_20261009_125622.json", "md5": "6716c49948f097b8ac0e1780930bfab1"},
+  {"path": "tools/bench/memory_model.json", "md5": "c87d170a8370c4b5dcf77d1aa6738aed"},
+  {"path": "tools/bench/adopted_scratch.jsonl", "md5": "83e74ded10cd826e445a1dc4581f03a9"},
+  {"path": "tools/stagekit.py", "md5": "07f9e35fb23598ba7ee910875e52b95b"},
+  {"path": "tools/stagexec.py", "md5": "7a712ccb4c1f754d8bee4557f632177f"},
+  {"path": "tools/stagesim.py", "md5": "eb99c6bab81633f9bdd7c10dce6bfc0a"},
+  {"path": "tools/stage_prerun.py", "md5": "9decb20f6d67793abad967347e2a37ab"},
+  {"path": "tools/vigraph.py", "md5": "a7eb58c7e35a134f93df168ea4cdea80"},
+  {"path": "tools/gscript.py", "md5": "1a80236ed35c1876c67f964c72fe820a"},
+  {"path": "tools/addrcheck.py", "md5": "207beb0d09102c78b1e06d1f076eec7e"},
+  {"path": "docs/d1/ring-p5.md", "md5": "f23eae9f64ed96d72d4f13d087403220"}
+ ],
+ "pass": [
+  "Prerun of the graph script re-run on current bytes: 15/0 (else RETURN); no scratch run, no rebuild, no step-1 recipe launched",
+  "Graph read ran: tools/bench/graph_ring_p5s02a_<ts>.json path + md5 + row counts quoted; every gate line of diag_c158_a3_2b_graph.log quoted PASS/FAIL; MEM after load quoted",
+  "Adopted file md5 94ffff9413599d5153a5e6fb409294ab before == after; s09 eb1d0f31, P5-1a 2482fe7b, P5-1 7f2582ae unchanged; LabVIEW closed and verified gone",
+  "memory_model.json gets exactly ONE new load_by_vi entry keyed 94ffff94 (key-by-key diff quoted), written by diag_c158_a3_2b_memload.py; no other key changed",
+  "tools/bench/diag_c159_a1_1_facts.md written (<= 40 lines, facts only)"
+ ],
+ "outputs": [
+  "tools/bench/graph_ring_p5s02a_<ts>.json",
+  "tools/bench/diag_c158_a3_2b_graph.log",
+  "tools/bench/diag_c158_a3_2b_memload.log",
+  "tools/bench/diag_c159_a1_1_facts.md"
+ ],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c158_a3_2b_graph*",
+   "tools/bench/diag_c158_a3_2b_memload*",
+   "tools/bench/graph_ring_p5s02a_*",
+   "tools/bench/diag_c159_a1_1*",
+   "tools/bench/scratch_*c158*",
+   "tools/bench/memory_model.json",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "rules": [
+  "Read only: no scratch run, no rebuild of 94ffff94, no expected Error List",
+  "Do not edit the prepared graph or memload scripts; a needed edit is a RETURN",
+  "memory_model.json: add ONLY the load_by_vi entry for 94ffff94",
+  "Originals, P5-1 file, s03..s09 never opened for editing; no motor or camera",
+  "LabVIEW closed and verified gone at the end"
+ ],
+ "advances": ["M3", "M8", "R1"]
+}

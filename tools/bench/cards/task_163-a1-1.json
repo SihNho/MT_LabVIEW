@@ -1,0 +1,62 @@
+{
+ "schema": "task/1",
+ "id": "163-a1-1",
+ "kind": "build",
+ "goal": "Hash the step-3 inputs, then make plan_ring_p5s02c.json (A41..A60, or A41..A52 by the X10 rule) on graph 431cfd83 via shared stagekit mapping; offline.",
+ "why": "Purpose items 0-2 of cycle 163 (PD396(a)(b)(c)): inputs hashed first, plan on the real graph, X10 read-only on SX.checkpoint_ops from load 601.2 with the limit 675 unchanged.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_163-a1-1.md", "md5": "48f5fedc00d18ffa9eeca6342667b453"},
+  {"path": "docs/d1/ring-p5b.md", "md5": "70b89facff7e0e5f3ef6944a326be721"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+  {"path": "tools/bench/prep_c160_b3_1_mk.py", "md5": "a08aadf5c8e57611c8853c87b79e3159"},
+  {"path": "tools/bench/plan_ring_p5s02r_in.json", "md5": "d84634bdbe0f4f94669d2443af116b8e"},
+  {"path": "tools/bench/graph_ring_p5s02b_20261010_111905.json", "md5": "431cfd833310cde7d66a238db3db16f8"},
+  {"path": "tools/bench/memory_model.json", "md5": "def9e640dec21836bdaab6f3e93e53dd"},
+  {"path": "tools/bench/errorlist_expected_D1_ring_p5s02b_20261010_105511.json", "md5": "60e02787818234eeb0689fd36ca32a9b"},
+  {"path": "tools/stage_shared.py", "md5": "b688edd471ec0075918ce544c9413b06"},
+  {"path": "tools/stagekit.py", "md5": "9b8f82c1a0150bcaacaf9c56e003c335"},
+  {"path": "tools/stagexec.py", "md5": "a4df7e15c495b9fcbcdadf0d8047bc69"},
+  {"path": "tools/stagesim.py", "md5": "95a162baec5324ff037a8d23bd7ef46d"},
+  {"path": "tools/stage_prerun.py", "md5": "7605116f1dfe1c6fd4963dbfcf259de1"}
+ ],
+ "pass": [
+  "Input md5 table printed by a hashlib script and compared with the judgement-time values; every mismatch explained before the plan is made",
+  "plan_ring_p5s02c.json written by stagesim.simulate (final True) on graph 431cfd83: A41..A60 or A41..A52, no group split, REALSIM failed None, 0 PROVISIONAL, 0 UNROUTABLE",
+  "X10 MAIN on SX.checkpoint_ops from load 601.2 quoted for BOTH candidates (I+J and I), limit 675 unchanged; chosen plan MAIN <= 675 (I alone > 675 = FAIL, hand back)",
+  "Compile + checkpoints quoted (every delete_wire a checkpoint; group J delete_object handling stated); all gate lines quoted PASS/FAIL; no tool edit; UNCHANGED md5 list"
+ ],
+ "outputs": [
+  "tools/bench/plan_ring_p5s02c.json",
+  "tools/bench/prep_c163_a1_1_hash.log",
+  "tools/bench/prep_c163_a1_1_session.json",
+  "tools/bench/diag_c163_a1_1_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c163_a1_1*",
+   "tools/bench/prep_c163_a1_1*",
+   "tools/bench/plan_ring_p5s02c*",
+   "tools/bench/sim/ring_p5s02c/**",
+   "tools/bench/jev_*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "advances": ["M3", "M8", "R1"],
+ "rules": [
+  "Offline only: no LabVIEW, motor or camera; no hooks edit; no edit of the stage tools (stagekit/exec/sim/prerun/shared)",
+  "Call shared functions, never copy them (docs/script-writing.md); no group split; X10 read-only, limit 675 kept",
+  "Hook false positive on own command text: py tools/gate_fp.py log, report; no env bypass"
+ ]
+}

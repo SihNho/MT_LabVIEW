@@ -1,0 +1,22 @@
+{"schema": "result/1", "id": "159-b2-1", "status": "PASS", "gates": {"pass": 12, "fail": 0}, "first_fail": null, "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/stage_prerun.py", "md5": "7605116f1dfe1c6fd4963dbfcf259de1"},
+  {"path": "tools/bench/selftest_c159_b2_1.py", "md5": "18914fe473a18440d32ad7f9c6dd56b8"},
+  {"path": "tools/bench/selftest_c159_b2_1_run2.log", "md5": "60bde3248c121b96bb56441e3f1b91ec"},
+  {"path": "tools/bench/selftest_c159_b2_1.log", "md5": "7d164ee91a2986535dffd8f6474ac364"},
+  {"path": "tools/bench/diag_c159_b2_1_a4after.log", "md5": "9ddf6d09a6632d99c477b5cb2adb0e75"},
+  {"path": "tools/bench/diag_c159_b2_1_facts.md", "md5": "45b90bc74c69f376f7f33c5fed1382f7"}],
+ "facts": [
+  "stage_prerun.py:3434 DRY_RULE 2 -> 3 only: that line put back to 2 hashes to pin 9ea1bdeb (selftest_c159_b2_1_run2.log R0b); new md5 7605116f",
+  "self-test run2 12/0 rc=0 (selftest_c159_b2_1_run2.log:19-21): dry_rule 2 REFUSED with the PD288(c) text, same record with dry_rule 3 ALLOWED, the two differ only in dry_rule",
+  "M1: with stage_prerun.py:4976 filter replaced by `m = m` (run in memory) the dry_rule-2 record is ALLOWED, so T1 fails if the comparison is removed (run2 log)",
+  "run1 10/2 (selftest_c159_b2_1.log): C2 wrong, chat-S4 A adoption gate (adopted_scratch.jsonl) refuses both p5s02a recipes before the dry filter; run2 isolates ADOPT_LOG for C2",
+  "real prerun_records.jsonl md5 1452f9ee unchanged: 1081/1081 records have dry_rule != 3; 729/729 dry records (values 2, None)",
+  "p5s02a MAIN + scratch have no valid dry: refused PD288(c) on rule-2 dries 02:31:32 / 02:32:05 with adoption isolated; as-is, the adoption gate refuses them first",
+  "selftest_c159_a4_1 13/0 before (selftest_c159_a4_1_before_b2.log:33) == 13/0 after (diag_c159_b2_1_a4after.log:33)",
+  "selftest_c134_2_gates.py:91-93 (D2) expects dry_rule 2 -> allowed and will now fail; not run, not edited (outside write globs)"],
+ "open": [
+  "p5s02a MAIN/scratch are ADOPTED (adopted_scratch.jsonl), so a rule-3 re-dry alone will not make them launchable: does step 2 relaunch them or use a new recipe?",
+  "selftest_c134_2_gates.py D2 hard-codes dry_rule 2: re-pin it in the later card that re-pins runcheck/wire0face/stagekit/c134_1_dry?"],
+ "cost": {"usd": null, "minutes": 17, "labview_runs": 0},
+ "note": "Offline, no LabVIEW, no hook edit. The before-run log tools/bench/selftest_c159_a4_1_before_b2.log (md5 90a09598) is outside the card's write globs (written by bgrun, nothing refused it). No JEV-LADDER row exists for selftest_c159_b2_1.log. Facts: tools/bench/diag_c159_b2_1_facts.md."}

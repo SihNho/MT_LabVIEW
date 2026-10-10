@@ -28,8 +28,11 @@ PREDICTION (gates):
     pass-wire `frame` that is not the in-tunnel's own frame ('False') and a `frame` dst that is not an earlier tunnel of the
     same case (SK3R), each with the case_pass_wire message.
  D  (d) ordinary plan-made case groups unchanged: plan_ring_p5s02r_all.json (G/H/I pass wires), p5s02a, p5s01a, p5s01b,
-    p5s01_in compile EQUAL to tools/bench/sim/ring_p5s02pw/compile_before.json (written before the edit).
- P  pins: stagekit aec03c6c, stage_prerun 9decb20f, addrcheck 207beb0d, gscript 1a80236e, vigraph a7eb58c7; stagesim eb99c6ba.
+    p5s01_in compile EQUAL to tools/bench/sim/ring_p5s02pw/compile_before_c160a2.json (160-f3-2 re-baseline: card 160-a2-1's
+    adopted t_go / t_ho -> connect_term_uid register_end_case_border, ops 19/22 only, diag_c160_f3_2.log:4-20); the
+    156-a1-2 list compile_before.json (7ca1c4c4, written before that card's edit) is kept untouched as history.
+ P  pins: stagekit 0b5bb678, stage_prerun 7605116f, addrcheck 207beb0d, gscript 1a80236e, vigraph a7eb58c7; stagesim 95a162ba
+    (re-pinned 160-f2-1 from stagekit 07f9e35f, stage_prerun 9decb20f, stagesim eb99c6ba; 160-f3-1 stagesim a3261b56 -> 95a162ba).
 Usage: py tools/bench/selftest_c156_passwire.py"""
 import json
 import os
@@ -151,15 +154,15 @@ e = refused(lambda: SX.compile_plan(dict(top, actions=acts)), SX.ExecStop)
 gate("C4 compile refuses a `frame` pass dst that is not an earlier tunnel of the same case (SK3R inner)",
      e is not None and "must be the INNER face of an earlier tunnel of the same case" in e, e)
 # ---- (d)
-before = L.jload(os.path.join(L.SIMD, "compile_before.json"))
+before = L.jload(os.path.join(L.SIMD, "compile_before_c160a2.json"))   # 160-f3-2 (was compile_before.json)
 for p in ("plan_ring_p5s02r_all.json", "plan_ring_p5s02a.json", "plan_ring_p5s01a.json", "plan_ring_p5s01b.json", "plan_ring_p5s01_in.json"):
     k_ = "tools/bench/" + p
     now = json.loads(json.dumps(SX.compile_plan(L.jload(os.path.join(HERE, p))), sort_keys=True, default=str))
     gate("D {0} compiles EQUAL to the before-list ({1} ops)".format(p, len(now)), (before.get(k_) or {}).get("ops") == now,
          len((before.get(k_) or {}).get("ops") or []))
 # ---- pins
-pins = {"stagekit.py": "0d8f6d25", "stage_prerun.py": "9decb20f", "addrcheck.py": "207beb0d", "gscript.py": "1a80236e",
-        "vigraph.py": "a7eb58c7", "stagesim.py": "eb99c6ba"}
+pins = {"stagekit.py": "9b8f82c1", "stage_prerun.py": "7605116f", "addrcheck.py": "207beb0d", "gscript.py": "1a80236e",
+        "vigraph.py": "a7eb58c7", "stagesim.py": "95a162ba"}                        # re-pinned 160-f3-1 from stagesim a3261b56 (card 160-a2-1)
 got = dict((k_, L.md5(os.path.join(ROOT, "tools", k_))[:8]) for k_ in pins)
 gate("P protected pins unchanged (stagesim not edited)", got == pins, got)
 print("FACT stagexec.py", L.md5(os.path.join(ROOT, "tools", "stagexec.py")), "stagesim.py", L.md5(os.path.join(ROOT, "tools", "stagesim.py")))

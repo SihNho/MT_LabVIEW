@@ -1,0 +1,144 @@
+{
+ "schema": "stageplan/1",
+ "context": {
+  "s1_key": "D1_s1_copy"
+ },
+ "stage": "ring_p5s02eq",
+ "goal": "card 165-3-1 PROBE (self-test)",
+ "base": {
+  "path": "tools/bench/graph_ring_p5s02d_20261010_154830.json",
+  "md5": "2a5fa0c40866f88111d3ab14e5f9c32d"
+ },
+ "actions": [
+  {
+   "op": "delete_wire",
+   "id": "dw_10362",
+   "wire_uid": 10362,
+   "why": "PD400(a): sink-only stub w10362 on the INNER face t8776 of LoopTunnel #5204 (one terminal row, no source; graph 2a5fa0c4) - removed BEFORE w_k3f (checkpoint, PD393(a))"
+  },
+  {
+   "op": "wire",
+   "id": "w_k3f",
+   "src": {
+    "uid": 31803,
+    "term": "outer"
+   },
+   "dst": {
+    "uid": 5204,
+    "term_uid": 8776
+   },
+   "why": "PD379(b) #6384/#2048 take the value that reaches R.inner"
+  },
+  {
+   "op": "add_shift_reg",
+   "id": "sr_k4",
+   "loop": 23041,
+   "body": 23405,
+   "parent": 686,
+   "as": "SK4",
+   "why": "PD379(b) NEW SR for t4"
+  },
+  {
+   "op": "create",
+   "id": "c_k4i",
+   "class": "DigitalNumericConstant",
+   "diagram": 686,
+   "as": "KI4",
+   "prim": "const_donor",
+   "donor": {
+    "donor": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DonorSRInit_v0.vi",
+    "uid": 248
+   },
+   "terminals": [
+    {
+     "name": "",
+     "is_source": true,
+     "term_class": "Terminal"
+    }
+   ],
+   "why": "PD379(b) SR init = the type's default (I32 0 donor as P5-1 c_k0; type OPEN)"
+  },
+  {
+   "op": "wire",
+   "id": "w_k4i",
+   "src": "new:KI4.value",
+   "dst": "new:SK4L.outer",
+   "why": "PD379(b)"
+  },
+  {
+   "op": "tunnel",
+   "id": "t_k4o",
+   "loop": 31308,
+   "body": 31506,
+   "parent": 23405,
+   "dir": "out",
+   "as": "OK4",
+   "why": "PD379(b) case out-tunnel, #376 side = not-timed-out frame"
+  },
+  {
+   "op": "wire",
+   "id": "w_k4out",
+   "src": {
+    "uid": 376,
+    "term": "file number to append out",
+    "term_uid": 5739
+   },
+   "dst": "new:OK4.inner",
+   "why": "PD379(b)"
+  },
+  {
+   "op": "wire",
+   "id": "w_k4r",
+   "src": "new:OK4.outer",
+   "dst": "new:SK4R.inner",
+   "why": "PD379(b)"
+  },
+  {
+   "op": "tunnel",
+   "id": "t_k4i",
+   "loop": 31308,
+   "body": 31517,
+   "parent": 23405,
+   "dir": "in",
+   "as": "IK4",
+   "why": "PD379(b) case in-tunnel, pass side = timed-out frame"
+  },
+  {
+   "op": "wire",
+   "id": "w_k4l",
+   "src": "new:SK4L.inner",
+   "dst": "new:IK4.outer",
+   "why": "PD379(b)"
+  },
+  {
+   "op": "wire",
+   "id": "w_k4pass",
+   "src": {
+    "uid": "new:IK4",
+    "side": "inner"
+   },
+   "dst": {
+    "uid": "new:OK4",
+    "side": "inner",
+    "frame": "#31517"
+   },
+   "why": "PD379(b) the pass wire in the timed-out frame = the in-tunnel's one out-wire"
+  },
+  {
+   "op": "delete_wire",
+   "id": "dw_25232",
+   "wire_uid": 25232,
+   "why": "PD400(a): sink-only stub w25232 on the INNER face t24342 of LoopTunnel #10404 (one terminal row, no source; graph 2a5fa0c4) - removed BEFORE w_k4f (checkpoint, PD393(a))"
+  },
+  {
+   "op": "wire",
+   "id": "w_k4f",
+   "src": "new:OK4.outer",
+   "dst": {
+    "uid": 10404,
+    "term_uid": 24342
+   },
+   "why": "PD379(b) #6384/#2048 take the value that reaches R.inner"
+  }
+ ]
+}

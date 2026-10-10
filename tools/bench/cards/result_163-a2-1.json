@@ -1,0 +1,20 @@
+{"schema": "result/1", "id": "163-a2-1", "status": "BLOCKED", "gates": {"pass": 3, "fail": 0}, "first_fail": null,
+ "blocked_by": {"device": "guard_cycle+card-flags", "message": "guard_cycle.py refused the scratch launch: stage_d1_ring_p5s02c_scratch.py has no prior-art review newer than itself (newest c160-d4-1 07:20); guard_bash refused prior_art_review.py: flags.peers ['hypothesis'] does not include 'priorart'"},
+ "artefacts": [
+  {"path": "tools/bench/diag_c163_a2_1_facts.md", "md5": "64b4a6f088872574db1fc20a889abed0"},
+  {"path": "tools/bench/diag_c163_a2_1_hash_before.log", "md5": "36e66fd6117db72001232aa2426f73fe"},
+  {"path": "tools/bench/diag_c163_a2_1_checklaunch.log", "md5": "9966acbd7ea22b0fa49cc281a99bd90c"},
+  {"path": "tools/bench/diag_c163_a2_1_checklaunch2.log", "md5": "d325909222e70e94d8c9b7712622d16a"},
+  {"path": "tools/bench/diag_c163_a2_1_scrreq.log", "md5": "8e65c5eaef6e609c8ce3e2464cce03ff"},
+  {"path": "tools/bench/diag_c163_a2_1_pa.log", "md5": "aa5ed489ca23179ef4a8bb35fb78a00f"}],
+ "facts": [
+  "Hashes 10/0: 19 card inputs equal; VIs eb1d0f31/2482fe7b/7f2582ae/94ffff94/f9ae7751 and stagekit dd57c1ca pins equal (diag_c163_a2_1_hash_before.log)",
+  "check_launch on the FULL command = ALLOW in brief form and recipe form (diag_c163_a2_1_checklaunch.log, _checklaunch2.log)",
+  "--scratch-required rc 3 CENSUS-UNPREDICTED rows [1..12] (diag_c163_a2_1_scrreq.log:3)",
+  "guard_cycle.py refused the launch: no prior-art review newer than the scratch recipe (12:18 vs c160-d4-1 review 07:20); facts md:15-17",
+  "guard_bash refused prior_art_review.py: card flags.peers ['hypothesis'] lacks 'priorart' (diag_c163_a2_1_facts.md:18-19)",
+  "proven_pattern(scratch) ok=False, covering clean stages only [stage_d1_ring_p5s02a_scratch.py]; main recipe stages []; priorart_diff.scope None for both (diag_c163_a2_1_pa.log:3-6)",
+  "Nothing launched: no scratch, adopt, EL, graph, memory_model or pred edit; LabVIEW process count 0 (tasklist)"],
+ "open": ["Re-issue this card with flags.peers including 'priorart' (or run the prior-art review of stage_d1_ring_p5s02c_scratch.py from a card that may), then launch unchanged; recipe form of the command, since bgrun has no --unverified-card option"],
+ "cost": {"usd": null, "minutes": 6, "labview_runs": 0},
+ "note": "Card flag forbids the review the launch gate demands; refusal is true, not a gate false positive, so not logged to gate_fp."}

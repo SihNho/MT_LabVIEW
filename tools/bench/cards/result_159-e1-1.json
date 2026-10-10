@@ -1,0 +1,23 @@
+{"schema":"result/1","id":"159-e1-1","status":"PASS","gates":{"pass":8,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+ {"path":"tools/stagekit.py","md5":"ac3a8f5778c88c30168af4422f683f6c"},
+ {"path":"tools/bench/selftest_c159_cen2_ends.py","md5":"0026478fb9122466dfaf58dd027d4380"},
+ {"path":"tools/bench/selftest_c159_cen2_ends_final.log","md5":"97a70a8ce220e78f79ff3d49417bf707"},
+ {"path":"tools/bench/selftest_c159_cen2_ends_stagekit_9cd8822e.txt","md5":"9cd8822e7605cc6f6a1f899323c9d54b"},
+ {"path":"tools/bench/diag_c159_e1_1_facts.md","md5":"06287c10dbc65972d99b0830d1a8073d"},
+ {"path":"tools/bench/diag_c159_e1_1_probe.log","md5":"6a4dd92fa4bef6d02b7117c7d0902dcb"}],
+"facts":[
+ "gate_cen2 stagekit.py:2481-2512 judges Wire by new (source,sink,frame) pairs via new cen2_wire_ends :2130 / wire_end_pairs :2096; other classes keep the uid census (census_gate judged= :307)",
+ "selftest_c159_cen2_ends_final.log (last segment) 8 pass / 0 fail: C1 end pairs sim 23 == real 23 PASS; old uid CEN2 Wire sim 11 / real 12; UID-REUSE fact printed",
+ "C2: wire 31587 sink row removed -> FAIL, only_sim == [(24367, ('new','SelectorTunnel'), 23405)] exactly (selftest_c159_cen2_ends_final.log)",
+ "C3: stub 24091 sources [25235] RECORDED sim-only as one FACT line, CEN2 still PASS; C4: non-Wire diff == pre-edit gate's (9cd8822e) on pred and SelectorTunnel+1",
+ "End key: base term uid only if base has it with the SAME owner CLASS; owner uid not used - moved control terminal 3453 owner 31506 real vs 23405 sim (diag_c159_e1_1_probe.log:25-27)",
+ "term_identity_pairs :2071 now calls the extracted stub_sides :2084 (same output); regression selftest_c158_gates386 16/0 (log in %TEMP%, not in write globs)",
+ "stagekit 9cd8822e -> ac3a8f57; stagesim eb99c6ba, stagexec 7a712ccb, stage_prerun 7605116f unchanged; no tools/hooks edit by this card (material_marker.log written by bgrun)",
+ "VI pins 94ffff94, s09 eb1d0f31, P5-1a 2482fe7b, P5-1 7f2582ae unchanged before/after (V0/V1 gates, bytes only); no LabVIEW process, nothing opened",
+ "Sim end = plan_ring_p5s02a.json finalized.step_files[-1] sim/ring_p5s02a/step_23_wire.json b1892ad9; plan 4284c22a pinned by prerun_records.jsonl:1073"],
+"open":[
+ "Pred ed84b5fd declares Wire 12 and the pre-edit real-run CEN2 on 94ffff94 already PASSED (final log C1 FACT ok True); 11-vs-12 was the dry/sim side only. Under PD389(b) a pred's Wire count no longer affects the verdict - intended?",
+ "A re-issued frame uid equal to a base frame uid would be keyed as base (stagekit.py:2096 docstring); not seen in this data - accept or add an owner-class check for frames?"],
+"cost":{"usd":null,"minutes":17,"labview_runs":0},
+"note":"First C1 FAIL (selftest_c159_cen2_ends.log:7) was the draft's own owner-uid key, fixed during the build step; the stub-sides extraction from term_identity_pairs is behaviour-identical by construction plus the c158 regression run."}

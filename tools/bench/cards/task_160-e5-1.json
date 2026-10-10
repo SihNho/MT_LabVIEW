@@ -1,0 +1,58 @@
+{
+  "schema": "task/1",
+  "id": "160-e5-1",
+  "kind": "build",
+  "retry_of_card": "160-e4-1",
+  "goal": "Re-pin stagekit 1441bb4c -> 0b5bb678 in the five regression suites and pin-only helpers; the five suites return to their pre-edit counts.",
+  "why": "160-e4-1's gate_l0 predicate passed (14/0); five suites fail only on the pinned stagekit md5 (diag_c160_e4_1_facts.md:20-21). Re-pin is the precedent for a reviewed tool edit.",
+  "inputs": [
+    {"path": "tools/bench/cards/brief_160-e5-1.md", "md5": "ee4ed75d1b6cbd8f0b3a0352352b9350"},
+    {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+    {"path": "tools/bench/diag_c160_e4_1_facts.md", "md5": "81dc60032cabbf21e419a969958ce73c"}
+  ],
+  "pass": [
+    "stagekit pin 1441bb4c / full md5 replaced by 0b5bb678 / 0b5bb678169d659feed7408648a63354 only at the briefed file:line places; each old -> new quoted; no other pin or check changed",
+    "basecase_frame (0,21,0), b2_2_invcheck (0,20,0), passwire (0,20,0), delwire (0,20,0), regface (0,12,0) re-run on final bytes; each equals its pre-edit count, RESULT lines quoted",
+    "selftest_c160_l0stem 14/0 and selftest_c160_stagemap 5/0 re-run once, quoted",
+    "md5 unchanged: stagekit 0b5bb678, stagesim 95a162ba, stagexec ddf23a31, stage_prerun 7605116f; no plan_ring_* / hooks / prep_c160_c3_1_* edit; OPEN lists any remaining 1441bb4c pin"
+  ],
+  "outputs": [
+    "tools/bench/diag_c160_e5_1_facts.md"
+  ],
+  "flags": {
+    "labview": "none",
+    "gui": false,
+    "hardware": "none",
+    "run_vi": false,
+    "write": [
+      "tools/bench/selftest_c155_basecase_frame.py",
+      "tools/bench/selftest_c156_b2_2_invcheck.py",
+      "tools/bench/selftest_c156_passwire.py",
+      "tools/bench/selftest_c160_delwire.py",
+      "tools/bench/selftest_c160_regface.py",
+      "tools/bench/diag_c160_h1_1_check.py",
+      "tools/bench/diag_c160_g1_1.py",
+      "tools/bench/diag_c160_b2_1_md5.py",
+      "tools/bench/prep_c160_b3_1_mk.py",
+      "tools/bench/prep_c160_b1_1_mk.py",
+      "tools/bench/selftest_*_c160_e5_1*",
+      "tools/bench/diag_c160_e5_1*"
+    ],
+    "status_edit": false,
+    "git_commit": false,
+    "peers": []
+  },
+  "budget": {
+    "failures": 2,
+    "minutes": 30
+  },
+  "rules": [
+    "Offline; pin values only; no stagekit/stagesim/stagexec edit; no hooks edit; no env bypass",
+    "A suite count that differs from its pre-edit count is a FAIL: report the first FAIL line, do not loosen a check",
+    "Do not touch prep_c160_c3_1_* (card 160-c3-2) or selftest_c160_l0stem*"
+  ],
+  "advances": ["M3", "M8", "R1"],
+  "requires": [
+    {"kind": "file", "name": "tools/stagekit.py"}
+  ]
+}

@@ -1,0 +1,66 @@
+{
+ "schema": "task/1",
+ "id": "164-3-7",
+ "kind": "build",
+ "goal": "Offline retry of 164-3-5 per brief_164-3-7.md: re-check deleted nodes by identity (class, owner, position) on the adopted graph; if structural, ONE load_by_vi entry and the pred census.",
+ "why": "164-3-5 stopped at graph read E5: LabVIEW re-used uid 23501 for a new object; purpose items 13-14 are still owed on the adopted file 6dcd5c3d.",
+ "retry_of_card": "164-3-5",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_164-3-7.md", "md5": "bd8faa614d18229e3c5784430310fc5a"},
+  {"path": "tools/bench/diag_c164_a3_5_facts.md", "md5": "b19262fd0b5555e98bdeb6b0ecf928e9"},
+  {"path": "tools/bench/graph_ring_p5s02d_20261010_154830.json", "md5": "2a5fa0c40866f88111d3ab14e5f9c32d"},
+  {"path": "tools/bench/graph_ring_p5s02c_20261010_131658.json", "md5": "3d5196ab098c5fb1401037e5c3c49e2d"},
+  {"path": "tools/bench/diag_c164_a3_5_reads.log", "md5": "3de5e89491415240eba95e37a08907ec"},
+  {"path": "tools/bench/diag_c164_a3_5_graph.log", "md5": "402e419a4739915303348a527919bc3d"},
+  {"path": "tools/bench/diag_c164_p5s02d_scratch.log", "md5": "388a86d386ddc91dc23942db40916d85"},
+  {"path": "tools/bench/errorlist_expected_D1_ring_p5s02d_20261010_152518.json", "md5": "c74200f2d75b3139ee1f8ca477cd8470"},
+  {"path": "tools/bench/adopted_scratch.jsonl", "md5": "8d7a86511c297f4e39a28382daf2d45f"},
+  {"path": "tools/bench/memory_model.json", "md5": "8fb432e459d581926f541178b4f93cfd"},
+  {"path": "tools/bench/plan_ring_p5s02d_pred.json", "md5": "87a65b892a183ca5d1f71d47efeeeed4"},
+  {"path": "tools/bench/plan_ring_p5s02d.json", "md5": "97837e2a779ce7e0030ff614e4d6a0f0"},
+  {"path": "archive/peer/2026-10-10-c164-a3-5-graph-e5-uid23501.md", "md5": "f8704071d3905b0a904d9e4a6cda609c"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"}
+ ],
+ "pass": [
+  "Identity table for every plan-deleted node (#23501 and the rest) and re-used uid 23481: base class/owner/position vs adopted rows; IDENTITY GONE yes/no per node",
+  "Structural condition quoted line by line (E5 by identity, G1/G2/G3/FS1/B/X, EL 53 == 2c1edf78, w23460, w23519 sinks); if it holds, memory_model gets ONE load_by_vi key, compare else equal",
+  "If it holds, measured census in plan_ring_p5s02d_pred.json (keys only, md5 old->new); else neither file written",
+  "Two tool defects logged with gate_fp (E5 by uid; scratch reuse detectors); originals + adopted 6dcd5c3d hashed unchanged; no LabVIEW process; facts file"
+ ],
+ "outputs": [
+  "tools/bench/memory_model.json",
+  "tools/bench/plan_ring_p5s02d_pred.json",
+  "tools/bench/diag_c164_a3_7_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c164_a3_7*",
+   "tools/bench/prep_c164_a3_7*",
+   "tools/bench/memory_model.json",
+   "tools/bench/plan_ring_p5s02d_pred.json",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/jev_*",
+   "tools/bench/cards/result_164-3-7.json",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "advances": ["M3", "M8", "R1"],
+ "rules": [
+  "Offline only: no LabVIEW/motor/camera, no hooks edit, no edit of stage tools, no new scratch",
+  "Call shared functions, never copy them (docs/script-writing.md)",
+  "memory_model.json: add ONLY the one load_by_vi entry; pred: census keys only",
+  "Condition not met = write neither file; no gate bent, no detector edited",
+  "Hook false positive on own command text: py tools/gate_fp.py log, report; no env bypass"
+ ]
+}

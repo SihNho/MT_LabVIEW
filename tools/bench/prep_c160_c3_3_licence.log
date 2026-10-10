@@ -1,0 +1,16 @@
+BGRUN START 2026-10-10 08:17:15 limit 1.0 min: py -u tools/bench/prep_c160_c3_1_licence.py
+BGRUN PID 9924
+GATE PASS | L0 plan md5 == session table's f4520b10 | f4520b101baad70f065ba5d6c9d14925
+FACT X11 log tools/bench/prep_c160_c3_1_x11.log md5 5be5d1c95b7e6d141a7b877f8b1a5294: CLEAN True, FLAG lines []
+FACT X11 (licences ignored) flags []
+GATE PASS | X11 flags node(s) [] == the --buildarray-check log (0 FLAG line(s), CLEAN True) | []
+FACT renames 3 entr(y/ies), 5 term uid(s), owners [376, 24083, 24150]
+FACT  rename node #376 term_uids [5683, 5782, 5787] rows ['w_in3_376', 'w_g376', 'w_h376'] names ['error in', 'total data array in', 'selected path']
+FACT  rename node #24083 term_uids [24139] rows ['w_gr'] names ['error out']
+FACT  rename node #24150 term_uids [24235] rows ['w_hr'] names ['']
+GATE PASS | R renames (3; ZERO ALLOWED); every term uid a base SINK of its owner | [{'node': 376, 'term_uids': [5683, 5782, 5787], 'why': "PD365(d) (chat-T6 rule, applied to P5-2 step 2 by card 160-c3-1): BASE sink terminal(s) of #376 wired by P5-2 row(s) ['w_in3_376', 'w_g376', 'w_h376']; from/to unset"}, {'node': 24083, 'term_uids': [24139], 'why': "PD365(d) (chat-T6 rule, applied to P5-2 step 2 by card 160-c3-1): BASE sink terminal(s) of #24083 wired by P5-2 row(s) ['w_gr']; from/to unset"}, {'node': 24150, 'term_uids': [24235], 'why': "PD365(d) (chat-T6 rule, applied to P5-2 step 2 by card 160-c3-1): BASE sink terminal(s) of #24150 wired by P5-2 row(s) ['w_hr']; from/to unset"}]
+GATE PASS | W licence_renames reads back 5 keys == script's | {(5683, 376): (None, None), (5782, 376): (None, None), (5787, 376): (None, None), (24139, 24083): (None, None), (24235, 24150): (None, None)}
+GATE PASS | X11 after: every flag (0) licensed | []
+FACT md5 f61a2514c47913557531c9862018b850 tools/bench/plan_ring_p5s02b_licence.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":5,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/bench/plan_ring_p5s02b_licence.json","md5":"f61a2514c47913557531c9862018b850"}],"card":"160-c3-3","labview":"none"}
+BGRUN END rc=0 after 1s

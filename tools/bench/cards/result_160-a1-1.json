@@ -1,0 +1,22 @@
+{"schema":"result/1","id":"160-a1-1","status":"PASS","gates":{"pass":4,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+{"path":"tools/stagesim.py","md5":"a3261b56216d83f975d730dcaf3ad47b"},
+{"path":"tools/stagexec.py","md5":"c4a6e0b6e36d5c0a21cfab9e223be1fb"},
+{"path":"tools/bench/selftest_c160_delwire.py","md5":"6ccdf89bfa3b51ef464866538fa5154a"},
+{"path":"tools/bench/selftest_c160_delwire.log","md5":"665cd03bcde8bcc9f83863077d2a5990"},
+{"path":"tools/bench/diag_c160_a1_1_facts.md","md5":"82bcd29c67bc50a83c05b45e5a3e1ee2"},
+{"path":"tools/bench/selftest_c159_cen2_ends_c160.log","md5":"b75ae5c0d7357e708d00f07656b54abb"},
+{"path":"tools/bench/selftest_c158_runcheck_c160.log","md5":"d671dab3b8bee1fc219646758875447b"},
+{"path":"tools/bench/selftest_c158_wire0face_c160.log","md5":"d405544b6977ea36277f4999937f81d4"}],
+"facts":[
+"stagesim.py:621-625 new termless_wire(st,w): Wire obj in current objs with 0 terminal rows; op_delete_wire branch stagesim.py:1432-1434 removes only that obj",
+"stagexec.py:2846-2850 delete_wire branch: termless in sim -> refuse if live wire has rows, else be.delete_wire(lw) = LVBackend -> stagekit.Stage.delete_wire (stagekit.py:687)",
+"selftest_c160_delwire.log:49-50 RESULT 12/0; T1 log:30-37 rows+end pairs identical, census diff {10394:Wire}, Stage.delete_wire calls [(10394,'stagexec')]",
+"T2/T3/T4/T5 selftest_c160_delwire.log:38-45: absent/SubVI refused == pre-edit; Wire 32594 effect+state+call == pre-edit; 2nd delete of w10394 refused",
+"selftest_c159_cen2_ends_c160.log:16 8/0; selftest_c158_runcheck_c160.log:23 10/0; selftest_c158_wire0face_c160.log:40 24/0 (== last passes)",
+"re-pinned stagesim eb99c6ba -> a3261b56 in selftest_c158_runcheck.py:24,152 and selftest_c158_wire0face.py:29,260; stagexec 7a712ccb -> c4a6e0b6",
+"unchanged: stagekit ac3a8f57, stage_prerun 7605116f, addrcheck 207beb0d, vigraph a7eb58c7; VIs 94ffff94/eb1d0f31/2482fe7b/7f2582ae (selftest_c160_delwire.log:46)",
+"pre-edit copies kept: selftest_c160_delwire_stagesim_eb99c6ba.txt, _stagexec_7a712ccb.txt (diag_c160_a1_1_probe.log:12-14)"],
+"open":["stagexec.py:32 module docstring still says delete_wire resolves by terminals only; left unedited (outside the named branch)"],
+"cost":{"usd":null,"minutes":12,"labview_runs":0},
+"note":"Offline; no LabVIEW. git status shows tools/hooks/material_marker.log modified (hook-written log), no hook code edited."}

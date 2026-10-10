@@ -1,0 +1,26 @@
+{
+ "schema": "assign-result/1",
+ "cycle": 159,
+ "round": 2,
+ "status": "HANDBACK",
+ "cards": ["159-b1-1", "159-b2-1"],
+ "pass_evidence": [
+  {"item": 0, "met": true, "evidence": ["tools/bench/errorlist_expected_D1_ring_p5s02a_20261010_023239.json", "tools/bench/diag_c159_b1_1_facts.md", "56 rows: standing 45, action 10, delete_wire 1, unattributed 0; after step 2 = 51, after step 3 = 45"]},
+  {"item": 1, "met": true, "evidence": ["tools/bench/diag_c159_b1_1_facts.md", "152721 (cac5236b) and tools/bench/resume/resume_plan_ring_p5s02a_20261009_153334.json deleted; 94ffff94 unchanged"]},
+  {"item": 2, "met": false, "evidence": ["tools/bench/diag_c159_cen2_wire.md:8-9", "extra wire is NOT w10394: real-only 31562 (A19), 31587 (A22), sim-only -37 (A14); purpose says hand back"]},
+  {"item": 3, "met": true, "evidence": ["tools/bench/diag_c159_b2_1_facts.md", "tools/bench/selftest_c159_b2_1_run2.log:19-21", "DRY_RULE 2 -> 3 only, new stage_prerun md5 7605116f; 12/0: rule 2 refused, rule 3 allowed; a4_1 13/0 before and after"]},
+  {"item": 4, "met": false, "evidence": ["not started: waits on the CEN2 hand-back"]},
+  {"item": 5, "met": false, "evidence": ["not started: waits on the CEN2 hand-back"]},
+  {"item": 6, "met": false, "evidence": ["not started: waits on the CEN2 hand-back"]},
+  {"item": 7, "met": false, "evidence": ["not started: waits on the CEN2 hand-back"]},
+  {"item": 8, "met": false, "evidence": ["not started: waits on the CEN2 hand-back"]},
+  {"item": 9, "met": false, "evidence": ["not started: runs last; selftest_c134_2_gates D2 hard-codes dry_rule 2 and now fails (not run, outside write globs)"]},
+  {"item": 10, "met": false, "evidence": ["not started: runs last under a labview read card"]},
+  {"item": 11, "met": true, "evidence": ["tools/bench/diag_c159_b1_1_final.log:5,30", "94ffff94, s09 eb1d0f31, P5-1a 2482fe7b, P5-1 7f2582ae unchanged; no hooks edit; no LabVIEW process, original never opened"]}
+ ],
+ "handback": {
+  "reason": "PD388(b): CEN2 12th wire is not w10394 (purpose: hand back). It is a wire-uid identity difference: LabVIEW makes new uid 31587 for A22's pair, the sim keeps 24153; 24330 swaps. Items 4-10 not started.",
+  "question": null
+ },
+ "note": "Open: (1) CEN2/stagesim treatment of wire-uid reuse (compare by ends, not uid?); (2) should stagesim drop a source-only stub on a tunnel whose only wire was cut; (3) p5s02a MAIN/scratch are ADOPTED in adopted_scratch.jsonl, so a rule-3 re-dry alone does not make them launchable; (4) selftest_c134_2_gates D2 expects dry_rule 2, needs a re-pin. Predicted totals 51/45 count base-item removal only."
+}

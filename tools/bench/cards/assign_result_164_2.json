@@ -1,0 +1,38 @@
+{
+ "schema": "assign-result/1",
+ "cycle": 164,
+ "round": 2,
+ "status": "HANDBACK",
+ "cards": ["164-a2-1", "164-a2-2", "164-a2-3", "164-a2-4"],
+ "pass_evidence": [
+  {"item": 0, "met": true, "evidence": ["tools/bench/prep_c164_a2_1_hash.log:3-29 (21 inputs + 5 VIs equal)"]},
+  {"item": 1, "met": true, "evidence": ["tools/bench/diag_c164_a2_1_facts.md:9-11 (r_in 4c8d3645 -> 4d93c82d)"]},
+  {"item": 2, "met": true, "evidence": ["tools/bench/prep_c164_a2_1_cmp.log (8/0: 2 added dst keys vs d84634bd, 2 removed src keys vs 4c8d3645)"]},
+  {"item": 3, "met": true, "evidence": ["tools/bench/prep_c164_a2_1_mk.log:42-53", "tools/bench/prep_c164_a2_2_mk.log:34,134-135 (K3 register_end_case_border, case_pass_wire True)"]},
+  {"item": 4, "met": true, "evidence": ["tools/bench/diag_c164_a2_1_facts.md:12-13 (creation_map/plan_ring_p5s02a_4284c22a_20261010_023453.jsonl:35 -> #31517)"]},
+  {"item": 5, "met": true, "evidence": ["tools/bench/diag_c164_a2_1_facts.md:14-17 (compile accepted the dst-only shape; no refusal)"]},
+  {"item": 6, "met": true, "evidence": ["tools/bench/cards/result_158-a3-3.json", "tools/bench/prep_c164_a2_1_pins.log (open_card_pins -> [])"]},
+  {"item": 7, "met": false, "evidence": ["tools/bench/diag_c164_a2_1_facts.md:27-34 (all-5-group prefix: MAIN 664.8 but Final False, 2 UNROUTABLE K3f/K4f)", "tools/bench/plan_ring_p5s02d.json 872822f3 = J+K3 only, A53..A69, 17 rows, MAIN 642.5, final True (prep_c164_a2_2_mk.log:106-107)"]},
+  {"item": 8, "met": true, "evidence": ["tools/bench/diag_c164_a2_1_facts.md:18-26 (MAIN per prefix: J 628.0, +K3 642.5, +K3f 646.4, +K4 660.9, +K4f 664.8)"]},
+  {"item": 9, "met": true, "evidence": ["tools/recipes/stage_d1_ring_p5s02d.py", "tools/recipes/stage_d1_ring_p5s02d_scratch.py (both STOP-RECORDed by the prior-art verdict)"]},
+  {"item": 10, "met": true, "evidence": ["tools/bench/prep_c164_a2_3_dry.log:62-95 (PASS-UNVERIFIED, CEN2 only; PB 5 RECORD rows, no BLOCK)"]},
+  {"item": 11, "met": true, "evidence": ["tools/bench/prep_c164_a2_3_prerun.log:74-98 (PASS 16/0)", "tools/bench/prep_c164_a2_3_scrreq.log:3 (rc 3)", "tools/bench/prep_c164_a2_3_checklaunch.log:6,10 (own card REFUSE until DRY-UNVERIFIED-OK is named)"]},
+  {"item": 12, "met": true, "evidence": ["tools/bench/errorlist_predicted_D1_ring_p5s02d_end.json 653712a8 (cleared 0, raised 0, unpredicted 4, total 53); tools/bench/prep_c164_a2_3_el.log:7-22"]},
+  {"item": 13, "met": false, "evidence": ["tools/bench/prep_c164_a2_3_priorart.log:48-54 (settled-already + contradicted; STOP RECORDs armed)", "archive/peer/2026-10-10-priorart-priorart-c164-a2-3-p5s02d.md"]},
+  {"item": 14, "met": false, "evidence": ["not run: blocked by item 13; no LabVIEW process was started"]},
+  {"item": 15, "met": false, "evidence": ["not reached"]},
+  {"item": 16, "met": false, "evidence": ["not reached"]},
+  {"item": 17, "met": false, "evidence": ["not reached; memory_model.json 8fb432e4 unchanged"]},
+  {"item": 18, "met": false, "evidence": ["not reached"]},
+  {"item": 19, "met": false, "evidence": ["not reached (runs after the LabVIEW card)"]},
+  {"item": 20, "met": false, "evidence": ["not reached"]},
+  {"item": 21, "met": false, "evidence": ["not reached"]},
+  {"item": 22, "met": false, "evidence": ["not reached (fp-86 drains after the PB tightening)"]},
+  {"item": 23, "met": true, "evidence": ["tools/bench/prep_c164_a2_3_md5.log (14/14 unchanged, incl. the 5 VIs); LabVIEW never launched this round"]}
+ ],
+ "handback": {
+  "reason": "Prior art on plan 872822f3 (J+K3) is settled-already+contradicted: J deletes #23042/#23501 with w23519/w23460 attached (PD321(b)). K3f/K4f sit on LoopTunnel inner faces, unroutable (stagexec.py:1930). Facts: diag_c164_a2_4_facts.md, diag_c164_a2_1_facts.md:27-34.",
+  "question": "(a) Release J by REFUTED, or add delete_wire rows 23519/23460 and re-make the plan? (b) K3f/K4f route: outer-face rewrite of A70/A80 or a measured inner-face route? Also fix docs/d1/ring-p5c.md:57."
+ },
+ "note": "No LabVIEW run, no tool edit, memory_model.json untouched. Cost about $14 of $60. Files: plan_ring_p5s02d.json 872822f3 (J+K3), plan_ring_p5s02d_jonly.json 1152ce60, plan_ring_p5s02d_all28_false.json e3054ab6, r_in 4d93c82d, pred/licence/EL under tools/bench/. OPEN: make_step_plan's prefix rule ignores routability (prep_plan_flow_lib.py:171). Card 164-a2-3 also needs 'DRY-UNVERIFIED-OK: CEN2 new-object census' named on the launch card for check_launch to ALLOW (stage_prerun.py:3432-3456)."
+}
