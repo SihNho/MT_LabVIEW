@@ -1,0 +1,70 @@
+BGRUN START 2026-10-10 21:04:08 limit 5.0 min: py -u tools/bench/selftest_rules_apply.py
+BGRUN PID 26576
+PASS  S0 baseline written  rc=0 ledger=1 files=['CLAUDE.md', 'docs/rules/a.md', 'tools/hooks/h.py', 'tools/rules_protected.json']
+PASS  S0 protected list excludes logs/unprotected  
+PASS  S0 audit clean after baseline  rc=0
+PASS  A apply ok  rc=0 ledger=2
+PASS  A audit VIA-APPLY  rc=0
+PASS  B refused: gpt token missing  rc=1 expect 'FAIL  agreement:gpt'; ['FAIL  agreement:gpt  token not in STATE.agreed (round_02_gpt.md)']
+PASS  C refused: gpt token in open  rc=1 expect 'token only in STATE.open'; ['FAIL  agreement:gpt  token only in STATE.open (round_03_gpt.md)']
+PASS  D refused: live drifted  rc=1 expect 'FAIL  no-drift:CLAUDE.md'; ['FAIL  no-drift:CLAUDE.md  live 4b060bb00b635c72a8bfc8ce284ded52 base c4e01e94d512cd08c4788ce61fce2b32']
+PASS  E refused: test md5 != cand  rc=1 expect 'FAIL  test0:md5s'; ['FAIL  test0:md5s  differs from cand_md5: tools/hooks/h.py']
+PASS  F refused: path not protected  rc=1 expect 'FAIL  protected:notes/free.md'; ['FAIL  protected:notes/free.md  in tools/rules_protected.json']
+PASS  G audit OUT-OF-BAND  ['FAIL  OUT-OF-BAND CLAUDE.md  live 4b060bb00b635c72a8bfc8ce284ded52 ledger c4e01e94d512cd08c4788ce61fce2b32 (last baseline baseline-20261010-210408)', 'FAIL  OUT-OF-BAND tools/hooks/new.py  never applied (not in ledger)', 'result {"schema":"result-line/1","status":"FAIL","gates":{"pass":3,"fail":2},"first_fail":"audit: OUT-OF-BAND CLAUDE.md","artefacts":[],"card":"chat-X6","labview":"none"}']
+PASS  H second baseline refused  rc=1
+PASS  P0 temp git repo  
+PASS  P1 precommit refuses out-of-band staged file  ['REFUSED  staged:CLAUDE.md  ledger c4e01e94d512cd08c4788ce61fce2b32 (baseline baseline-20261010-210408) - staged content differs', 'result {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"precommit: staged:CLAUDE.md","artefacts":[],"card":"chat-X6","labview":"none"}']
+PASS  P2 precommit passes applied file + unprotected file  apply rc=0 precommit rc=0 ['PASS  staged:CLAUDE.md  ledger 616971e4f54b841340fb3860ddc981df (apply ch-p)']
+PASS  P3 precommit refuses staged deletion  rc=1
+PASS  R real-tree dry baseline (print only)  BASELINE DRY (no ledger write): 49 protected file(s) found | ledger existed before=False after=False
+  real BASELINE-FILE  .claude/settings.json  be1f7d1e60f10c76137806c3b72491a2
+  real BASELINE-FILE  .codex/agents/bench-fable-high.toml  0a3114303b659d25fd823d2896ba5933
+  real BASELINE-FILE  .codex/agents/bench-fable-low.toml  b55c607165ae8cd36f195823c5fcdc89
+  real BASELINE-FILE  .codex/agents/bench-fable-max.toml  4cfe4caefabe61a65fa9b2f0e4bf935f
+  real BASELINE-FILE  .codex/agents/bench-fable-medium.toml  ef315a42014bf71a3f0b3057a6822a65
+  real BASELINE-FILE  .codex/agents/bench-fable-xhigh.toml  fdce73498f2194e2a4a62ebb227f9201
+  real BASELINE-FILE  .codex/agents/bench-haiku-high.toml  003824f97ac5dcb2ff28ae70881961e2
+  real BASELINE-FILE  .codex/agents/bench-haiku-low.toml  f23c34b57b9b34aabd42497991ddb5a2
+  real BASELINE-FILE  .codex/agents/bench-haiku-max.toml  3b8ff34288cdf47bed0118ff79191c35
+  real BASELINE-FILE  .codex/agents/bench-haiku-medium.toml  130941a2e9471e1356ed53b901322f85
+  real BASELINE-FILE  .codex/agents/bench-haiku-xhigh.toml  27ab673a8cce1e4884e72b9ea7df9621
+  real BASELINE-FILE  .codex/agents/bench-opus-high.toml  c9a52df8bd2645871be54c500da2ecba
+  real BASELINE-FILE  .codex/agents/bench-opus-low.toml  5f3ac1bdcf8fff1333fca47bff6621a1
+  real BASELINE-FILE  .codex/agents/bench-opus-max.toml  fb0940c979ebccb701737ce19fc4a7a5
+  real BASELINE-FILE  .codex/agents/bench-opus-medium.toml  03bcc5f495ffd29452975176562eb83c
+  real BASELINE-FILE  .codex/agents/bench-opus-xhigh.toml  1ca0afcdb868c49e30eec0c7e421a583
+  real BASELINE-FILE  .codex/agents/bench-sonnet-high.toml  c07d194d7543c9c3e4a1166cb7f90af2
+  real BASELINE-FILE  .codex/agents/bench-sonnet-low.toml  8e083dbccfa3d8ecbd8d0e89cc8a4b40
+  real BASELINE-FILE  .codex/agents/bench-sonnet-max.toml  48882cae20e8fc2f1539554f60d240d0
+  real BASELINE-FILE  .codex/agents/bench-sonnet-medium.toml  969b9e676ffe831773b692631597cf30
+  real BASELINE-FILE  .codex/agents/bench-sonnet-xhigh.toml  b28464d805eca400446a76b5f637d6d7
+  real BASELINE-FILE  .codex/hooks.json  86cf911664181c2e28fc4f8e42384220
+  real BASELINE-FILE  AGENTS.md  68310781beb1dea506c8c37eadb25505
+  real BASELINE-FILE  CLAUDE.md  68310781beb1dea506c8c37eadb25505
+  real BASELINE-FILE  docs/rules/CLAUDE-full-2026-10-10.md  d74f9fa39ce32f822d1c385cf959314e
+  real BASELINE-FILE  docs/rules/coverage.md  c116395486d709fb12df58855ad99b21
+  real BASELINE-FILE  docs/rules/docs.md  4ef44e1699d08f98559ec0e1625688ae
+  real BASELINE-FILE  docs/rules/hardware.md  104a663a8b9f83193d75a9828c7da8d6
+  real BASELINE-FILE  docs/rules/interaction.md  2e4aa65e6b69a7cf7b1b50a2a82b8fcd
+  real BASELINE-FILE  docs/rules/labview-execution.md  717042a1c6d52aefc617a37d3142f3a5
+  real BASELINE-FILE  docs/rules/originals.md  2b9ff62e70fcc952e184a0efdeb2de7b
+  real BASELINE-FILE  docs/rules/reviews.md  536e9ffc10d248e365752d8625a8adf4
+  real BASELINE-FILE  docs/rules/runner.md  f9bafbde196d3efedc2f0a26f4b5bbfc
+  real BASELINE-FILE  tools/git_precommit_rules.py  21067685affc5aa67012415371a4d3f6
+  real BASELINE-FILE  tools/hooks/adapt_claude.py  3c06d313e9ca3115ac29939ac85ff5ce
+  real BASELINE-FILE  tools/hooks/adapt_codex.py  57920e676d901f27aa0ab1cdbd4383c3
+  real BASELINE-FILE  tools/hooks/answer_first.py  0f366a8e33b963f9f8dbd93ebc340420
+  real BASELINE-FILE  tools/hooks/guard_agent_exit.py  9bcadf9be798a417b9d04387227b94f1
+  real BASELINE-FILE  tools/hooks/guard_assign.py  87820d03d10969fa16ca6ace53317e8f
+  real BASELINE-FILE  tools/hooks/guard_bash.py  da9ee70b52f6e56f7bfa63215c36fa96
+  real BASELINE-FILE  tools/hooks/guard_card.py  30f6440bb1df2cb4a178e7102171b836
+  real BASELINE-FILE  tools/hooks/guard_cycle.py  45bf2a9d4518e99f0bf66fe0252d91ea
+  real BASELINE-FILE  tools/hooks/guard_peer.py  f30355d144a34cc0cffc47b6b3edfd05
+  real BASELINE-FILE  tools/hooks/guard_session.py  e1b661b57b92f266c7fa237f710f2e56
+  real BASELINE-FILE  tools/hooks/guard_write.py  d995405a2b38fb9d9953d7a4ab15e2cc
+  real BASELINE-FILE  tools/hooks/guardcore.py  6debea28b819062a2a35038cb7db49df
+  real BASELINE-FILE  tools/hooks/report_gate.py  7b3d57d3c55bdcd3b571cb60352a5bb6
+  real BASELINE-FILE  tools/rules_apply.py  406faa6ff9b08ee278e031defd9553d9
+  real BASELINE-FILE  tools/rules_protected.json  1b89aedf71fb34548d0057af00c9da39
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":17,"fail":0},"first_fail":null,"artefacts":[],"card":"chat-X6","labview":"none"}
+BGRUN END rc=0 after 6s

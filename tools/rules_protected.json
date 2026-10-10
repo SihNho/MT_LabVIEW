@@ -1,0 +1,26 @@
+{
+ "schema": "rules-protected/1",
+ "why": "Discussion structure-equal-02 round 6 (relay/round_06_claude.md:43, relay/round_06_gpt.md:24): joint-agreement scope = rules, CLAUDE.md, AGENTS.md, both harnesses' hooks and settings, this protected list, the check and apply devices. Card chat-X6 (candidate, not active). The ONE place this list lives: tools/rules_apply.py and tools/git_precommit_rules.py read it.",
+ "globs": [
+  "docs/rules/**",
+  "CLAUDE.md",
+  "AGENTS.md",
+  "tools/hooks/**",
+  ".codex/**",
+  ".claude/settings.json",
+  "tools/rules_protected.json",
+  "tools/rules_apply.py",
+  "tools/git_precommit_rules.py"
+ ],
+ "exclude": [
+  "**/__pycache__/**",
+  "**/*.pyc",
+  "tools/hooks/*.log"
+ ],
+ "open": [
+  ".claude/agents/** - agent definitions (models, efforts, briefs); harness behaviour, but not named in round 6",
+  ".claude/settings.local.json - the user's own local settings; protecting it would route the user's edits through the apply path",
+  "tools/bench/rules_ledger.jsonl - the ledger itself; an edit to it can launder an out-of-band change (append-only check?)",
+  ".codex/** contents that are runtime state rather than policy, if any appear"
+ ]
+}

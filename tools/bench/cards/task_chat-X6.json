@@ -1,0 +1,18 @@
+{
+ "schema": "task/1", "id": "chat-X6", "kind": "build",
+ "goal": "Experiment 2 (structure-equal-02): one apply path with agreement/hash/test check + audit, built as a candidate and proven on a sandbox copy",
+ "why": "User 2026-10-10 '이후 2~4번도 진행하도록'. Detail: brief_chat-X6.md",
+ "inputs": [{"path": "tools/bench/cards/brief_chat-X6.md", "md5": "ed847225a598bfa937f3854139eeb6ba"}],
+ "pass": [
+  "tools/rules_apply.py check/apply/audit + tools/rules_protected.json + tools/bench/candidates/README.md",
+  "tools/git_precommit_rules.py written and tested, NOT installed",
+  "selftest_rules_apply on a temp fake tree: apply, 5 refusal cases, audit out-of-band, precommit pass/refuse",
+  "dry audit --baseline on the real tree printed only (no ledger write), count quoted; committed"
+ ],
+ "outputs": ["tools/rules_apply.py", "tools/rules_protected.json", "tools/git_precommit_rules.py", "tools/bench/selftest_rules_apply.py"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/rules_apply.py", "tools/rules_protected.json", "tools/git_precommit_rules.py", "tools/bench/selftest_rules_apply.py", "tools/bench/candidates/**"],
+  "status_edit": false, "git_commit": true, "peers": []},
+ "budget": {"failures": 2, "minutes": 90}, "unblocks": "M3",
+ "rules": ["candidate only: nothing activated, no .git/hooks install", "no edits to tools/hooks, .codex, .claude, CLAUDE.md, AGENTS.md, docs/rules", "tests run on temp copies, never on the real protected files", "a refusal is logged as a false positive and the card ends BLOCKED - never a dodge"]
+}

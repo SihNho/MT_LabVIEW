@@ -1,0 +1,23 @@
+{"schema":"result/1","id":"chat-X6","status":"PASS","gates":{"pass":17,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+ {"path":"tools/rules_apply.py","md5":"406faa6ff9b08ee278e031defd9553d9"},
+ {"path":"tools/rules_protected.json","md5":"1b89aedf71fb34548d0057af00c9da39"},
+ {"path":"tools/git_precommit_rules.py","md5":"21067685affc5aa67012415371a4d3f6"},
+ {"path":"tools/bench/selftest_rules_apply.py","md5":"696a2d48a2e3e397c206ba81d74a5569"},
+ {"path":"tools/bench/selftest_rules_apply.log","md5":"eb141096bb8674b0fd3f17e8f3459418"},
+ {"path":"tools/bench/candidates/README.md","md5":"a99bfb01584d1e3954661894ebffe995"}],
+"facts":[
+ "selftest_rules_apply 17/0, BGRUN END rc=0 after 6s, temp fake tree + temp git repo only (tools/bench/selftest_rules_apply.log)",
+ "apply ok -> live==cand, ledger +1 kind=apply; audit VIA-APPLY 2 / BASELINE 2 (rules_apply.py:263, :292)",
+ "5 refusals rc=1, live+ledger unchanged: gpt token missing, gpt token in STATE.open, live drift, test md5!=cand, unprotected path",
+ "audit OUT-OF-BAND: direct edit (md5 mismatch) and new hook file (never applied); 2nd baseline refused (rules_apply.py:313)",
+ "precommit: out-of-band staged refused, applied file + unprotected pass, staged deletion refused; CRLF/autocrlf handled (git_precommit_rules.py:53)",
+ "REAL tree dry baseline: 49 protected files (21 .codex/agents, .codex/hooks.json, .claude/settings.json, AGENTS/CLAUDE.md, 9 docs/rules, 13 hooks, 3 devices); no ledger written",
+ "STATE token parsed with debate_relay.state_of (reused, not copied); exact string match in STATE.agreed of round_NN_claude.md and round_NN_gpt.md",
+ "nothing activated: no .git/hooks install, no edit to tools/hooks, .codex, .claude, CLAUDE.md, AGENTS.md, docs/rules"],
+"open":[
+ "Activate? (1) install git_precommit_rules.py as .git/hooks/pre-commit, (2) a guardcore rule refusing direct Write/Edit to protected paths outside rules_apply, (3) write the real baseline ledger (49 files) - joint decision of both debaters",
+ "Protected list open items (tools/rules_protected.json 'open'): .claude/agents/**, .claude/settings.local.json (user's own), the ledger itself (append-only check?)",
+ ".codex/agents/*.toml are 21 of 49 files: policy or bench config? decides whether model-table edits must go through the apply path"],
+"cost":{"usd":null,"minutes":6,"labview_runs":0},
+"note":"candidate only; runtime logs tools/hooks/*.log and __pycache__ excluded from the protected list"}
