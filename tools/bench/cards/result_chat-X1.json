@@ -1,0 +1,36 @@
+{
+ "schema": "result/1",
+ "id": "chat-X1",
+ "status": "BLOCKED",
+ "gates": {"pass": 4, "fail": 1},
+ "first_fail": "pass[2]: root CLAUDE.md not replaced by the core - guard_card refuses (flags.status_edit false), AGENTS.md holds the core",
+ "blocked_by": {"device": "gate-fp:fp-93", "message": "tools/protocol.py:1211-1213 check_write refuses the root CLAUDE.md when flags.status_edit is false, before the card's explicit write glob CLAUDE.md is read; finish = copy AGENTS.md byte-for-byte to CLAUDE.md (md5 68310781beb1dea506c8c37eadb25505) in a card with status_edit true"},
+ "artefacts": [
+  {"path": "docs/rules/coverage.md", "md5": "c116395486d709fb12df58855ad99b21"},
+  {"path": "docs/decisions/INDEX.md", "md5": "e7626b237a73b7c6440a691fb0ffb764"},
+  {"path": "AGENTS.md", "md5": "68310781beb1dea506c8c37eadb25505"},
+  {"path": "docs/START.md", "md5": "c08122a8001cbd7428b254235b02b438"},
+  {"path": "docs/peer-brief.md", "md5": "61f3402fe61e2ce87463530c72a54580"},
+  {"path": "docs/rules/CLAUDE-full-2026-10-10.md", "md5": "d74f9fa39ce32f822d1c385cf959314e"},
+  {"path": "tools/rules_coverage.py", "md5": "0165b63bc5f28d8cbe605a381ff50ad7"},
+  {"path": "tools/decisions_import.py", "md5": "c525ba3999a8027e502069b16d3a80bb"}
+ ],
+ "facts": [
+  "commit e2828bf8 (170 files); rules version = git log -1 -- docs/rules = e2828bf8; root CLAUDE.md untouched (md5 4068e8fb...)",
+  "docs/decisions: 141 files, bodies byte-identical to memory/*.md (0 diffs), 4 superseded; decisions_import selftest 8/0",
+  "rules_coverage: 267 items (39 headings, 228 bold) 0 unmapped, coverage.md current; every non-blank frozen line 8-858 in a cited range",
+  "/context after (scratch dir: new core as CLAUDE.md + MEMORY.md as CLAUDE.local.md, BENCH_CELL=1, sonnet-5-5): Memory files 10k = core 2.2k + MEMORY.md 7.9k (before 42.7k)",
+  "AGENTS.md core 5,502 chars; peer brief moved to docs/peer-brief.md, tools/peer.ps1 reads it ($briefPath) and inlines it for codex; parse 0 errors",
+  "doc_lint FAIL 4/9/4 - all FAILs pre-existing/foreign: L2 docs/guardcore.md:34 (chat-X2) + docs/d1/ring-p4.md:131, L6, L8, L10; L2b no overshoot",
+  "doc_lint: L2 never checked .claude/... citations (raw.lstrip('./') strips the dot, tools/doc_lint.py citation_candidates) - MOVED skill redirects are inert",
+  "gate FPs logged: fp-91 (cp with CLAUDE.md as SOURCE), fp-92 (any command naming peer.ps1 = hypothesis), fp-93 (CLAUDE.md write vs glob), fp-95 (git add naming review scripts)",
+  "tools now naming docs/rules via rules_coverage.rule_docs(): retrospective task + Q4, doc_ingest ALWAYS (+7 files), outcome/prior-art prompt text"
+ ],
+ "open": [
+  "Superseded marks to confirm: hypothesis_reviews_move_to_opus_max (by codex_roles_move_to_claude) and model_ladders_fable_low_material_judgement_by_signal (by model_table_2026_09_27); consider_gemini_vision_executor left in-force",
+  "Outside this card's globs, still pointing at old homes: README.md (skill dir, AGENTS.md as peers' brief), .claude/agents/material*.md ('Read CLAUDE.md', invoke skill) - update to docs/START.md?",
+  "MEMORY.md (7.9k of the 10k) still loads every session; trim it to a pointer to docs/decisions/INDEX.md? (memory dir not modified here)"
+ ],
+ "cost": {"usd": null, "minutes": 22, "labview_runs": 0},
+ "note": "The /context call was made twice: the first, from Git Bash, had '/context' rewritten to a Windows path (MSYS path conversion) and measured nothing; the second ran from PowerShell."
+}

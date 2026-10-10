@@ -19,17 +19,17 @@ reading — it is kept in case it is needed, not consulted by default.
 
 ## Start here
 
-1. **[CLAUDE.md](CLAUDE.md)** — the hard rules. Never modify an original `.vi`; **never operate the
-   ASI piezo stage or the motor**; LabVIEW is shared with live experiments and start/stop is always
-   explicit.
+1. **[docs/START.md](docs/START.md)** — the common start procedure for ANY session, Claude Code or Codex
+   (2026-10-10, card chat-X1). [CLAUDE.md](CLAUDE.md) and [AGENTS.md](AGENTS.md) are the same short core
+   of hard rules; the rules in force are in [docs/rules/](docs/rules/), the user's decisions in
+   [docs/decisions/INDEX.md](docs/decisions/INDEX.md). Hardware follows the rig state in STATUS.md.
 2. **[STATUS.md](STATUS.md)** — what is true right now and the next actions.
-3. **[AGENTS.md](AGENTS.md)** — if you are a **peer agent** (Codex, Gemini/Antigravity), that file is
-   your brief and this one is not: you are read-only, you never touch LabVIEW, and Claude Code is the
-   only agent that executes anything (`CLAUDE.md` rule 5).
+3. **[docs/peer-brief.md](docs/peer-brief.md)** — the brief for peer agents dispatched by `tools/peer.ps1`
+   (read-only, never touch LabVIEW).
 
 ## Doing the work
 
-- **`.claude/skills/labview-automation/`** — **the single source of truth for LabVIEW technique, and
+- **`docs/labview/`** (moved 2026-10-10 from `.claude/skills/labview-automation/`, which is now a pointer) — **the single source of truth for LabVIEW technique, and
   it is PORTABLE.** VI Scripting (the `New VI Object` contract, decoded errors, class paths), the
   **COM/ActiveX pipeline**, GUI control (coordinate laws, `probe`, `wire`, menu paths), the
   scripting-library comparison, the **Op-VI architecture**, and the safety rules. Invoke it before any
@@ -86,5 +86,5 @@ subscription quota (`CLAUDE.md` rule 5).
 
 ## Fastest way to get oriented
 
-`CLAUDE.md` → `STATUS.md` → invoke the `labview-automation` skill. Read `ARCHITECTURE.md` and
+`docs/START.md` → `STATUS.md` → `docs/labview/SKILL.md`. Read `ARCHITECTURE.md` and
 `docs/` when you need domain context.

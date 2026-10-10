@@ -30,7 +30,7 @@ Plan and definitions: `docs/motor-limit-assurance-plan.md`. Envelope: PI magnet 
 - **You never build, edit or save a VI**, never run a recipe under `tools/recipes`, never patch the check tools to
   make something pass. A tool defect is a finding: report it and stop (that VI is NOT passed).
 - **No motor moves, no port opens.** The wiring check is offline; the fake-motor run uses stubs that open no port.
-  CLAUDE.md rules 1, 1b and the hook rules (bgrun, timeouts) apply to you as to everyone.
+  CLAUDE.md rules 1, 1b (docs/rules/originals.md, docs/rules/hardware.md) and the hook rules (bgrun, timeouts) apply to you as to everyone.
 - **The verdict comes from the tools.** Run, in order: (1) the motion call-site census; (2) the wiring check
   against the original; (3) the fake-motor run with the out-of-range input set (magnet 45, −3, 40.95, NaN; large
   ASI steps; home/origin actions) and an in-range set. Your own reading of the diagram may ADD a FAIL or an OPEN

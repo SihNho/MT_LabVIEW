@@ -1030,7 +1030,7 @@ Outcome of every call: `ok | no_output | failed | timed_out` (tools/fncontract.p
 
 ## Every public function of the shared tools files - generated from code (card chat-T7)
 
-A file is SHARED when at least one OTHER file under tools/ imports it (import graph, measured at generation; cache tools/bench/capabilities_shared.json). Look here before writing any logic (docs/script-writing.md rule 8). 205 files, 2597 functions: 1405 described by a docstring, 304 by docs/fn_descriptions.json (existing functions, card chat-T8), 888 undocumented (per file in the table below). Regenerated at every cycle end and when a shared file is written.
+A file is SHARED when at least one OTHER file under tools/ imports it (import graph, measured at generation; cache tools/bench/capabilities_shared.json). Look here before writing any logic (docs/script-writing.md rule 8). 209 files, 2630 functions: 1429 described by a docstring, 304 by docs/fn_descriptions.json (existing functions, card chat-T8), 897 undocumented (per file in the table below). Regenerated at every cycle end and when a shared file is written.
 
 | file | kind | imported by | functions | side file | undocumented |
 |---|---|---|---|---|---|
@@ -1045,7 +1045,7 @@ A file is SHARED when at least one OTHER file under tools/ imports it (import gr
 | [`tools/debate_loop.py`](#tools-debate-loop-py) | shared module | 1 | 10 | 0 | 0 |
 | [`tools/debate_relay.py`](#tools-debate-relay-py) | shared module | 2 | 12 | 0 | 8 |
 | [`tools/dispo.py`](#tools-dispo-py) | shared module | 4 | 3 | 0 | 0 |
-| [`tools/doc_lint.py`](#tools-doc-lint-py) | shared module | 8 | 24 | 14 | 0 |
+| [`tools/doc_lint.py`](#tools-doc-lint-py) | shared module | 8 | 26 | 14 | 0 |
 | [`tools/elrule.py`](#tools-elrule-py) | shared module | 35 | 10 | 1 | 0 |
 | [`tools/errorlist_check.py`](#tools-errorlist-check-py) | shared module | 77 | 24 | 10 | 0 |
 | [`tools/fn_records.py`](#tools-fn-records-py) | shared module | 6 | 19 | 9 | 0 |
@@ -1075,11 +1075,12 @@ A file is SHARED when at least one OTHER file under tools/ imports it (import gr
 | [`tools/outcome_review.py`](#tools-outcome-review-py) | shared module | 3 | 6 | 0 | 3 |
 | [`tools/prior_art_review.py`](#tools-prior-art-review-py) | shared module | 2 | 7 | 0 | 2 |
 | [`tools/priorart_diff.py`](#tools-priorart-diff-py) | shared module | 8 | 8 | 0 | 5 |
-| [`tools/protocol.py`](#tools-protocol-py) | shared module | 661 | 63 | 14 | 0 |
+| [`tools/protocol.py`](#tools-protocol-py) | shared module | 665 | 63 | 14 | 0 |
 | [`tools/retro_due.py`](#tools-retro-due-py) | shared module | 2 | 6 | 0 | 2 |
 | [`tools/retrospective.py`](#tools-retrospective-py) | shared module | 2 | 8 | 0 | 2 |
+| [`tools/rules_coverage.py`](#tools-rules-coverage-py) | shared module | 2 | 11 | 0 | 6 |
 | [`tools/run_mode.py`](#tools-run-mode-py) | shared module | 1 | 3 | 3 | 0 |
-| [`tools/scope_header.py`](#tools-scope-header-py) | shared module | 13 | 21 | 8 | 0 |
+| [`tools/scope_header.py`](#tools-scope-header-py) | shared module | 14 | 21 | 8 | 0 |
 | [`tools/stage_prerun.py`](#tools-stage-prerun-py) | shared module | 230 | 127 | 29 | 0 |
 | [`tools/stage_shared.py`](#tools-stage-shared-py) | shared module | 20 | 3 | 0 | 0 |
 | [`tools/stagekit.py`](#tools-stagekit-py) | shared module | 328 | 143 | 10 | 0 |
@@ -1231,13 +1232,16 @@ A file is SHARED when at least one OTHER file under tools/ imports it (import gr
 | [`tools/recipes/stage_d1_s1.py`](#tools-recipes-stage-d1-s1-py) | recipe imported by another file | 4 | 19 | 0 | 4 |
 | [`tools/recipes/stage_d1_s3_focus.py`](#tools-recipes-stage-d1-s3-focus-py) | recipe imported by another file | 1 | 22 | 0 | 15 |
 | [`tools/recipes/stage_template_ring.py`](#tools-recipes-stage-template-ring-py) | recipe imported by another file | 1 | 1 | 0 | 1 |
+| [`tools/hooks/adapt_claude.py`](#tools-hooks-adapt-claude-py) | hook - reference | 1 | 3 | 0 | 1 |
+| [`tools/hooks/adapt_codex.py`](#tools-hooks-adapt-codex-py) | hook - reference | 1 | 5 | 0 | 1 |
 | [`tools/hooks/guard_assign.py`](#tools-hooks-guard-assign-py) | hook - reference | 6 | 17 | 0 | 8 |
 | [`tools/hooks/guard_bash.py`](#tools-hooks-guard-bash-py) | hook - reference | 13 | 12 | 0 | 0 |
 | [`tools/hooks/guard_card.py`](#tools-hooks-guard-card-py) | hook - reference | 4 | 4 | 0 | 2 |
 | [`tools/hooks/guard_cycle.py`](#tools-hooks-guard-cycle-py) | hook - reference | 29 | 14 | 0 | 3 |
 | [`tools/hooks/guard_peer.py`](#tools-hooks-guard-peer-py) | hook - reference | 27 | 27 | 0 | 4 |
-| [`tools/hooks/guard_session.py`](#tools-hooks-guard-session-py) | hook - reference | 6 | 18 | 7 | 0 |
+| [`tools/hooks/guard_session.py`](#tools-hooks-guard-session-py) | hook - reference | 7 | 18 | 7 | 0 |
 | [`tools/hooks/guard_write.py`](#tools-hooks-guard-write-py) | hook - reference | 6 | 8 | 0 | 4 |
+| [`tools/hooks/guardcore.py`](#tools-hooks-guardcore-py) | hook - reference | 3 | 12 | 0 | 1 |
 | [`tools/hooks/report_gate.py`](#tools-hooks-report-gate-py) | hook - reference | 2 | 8 | 0 | 5 |
 
 ### tools/addrcheck.py
@@ -1458,30 +1462,32 @@ shared module; imported by 8 file(s): `tools/audit_cycle.py`, `tools/bench/selft
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
-| `say` | level, check, detail | Appends (level, check, detail) to the module RESULT list. Returns None. | side file | - | 73 |
-| `read` | p | Text of file p (utf-8, errors replaced); '' when it cannot be opened. Returns str. | side file | - | 77 |
-| `active_docs` |  | The ACTIVE set: docs/*.md, the index directories ('docs/d1/*.md', card chat-D1 2026-10-02) and the two root | docstring | - | 85 |
-| `rel` | p | Path p relative to the project root, with forward slashes. Returns str. | side file | - | 98 |
-| `frontmatter` | body | The YAML block as a flat dict, or None. Deliberately not a YAML parser: these blocks are machine-written by | docstring | - | 107 |
-| `check_frontmatter` |  | L1: every active doc and archive/peer/*.md has frontmatter with type, status and date; records PASS, or a WARN with the missing / incomplete counts, via say(). Returns None. | side file | - | 121 |
-| `citation_candidates` | body | (path, lineno_or_None, line_number_in_the_document) for every span that is plausibly a project path. | docstring | - | 149 |
-| `check_citations` |  | L2 / L2b / L2c: every project path cited in an active doc exists (FAIL when dangling; a plan doc's missing file is a WARN) and every cited :line is inside the file (WARN). Records via say(). Return... | side file | - | 191 |
-| `check_status_length` |  | L3: WARN when STATUS.md has more than STATUS_MAX_LINES lines, else PASS, via say(). Returns None. | side file | - | 233 |
-| `current_plans` | docs=None | Every 'docs/cycle*-plan.md' (or 'docs/<dir>/INDEX.md') whose frontmatter says 'status: current', as ABSOLUTE paths. | docstring | - | 244 |
-| `check_one_current_plan` |  | L4: FAIL when current_plans() finds more than one current plan, else PASS, via say(). Returns None. | side file | - | 265 |
-| `check_predecided` |  | L8: the CURRENT cycle plan carries a '## Pre-decided' section (CLAUDE.md section 3 item 2, 2026-09-17). | docstring | - | 278 |
-| `check_supersedes` |  | L5: WARN when an active doc's 'supersedes:' names a doc still marked status: current, else PASS, via say(). Returns None. | side file | - | 299 |
-| `check_dispositions` |  | 'disposition: legacy' in the frontmatter is EXCLUDED, and the exclusion is the point. | docstring | - | 321 |
-| `check_marked_decisions` |  | L7: WARN listing active-doc lines that use a decision / measurement word without a DECIDED: / MEASURED: / DECISION: / ANSWERED: / FAILED: mark, else PASS, via say(). Returns None. | side file | - | 359 |
-| `check_decision_headers` | path=None | L8: '## <slug> - <date>' headers of docs/violation-decisions.md (or path) without a parseable HH:MM: FAIL if dated >= L8_FAIL_FROM, WARN if older with an unparseable time; via say(). Returns (fails... | side file | - | 385 |
-| `predecided_items` | body | [(number, first_line_no, text)] for every numbered item inside a 'Pre-decided' section of one document. | docstring | - | 424 |
-| `check_user_rules_lines` | paths=None | L9: WARN listing Pre-decided items numbered >= L9_FROM_ITEM without a 'USER-RULES:' line in the given paths (default all active docs), else PASS. Returns the list of 'path:line (item n)'. | side file | - | 452 |
-| `is_frozen` | p | True when the doc at p has frontmatter status: frozen. Returns bool. | side file | - | 481 |
-| `check_line_cap` | paths=None, names=None | L10 (card chat-D1): an active doc under docs/ that is not frozen/superseded stays <= DOC_MAX_LINES lines. | docstring | - | 485 |
-| `check_frozen_footer` | paths=None | L11 (card chat-D1): a 'status: frozen' doc carries its FROZEN footer, which names the index to read instead. | docstring | - | 520 |
-| `check_fn_drift` | doc=None | L12 (card chat-F2, user 2026-10-06): CODE-vs-DOC drift of the generated scripting-function table in | docstring | - | 532 |
-| `run` | skip_dispositions=False | Clears RESULT and runs every lint check in order, L1 to L12 (L6 replaced by a PASS note when skip_dispositions). Returns a copy of the (level, check, detail) list. | side file | - | 552 |
-| `main` |  | CLI: run() (--skip-dispositions; --quiet prints FAILs only), prints each result and a 'DOC-LINT PASS/FAIL: n fail, n warn, n pass' line. Returns 1 when any check FAILed, else 0. | side file | - | 573 |
+| `say` | level, check, detail | Appends (level, check, detail) to the module RESULT list. Returns None. | side file | - | 84 |
+| `read` | p | Text of file p (utf-8, errors replaced); '' when it cannot be opened. Returns str. | side file | - | 88 |
+| `active_docs` |  | The ACTIVE set: docs/*.md, the index directories ('docs/d1/*.md', card chat-D1 2026-10-02) and the two root | docstring | - | 96 |
+| `rel` | p | Path p relative to the project root, with forward slashes. Returns str. | side file | - | 109 |
+| `frontmatter` | body | The YAML block as a flat dict, or None. Deliberately not a YAML parser: these blocks are machine-written by | docstring | - | 118 |
+| `check_frontmatter` |  | L1: every active doc and archive/peer/*.md has frontmatter with type, status and date; records PASS, or a WARN with the missing / incomplete counts, via say(). Returns None. | side file | - | 132 |
+| `citation_candidates` | body | (path, lineno_or_None, line_number_in_the_document) for every span that is plausibly a project path. | docstring | - | 160 |
+| `resolve_moved` | path, ln | card chat-X1: the path a citation resolves to. The cited path itself when it exists and (for 'path:N') has line | docstring | - | 212 |
+| `check_citations` |  | L2 / L2b / L2c: every project path cited in an active doc exists (FAIL when dangling; a plan doc's missing file is a WARN) and every cited :line is inside the file (WARN). Records via say(). Return... | side file | - | 227 |
+| `check_status_length` |  | L3: WARN when STATUS.md has more than STATUS_MAX_LINES lines, else PASS, via say(). Returns None. | side file | - | 270 |
+| `current_plans` | docs=None | Every 'docs/cycle*-plan.md' (or 'docs/<dir>/INDEX.md') whose frontmatter says 'status: current', as ABSOLUTE paths. | docstring | - | 281 |
+| `check_one_current_plan` |  | L4: FAIL when current_plans() finds more than one current plan, else PASS, via say(). Returns None. | side file | - | 302 |
+| `check_predecided` |  | L8: the CURRENT cycle plan carries a '## Pre-decided' section (CLAUDE.md section 3 item 2, 2026-09-17). | docstring | - | 315 |
+| `check_supersedes` |  | L5: WARN when an active doc's 'supersedes:' names a doc still marked status: current, else PASS, via say(). Returns None. | side file | - | 336 |
+| `check_dispositions` |  | 'disposition: legacy' in the frontmatter is EXCLUDED, and the exclusion is the point. | docstring | - | 358 |
+| `check_marked_decisions` |  | L7: WARN listing active-doc lines that use a decision / measurement word without a DECIDED: / MEASURED: / DECISION: / ANSWERED: / FAILED: mark, else PASS, via say(). Returns None. | side file | - | 396 |
+| `check_decision_headers` | path=None | L8: '## <slug> - <date>' headers of docs/violation-decisions.md (or path) without a parseable HH:MM: FAIL if dated >= L8_FAIL_FROM, WARN if older with an unparseable time; via say(). Returns (fails... | side file | - | 422 |
+| `predecided_items` | body | [(number, first_line_no, text)] for every numbered item inside a 'Pre-decided' section of one document. | docstring | - | 461 |
+| `check_user_rules_lines` | paths=None | L9: WARN listing Pre-decided items numbered >= L9_FROM_ITEM without a 'USER-RULES:' line in the given paths (default all active docs), else PASS. Returns the list of 'path:line (item n)'. | side file | - | 489 |
+| `doc_status` | p, name=None | The frontmatter status; "frozen" for a FROZEN_COPIES byte copy whose frontmatter is the original's (chat-X1). | docstring | - | 518 |
+| `is_frozen` | p | True when the doc at p has frontmatter status: frozen. Returns bool. | side file | - | 525 |
+| `check_line_cap` | paths=None, names=None | L10 (card chat-D1): an active doc under docs/ that is not frozen/superseded stays <= DOC_MAX_LINES lines. | docstring | - | 529 |
+| `check_frozen_footer` | paths=None | L11 (card chat-D1): a 'status: frozen' doc carries its FROZEN footer, which names the index to read instead. | docstring | - | 564 |
+| `check_fn_drift` | doc=None | L12 (card chat-F2, user 2026-10-06): CODE-vs-DOC drift of the generated scripting-function table in | docstring | - | 576 |
+| `run` | skip_dispositions=False | Clears RESULT and runs every lint check in order, L1 to L12 (L6 replaced by a PASS note when skip_dispositions). Returns a copy of the (level, check, detail) list. | side file | - | 596 |
+| `main` |  | CLI: run() (--skip-dispositions; --quiet prints FAILs only), prints each result and a 'DOC-LINT PASS/FAIL: n fail, n warn, n pass' line. Returns 1 when any check FAILed, else 0. | side file | - | 617 |
 
 ### tools/elrule.py
 
@@ -2104,9 +2110,9 @@ shared module; imported by 3 file(s): `tools/bench/selftest_item34.py`, `tools/c
 | `reviews_since_last` |  | (n_retrospectives_since, days_since, last_path_or_None) - the cadence, read from the files. | docstring | - | 95 |
 | `is_due` |  | (undocumented) | - | - | 106 |
 | `evidence` |  | (undocumented) | - | - | 117 |
-| `last_two_reviews` |  | (latest, previous) archived outcome reviews by mtime, either None. | docstring | - | 151 |
-| `steer_after_review` | write=True, cards_dir=None | STEERING CARD (user 2026-09-24, "아웃컴 리뷰에 조향카드 부여하는 것 동의"): when the newest review repeats a verdict | docstring | - | 157 |
-| `main` |  | (undocumented) | - | - | 176 |
+| `last_two_reviews` |  | (latest, previous) archived outcome reviews by mtime, either None. | docstring | - | 152 |
+| `steer_after_review` | write=True, cards_dir=None | STEERING CARD (user 2026-09-24, "아웃컴 리뷰에 조향카드 부여하는 것 동의"): when the newest review repeats a verdict | docstring | - | 158 |
+| `main` |  | (undocumented) | - | - | 177 |
 
 ### tools/prior_art_review.py
 
@@ -2139,7 +2145,7 @@ shared module; imported by 8 file(s): `tools/bench/diag_c147_c3_3_proven.py`, `t
 
 ### tools/protocol.py
 
-shared module; imported by 661 file(s): `tools/audit_cycle.py`, `tools/bench/build_op_const_loopterm_77.py`, `tools/bench/build_op_termtype.py`, `tools/bench/build_opstopmode_v0.py`, `tools/bench/build_opwiringrules_v0.py`, `tools/bench/c109_errorlist_reverdict.py` ...
+shared module; imported by 665 file(s): `tools/audit_cycle.py`, `tools/bench/build_op_const_loopterm_77.py`, `tools/bench/build_op_termtype.py`, `tools/bench/build_opstopmode_v0.py`, `tools/bench/build_opwiringrules_v0.py`, `tools/bench/c109_errorlist_reverdict.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -2226,14 +2232,32 @@ shared module; imported by 2 file(s): `tools/bench/selftest_stamp_window.py`, `t
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
-| `current_plan_rel` |  | Project-relative path of the ONE cycle plan whose frontmatter says 'status: current', or None. | docstring | - | 66 |
-| `parse_devices` | path | Every 'DECISION: device' block in docs/violation-decisions.md -> (slug, stamp, one-line device). | docstring | - | 168 |
-| `retro_archive` | n | The archive of cycle <n>'s OWN retrospective, or None. | docstring | - | 216 |
-| `newest_retro_before` | now, exclude_slug=None | (path, mtime) of the newest retrospective archived strictly BEFORE 'now', or None. | docstring | - | 228 |
-| `dispatch_time` | path | When a retrospective was DISPATCHED = its archive's mtime minus the elapsed seconds peer.ps1 recorded. | docstring | - | 258 |
-| `cycle_window` | cycle, slug=None | (start, end, basis) - the cycle's real boundary. | docstring | - | 279 |
-| `fmt` | t | (undocumented) | - | - | 338 |
-| `main` |  | (undocumented) | - | - | 342 |
+| `current_plan_rel` |  | Project-relative path of the ONE cycle plan whose frontmatter says 'status: current', or None. | docstring | - | 67 |
+| `parse_devices` | path | Every 'DECISION: device' block in docs/violation-decisions.md -> (slug, stamp, one-line device). | docstring | - | 169 |
+| `retro_archive` | n | The archive of cycle <n>'s OWN retrospective, or None. | docstring | - | 217 |
+| `newest_retro_before` | now, exclude_slug=None | (path, mtime) of the newest retrospective archived strictly BEFORE 'now', or None. | docstring | - | 229 |
+| `dispatch_time` | path | When a retrospective was DISPATCHED = its archive's mtime minus the elapsed seconds peer.ps1 recorded. | docstring | - | 259 |
+| `cycle_window` | cycle, slug=None | (start, end, basis) - the cycle's real boundary. | docstring | - | 280 |
+| `fmt` | t | (undocumented) | - | - | 339 |
+| `main` |  | (undocumented) | - | - | 343 |
+
+### tools/rules_coverage.py
+
+shared module; imported by 2 file(s): `tools/doc_ingest.py`, `tools/retrospective.py`
+
+| function | arguments | what it does | from | self-test | line |
+|---|---|---|---|---|---|
+| `frozen_body` | text | The text above the FROZEN footer (the footer is not rule text). | docstring | - | 44 |
+| `items` | text | [(line, kind, text)] - every heading and every bold span of 'text' (a bold span may wrap lines, never a | docstring | - | 50 |
+| `topic_files` |  | (undocumented) | - | - | 94 |
+| `rule_docs` |  | The rule topic files as project-relative paths ('docs/rules/<topic>.md'), sorted - what a tool attaches or | docstring | - | 99 |
+| `ranges` | paths | [(a, b, relpath, line)] - every cited frozen range in the topic files. | docstring | - | 105 |
+| `mapping` | its, rngs | [(item, home or None)] - home = 'path:line' of the narrowest cited range containing the item's line. | docstring | - | 119 |
+| `cell` | s, n=110 | (undocumented) | - | - | 131 |
+| `coverage_md` | mapped, frozen_md5 | (undocumented) | - | - | 136 |
+| `check` | write=False | (undocumented) | - | - | 149 |
+| `selftest` |  | (undocumented) | - | - | 171 |
+| `main` |  | (undocumented) | - | - | 194 |
 
 ### tools/run_mode.py
 
@@ -2247,7 +2271,7 @@ shared module; imported by 1 file(s): `tools/hooks/guard_session.py`
 
 ### tools/scope_header.py
 
-shared module; imported by 13 file(s): `tools/bench/diag_c146_a1_1_repro.py`, `tools/bench/diag_c148_a1_1_before.py`, `tools/bench/diag_c148_a1_1_runall.py`, `tools/bench/prep_c150_a2_4_stage_prerun_before.py`, `tools/bench/scope_honesty_census.py`, `tools/bench/selftest_c_e3.py` ...
+shared module; imported by 14 file(s): `tools/bench/diag_c146_a1_1_repro.py`, `tools/bench/diag_c148_a1_1_before.py`, `tools/bench/diag_c148_a1_1_runall.py`, `tools/bench/prep_c150_a2_4_stage_prerun_before.py`, `tools/bench/scope_honesty_census.py`, `tools/bench/selftest_c_e3.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -5104,6 +5128,28 @@ recipe imported by another file; imported by 1 file(s): `tools/recipes/stage_tem
 |---|---|---|---|---|---|
 | `body` | s | (undocumented) | - | - | 39 |
 
+### tools/hooks/adapt_claude.py
+
+hook - reference; imported by 1 file(s): `tools/bench/selftest_guardcore.py`
+
+| function | arguments | what it does | from | self-test | line |
+|---|---|---|---|---|---|
+| `to_event` | p | Claude PreToolUse payload -> guardcore event. | docstring | - | 27 |
+| `render` | verdict, why | (stderr text, exit code): Claude's native form. | docstring | - | 51 |
+| `main` |  | (undocumented) | - | - | 58 |
+
+### tools/hooks/adapt_codex.py
+
+hook - reference; imported by 1 file(s): `tools/bench/selftest_guardcore.py`
+
+| function | arguments | what it does | from | self-test | line |
+|---|---|---|---|---|---|
+| `find_patch` | obj | The first string inside 'obj' (dict/list/str, any depth) that contains '*** Begin Patch', else None. | docstring | - | 39 |
+| `parse_patch` | body | [{op, old, new, content}] from an apply_patch body; [] when no file header is found. | docstring | - | 53 |
+| `to_event` | p | Codex PreToolUse payload -> guardcore event. | docstring | - | 97 |
+| `render` | verdict, why | (stdout text, exit code). Allow = empty stdout, exit 0. Deny = the three-field JSON, exit 0. | docstring | - | 125 |
+| `main` |  | (undocumented) | - | - | 134 |
+
 ### tools/hooks/guard_assign.py
 
 hook - reference; imported by 6 file(s): `tools/bench/prep_c162_check_outside.py`, `tools/bench/selftest_assign_flow.py`, `tools/bench/selftest_c148_guard_fp.py`, `tools/bench/selftest_runner_debate.py`, `tools/cycle_runner.py`, `tools/hooks/guard_session.py`
@@ -5215,7 +5261,7 @@ hook - reference; imported by 27 file(s): `tools/bench/c125_1_probe.py`, `tools/
 
 ### tools/hooks/guard_session.py
 
-hook - reference; imported by 6 file(s): `tools/bench/selftest_c148_assign_leak.py`, `tools/bench/selftest_chat_p1.py`, `tools/bench/selftest_chat_p2.py`, `tools/bench/selftest_guard_session.py`, `tools/bench/selftest_guard_session_pairing.py`, `tools/hooks/guard_bash.py`
+hook - reference; imported by 7 file(s): `tools/bench/selftest_c148_assign_leak.py`, `tools/bench/selftest_chat_p1.py`, `tools/bench/selftest_chat_p2.py`, `tools/bench/selftest_guard_session.py`, `tools/bench/selftest_guard_session_pairing.py`, `tools/bench/selftest_guardcore.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -5252,6 +5298,25 @@ hook - reference; imported by 6 file(s): `tools/bench/diag_c146_a1_1_repro.py`, 
 | `decide` | path | [problems] for one written file (empty = clean). | docstring | - | 202 |
 | `capabilities_regen` | path | 'started' / 'rerun-flagged' / 'not-shared' / 'no-cache' / 'spawn-failed: ...' for one written path (module comment above). | docstring | selftest_t7_capabilities.py | 228 |
 | `main` |  | (undocumented) | - | - | 270 |
+
+### tools/hooks/guardcore.py
+
+hook - reference; imported by 3 file(s): `tools/bench/selftest_guardcore.py`, `tools/hooks/adapt_claude.py`, `tools/hooks/adapt_codex.py`
+
+| function | arguments | what it does | from | self-test | line |
+|---|---|---|---|---|---|
+| `event` | backend, tool_name, kind, command='', shell=None, timeout_ms=None, background=False, paths=(), content=None, cwd=None... | A normalized event dict. paths = [{"op": add/modify/delete/rename/write/edit, "old": p/None, "new": p/None}] | docstring | - | 86 |
+| `vi_family_ban` | ev | R1: reason or None. | docstring | - | 113 |
+| `originals_ban` | ev | R2: reason or None. | docstring | - | 123 |
+| `runner_globs` |  | never_in_runner_globs from tools/bench/assign/assign_config.json + RUNNER_EXTRA_GLOBS (unreadable: tools/hooks/**). | docstring | - | 131 |
+| `runner_hook_ban` | ev | R3: reason or None. Only when the session is a runner cycle session (CYCLE_SESSION set). | docstring | - | 141 |
+| `labview_running` |  | True when the LabVIEW process image is in tasklist (or GUARDCORE_ASSUME_LABVIEW=1). Read-only process list; | docstring | - | 163 |
+| `labview_launches` | cmd | [(rel path, labview level)] of tools/ scripts this command RUNS whose scope header says labview read/build. | docstring | - | 176 |
+| `concurrency_ban` | ev, probe=None | R4: reason or None. | docstring | - | 185 |
+| `call_guard` | modname, payload, env=None | (rc, reason) of one existing hook's main() on 'payload'. rc 2 = deny. An exception inside the guard is reported | docstring | - | 216 |
+| `claude_payload` | ev, tool_name, tool_input | (undocumented) | - | - | 253 |
+| `judge` | ev, probe=None | ('allow' / 'deny', reason). The order: own path rules (R6, R1-R3), then the existing guards, then R4. | docstring | - | 276 |
+| `log` | ev, verdict, why | One line per decision (tools/hooks/guardcore.log). Never raises. | docstring | - | 320 |
 
 ### tools/hooks/report_gate.py
 

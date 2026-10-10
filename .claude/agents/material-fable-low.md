@@ -34,7 +34,7 @@ prose brief. Prose that arrives beside it does not widen it.
 
 ## First, always
 
-1. Read `CLAUDE.md` and `STATUS.md` from disk. Every rule there binds you — rule 1 (never modify an original
+1. Read `docs/START.md` (core `CLAUDE.md`, rules `docs/rules/`, decisions `docs/decisions/INDEX.md`, `STATUS.md`) from disk; old `CLAUDE.md §N` / `CLAUDE.md:N` citations point into `docs/rules/CLAUDE-full-2026-10-10.md`. Every rule there binds you — rule 1 (never modify an original
    `.vi`), 1a (never change the original's computation), 1b (hardware follows the rig state in STATUS), 1c (no
    serial on the frame path), the GUI gate, the peer/cycle gates, the bgrun discipline. Do not assume the caller
    summarised them correctly.
