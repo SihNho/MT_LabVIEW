@@ -1,0 +1,35 @@
+{
+ "schema": "result/1",
+ "id": "chat-X2",
+ "status": "BLOCKED",
+ "gates": {"pass": 4, "fail": 0},
+ "first_fail": null,
+ "blocked_by": {"device": "permission-layer", "message": "step 5 codex exec refused by the auto-mode classifier: -s danger-full-access [Create Unsafe Agents], then --dangerously-bypass-hook-trust [Safety Bypass Flag]; without it the new hook is untrusted and skipped; persisting trust writes the user's ~/.codex/config.toml"},
+ "artefacts": [
+  {"path": "tools/hooks/guardcore.py", "md5": "a8f97beccbfd59d24184d3597e7ea3f2"},
+  {"path": "tools/hooks/adapt_claude.py", "md5": "3c06d313e9ca3115ac29939ac85ff5ce"},
+  {"path": "tools/hooks/adapt_codex.py", "md5": "57920e676d901f27aa0ab1cdbd4383c3"},
+  {"path": "tools/bench/selftest_guardcore.py", "md5": "4c7c9feef4164d1b73a3d647c9153798"},
+  {"path": ".codex/hooks.json", "md5": "86cf911664181c2e28fc4f8e42384220"},
+  {"path": "docs/guardcore.md", "md5": "75484ff23c779f885b1b5c5ad2eb0aa6"}
+ ],
+ "facts": [
+  "Codex 0.162.0 has a blocking PreToolUse hook: deny = stdout hookSpecificOutput deny + reason, exit 0; other exits, bad JSON, untrusted = skipped (fail open) - docs/guardcore.md:27-37",
+  "Project .codex/hooks.json loads (project trusted in ~/.codex/config.toml:14-15); each handler needs a trusted_hash in the USER config (config.toml:94-101) or is skipped",
+  "selftest_guardcore: 31 pairs x 2 formats, 111/0 gates, identical verdicts, all 22 forbidden denied, 9 controls allowed - tools/bench/selftest_guardcore.log",
+  "Regression: 12 existing hook self-tests rc=0, 356 gates 0 fail; no existing hook file was edited - tools/bench/guardcore_fixtures/reg_*.log",
+  "fake_executor 8/0: bypass and inline serial refused, bgrun TIMEOUT kill at 0.05 min, 2nd concurrent run NOT refused by bgrun - tools/bench/guardcore_fake/fake_executor.log",
+  "Executor checks: timeout EXISTS (bgrun --max-min); script version only for stage scripts (stage_prerun.py:4911) and stopped recipes (stop_record)",
+  "Executor gaps: card not checked inside bgrun (hook-level only, protocol.check_command); no target exclusivity in bgrun (no live-run registry, tools/bgrun.py)",
+  "guardcore calls existing guards via main() (guardcore.py CHAIN); new rules only add refusals: R1 vi, R2 originals, R3 runner hooks, R4 LabVIEW concurrency, R5 unknown tool, R6 bad patch",
+  ".codex/hooks.json: adapter appended as PreToolUse group 1 (no matcher); user-trusted group 0 (guard_bash, exit-2 path) left byte-identical",
+  "never_in_runner_globs ['tools/hooks/**'] covers guardcore/adapt_*.py but NOT .codex/hooks.json (assign_config.json:13); guardcore R3 adds .codex/** itself"
+ ],
+ "open": [
+  "Step 5: allow one codex exec with --dangerously-bypass-hook-trust (tools/bench/guardcore_fake/codex_live_check.py), or the user trusts the new hook via /hooks in the Codex TUI (writes ~/.codex/config.toml)?",
+  "Switch .claude/settings.json PreToolUse to adapt_claude.py (same guard chain + R1-R6; adds R4 tasklist probe and unknown-tool deny), or keep the current hooks?",
+  "Add '.codex/**' to never_in_runner_globs in tools/bench/assign/assign_config.json (outside this card's write globs)?"
+ ],
+ "cost": {"usd": null, "minutes": 20, "labview_runs": 0},
+ "note": "Verification level: EXECUTOR PATH VERIFIED / OUTSIDE THE EXECUTOR ONLY SECONDARY DEFENCE. Codex payload shape for apply_patch/Bash is from docs + binary strings, not yet from a captured live payload (step 5 not run)."
+}

@@ -1,0 +1,147 @@
+BGRUN START 2026-10-10 18:14:55 limit 8.0 min: py -u tools/bench/selftest_guardcore.py
+BGRUN PID 25456
+CASE F1 bare LabVIEW script, no bgrun/timeout                       claude=deny  codex=deny  | claude: guard_bash: BLOCKED by tools/hooks/guard_bash.py (CLAUDE.md section 3, judgement vs material): this session is treated as a JUDGEMENT session, and a j | codex: guard_bash: BLOCKED by tools/hooks/guard_bash.py (CLAUDE.md section 3, judgement vs material): this session is treated as a JUDGEMENT session, and a j
+GATE PASS F1 bare LabVIEW script, no bgrun/timeout claude=deny deny
+GATE PASS F1 bare LabVIEW script, no bgrun/timeout codex=deny deny
+GATE PASS F1 bare LabVIEW script, no bgrun/timeout same verdict deny/deny
+CASE F2 lv_gui foreground, no timeout                               claude=deny  codex=deny  | claude: guard_bash: BLOCKED by tools/hooks/guard_bash.py (CLAUDE.md 2b): a LabVIEW-touching command must run with run_in_background=true, or with an explicit  | codex: guard_bash: BLOCKED by tools/hooks/guard_bash.py (CLAUDE.md 2b): a LabVIEW-touching command must run with run_in_background=true, or with an explicit 
+GATE PASS F2 lv_gui foreground, no timeout claude=deny deny
+GATE PASS F2 lv_gui foreground, no timeout codex=deny deny
+GATE PASS F2 lv_gui foreground, no timeout same verdict deny/deny
+CASE F3a motor script called directly (sentinel name)               claude=deny  codex=deny  | claude: guard_bash: BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a motor by a route that bypasses the safe envelope. Th | codex: guard_bash: BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a motor by a route that bypasses the safe envelope. Th
+GATE PASS F3a motor script called directly (sentinel name) claude=deny deny
+GATE PASS F3a motor script called directly (sentinel name) codex=deny deny
+GATE PASS F3a motor script called directly (sentinel name) same verdict deny/deny
+CASE F3b motor sender run by hand instead of motor_gate.py          claude=deny  codex=deny  | claude: guard_bash: BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a motor by a route that bypasses the safe envelope. Th | codex: guard_bash: BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a motor by a route that bypasses the safe envelope. Th
+GATE PASS F3b motor sender run by hand instead of motor_gate.py claude=deny deny
+GATE PASS F3b motor sender run by hand instead of motor_gate.py codex=deny deny
+GATE PASS F3b motor sender run by hand instead of motor_gate.py same verdict deny/deny
+CASE F4a inline serial (python)                                     claude=deny  codex=deny  | claude: guard_bash: BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a motor by a route that bypasses the safe envelope. Th | codex: guard_bash: BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a motor by a route that bypasses the safe envelope. Th
+GATE PASS F4a inline serial (python) claude=deny deny
+GATE PASS F4a inline serial (python) codex=deny deny
+GATE PASS F4a inline serial (python) same verdict deny/deny
+CASE F4b inline SerialPort (PowerShell)                             claude=deny  codex=deny  | claude: guard_bash: BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a motor by a route that bypasses the safe envelope. Th | codex: guard_bash: BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a motor by a route that bypasses the safe envelope. Th
+GATE PASS F4b inline SerialPort (PowerShell) claude=deny deny
+GATE PASS F4b inline SerialPort (PowerShell) codex=deny deny
+GATE PASS F4b inline SerialPort (PowerShell) same verdict deny/deny
+CASE F5a second LabVIEW launch while LabVIEW runs (R4, probe=running) claude=deny  codex=deny  | claude: one LabVIEW at a time (CLAUDE.md 'one COM client at a time'): a LabVIEW process is already running and this command launches tools/bench/guardcore_fak | codex: one LabVIEW at a time (CLAUDE.md 'one COM client at a time'): a LabVIEW process is already running and this command launches tools/bench/guardcore_fak
+GATE PASS F5a second LabVIEW launch while LabVIEW runs (R4, probe=running) claude=deny deny
+GATE PASS F5a second LabVIEW launch while LabVIEW runs (R4, probe=running) codex=deny deny
+GATE PASS F5a second LabVIEW launch while LabVIEW runs (R4, probe=running) same verdict deny/deny
+CASE F6a Write/add a .vi                                            claude=deny  codex=deny  | claude: LabVIEW binary write ban (CLAUDE.md rule 1; was .claude/settings.json deny rules): write of new path tools/bench/guardcore_fake/x.vi. A .vi/.ctl/.lvli | codex: LabVIEW binary write ban (CLAUDE.md rule 1; was .claude/settings.json deny rules): add of new path tools/bench/guardcore_fake/x.vi. A .vi/.ctl/.lvlib/
+GATE PASS F6a Write/add a .vi claude=deny deny
+GATE PASS F6a Write/add a .vi codex=deny deny
+GATE PASS F6a Write/add a .vi same verdict deny/deny
+CASE F6b Edit/modify a .ctl                                         claude=deny  codex=deny  | claude: LabVIEW binary write ban (CLAUDE.md rule 1; was .claude/settings.json deny rules): edit of new path tools/bench/guardcore_fake/x.ctl. A .vi/.ctl/.lvli | codex: LabVIEW binary write ban (CLAUDE.md rule 1; was .claude/settings.json deny rules): modify of old path tools/bench/guardcore_fake/x.ctl. A .vi/.ctl/.lv
+GATE PASS F6b Edit/modify a .ctl claude=deny deny
+GATE PASS F6b Edit/modify a .ctl codex=deny deny
+GATE PASS F6b Edit/modify a .ctl same verdict deny/deny
+CASE F6c delete a .lvproj                                           claude=deny  codex=deny  | claude: LabVIEW binary write ban (CLAUDE.md rule 1; was .claude/settings.json deny rules): edit of new path tools/bench/guardcore_fake/x.lvproj. A .vi/.ctl/.l | codex: LabVIEW binary write ban (CLAUDE.md rule 1; was .claude/settings.json deny rules): delete of old path tools/bench/guardcore_fake/x.lvproj. A .vi/.ctl/
+GATE PASS F6c delete a .lvproj claude=deny deny
+GATE PASS F6c delete a .lvproj codex=deny deny
+GATE PASS F6c delete a .lvproj same verdict deny/deny
+CASE F6d rename txt -> .vi (new path)                               claude=deny  codex=deny  | claude: LabVIEW binary write ban (CLAUDE.md rule 1; was .claude/settings.json deny rules): write of new path tools/bench/guardcore_fake/y.vi. A .vi/.ctl/.lvli | codex: LabVIEW binary write ban (CLAUDE.md rule 1; was .claude/settings.json deny rules): rename of new path tools/bench/guardcore_fake/y.vi. A .vi/.ctl/.lvl
+GATE PASS F6d rename txt -> .vi (new path) claude=deny deny
+GATE PASS F6d rename txt -> .vi (new path) codex=deny deny
+GATE PASS F6d rename txt -> .vi (new path) same verdict deny/deny
+CASE F6e rename .lvlib -> txt (old path)                            claude=deny  codex=deny  | claude: LabVIEW binary write ban (CLAUDE.md rule 1; was .claude/settings.json deny rules): edit of new path tools/bench/guardcore_fake/z.lvlib. A .vi/.ctl/.lv | codex: LabVIEW binary write ban (CLAUDE.md rule 1; was .claude/settings.json deny rules): rename of old path tools/bench/guardcore_fake/z.lvlib. A .vi/.ctl/.
+GATE PASS F6e rename .lvlib -> txt (old path) claude=deny deny
+GATE PASS F6e rename .lvlib -> txt (old path) codex=deny deny
+GATE PASS F6e rename .lvlib -> txt (old path) same verdict deny/deny
+CASE F7a write under originals folder                               claude=deny  codex=deny  | claude: originals are never modified (CLAUDE.md rule 1): write of new path ../../../background VIs/gc_fixture_never_written.txt | codex: originals are never modified (CLAUDE.md rule 1): add of new path ../../../background VIs/gc_fixture_never_written.txt
+GATE PASS F7a write under originals folder claude=deny deny
+GATE PASS F7a write under originals folder codex=deny deny
+GATE PASS F7a write under originals folder same verdict deny/deny
+CASE F7b delete the reference VI                                    claude=deny  codex=deny  | claude: LabVIEW binary write ban (CLAUDE.md rule 1; was .claude/settings.json deny rules): edit of new path ../../../Min_Track N beads 4.5_KimLabMTroom_3State | codex: LabVIEW binary write ban (CLAUDE.md rule 1; was .claude/settings.json deny rules): delete of old path ../../../Min_Track N beads 4.5_KimLabMTroom_3Sta
+GATE PASS F7b delete the reference VI claude=deny deny
+GATE PASS F7b delete the reference VI codex=deny deny
+GATE PASS F7b delete the reference VI same verdict deny/deny
+CASE F7c rename INTO originals folder                               claude=deny  codex=deny  | claude: originals are never modified (CLAUDE.md rule 1): write of new path ../../../background VIs/gc_fixture_never_written.txt | codex: originals are never modified (CLAUDE.md rule 1): rename of new path ../../../background VIs/gc_fixture_never_written.txt
+GATE PASS F7c rename INTO originals folder claude=deny deny
+GATE PASS F7c rename INTO originals folder codex=deny deny
+GATE PASS F7c rename INTO originals folder same verdict deny/deny
+CASE F8a runner session writes tools/hooks/**                       claude=deny  codex=deny  | claude: runner sessions never edit hook files (user 2026-10-08, never_in_runner_globs ['tools/hooks/**', '.codex/**', '.claude/settings.json', '.claude/settin | codex: runner sessions never edit hook files (user 2026-10-08, never_in_runner_globs ['tools/hooks/**', '.codex/**', '.claude/settings.json', '.claude/settin
+GATE PASS F8a runner session writes tools/hooks/** claude=deny deny
+GATE PASS F8a runner session writes tools/hooks/** codex=deny deny
+GATE PASS F8a runner session writes tools/hooks/** same verdict deny/deny
+CASE F8b runner session edits .codex/hooks.json                     claude=deny  codex=deny  | claude: runner sessions never edit hook files (user 2026-10-08, never_in_runner_globs ['tools/hooks/**', '.codex/**', '.claude/settings.json', '.claude/settin | codex: runner sessions never edit hook files (user 2026-10-08, never_in_runner_globs ['tools/hooks/**', '.codex/**', '.claude/settings.json', '.claude/settin
+GATE PASS F8b runner session edits .codex/hooks.json claude=deny deny
+GATE PASS F8b runner session edits .codex/hooks.json codex=deny deny
+GATE PASS F8b runner session edits .codex/hooks.json same verdict deny/deny
+CASE F8c runner session renames a hook file out of tools/hooks      claude=deny  codex=deny  | claude: runner sessions never edit hook files (user 2026-10-08, never_in_runner_globs ['tools/hooks/**', '.codex/**', '.claude/settings.json', '.claude/settin | codex: runner sessions never edit hook files (user 2026-10-08, never_in_runner_globs ['tools/hooks/**', '.codex/**', '.claude/settings.json', '.claude/settin
+GATE PASS F8c runner session renames a hook file out of tools/hooks claude=deny deny
+GATE PASS F8c runner session renames a hook file out of tools/hooks codex=deny deny
+GATE PASS F8c runner session renames a hook file out of tools/hooks same verdict deny/deny
+CASE F9a unknown tool                                               claude=deny  codex=deny  | claude: unknown tool 'FooTool' - refused (fail closed; guardcore READ_ONLY_TOOLS lists what passes unchecked) | codex: unknown tool 'mcp__x__y' - refused (fail closed; guardcore READ_ONLY_TOOLS lists what passes unchecked)
+GATE PASS F9a unknown tool claude=deny deny
+GATE PASS F9a unknown tool codex=deny deny
+GATE PASS F9a unknown tool same verdict deny/deny
+CASE F9b stdin to a live PTY (write_stdin) / unknown                claude=deny  codex=deny  | claude: unknown tool 'BarTool' - refused (fail closed; guardcore READ_ONLY_TOOLS lists what passes unchecked) | codex: unknown tool 'write_stdin' - refused (fail closed; guardcore READ_ONLY_TOOLS lists what passes unchecked)
+GATE PASS F9b stdin to a live PTY (write_stdin) / unknown claude=deny deny
+GATE PASS F9b stdin to a live PTY (write_stdin) / unknown codex=deny deny
+GATE PASS F9b stdin to a live PTY (write_stdin) / unknown same verdict deny/deny
+CASE F10 unparseable patch / write without a path                   claude=deny  codex=deny  | claude: patch body could not be parsed into files - refused (fail closed) | codex: patch body could not be parsed into files - refused (fail closed)
+GATE PASS F10 unparseable patch / write without a path claude=deny deny
+GATE PASS F10 unparseable patch / write without a path codex=deny deny
+GATE PASS F10 unparseable patch / write without a path same verdict deny/deny
+CASE A1 git status                                                  claude=allow codex=allow | claude: - | codex: -
+GATE PASS A1 git status claude=allow allow
+GATE PASS A1 git status codex=allow allow
+GATE PASS A1 git status same verdict allow/allow
+CASE A2 py -c print                                                 claude=allow codex=allow | claude: - | codex: -
+GATE PASS A2 py -c print claude=allow allow
+GATE PASS A2 py -c print codex=allow allow
+GATE PASS A2 py -c print same verdict allow/allow
+CASE A3 Write/add an ordinary file                                  claude=allow codex=allow | claude: - | codex: -
+GATE PASS A3 Write/add an ordinary file claude=allow allow
+GATE PASS A3 Write/add an ordinary file codex=allow allow
+GATE PASS A3 Write/add an ordinary file same verdict allow/allow
+CASE A4 Edit/update an ordinary file (input form)                   claude=allow codex=allow | claude: - | codex: -
+GATE PASS A4 Edit/update an ordinary file (input form) claude=allow allow
+GATE PASS A4 Edit/update an ordinary file (input form) codex=allow allow
+GATE PASS A4 Edit/update an ordinary file (input form) same verdict allow/allow
+CASE A5 rename ordinary -> ordinary                                 claude=allow codex=allow | claude: - | codex: -
+GATE PASS A5 rename ordinary -> ordinary claude=allow allow
+GATE PASS A5 rename ordinary -> ordinary codex=allow allow
+GATE PASS A5 rename ordinary -> ordinary same verdict allow/allow
+CASE A6 delete ordinary                                             claude=allow codex=allow | claude: - | codex: -
+GATE PASS A6 delete ordinary claude=allow allow
+GATE PASS A6 delete ordinary codex=allow allow
+GATE PASS A6 delete ordinary same verdict allow/allow
+CASE A7 tools/hooks write OUTSIDE a runner session                  claude=allow codex=allow | claude: - | codex: -
+GATE PASS A7 tools/hooks write OUTSIDE a runner session claude=allow allow
+GATE PASS A7 tools/hooks write OUTSIDE a runner session codex=allow allow
+GATE PASS A7 tools/hooks write OUTSIDE a runner session same verdict allow/allow
+CASE A8 read-only tool                                              claude=allow codex=allow | claude: - | codex: -
+GATE PASS A8 read-only tool claude=allow allow
+GATE PASS A8 read-only tool codex=allow allow
+GATE PASS A8 read-only tool same verdict allow/allow
+CASE A9 LabVIEW-free bgrun launch, probe=running (R4 does not apply) claude=allow codex=allow | claude: - | codex: -
+GATE PASS A9 LabVIEW-free bgrun launch, probe=running (R4 does not apply) claude=allow allow
+GATE PASS A9 LabVIEW-free bgrun launch, probe=running (R4 does not apply) codex=allow allow
+GATE PASS A9 LabVIEW-free bgrun launch, probe=running (R4 does not apply) same verdict allow/allow
+GATE PASS G-agent setup: first LabVIEW card dispatch allowed allow 
+CASE F5b second LabVIEW card beside a live one        claude=deny codex=deny | guard_session: BLOCKED by tools/hooks/guard_session.py: a second LabVIEW card while gc_lv1 (labview build) is live. One COM client at a time: card gc_ | unknown tool 'spawn_agent' - refused (fail closed; guardcore READ_ONLY_TOOLS lists what passes unchecked)
+GATE PASS F5b claude=deny (guard_session one-COM-client) deny
+GATE PASS F5b codex=deny (agent tool unknown -> fail closed) deny
+GATE PASS F5b same verdict 
+GATE PASS P4 parse_patch ops/old/new [{"op": "add", "old": null, "new": "a.txt", "content": "hello"}, {"op": "delete", "old": "b.vi", "new": null, "content": null}, {"op": "modify", "old": "c.txt", "new": "c.txt", "content": null}, {"op"
+GATE PASS P4 add content kept 
+GATE PASS P4 find_patch nested 
+GATE PASS P4 rename judged on NEW path 
+GATE PASS P4 rename judged on OLD path 
+GATE PASS P5 R4 refuses a labview launch when running 
+GATE PASS P5 R4 silent when not running 
+GATE PASS P5 R4 silent for a LabVIEW-free command 
+GATE PASS P5 launch_scope sees sentinel as labview build [('tools/bench/guardcore_fake/sentinel_lv.py', 'build')]
+GATE PASS P6 codex deny = 3-field JSON on stdout, exit 0 rc=0 out={"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": "BLOCKED by tools/hooks/guardcore.py: LabVIEW b
+GATE PASS P6 codex allow = empty stdout, exit 0 rc=0 out=''
+GATE PASS P6 codex garbage stdin = deny (fail closed) rc=0 out={"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": "BLOCKE
+GATE PASS P6 codex non-PreToolUse event passes untouched 
+GATE PASS P6 claude deny = exit 2 + stderr rc=2
+GATE PASS P6 claude allow = exit 0 rc=0 err=
+GATE PASS no sentinel marker created by the test (marker_sentinel_lv.txt) 
+GATE PASS no sentinel marker created by the test (marker_hw_rotor_visible.txt) 
+SUMMARY pairs=31 formats=2 gates pass=111 fail=0 in 8.7s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":111,"fail":0},"first_fail":null,"artefacts":[],"card":"chat-X2","labview":"none"}
+BGRUN END rc=0 after 9s
