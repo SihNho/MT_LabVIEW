@@ -88,7 +88,64 @@ def decide(payload):
     return None
 
 
+def decide_codex(payload, main_root):
+    """card chat-X10 (GPT arm): the SAME replay rules for a Codex PreToolUse payload -> refusal text or None.
+    The payload is normalized by the project's own adapter (tools/hooks/adapt_codex.py of the main checkout, called,
+    not copied): shell -> check_cmd; apply_patch -> every old/new path inside the worktree or %TEMP%, no LabVIEW binary;
+    a known read-only tool passes; anything else is refused (fail closed, as guardcore R5)."""
+    hooks = os.path.join(main_root, "tools", "hooks")
+    if hooks not in sys.path:
+        sys.path.insert(0, hooks)
+    import adapt_codex          # noqa: E402  (pure stdlib + guardcore; no LabVIEW)
+    import guardcore            # noqa: E402
+    ev = adapt_codex.to_event(payload)
+    if ev["kind"] == "shell":
+        return check_cmd(ev["command"]), ev
+    if ev["kind"] in ("patch", "write", "edit"):
+        if not ev.get("paths"):
+            return "replay card: patch body not parseable into files (fail closed)", ev
+        for e in ev["paths"]:
+            for side in ("old", "new"):
+                p = e.get(side)
+                if not p:
+                    continue
+                why = decide({"tool_name": "Write", "tool_input": {"file_path": p if os.path.isabs(p)
+                                                                   else os.path.join(WT, p)}})
+                if why:
+                    return why, ev
+        return None, ev
+    if ev["tool_name"] in guardcore.READ_ONLY_TOOLS:
+        return None, ev
+    return "replay card: tool %r is not shell / patch / read-only - refused (fail closed)" % ev["tool_name"], ev
+
+
+def main_codex(main_root):
+    """Codex hook shell: deny = adapt_codex.render JSON on stdout with exit 0 (exit 2 fails OPEN on Windows,
+    adapt_codex.py docstring); a crash here is a deny."""
+    raw = sys.stdin.read()
+    ev = {}
+    try:
+        payload = json.loads(raw)
+        if payload.get("hook_event_name") not in (None, "PreToolUse"):
+            return 0
+        why, ev = decide_codex(payload, main_root)
+    except Exception as e:      # noqa: BLE001
+        payload, why = {}, "cell_guard error %s: %s (fail closed)" % (type(e).__name__, e)
+    log({"tool": (ev or {}).get("tool_name") or payload.get("tool_name"), "agent_type": "codex",
+         "kind": (ev or {}).get("kind"),
+         "cmd": ((ev or {}).get("command") or json.dumps([(x.get("op"), x.get("old"), x.get("new"))
+                                                         for x in ((ev or {}).get("paths") or [])]))[:300],
+         "decision": "REFUSE" if why else "ALLOW", "why": why})
+    if why:
+        sys.stdout.write(json.dumps({"hookSpecificOutput": {
+            "hookEventName": "PreToolUse", "permissionDecision": "deny",
+            "permissionDecisionReason": "BLOCKED by matbench cell_guard: " + why}}))
+    return 0
+
+
 def main():
+    if "--codex" in sys.argv:
+        return main_codex(sys.argv[sys.argv.index("--codex") + 1])
     try:
         payload = json.load(sys.stdin)
     except Exception:           # noqa: BLE001

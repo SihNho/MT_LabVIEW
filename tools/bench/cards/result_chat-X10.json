@@ -1,0 +1,25 @@
+{
+ "schema": "result/1",
+ "id": "chat-X10",
+ "status": "BLOCKED",
+ "gates": {"pass": 1, "fail": 1},
+ "first_fail": "GPT arm launch line: --dangerously-bypass-hook-trust (+ per-run project trust) refused by the permission layer",
+ "blocked_by": {"device": "permission-classifier", "message": "Edit adding --dangerously-bypass-hook-trust to matbench.py codex_cmd: 'denied by the Claude Code auto mode classifier ... judged this action dangerous'. Without it the worktree hooks are untrusted = skipped; GPT would run full-access unguarded."},
+ "artefacts": [{"path": "tools/bench/matbench/cell_guard.py", "md5": "f8189839b25f05126ca9b3ada6dfcbc0"}],
+ "facts": [
+  "Codex hook trust is keyed by the hooks.json PATH: ~/.codex/config.toml:94-104 trusts only V6_ParallelLoop\\.codex\\hooks.json; untrusted hooks are SKIPPED, fail open (docs/guardcore.md:28)",
+  "Project layer .codex/ loads only for a trusted project (docs/guardcore.md:27); %TEMP%\\mb\\<task> worktrees (matbench.py:42) are not in config.toml [projects]",
+  "So the brief's GPT command in an isolated worktree runs danger-full-access with NO project hook; the only flag that runs them (--dangerously-bypass-hook-trust) was refused",
+  "Base commits ece33fb/d71798d/1892a09/effdef6 have no docs/START.md; their AGENTS.md:10 says 'read-only research assistant ... never to act' (git show <c>:AGENTS.md)",
+  "Built: cell_guard.py:91-145 --codex mode (replay rules for Codex payloads via tools/hooks/adapt_codex.py, deny JSON exit 0, fail closed); offline test 8/8 as predicted",
+  "matbench.py reverted to HEAD (no half-wired GPT arm left); no codex or claude cell was launched; no LabVIEW, no hardware; 0 tokens spent on cells",
+  "Task set if unblocked: T1,T2,T3,T5,T6 all offline; T4 stays dropped (v1 env-BLOCKED, report_v1.md validity note 1)",
+  "Rate-limit data exists: ~/.codex/sessions/**/rollout-*-<thread_id>.jsonl token_count events carry rate_limits primary/secondary used_percent (integer steps, plan_type plus)"
+ ],
+ "open": [
+  "How may a GPT cell in a %TEMP% worktree get its hooks run: user approves --dangerously-bypass-hook-trust for matbench cells, or user trusts the cell hooks.json files via /hooks (fixed paths), or another isolation?",
+  "GPT start instruction at base commits: point it to CLAUDE.md + .claude/agents/<agent>.md (what Claude gets) and override AGENTS.md's peer role in the prompt - accepted?"
+ ],
+ "cost": {"usd": null, "minutes": 9, "labview_runs": 0},
+ "note": "Stopped at the first refusal. Retry design: worktree .codex/hooks.json = cell_guard --codex + main hooks groups; codex exec --ignore-user-config, effort high; post() copies the rollout (tokens, rate_limits) and Claude transcript (tool errors); blind A/B on score_cell_v1."
+}
