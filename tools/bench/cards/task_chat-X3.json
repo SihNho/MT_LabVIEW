@@ -1,0 +1,17 @@
+{
+ "schema": "task/1", "id": "chat-X3", "kind": "measure",
+ "goal": "Regression of the guard_bash Codex-compatibility fix (scope-aware LabVIEW routing, argv lists, quoted absolute paths, timeout_ms)",
+ "why": "User 2026-10-10: the user's Codex chat could not relay a discussion message (debate_gdoc.py say refused: no timeout field in Codex input). The chat fixed tools/hooks/guard_bash.py; prove nothing else changed.",
+ "inputs": [{"path": "tools/hooks/guard_bash.py", "md5": "7f302b8f9ac13716dcd0ded37e268ddb"}],
+ "pass": [
+  "tools/bench/selftest_guard_bash_codex.py PASS (quote the RESULT line)",
+  "tools/bench/selftest_guardcore.py PASS",
+  "every hook self-test (selftest_*guard*/*gate*/*protocol*/*card*/*hook*) run, exit quoted",
+  "each FAIL: test, first failing line, and whether it concerns the diff (git diff HEAD -- tools/hooks/guard_bash.py)"
+ ],
+ "outputs": ["tools/bench/cards/result_chat-X3.json"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false, "write": ["tools/bench/cards/result_chat-X3.json"],
+  "status_edit": false, "git_commit": false, "peers": []},
+ "budget": {"failures": 2, "minutes": 30}, "unblocks": "M3",
+ "rules": ["OFFLINE", "run tests only, change nothing", "a gate refusal is logged as a false positive and the card ends BLOCKED - never an equivalent form that dodges the gate"]
+}

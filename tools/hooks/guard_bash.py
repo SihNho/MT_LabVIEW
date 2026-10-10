@@ -420,8 +420,28 @@ def retro_closes(cmd, data):
 BGRUN_RE = re.compile(r"bgrun\.py\s+(?:-\S+\s+)*--max-min\s+\d")
 
 LABVIEW_RE = re.compile(r"lv_gui\.ps1\s+-Action|py[\w.]*\s+(?:-u\s+)?[^\s|;&]*tools[\\/][^\s|;&]*\.py|"
+                        r"py[\w.]*\s+(?:-u\s+)?\"[^\"]*tools[\\/][^\"]*\.py\"|"
                         r"py[\w.]*\s+-c\s+.*?(?:import\s+(?:gscript|lvclick)|from\s+(?:gscript|lvclick))|"
                         r"peer\.ps1\s+-Agent|import gscript", re.I | re.S)
+# The parts of LABVIEW_RE that are NOT a tools/ script launch: these always need the timeout / bgrun routing.
+NON_SCRIPT_LV_RE = re.compile(r"lv_gui\.ps1\s+-Action|py[\w.]*\s+-c\s+.*?(?:import\s+(?:gscript|lvclick)|"
+                              r"from\s+(?:gscript|lvclick))|peer\.ps1\s+-Agent|import gscript", re.I | re.S)
+
+
+def offline_scripts_only(cmd):
+    """chat 2026-10-10 (Codex compatibility, found by the user's Codex chat): LABVIEW_RE counted EVERY `py tools/*.py`
+    as a LabVIEW command, so `debate_gdoc.py say` (header `labview: none`, `hardware: none`) was refused in Codex,
+    whose tool input carries no timeout. True when every launched tools/ script declares labview none AND hardware
+    none (the header is checked true at write time by guard_write, card chat-E3) and nothing else in the command
+    drives LabVIEW. A broken helper answers False, i.e. the old routing applies."""
+    if NON_SCRIPT_LV_RE.search(cmd or ""):
+        return False
+    try:
+        import scope_header as SH
+        launched = SH.launch_scope(cmd)
+    except Exception:          # noqa: BLE001
+        return False
+    return bool(launched) and all(lv == "none" and hw == "none" and not prob for _p, lv, hw, prob in launched)
 
 
 NEXT_SECTION_RE = re.compile(r"^##\s+NEXT\s*$(.*?)(?=^##\s|\Z)", re.M | re.S)
@@ -598,6 +618,8 @@ def _main():
         return 0
     ti = data.get("tool_input") or {}
     cmd = ti.get("command", "") or ""
+    if isinstance(cmd, list):          # Codex may send argv as a list (chat 2026-10-10: a list crashed this hook)
+        cmd = " ".join(str(x) for x in cmd)
     # SESSION PROTOCOL v1, C2 (2026-09-24): a card-carrying sub-agent (payload has agent_id + agent_type) is bound to
     # its task/1 card by its first command, `py tools/protocol.py bind <card>`, and every later command is checked
     # against the card's flags (labview / gui / hardware / run_vi / status_edit / git_commit / peers). ONE decision
@@ -660,6 +682,8 @@ def _main():
     jev_advisories(cmd, data)
     if not LABVIEW_RE.search(cmd):
         return 0
+    if offline_scripts_only(cmd):
+        return 0
     # A PROSE dispatch (`peer.ps1 -Kind prose`, the reporter agent writing a user-facing report through codex)
     # touches no LabVIEW and must be WAITED FOR in the foreground: twice on 2026-09-16 the reporter cell, refused
     # a >30 s foreground run here, backgrounded the call and returned before the report existed - and the
@@ -679,7 +703,7 @@ def _main():
                          "`py tools/bgrun.py --max-min <N> --log <file> -- <command>` so it has a hard deadline "
                          "and a final log line.\n")
         return 2
-    timeout = ti.get("timeout")
+    timeout = ti.get("timeout", ti.get("timeout_ms"))      # Codex shell input names it timeout_ms
     if timeout is not None and int(timeout) <= MAX_FG_MS:
         return 0
     sys.stderr.write(
