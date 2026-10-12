@@ -118,9 +118,22 @@ def codex_cmd(cell, model, effort, profile=PROFILE):
             'model_reasoning_effort="%s"' % effort, "-s", "danger-full-access", "-C", cell, "-"]
 
 
+def bench_env(extra=None):
+    """The GPT cell's launch environment = the SAME bench-cell markers as the Claude cells (matbench.cell_env, one
+    definition; user 2026-10-12 "1번 진행" for equal conditions). Codex passes it on to the hook processes (X10c probe:
+    GUARDCORE_CODEX_RAW reached adapt_codex)."""
+    sys.path.insert(0, HERE)
+    import matbench                         # noqa: E402
+    env = matbench.cell_env()
+    env.update(extra or {})
+    return env
+
+
 def run_exec(cell, prompt, model="gpt-6.1-sol", effort="high", out=None, timeout=None, env=None):
-    """Run one codex exec with `prompt` on stdin, streaming its JSONL to `out` (default stdout); returns rc."""
+    """Run one codex exec with `prompt` on stdin, streaming its JSONL to `out` (default stdout); returns rc.
+    env None -> bench_env() (the Claude cells' markers)."""
     out = out or sys.stdout
+    env = env if env is not None else bench_env()
     p = subprocess.Popen(codex_cmd(cell, model, effort), cwd=cell, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT, text=True, encoding="utf-8", errors="replace", env=env)
     p.stdin.write(prompt)
@@ -288,7 +301,7 @@ def step0_live(cell=CELL, timeout=300, tag="x10c"):
     reset_calls(cell)
     os.makedirs(X10, exist_ok=True)
     logp = os.path.join(X10, "%s_step0_live_codex.jsonl" % tag)
-    env = dict(os.environ, GUARDCORE_CODEX_RAW=RAW_PROBE)
+    env = bench_env({"GUARDCORE_CODEX_RAW": RAW_PROBE})
     with open(logp, "w", encoding="utf-8") as f:
         rc = run_exec(cell, LIVE_PROMPT % probe.replace("\\", "/"), out=f, timeout=timeout, env=env)
     calls_p = os.path.join(cell, ".matbench", "calls.jsonl")

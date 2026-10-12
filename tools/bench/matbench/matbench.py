@@ -197,6 +197,22 @@ def prepare(tid, cond_i, cond, rep=None):
     return wt, card, copied, left
 
 
+# The bench-cell markers of every replay cell (unchanged since card chat-N2). ONE definition, used by the Claude arm here
+# and by the GPT arm (codex_arm.py) - user 2026-10-12 "1번 진행": the GPT cell gets the SAME markers so both arms run
+# under equal conditions. The motor gate and the launch gates are not disabled by them (guard_bash.py:146, :174), and
+# the cell guards (cell_guard.py; for GPT also codex_cell_hook.py) still refuse LabVIEW, GUI, hardware, peers, git and
+# writes outside the cell.
+CELL_MARKERS = {"CYCLE_SESSION": "1", "BENCH_CELL": "1", "PEER_GUARD_OFF": "1",
+                "CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS": "0"}
+
+
+def cell_env(base=None):
+    env = dict(base if base is not None else os.environ)
+    env.update(CELL_MARKERS)
+    env.pop("MATERIAL", None)
+    return env
+
+
 def cell_cmd(t, cond, card, stub=None):
     prompt = "CARD tools/bench/cards/task_%s.json" % card["id"]
     if stub:
@@ -295,10 +311,7 @@ def run_task(tid, conds, truth, stubs, max_min_override, runs_root, reps=None, p
         # the cell in the main checkout (measured in the first selftest: the stub wrote into MAIN)
         cmd = [sys.executable, os.path.join(wt, "tools", "bgrun.py"), "--max-min", str(max_min), "--log", log,
                "--"] + cell_cmd(t, cond, card, stubs[ci] if stubs else None)
-        env = os.environ.copy()
-        env.update({"CYCLE_SESSION": "1", "BENCH_CELL": "1", "PEER_GUARD_OFF": "1",
-                    "CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS": "0"})
-        env.pop("MATERIAL", None)
+        env = cell_env()
         meta = {"task": tid, "cond": ci, "rep": r or 1, "condition": cond, "agent": t["agent"], "base": t["base"],
                 "src": t["src"], "worktree": wt, "card": card["id"], "copied": copied, "settings_unrepointed": left,
                 "max_min": max_min, "cmd": cmd[7:], "start": time.strftime("%Y-%m-%d %H:%M:%S"), "stub": bool(stubs)}
