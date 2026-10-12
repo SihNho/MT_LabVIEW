@@ -1488,7 +1488,7 @@ def term_identity_pos(base, sim, real, bind=None, renames=None):
       (kept_nodes) == the sim's (sets; `d_new_kept_nodes` = their two sizes), and |new| == |sim new| (a wire touching a
       created object counts by number - kept_nodes says why); renames (INFO) = kept keys whose real name differs from the sim
       end's; reuse_noted (INFO) = deleted wire uids present again at the end; extra (INFO) = real keys on a kept base node that
-      neither base nor the sim end has."""
+      neither base nor the sim end has; uid_reused (INFO) = row_uid_reused(base, real) (selftest_c166_ident.py)."""
     tb, ob = _bind_maps(bind)
     B, S, R = _pos_rows(base), _pos_rows(sim), _pos_rows(real)
     nm = lambda r: str(r.get("term_name") or "")                                      # noqa: E731
@@ -1519,7 +1519,7 @@ def term_identity_pos(base, sim, real, bind=None, renames=None):
             "d_ok": d_ok, "d_new_kept_nodes": [len(on_kept(new)), len(on_kept(sim_new))], "new": uids(re_, new), "lost_w": uids(be, lost_w), "sim_new": uids(se, sim_new),
             "sim_lost_w": uids(be, sim_lost), "d_new": len(new), "d_lost": len(lost_w), "reuse_noted": noted, "reuse_bad": [],
             "renames": ren, "unlicensed_renames": [], "licence_renames_listed": sorted(renames or {}),
-            "td_key": "position (node, index, term class, direction)"}
+            "td_key": "position (node, index, term class, direction)", "uid_reused": row_uid_reused(base, real)}
 
 
 def licence_renames(lic):
@@ -2037,10 +2037,11 @@ def pb_inherit_ctx(plan, flat, base_vi_md5=None, labels=None, fs_pairs=None, S1f
     through `flat`), connects {(node, term name): action id} of this plan's wires onto a base terminal, R0 / after0 = the base graph's
     (plan step 0) pb_bound_rows / cdiff `after` per sink, chain, missing, chain_connects {(node, term name): (adopted plan, action id)} of
     every adopted plan's wires onto a base terminal (newest plan wins), chain_tunnel_case {real tunnel uid: (adopted plan, case uid)}
-    (card 163-a1-4, fp-86)}. The chain is walked in adopted_scratch.jsonl from the base VI's
+    (card 163-a1-4, fp-86; newest plan wins since card 166-a1-4), chain_logs {adopted plan: its scratch log} (card 166-a1-4, the class-3
+    provenance of pb_record_lines)}. The chain is walked in adopted_scratch.jsonl from the base VI's
     md5 (base_vi_md5, else the plan's finalized base graph 'md5') through each record's input md5; a record whose plan md5 differs from
     the recorded one, whose json is absent or whose frame stays unbound goes to `missing` and adds nothing.
-    Self-test: tools/bench/selftest_c161_pbinherit.py."""
+    Self-tests: tools/bench/selftest_c161_pbinherit.py, tools/bench/selftest_c163_pbchain.py, tools/bench/selftest_c166_pbtight.py."""
     V = V or pure("vigraph")
     labels = labels if labels is not None else pure("jev_candidates").node_labels_default()
     fz = plan.get("finalized") or {}
@@ -2049,7 +2050,7 @@ def pb_inherit_ctx(plan, flat, base_vi_md5=None, labels=None, fs_pairs=None, S1f
         base_vi_md5 = base_vi_md5 or bg.get("md5")
         fs_pairs = fs_pairs if fs_pairs is not None else bg.get("fs_tunnel_pairs", bg.get("fs_pairs"))
     out = {"frames": {}, "cases": {}, "made": {}, "tunnel_case": {}, "connects": {}, "R0": {}, "after0": {}, "chain": [], "missing": [],
-           "chain_connects": {}, "chain_tunnel_case": {}}
+           "chain_connects": {}, "chain_tunnel_case": {}, "chain_logs": {}}
     recs = [json.loads(x) for x in open(adopt_path or os.path.join(BENCH, "adopted_scratch.jsonl"), encoding="utf-8") if x.strip()]
     by_art = dict((r["artefact"]["md5"], (i + 1, r)) for i, r in enumerate(recs))
     cur, seen = base_vi_md5, set()
@@ -2075,10 +2076,11 @@ def pb_inherit_ctx(plan, flat, base_vi_md5=None, labels=None, fs_pairs=None, S1f
             continue
         for n, fs in mf.items():
             out["frames"].setdefault(n, set()).update(fs)
+        out["chain_logs"].setdefault(pp, r["log"].replace("\\", "/"))               # card 166-a1-4 (PD397(e)(1)): class-3 provenance
         for a in pl.get("actions") or []:                                           # card 163-a1-4 (fp-86): what THIS adopted plan wired
             u, d = (sym.get("new:" + a["as"]) if a.get("as") else None), a.get("dst")
-            if a.get("op") == "tunnel" and u is not None and a.get("loop") is not None:
-                out["chain_tunnel_case"][fl.get(_iv(u), _iv(u))] = (pp, _iv(a["loop"]))
+            if a.get("op") == "tunnel" and u is not None and a.get("loop") is not None:   # card 166-a1-4 (PD397(e)(3)): newest plan wins
+                out["chain_tunnel_case"].setdefault(fl.get(_iv(u), _iv(u)), (pp, _iv(a["loop"])))
             if a.get("op") == "wire" and isinstance(d, dict) and isinstance(d.get("uid"), int) and d.get("term"):
                 out["chain_connects"].setdefault((int(d["uid"]), d["term"]), (pp, a.get("id")))   # newest adopted plan first
         out["chain"].append({"line": ln, "plan": pp, "move_frames": dict((n, sorted(f)) for n, f in mf.items())})
@@ -2099,6 +2101,64 @@ def pb_inherit_ctx(plan, flat, base_vi_md5=None, labels=None, fs_pairs=None, S1f
     return out
 
 
+def pb_record_lines(log_path):
+    """card 166-a1-4 (docs/d1/ring-p5c.md PD397(e)(1)): {sink: [(line no, frozenset of S1 source uids | None)]} of every `RECORD PB <sink>: ...`
+    FACT line in a scratch log (the line RingSession.gate_pb prints); the uid set is the line's `S1 source uids [..]` (None when the line
+    names none, e.g. a tag-only row). A missing log -> {}. Self-test: tools/bench/selftest_c166_pbtight.py."""
+    import re
+    out, p = {}, os.path.join(ROOT, str(log_path).replace("\\", "/"))
+    if not os.path.isfile(p):
+        return out
+    for i, x in enumerate(open(p, encoding="utf-8", errors="replace"), 1):
+        m = re.search(r"RECORD PB (.+?\|-?\d+): (.*)$", x.rstrip("\n"))
+        if not m:
+            continue
+        u = re.search(r"S1 source uids \[([-\d, ]*)\]", m.group(2))
+        out.setdefault(m.group(1), []).append((i, frozenset(int(v) for v in u.group(1).replace(" ", "").split(",") if v) if u else None))
+    return out
+
+
+def pb_provenance(sink, su, plan_path, ctx):
+    """card 166-a1-4 (PD397(e)(1)): (ok, why) - a class-3 row needs a `RECORD PB <sink>` line in the scratch log of the ADOPTED step that wired
+    it (ctx chain_logs[plan_path], pb_inherit_ctx), and EVERY such line names the same S1 source uid set as `su` (this row's S1 uids). No log,
+    no line, or a line without a uid set -> not ok. Self-test: tools/bench/selftest_c166_pbtight.py."""
+    lg = (ctx.get("chain_logs") or {}).get(plan_path)
+    if not lg:
+        return False, "no adopted scratch log for {0}".format(plan_path)
+    ls = pb_record_lines(lg).get(sink) or []
+    ok = bool(ls) and all(s == frozenset(su) for _i, s in ls)
+    return ok, "{0}:{1} RECORD PB S1 uids {2} vs {3}".format(os.path.basename(lg), [i for i, _s in ls] or "none",
+                                                              [sorted(s) if s is not None else None for _i, s in ls], sorted(set(su)))
+
+
+def pb_frame_coverage(res, src_uids, su, own, cf, passthrough):
+    """card 166-a1-4 (PD397(e)(2)): (ok, why) - the per-frame coverage of a class-2 / class-3 PB row, in place of the multiplicity count.
+    res = the row's `after` sources resolved (frame_src_resolve), src_uids = their terminal uids in the same order, su = S1's source uids,
+    own = the sink node's inherited frames, cf = the frames of the adopted case. The ALLOWED set is cf on a PD374D_PASSTHROUGH sink (its
+    value crosses iterations, so every frame must hand it on), else own & cf, which must be ONE frame. Each source entry passes the frame
+    it was carried through: its tag frames outside `own`, or (none) its frames inside `own`; that must be exactly one frame, inside the
+    allowed set (no tag on any other frame). ok iff every (allowed frame, S1 source uid) is carried by exactly one entry and no entry is
+    left over. It implies the old count (each uid len(cf) times beside the sink's frame, else once) except when the sink node's own frames
+    hold every case frame; pb_inherited_row keeps the old count as a guard, so the rule is only stricter.
+    Self-test: tools/bench/selftest_c166_pbtight.py."""
+    import collections as _co
+    allowed = set(cf) if passthrough else (set(own) & set(cf))
+    if not allowed or (not passthrough and len(allowed) != 1):
+        return False, "allowed frame set {0} (pass-through {1}) is not usable".format(sorted(allowed), passthrough)
+    seen, bad = _co.Counter(), []
+    for (b, ts), u in zip(res, src_uids):
+        fr = set(f for _tn, f in ts)
+        via = (fr - set(own)) or (fr & set(own))
+        if len(via) != 1 or not fr <= allowed:
+            bad.append((u, sorted(fr, key=str), sorted(via, key=str)))
+            continue
+        seen[(list(via)[0], u)] += 1
+    want = _co.Counter(dict(((f, u), 1) for f in allowed for u in set(su)))
+    ok = not bad and seen == want
+    return ok, "allowed {0}; carried {1} want each once {2}; entries off the allowed set {3}".format(
+        sorted(allowed), sorted(seen.items()), sorted(want), bad)
+
+
 def pb_inherited_row(sink, y, res, G1, S1f, bound_end, ctx):
     """Class 1 / class 2 of ONE pred-extra PB row (docs/d1/ring-p5b.md PD394(a), PD395(b)); y = its cdiff row, res = its `after` sources
     resolved (frame_src_resolve on G1), bound_end = pb_bound_rows(..., G1)[sink], ctx = pb_inherit_ctx(...). Class 1 (inherited row): the base
@@ -2109,7 +2169,9 @@ def pb_inherited_row(sink, y, res, G1, S1f, bound_end, ctx):
     created). Class 3 (card 163-a1-4, fp-86: class 2 CARRIED to a later step): no connect of this plan, but the newest adopted plan with a
     wire action onto the sink (ctx chain_connects) - base PB == bound_end, (ii) / (iv) as class 2, every tag = (a tunnel THAT plan created
     on the case, ctx chain_tunnel_case, a frame of that adopted case). Returns (1 | 2 | 3 | None, why, action id or None).
-    Self-tests: tools/bench/selftest_c161_pbinherit.py, tools/bench/selftest_c163_pbchain.py."""
+    Card 166-a1-4 (PD397(e), stricter only): classes 2 and 3 also need per-frame coverage (pb_frame_coverage; the old count stays as a
+    guard), and class 3 needs provenance - the wiring step's scratch log RECORD PB line with the same S1 source set (pb_provenance).
+    Self-tests: tools/bench/selftest_c161_pbinherit.py, tools/bench/selftest_c163_pbchain.py, tools/bench/selftest_c166_pbtight.py."""
     import collections as _co
     node, name = _iv(sink.split("|", 1)[0]), sink.split("|")[2]
     tu = lambda G, k: _iv((G["rows"].get(k) or {}).get("term_uid"))                # noqa: E731
@@ -2134,12 +2196,18 @@ def pb_inherited_row(sink, y, res, G1, S1f, bound_end, ctx):
     other = set(f for _tn, f in tags if f not in own)
     mult = set(_co.Counter(eu).values())
     want = set([len(cf)]) if other else set([1])
+    # card 166-a1-4 (PD397(e)(2)): the multiplicity count is replaced by per-frame coverage (pb_frame_coverage); (PD397(e)(1)) class 3 also
+    # needs the wiring step's RECORD PB line with the same S1 source set (pb_provenance)
+    cov, cov_why = pb_frame_coverage(res, [tu(G1, b) for b, _t in res], su, own, cf, (node, name) in PD374D_PASSTHROUGH)
+    prov, prov_why = pb_provenance(sink, su, cc[0], ctx) if cc is not None else (True, "")
     c1 = (("(i) base after {0} != [] or no connect action".format(ctx["after0"].get(sink, "absent")), ctx["after0"].get(sink) == [] and act)
           if cc is None else ("(i) carried: base PB != end", ctx["R0"].get(sink) is not None and ctx["R0"].get(sink) == bound_end))
     fails = [x for x, ok in (
         c1,
         ("(ii) source uid set {0} != S1's {1}".format(sorted(set(eu)), sorted(set(su))), set(eu) == set(su) and eu),
-        ("(ii) multiplicity {0} != {1}".format(sorted(mult), sorted(want)), mult == want),
+        ("(ii) per-frame coverage: {0}".format(cov_why), cov),
+        ("(ii) old count guard (stricter only): multiplicity {0} != {1}".format(sorted(mult), sorted(want)), mult == want),
+        ("(v) provenance: {0}".format(prov_why), prov),
         ("(iii) tags {0} not ({1} tunnel, frame of its adopted case {2})".format(sorted(tags, key=str), "this plan's" if cc is None else cc[0] + "'s", cf),
          case is not None and all(tn in tcase and (cc is not None or tn in ctx["made"]) and f in cf for tn, f in tags)),
         ("(iv) frame(s) {0} beside the sink node's inherited {1} on a non-pass-through sink".format(sorted(other), sorted(own)),
@@ -2665,6 +2733,8 @@ class RingSession(object):
                              "unwired_recorded": ti.get("unwired_recorded")})
         for k in ti.get("unwired_recorded") or []:                                 # card 158-a3-1 (PD386(b))
             s.fact("RECORD TD base key {0} unwired in real: its sim-end wire is a source-only stub (no sink; PD386(b))".format(k))
+        for x in ti.get("uid_reused") or []:                                      # card 166-a1-6 (fp-88): INFO, never a gate
+            s.fact("RECORD TD uid {0} re-used by a node of another identity (row_uid_reused): base {1} -> real {2}".format(x["uid"], x["base"], x["real"]))
         s.R["term_identity"] = ti
         s.R["real_end_rows"] = [[r["term_uid"], r.get("owner_uid"), r.get("term_name"), r.get("wire_uid"), bool(r.get("is_source"))] for r in real]   # review c141-2 s4.2
 
@@ -3020,6 +3090,113 @@ def plan_in_matches_stem(path, stem):
     head = stem + "_in"
     tail = b[len(head):]
     return b.startswith(head) and all(c in "0123456789" for c in tail)
+
+
+# ---------------------------------------------------------------------------------------------- NODE IDENTITY (card 166-a1-6, PD400(d), PD403(d)(4))
+# LabVIEW re-issues a deleted object's uid to ANOTHER object in the same session (step 4 of P5-2: base LoopTunnel #23501 came back as
+# ParameterTerminal 'y' of the new Comparison #12170, base 'x' #23481 of the deleted #23042 as 'x = y?' of #12170;
+# prep_c164_a3_7_ident.log IDENT/REUSE lines). A uid test then calls a deleted node present (gate-fp fp-87, E5) and the wire-uid /
+# position-key reuse detectors do not see it (fp-88). A node is therefore judged by IDENTITY (class, owner class, owner uid, pos) - the
+# ident()/matches() of tools/bench/prep_c164_a3_7_ident.py moved here unchanged. Pure functions, no LabVIEW.
+# Self-test: tools/bench/selftest_c166_ident.py.
+def node_ident(uid, objs, rows, owners):
+    """(class, owner class, owner uid, pos) of object `uid` in one graph (objs = {uid: obj}, rows = its terminal rows, owners = its
+    'owners' map); owner uid = stagexec.tunnel_owner for a tunnel, else the frame_diagram(s) of its rows (one -> int, else a tuple).
+    None when the uid is not an object. Moved from prep_c164_a3_7_ident.py ident(). Self-test: tools/bench/selftest_c166_ident.py."""
+    o = objs.get(uid)
+    if o is None:
+        return None
+    if str(o["class"]).endswith("Tunnel"):
+        try:
+            ou = pure("stagexec").tunnel_owner(rows, uid, owners)
+        except Exception as e:  # noqa: BLE001
+            ou = "?" + str(e)[:80]
+    else:
+        fd = sorted(set(int(r.get("frame_diagram") or 0) for r in rows if int(r.get("owner_uid") or 0) == uid))
+        ou = fd[0] if len(fd) == 1 else tuple(fd)
+    return (str(o["class"]), str(o["owner"]), ou, tuple(o["pos"]))
+
+
+def ident_matches(idb, objs, rows, owners):
+    """Sorted uids of the objects of one graph whose node_ident == idb (any uid). Moved from prep_c164_a3_7_ident.py matches().
+    Self-test: tools/bench/selftest_c166_ident.py."""
+    return sorted(u for u, o in objs.items() if str(o["class"]) == idb[0] and str(o["owner"]) == idb[1] and tuple(o["pos"]) == idb[3]
+                  and node_ident(u, objs, rows, owners)[2] == idb[2])
+
+
+def _graph_parts(G):
+    return (dict((int(o["uid"]), o) for o in G["objs"]), G["terminals"], G.get("owners") or {})
+
+
+def deleted_nodes_by_ident(deleted, base, after):
+    """E5's deleted-node test by IDENTITY. base / after = graph dicts {objs, terminals, owners} (the graph-read json). Returns {present,
+    gone, survivors, uid_reused, rule}: a deleted uid is PRESENT (BLOCK) when an object of its base identity exists in `after` under ANY
+    uid (survivors = {uid: those uids}), or when its uid is still an object of the SAME class (not provably another node - stricter only);
+    it is `uid_reused` (INFO: [{uid, base, after}] identities) when its uid now holds an object of another class; else GONE. A uid that is
+    not an object of `base` keeps the old uid rule (present iff an object of `after`). Self-test: tools/bench/selftest_c166_ident.py."""
+    O0, T0, W0 = _graph_parts(base)
+    O1, T1, W1 = _graph_parts(after)
+    out = {"present": [], "gone": [], "survivors": {}, "uid_reused": [], "rule": "identity (class, owner class, owner uid, pos)"}
+    for u in deleted:
+        u = int(u)
+        ib = node_ident(u, O0, T0, W0)
+        if ib is None:
+            (out["present"] if u in O1 else out["gone"]).append(u)
+            continue
+        m = ident_matches(ib, O1, T1, W1)
+        if m:
+            out["present"].append(u)
+            out["survivors"][u] = m
+        elif u in O1 and str(O1[u]["class"]) == ib[0]:
+            out["present"].append(u)
+        elif u in O1:
+            out["gone"].append(u)
+            out["uid_reused"].append({"uid": u, "base": list(ib), "after": list(node_ident(u, O1, T1, W1))})
+        else:
+            out["gone"].append(u)
+    return out
+
+
+def e5_check(edits, after, base=None):
+    """E5 of the graph-read diags (diag_c16*_graph.py inline `e5`, as one call): edits = the plan's {made, deleted_nodes, deleted_wires,
+    new_wires}; after = the graph read of the adopted file; base = the previous step's graph or None. Returns the old keys {made,
+    deleted_nodes_present, deleted_wires_present, new_wires_missing} plus ok, uid_reused, survivors, rule. Deleted nodes: by identity
+    (deleted_nodes_by_ident) when base is given, else by uid as before. made = {uid: class} (class must match) or a uid list (present).
+    Self-test: tools/bench/selftest_c166_ident.py."""
+    cls = dict((int(o["uid"]), str(o["class"])) for o in after["objs"])
+    wset = set(int(r["wire_uid"]) for r in after["terminals"] if r.get("wire_uid"))
+    md = edits.get("made") or {}
+    made = dict((int(k), v) for k, v in md.items()) if isinstance(md, dict) else dict((int(k), None) for k in md)
+    dn = [int(u) for u in edits.get("deleted_nodes") or []]
+    if base is not None:
+        d = deleted_nodes_by_ident(dn, base, after)
+    else:
+        d = {"present": [u for u in dn if u in cls], "survivors": {}, "uid_reused": [], "rule": "uid"}
+    e5 = {"made": dict((u, cls.get(u)) for u in made), "deleted_nodes_present": d["present"],
+          "deleted_wires_present": [w for w in edits.get("deleted_wires") or [] if w in wset],
+          "new_wires_missing": [w for w in edits.get("new_wires") or [] if w not in wset],
+          "uid_reused": d["uid_reused"], "survivors": d["survivors"], "rule": d["rule"]}
+    e5["ok"] = (all((u in cls) if c is None else cls.get(u) == c for u, c in made.items()) and not e5["deleted_nodes_present"]
+                and not e5["deleted_wires_present"] and not e5["new_wires_missing"])
+    return e5
+
+
+def row_uid_reused(base, real):
+    """The reuse detector on TERMINAL ROWS (fp-88): uids present in both tables whose ROLE set differs - a uid's roles are ('node', owner
+    class) where it owns rows and ('term', term class, owner uid, owner class) where it is a terminal (names / frames / wires left out:
+    renames and moves are not reuse). Returns [{uid, base: roles, real: roles}] sorted by uid (INFO, never a gate). Self-test:
+    tools/bench/selftest_c166_ident.py."""
+    def roles(rows):
+        out = {}
+        for r in rows or []:
+            t, o = _iv(r["term_uid"]), _iv(r.get("owner_uid"))
+            out.setdefault(t, set()).add(("term", str(r.get("term_class") or ""), o, str(r.get("owner_class") or "")))
+            if _on(o):
+                out.setdefault(o, set()).add(("node", str(r.get("owner_class") or "")))
+        return out
+    a, b = roles(base), roles(real)
+    return [{"uid": u, "base": sorted(map(list, a[u]), key=str), "real": sorted(map(list, b[u]), key=str)}
+            for u in sorted(set(a) & set(b), key=str) if a[u] != b[u]]
 # ---
 # labview: build
 # hardware: none

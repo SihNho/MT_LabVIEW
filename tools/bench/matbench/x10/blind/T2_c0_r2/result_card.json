@@ -1,0 +1,25 @@
+{"schema":"result/1","id":"mb-T2","status":"PASS","gates":{"pass":3,"fail":0},
+ "first_fail":null,
+ "blocked_by":null,
+ "artefacts":[
+  {"path":"tools/bench/diag_c90_t0_step3b.log","md5":"9367d365592fbe46a337aeab16011722"},
+  {"path":"tools/bench/diag_c90_t0_step3b_r2.log","md5":"596415c3076fe950e3d4b935ae649cb2"}
+ ],
+ "facts":[
+  "RUN1 first ExecState 0 = site 3 (first For body, ForLoop #29874 Diagram[50]); ES was 1 after sites 0 and 2 (step3b.log:79,135), 0 after S03 (step3b.log:174-176)",
+  "RUN1 op/error: OpCreateConstOnTerm_v0 on ForLoop[5].N[5].t6 -> 'error 1055: Invoke Node in OpCreateConstOnTerm_v0.vi' (step3b.log:172); census adds only a junk Invoke, no constant (:159)",
+  "RUN1: S03 then stops before the branch, so CLFN #22997 stays in the For body with t6 and t8 unwired (step3b.log:173). The same 1055 hits all 5 For sites 3,4,5,16,17 (:213,253,573,613)",
+  "RUN1: the constant uid reported on the 1055 sites is stale: it repeats the previous site's uid (#23441 = S02 step3b.log:114; #24551 = S13 :515). No constant was created there",
+  "RUN2 MEASURED: a CLFN with t6/t8 unwired gives ExecState 0, both at top level and in the body (step3b_r2.log:42,45). This explains run 1's ES 0 from S03 on (ES table step3b.log:673)",
+  "RUN2 fault: S00.3 reads t6 wire 0 at N[74] (r2.log:62) although the constant was made with no error (:61). The op's junk Invoke sat at nodes_index 73 of 75, below the CLFN (r2.log:49)",
+  "RUN2: purging that index-73 junk (r2.log:58) shifts the CLFN 74->73, so n=74 is stale. Run 1 had junk at 74, above CLFN 73 (step3b.log:46,59). Branch skipped, t8 bare: ES 0 from site 0 (r2.log:63-65)",
+  "RUN2 same pattern at S11: junk at index 23 of 25 (r2.log:268), gate reads N[24] -> wire 0 (:281). S12's junk at 25, above CLFN 24 -> PASS (:309,322). This is our index bug, not a LabVIEW refusal",
+  "Route by site: While bodies 0,2,8,10,11,12,13,20 all pass .2/.3/.4 in run 1 (step3b.log:58-77..651-670). For bodies 3,4,5,16,17 fail 0/5 with 1055. Case frames 6,7,14,15 never attempted",
+  "RUN2 skips For and case sites (r2.log:23); branch ok on 2,8,10,12,13,20 (:461). CD: 0 rows, 16 added = CallLibrary+DigitalNumericConstant, no Invoke (:465); not saved (:466); pins held (:483,502)"
+ ],
+ "open":[
+  "Why ForLoop[i] addressing raises 1055 is unmeasured: is the uid_index ForLoop number the op's own ForLoop enumeration? The logs hold no readback of the reference the op opened",
+  "Run-2 fix candidate: find the CLFN's nodes index again by uid after every junk purge, before the t6 gate and the branch. Judgement decides whether that plus a For-body route is the next card"
+ ],
+ "cost":{"usd":null,"minutes":12,"labview_runs":0},
+ "note":"Offline log read only; no rerun. diag_c90_t0_step3b.py is absent from this worktree, so script behaviour is read from the log order (const -> purge -> gate). No JEV-LADDER line exists for diag_c90_t0_step3b in jev_gate.log."}

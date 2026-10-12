@@ -1,0 +1,25 @@
+{"schema":"result/1","id":"166-a1-3","status":"PASS","gates":{"pass":6,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+ {"path":"tools/errorlist_check.py","md5":"bfa0a3879a137a4058bf4e84e5570569"},
+ {"path":"tools/elpredict.py","md5":"d2d7de21136c670820070e9f26c081fb"},
+ {"path":"tools/bench/selftest_c166_eladv.py","md5":"0ba14f9381e71ceb7f09c554b2706b24"},
+ {"path":"tools/bench/diag_c166_a1_3_replay.py","md5":"64129d55c40fec8bff077b38b2e069e8"},
+ {"path":"tools/bench/diag_c166_a1_3_replay/errorlist_predicted_D1_ring_p5s02e_end.json","md5":"1a67aebaa8375d840c3a2e9178d75da3"},
+ {"path":"tools/bench/diag_c166_a1_3_facts.md","md5":"b50f0f8f7b01347d18bcc3e6411df6b8"},
+ {"path":"docs/fn_descriptions.json","md5":"b6fc8f211de206ab23ee9f0629328a1a"}],
+"facts":[
+ "errorlist_check.py:641 main now calls final_verdict (:699); a predicted end file with its pred -> stagekit.el_advisory decides, by-design verdict kept as RECORDED; else unchanged",
+ "selftest_c166_eladv.log:97 RESULT PASS 11/0: stored 47-item read rc 0; planted unseen class rc 1 (direct + rejudge_read); |diff|>3 rc 1; no-pred path MISMATCH as before",
+ "selftest_c166_eladv.log:71-72 rejudge_read(cycle-165 read) -> step verdict OK rc 0, by-design MISMATCH recorded; literal log was rc 1 (diag_c165_a3_4_el.log:85-86)",
+ "tools/elpredict.py:106 predict = prep_c164_a2_3_lib.el + rule 1 clears_by-in-plan (:67) + rule 2 tunnel_links (:85); self-test log diag_c166_a1_3_elpredict_selftest.log:145 PASS 5/0",
+ "diag_c166_a1_3_replay.log:415 step-5 replay from stored inputs: total 47, compare(read 0c0664d8) extra 0 missing 0; items 4/49 STANDING->CLEARED (:411-412)",
+ "diag_c166_a1_3_replay.log:418 re-made step-5 entries == 166-a1-2 final expected file c94be128 by item (46 vs 46); its dropped [4,49] == newly cleared [4,49]",
+ "diag_c166_a1_3_replay.log:385 p5s02d re-made byte-equal 2c1edf78; s02b/s02c (older inline flows) item sets and totals equal, only format keys differ (:334,:358)",
+ "p5s01a/p5s01b/p5s02a preds have errorlist.item_file None (totals only) - nothing item-wise to re-make (diag_c166_a1_3_replay.log FACT lines before :422)",
+ "diag_c166_a1_3_hash_after.log:12 PASS 8/0: 7 VIs unchanged, card inputs equal except edited errorlist_check.py; stagekit/stagexec/stagesim/elrule/hooks untouched; no LabVIEW",
+ "dupcheck: prep_c164_a2_3_lib.py:152-228 el vs elpredict.py:168-244 predict (diag_c166_a1_3_dupcheck.log:12) - old lib kept as the record, not rewritten"],
+"open":[
+ "Should prep_c164_a2_3_lib.el (and its callers' future copies) be retired in favour of elpredict.predict? The lib is a bench record and outside this card's write globs.",
+ "Brief named licence/el/pred as 'the predictor'; only el (the EL predictor) moved to tools/elpredict.py - licence and pred stay in prep_c164_a2_3_lib. Move them too?"],
+"cost":{"usd":null,"minutes":17,"labview_runs":0},
+"note":"Rule 1 alone gives 47 on step 5; rule 2 alone also gives 47 (self-test E). cycle_runner's reverdict (compare-only re-verdict) does not use the advisory - not in scope."}

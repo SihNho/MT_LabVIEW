@@ -1,0 +1,27 @@
+{"schema":"result/1","id":"166-a1-1","status":"PASS","gates":{"pass":7,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+{"path":"tools/bench/graph_ring_p5s02e_20261012_173009.json","md5":"7815af0993bd8aeb1f14c7d3d76b0da1"},
+{"path":"tools/bench/diag_c165_a3_4_graph.log","md5":"3ab91b352a42c7662a8c6813b4447eb8"},
+{"path":"tools/bench/diag_c166_a1_1_tun.log","md5":"3a3450f388ee78121160db88cce13ffc"},
+{"path":"tools/bench/memory_model.json","md5":"d12bcd3b1ed3c776ab361fa71b55df4d"},
+{"path":"tools/bench/plan_ring_p5s02e_pred.json","md5":"1cba18c2be709884e5d9000ec705824a"},
+{"path":"tools/bench/diag_c166_a1_1_facts.md","md5":"7b8578eb64590588ea2314dbb93ae415"},
+{"path":"tools/bench/diag_c166_a1_1_tun.py","md5":"448fa71878a72dc7b1468532cf45a124"},
+{"path":"tools/bench/diag_c166_a1_1_tun_plan.json","md5":"90ee0e1e1fd137f360463368e061e48d"},
+{"path":"tools/bench/diag_c166_a1_1_lib.py","md5":"205bfbdce17dd97653cbd2880f807a6f"}],
+"facts":[
+"Hashes before/after 8/0: 7 VIs incl. 75773b0d + 7f2582ae unchanged, card inputs equal (diag_c166_a1_1_hash_before.log:3-12, _after.log:3-12)",
+"Graph read (unchanged script, check_launch ALLOW) PASS 15/0, G1/G2/G3/FS1/B/E5/X PASS, LabVIEW gone (diag_c165_a3_4_graph.log:305-314,336-337); MEM after load 647.8 (:24)",
+"w4337/w9636 terminal sets equal to 2a5fa0c4; only outer t9631/t24363 flipped is_source false->true (diag_c166_a1_1_q_p5s02d.log:4-10 vs _q_p5s02e.log:4-5,16-18)",
+"t8776 source t31815 (#31803 OK3), t24342 source t31858 (#31847 = sim -10): equal to the stagesim end (diag_c166_a1_1_q_simend.log:4-9); sim's OK4 outer name '' vs real 'file number to append out'",
+"Rule-1a: #5204 and #10404 IndexMode 0 and outer type I32 (label-exact sig equal) in 75773b0d AND 7f2582ae, via existing gscript.tunnels + read_term_type (diag_c166_a1_1_tun.log:44-47)",
+"Tunnel read PASS 21/0 on byte copies, LabVIEW restarted between files, peak 603.5 MB, refs 5==5, files left [], LabVIEW gone (diag_c166_a1_1_tun.log:48-71)",
+"memory_model.json: one load_by_vi key 75773b0d...5af6 = 647.8 (cite graph.log:24); only that key differs, fail_above_mb 680.0; ff0fabca -> d12bcd3b (diag_c166_a1_1_mm.log)",
+"pred census = scratch log :148 via stagekit.scratch_census, MEASURED-SCRATCH; only census/census_overall/census_source changed; 825cbf65 -> 1cba18c2 (diag_c166_a1_1_census.log)",
+"Same P5 final loaded at 599.4 MB in the tunnel read vs 647.8 MB in the graph read: two loads of one file differ by 48.4 MB (diag_c166_a1_1_tun.log:25, diag_c165_a3_4_graph.log:24)",
+"No original opened, no VI saved, no STATUS/INDEX/recipe/plan/hook edit; no gate failed -> no Jev row, no peer (tools/bench/diag_c166_a1_1_facts.md:36-38)"],
+"open":[
+"load_by_vi takes 647.8 (brief: the graph read's line) but the same file loaded at 599.4 in the tunnel read; X10 start for P6 = 647.8 + 5.9 leaves ~26 MB under 680 - keep 647.8 or re-measure?",
+"The JSON layout-preserving rewrite now lives in tools/bench/diag_c166_a1_1_lib.py with an older inline copy at prep_c164_a3_7_write.py:53-59; move it into stagekit (outside this card's write globs)?"],
+"cost":{"usd":null,"minutes":13,"labview_runs":2},
+"note":"Order kept: graph read -> rule-1a read -> load_by_vi -> census. The tunnel read needed its own plan file (diag_c166_a1_1_tun_plan.json) to pass stage_prerun X2/X9 before launch."}

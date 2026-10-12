@@ -1,0 +1,25 @@
+{"schema":"result/1","id":"166-a1-6","status":"PASS","gates":{"pass":5,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+ {"path":"tools/stagekit.py","md5":"b40155edad5ecb998b20131ac5d33213"},
+ {"path":"tools/bench/selftest_c166_ident.py","md5":"65579670b0f2b506475abd71a53724c9"},
+ {"path":"tools/bench/selftest_c166_ident.log","md5":"d5c3c35ce825d358a8337c608b96cf52"},
+ {"path":"tools/bench/diag_c166_a1_6_dry.py","md5":"7d00b63cdc9c35b78a9da058a64f0824"},
+ {"path":"tools/bench/diag_c166_a1_6_dry.log","md5":"450a3ff12991ff9f5409c85129fd637a"},
+ {"path":"tools/bench/diag_c166_a1_6_facts.md","md5":"48684a8e060d02251cafd176718c554e"},
+ {"path":"tools/bench/gate_fp_queue.jsonl","md5":"b6f19c81c43ecb53a75f570616fa146c"}],
+"facts":[
+ "stagekit.py:3102 node_ident / :3120 ident_matches moved unchanged from prep_c164_a3_7_ident.py; :3131 deleted_nodes_by_ident; :3160 e5_check; :3184 row_uid_reused",
+ "Stricter: a deleted uid counts as present if its identity survives under ANY uid, or the uid is still an object of the SAME class; uid_reused (INFO) only on a class change (stagekit.py:3131)",
+ "selftest_c166_ident.log:105 PASS 29/0: I1 :59 #23501 gone + uid_reused LoopTunnel->ParameterTerminal, I2 :60 #23042 gone, P3 :64 old uid rule = stored E5 FAIL",
+ "selftest_c166_ident.log:66 row_uid_reused step 4 = 23481 (term of #23042 -> #12170) and 23501 (LoopTunnel node -> term of #12170); RECORD TD line at stagekit.py:2736-2737",
+ "selftest_c166_ident.log:67-69 planted survivors of #23501/#23042 under new uids, and same-uid same-class moved: all CAUGHT as present",
+ "selftest_c166_ident.log:102-103 over 15 stored E5 pairs: no PASS->BLOCK (no RETURN row); only BLOCK->PASS = diag_c164_a3_5 uid 23501 (fp-87); diag_c141_3 not scored (no base graph)",
+ "diag_c166_a1_6_dry.log:11 PASS 8/0: p5s01a/b, p5s02a-e dry equal under pre-assignment stagekit dd57c1ca vs b40155ed; p5s02d rc 1 (CEN2) under both, :9",
+ "Regressions PASS: t6_poskey 43/0, c158 16/0, c141_3 9/0, c159 8/0, t7_ring 35/0, c166_pbtight 26/0, c161 10/0, c163 10/0 (diag_c166_a1_6_reg_*.log)",
+ "diag_c166_a1_6_reg_c147.log:3 c147_b1_2 P0 pins pre-drifted (stagexec, memory_model, s06v18 pred; untouched); dd57c1ca pins drift: selftest_c165_innerface.py:250, _prime.py:117",
+ "fp-87, fp-88 DRAINED (gate_fp.py drain, fixed stagekit.py:3131 / :3184); hash_before/after PASS 8/0, 7 VIs unchanged, no LabVIEW, lint 0"],
+"open":[
+ "Same-uid same-class at another position/owner is kept PRESENT (BLOCK) to stay stricter-only, though the brief's literal identity rule would call it uid_reused. Keep it so?",
+ "The 15 inline E5 copies (diag_c141_3..diag_c165_a3_4 _graph.py) are stored records and were left as they are; the next graph-read diag must call stagekit.e5_check(edits, after, base). Should the brief/template say so?"],
+"cost":{"usd":null,"minutes":14,"labview_runs":0},
+"note":"row_uid_reused works on terminal rows only (class, owner); positions are used by the E5 identity check, which has objects. Self-test run 1 failed on its own N4 mutation (selftest_c166_ident.log:17), fixed in the test. Probe diag_c166_a1_6_probe.py kept."}

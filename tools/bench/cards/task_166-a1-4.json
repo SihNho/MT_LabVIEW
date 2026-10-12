@@ -1,0 +1,54 @@
+{
+ "schema": "task/1",
+ "id": "166-a1-4",
+ "kind": "build",
+ "goal": "Per brief_166-a1-4.md (offline): PD397(e) PB tightening (class-3 provenance, per-frame coverage, newest-wins chain_tunnel_case) + self-test, drain fp-86; stored plans stay byte-equal.",
+ "why": "Purpose items 11 and 13 of assignment 166-1 (PD403(d)(3)): the pbchain review's three objections become tightenings, stricter only.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_166-a1-4.md", "md5": "e25ae689fbc4ee62913444bd9594b8b9"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+  {"path": "docs/d1/ring-p5c.md", "md5": "d62725b9e9ba1044dc77c35fe41d921a"},
+  {"path": "tools/stagekit.py", "md5": "dd57c1cac5d56b82c08c6ef9d7b1a22d"},
+  {"path": "tools/bench/diag_c165_p5s02e_scratch.log", "md5": "d7a24ff4a621a8490d6e5204ab743b7a"}
+ ],
+ "pass": [
+  "PB check in stagekit: class-3 provenance (RECORD PB line of the adopted scratch log), per-frame coverage in classes 2 and 3, chain_tunnel_case newest-wins; docstrings name the self-test",
+  "Self-test: stored p5s02c/p5s02d/p5s02e PB inputs still RECORD every row; negatives: missing provenance, missing frame, doubled frame, older/newer chain entry; lines quoted",
+  "Stricter-only proof: stored adopted PB results re-scored old vs new; no old-BLOCK becomes PASS; a newly BLOCKED adopted row = RETURN with the row",
+  "fp-86 drained via gate_fp.py drain citing the function:line and the self-test line",
+  "Stored plans p5s01a/b and p5s02a-e compile + dry byte-equal after the change (command + line quoted); drifted pins listed; seven VIs unchanged; no LabVIEW; no hooks edit"
+ ],
+ "outputs": [
+  "tools/bench/diag_c166_a1_4_facts.md",
+  "tools/bench/selftest_c166_pbtight.py"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c166_a1_4*",
+   "tools/bench/prep_c166_a1_4*",
+   "tools/bench/selftest_c166_pbtight*",
+   "tools/stagekit.py",
+   "docs/fn_descriptions.json",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/jev_*",
+   "tools/bench/cards/result_166-a1-4.json"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 90
+ },
+ "advances": ["M3", "M8", "R1"],
+ "rules": [
+  "Offline only; no LabVIEW; tools/hooks/** is never edited",
+  "Stricter only: an adopted row the tightened rule blocks is handed back, the rule is not loosened",
+  "No E5 / reuse-detector / EL-advisory / elpredict change here; no STATUS / INDEX / plan edit"
+ ]
+}

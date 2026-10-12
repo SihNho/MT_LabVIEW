@@ -1,0 +1,30 @@
+BGRUN START 2026-10-12 13:25:28 limit 6.0 min: py -u tools/bench/selftest_scope_cwd.py
+BGRUN PID 22548
+PASS  A1 root say                                    rc=0 
+PASS  A2 root say, ROOT spelled /, lower, trailing   rc=0 
+PASS  A3 root say in nested powershell               rc=0 
+PASS  B1 root cd then say                            rc=2 
+PASS  B2 root Set-Location then say                  rc=2 
+PASS  B3 root pushd then say                         rc=2 
+PASS  B4 root Push-Location then say                 rc=2 
+PASS  B5 root nested powershell cd                   rc=2 
+PASS  B6 root say + missing tools/ file              rc=2 
+PASS  B7 root say + script outside ROOT tools/       rc=2 
+PASS  C1 cell relative none                          rc=2 
+PASS  C2 cell absolute none                          rc=0 
+PASS  C3 cell absolute none, nested powershell       rc=0 
+PASS  C4 cell bgrun abs + abs child                  rc=0 
+PASS  C5 cell bgrun abs + relative child             rc=2 
+PASS  C6 cell relative none, nested powershell       rc=2 
+PASS  D1 cell absolute labview build                 rc=2 
+PASS  D2 cell absolute main-tree script              rc=2 
+PASS  D3 cell absolute sub/tools script              rc=2 
+PASS  D4 cell abs none + cd                          rc=2 
+PASS  D5 cell absolute dishonest header              rc=2 
+PASS  D6 cell relative dishonest header              rc=2 
+PASS  E1 no cwd say                                  rc=0 
+PASS  E2 no cwd say + missing tools/ file (old rule) rc=0 
+PASS  E3 no cwd cell-relative script (not seen)      rc=2 
+PASS  F1 guardcore R4 reads the cell via cwd         with=[('C:\\Users\\KimLab\\AppData\\Local\\Temp\\x11_cell_m2w7h9rx\\tools\\lv_build.py', 'build')] without=[]
+RESULT {"schema": "result-line/1", "status": "PASS", "gates": {"pass": 26, "fail": 0}}
+BGRUN END rc=0 after 8s

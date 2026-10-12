@@ -1,0 +1,17 @@
+{"schema":"result/1","id":"chat-X8","status":"BLOCKED","gates":{"pass":3,"fail":1},
+"first_fail":"pass item 4: tools/bench/forkbench/report_x8.md not written - harness refused the Write ('Subagents should return findings as text, not write report files.'), fp-96",
+"blocked_by":{"device":"gate-fp:fp-96","message":"Claude Code harness refused Write tools/bench/forkbench/report_x8.md: 'Subagents should return findings as text, not write report files.' Report text is in the hand-back; everything else committed 2d5463ba."},
+"artefacts":[{"path":"tools/bench/forkbench/forkbench_x8.py","md5":"31c896e328ab4488c12e3852a137318b"},{"path":"tools/bench/forkbench/rows_x8.json","md5":"e4125133c0bad1c4355fb536e98603fb"}],
+"facts":[
+"6 arms rc 0 in 48-115 s, Opus 5.5 high, read-only (--tools Read,Glob,Grep), BENCH_CELL=1: tools/bench/forkbench/run_x8.log RESULT pass 6 fail 0",
+"purpose transcripts unchanged by forks: 187a3ccf md5 d4f28ef8 124=124 lines (x2), 0fc88208 md5 005e4e6a 172=172; fork sids all new: rec_<case>_fork.json",
+"decision match (blind, Opus scorer): fork yes/yes/yes; fresh partial/yes/yes (165_1,165_2,164_2): tools/bench/forkbench/score_*.json",
+"mistake avoided: 165_1 fork no / fresh yes; 165_2 both no (Error List 47 vs 49); 164_2 both yes (next round met 17/17): rows_x8.json",
+"cost fork $3.40/$3.52/$4.11 vs fresh $0.55/$0.73/$0.78; cache-create fork 160-187k vs fresh 44-68k tokens (cache cold, 4-7 h after purpose): rec_*_*.json",
+"minutes fork 0.8/0.9/1.1 vs fresh 1.4/1.7/1.9; tool calls fork 4-10 vs fresh 14-15; real judges $1.69-1.94, 2.7-3.0 min",
+"LEAK: fresh arms read today's next.json (PD402 fix) + stagexec.py; 165_1 fresh 'avoided' names the PD402 fix (answer_165_1_fresh.md, stagexec.py:2621-2648)",
+"LEAK: --resume attached edited_text_file of today's next.json to every fork (ee854af9...jsonl:110, 993cd5a1...jsonl:110, dc143cca...jsonl:150-151)",
+"no repo rollback possible: cycles 160-164 committed together 17:33 (b68dacbe), 165 at 18:01 (fd1396c4)"],
+"open":["Accept the report text from the hand-back and have a non-subagent session write tools/bench/forkbench/report_x8.md, or rerun with repo snapshot + cache-warm fork to remove the leak and the cold-cache cost?"],
+"cost":{"usd":13.47,"minutes":14,"labview_runs":0},
+"note":"usd = 6 arms $13.09 + scorer $0.38; this session's own cost not included. Committed 2d5463ba (tools/bench/forkbench only)."}

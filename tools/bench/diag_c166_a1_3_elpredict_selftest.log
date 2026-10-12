@@ -1,0 +1,146 @@
+BGRUN START 2026-10-12 17:49:44 limit 3.0 min: py -u tools/elpredict.py --selftest
+BGRUN PID 11088
+GATE PASS | A is_stale / clears_by_in_plan / base_uids | 
+GATE PASS | B attached_wires / wires_of | 
+GATE PASS | C tunnel_links(base 2a5fa0c4, items 7 / 8 cleared) == {4: #5204 t9631, 49: #10404 t24363} | {4: {'tunnel': 5204, 'outer_term': 9631, 'with_item': 7, 'action': 'w_k3f', 'A': 73}, 49: {'tunnel': 10404, 'outer_term': 24363, 'with_item': 8, 'action': 'w_k4f', 'A': 84}}
+GATE PASS | M0 pins {'errorlist_expected_D1_ring_p5s02d_20261010_152518.json': 'c74200f2', 'plan_ring_p5s02e.json': 'fd23974e', 'graph_ring_p5s02d_20261010_154830.json': '2a5fa0c4'} | {'errorlist_expected_D1_ring_p5s02d_20261010_152518.json': 'c74200f2', 'plan_ring_p5s02e.json': 'fd23974e', 'graph_ring_p5s02d_20261010_154830.json': '2a5fa0c4'}
+GATE PASS | M1 read md5 == expected file's measured_md5 7450dd98 | 7450dd98bcd4c57d56c0e7aedec63857
+GATE PASS | B compare(read 53 items, the 52 expected entries = 53 items) extra 0 missing 0 (baseline) | ([], [])
+FACT actions ['dw_10362', 'w_k3f', 'sr_k4', 'c_k4i', 'w_k4i', 't_k4o', 'w_k4out', 'w_k4r', 't_k4i', 'w_k4l', 'w_k4pass', 'dw_25232', 'w_k4f']; base uids named [(376, 'w_k4out'), (686, 'c_k4i'), (5204, 'w_k3f'), (5739, 'w_k4out'), (8776, 'w_k3f'), (10362, 'dw_10362'), (10404, 'w_k4f'), (23041, 'sr_k4'), (23405, 't_k4i'), (24342, 'w_k4f'), (25232, 'dw_25232'), (31308, 't_k4i'), (31506, 't_k4o'), (31517, 't_k4i'), (31803, 'w_k3f')]
+FACT TUNNEL-LINK item 4: wire carries t9631 (OuterTerminal of #5204, item 7 cleared by A73 w_k3f) - also cleared by an earlier rule
+FACT TUNNEL-LINK item 49: wire carries t24363 (OuterTerminal of #10404, item 8 cleared by A84 w_k4f) - also cleared by an earlier rule
+FACT CLEARED item 4 nosource uid 4337 by A73 w_k3f - clears_by 'A70 w_k3f' names action w_k3f of this plan (rule 1, PD403(d)(2); no action names #4337)
+FACT CLEARED item 6 nosource uid 10362 by A72 dw_10362 - action names #10362
+FACT CLEARED item 7 undirected uid 5204 by A73 w_k3f - action names #5204
+FACT CLEARED item 8 undirected uid 10404 by A84 w_k4f - action names #10404
+FACT CLEARED item 49 whilesubvi uid 9636 by A84 w_k4f - clears_by 'A80 w_k4f' names action w_k4f of this plan (rule 1, PD403(d)(2); no action names #9636)
+FACT CLEARED item 50 nosource uid 25232 by A83 dw_25232 - action names #25232
+GATE PASS | CL 6 row(s) cleared by an action of this plan (items [4, 6, 7, 8, 49, 50]) | [{'item': 4, 'class': 'nosource', 'object_uid': 4337, 'action': 'w_k3f', 'A': 73, 'how': "clears_by 'A70 w_k3f' names action w_k3f of this plan (rule 1, PD403(d)(2); no action names #4337)", 'rule': 'PD403(d)(2) rule 1', 'tunnel_link': {'tunnel': 5204, 'outer_term': 9631, 'with_item': 7}}, {'item': 6, 'class': 'nosource', 'object_uid': 10362, 'action': 'dw_10362', 'A': 72, 'how': 'action names #10362'}, {'item': 7, 'class': 'undirected', 'object_uid': 5204, 'action': 'w_k3f', 'A': 73, 'how': 'action names #5204'}, {'item': 8, 'class': 'undirected', 'object_uid': 10404, 'action': 'w_k4f', 'A': 84, 'how': 'action names #10404'}, {'item': 49, 'class': 'whilesubvi', 'object_uid': 9636, 'action': 'w_k4f', 'A': 84, 'how': "clears_by 'A80 w_k4f' names action w_k4f of this plan (rule 1, PD403(d)(2); no action names #9636)", 'rule': 'PD403(d)(2) rule 1', 'tunnel_link': {'tunnel': 10404, 'outer_term': 24363, 'with_item': 8}}, {'item': 50, 'class': 'nosource', 'object_uid': 25232, 'action': 'dw_2
+GATE PASS | ST 0 stale row(s) (items []): none names an action of this plan | []
+FACT ELRULE new [] closed [] uncertain base [] uncertain subvi []
+GATE PASS | R every elrule new item (0) attributed to an action and has a text key; closed [] | []
+GATE PASS | U unpredicted groups (session compile reb groups + delete_object rows with wires): [('UNPREDICTED:A77 t_k4o', ['t_k4o', 'w_k4out', 'w_k4r']), ('UNPREDICTED:A80 t_k4i', ['t_k4i', 'w_k4l', 'w_k4pass'])] | [{'action': 'UNPREDICTED:A77 t_k4o', 'id': 't_k4o', 'op_group': ['t_k4o', 'w_k4out', 'w_k4r'], 'A': [77, 78, 79], 'why': "connect_term_uid register_end_case_border (tunnel + register face through the case border, new SR SK4): step 2's same verb left +2 'Wire has loose ends.' items (diag_c162_a1_2_facts.md), step 3's left none (diag_c163_a2_2_facts.md:31); not decidable offline - the step-5 scratch measures it"}, {'action': 'UNPREDICTED:A80 t_k4i', 'id': 't_k4i', 'op_group': ['t_k4i', 'w_k4l', 'w_k4pass'], 'A': [80, 81, 82], 'why': "connect_term_uid register_end_case_border (tunnel + register face through the case border, new SR SK4): step 2's same verb left +2 'Wire has loose ends.' items (diag_c162_a1_2_facts.md), step 3's left none (diag_c163_a2_2_facts.md:31); not decidable offline - the step-5 scratch measures it"}]
+GATE PASS | F compare(read minus the 6 cleared = 47 items, the 46 predicted entries = 47 items) extra 0 missing 0 (raised rows are synthetic: 0) | ([], [], [])
+GATE PASS | PC per-class predicted total 47 == item total 47 (start 53 - cleared 6 + raised 0 - elrule closed 0) | {'input': 1, 'other:thiswireisnotconnectedtoanything': 22, 'other:wirewirehaslooseends': 23, 'other:youhayeconnectedtwoterminalsofdifferenttypes': 1}
+EL COUNTS cleared 6 raised 0 unpredicted 2 standing 47 stale 0 total 47 (upper 49)
+GATE PASS | W predicted file built (not written), 47 items == total; compare(read minus cleared, the file's own entries) extra 0 missing 0 == raised | 
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":10,"fail":0},"first_fail":null,"artefacts":[],"card":"166-a1-3","labview":"none"}
+GATE PASS | D step-5 replay: predict rc 0, total 47 == 47, cleared items [4, 6, 7, 8, 49, 50] include 4 and 49; compare(read 0c0664d8 47 items) extra 0 missing 0 | ([], [])
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":4,"fail":0},"first_fail":null,"artefacts":[],"card":"166-a1-3","labview":"none"}
+BGRUN END rc=0 after 1s
+BGRUN START 2026-10-12 17:55:01 limit 3.0 min: py -u tools/elpredict.py --selftest
+BGRUN PID 23284
+GATE PASS | A is_stale / clears_by_in_plan / base_uids | 
+GATE PASS | B attached_wires / wires_of | 
+GATE PASS | C tunnel_links(base 2a5fa0c4, items 7 / 8 cleared) == {4: #5204 t9631, 49: #10404 t24363} | {4: {'tunnel': 5204, 'outer_term': 9631, 'with_item': 7, 'action': 'w_k3f', 'A': 73}, 49: {'tunnel': 10404, 'outer_term': 24363, 'with_item': 8, 'action': 'w_k4f', 'A': 84}}
+GATE PASS | M0 pins {'errorlist_expected_D1_ring_p5s02d_20261010_152518.json': 'c74200f2', 'plan_ring_p5s02e.json': 'fd23974e', 'graph_ring_p5s02d_20261010_154830.json': '2a5fa0c4'} | {'errorlist_expected_D1_ring_p5s02d_20261010_152518.json': 'c74200f2', 'plan_ring_p5s02e.json': 'fd23974e', 'graph_ring_p5s02d_20261010_154830.json': '2a5fa0c4'}
+GATE PASS | M1 read md5 == expected file's measured_md5 7450dd98 | 7450dd98bcd4c57d56c0e7aedec63857
+GATE PASS | B compare(read 53 items, the 52 expected entries = 53 items) extra 0 missing 0 (baseline) | ([], [])
+FACT actions ['dw_10362', 'w_k3f', 'sr_k4', 'c_k4i', 'w_k4i', 't_k4o', 'w_k4out', 'w_k4r', 't_k4i', 'w_k4l', 'w_k4pass', 'dw_25232', 'w_k4f']; base uids named [(376, 'w_k4out'), (686, 'c_k4i'), (5204, 'w_k3f'), (5739, 'w_k4out'), (8776, 'w_k3f'), (10362, 'dw_10362'), (10404, 'w_k4f'), (23041, 'sr_k4'), (23405, 't_k4i'), (24342, 'w_k4f'), (25232, 'dw_25232'), (31308, 't_k4i'), (31506, 't_k4o'), (31517, 't_k4i'), (31803, 'w_k3f')]
+FACT TUNNEL-LINK item 4: wire carries t9631 (OuterTerminal of #5204, item 7 cleared by A73 w_k3f) - also cleared by an earlier rule
+FACT TUNNEL-LINK item 49: wire carries t24363 (OuterTerminal of #10404, item 8 cleared by A84 w_k4f) - also cleared by an earlier rule
+FACT CLEARED item 4 nosource uid 4337 by A73 w_k3f - clears_by 'A70 w_k3f' names action w_k3f of this plan (rule 1, PD403(d)(2); no action names #4337)
+FACT CLEARED item 6 nosource uid 10362 by A72 dw_10362 - action names #10362
+FACT CLEARED item 7 undirected uid 5204 by A73 w_k3f - action names #5204
+FACT CLEARED item 8 undirected uid 10404 by A84 w_k4f - action names #10404
+FACT CLEARED item 49 whilesubvi uid 9636 by A84 w_k4f - clears_by 'A80 w_k4f' names action w_k4f of this plan (rule 1, PD403(d)(2); no action names #9636)
+FACT CLEARED item 50 nosource uid 25232 by A83 dw_25232 - action names #25232
+GATE PASS | CL 6 row(s) cleared by an action of this plan (items [4, 6, 7, 8, 49, 50]) | [{'item': 4, 'class': 'nosource', 'object_uid': 4337, 'action': 'w_k3f', 'A': 73, 'how': "clears_by 'A70 w_k3f' names action w_k3f of this plan (rule 1, PD403(d)(2); no action names #4337)", 'rule': 'PD403(d)(2) rule 1', 'tunnel_link': {'tunnel': 5204, 'outer_term': 9631, 'with_item': 7}}, {'item': 6, 'class': 'nosource', 'object_uid': 10362, 'action': 'dw_10362', 'A': 72, 'how': 'action names #10362'}, {'item': 7, 'class': 'undirected', 'object_uid': 5204, 'action': 'w_k3f', 'A': 73, 'how': 'action names #5204'}, {'item': 8, 'class': 'undirected', 'object_uid': 10404, 'action': 'w_k4f', 'A': 84, 'how': 'action names #10404'}, {'item': 49, 'class': 'whilesubvi', 'object_uid': 9636, 'action': 'w_k4f', 'A': 84, 'how': "clears_by 'A80 w_k4f' names action w_k4f of this plan (rule 1, PD403(d)(2); no action names #9636)", 'rule': 'PD403(d)(2) rule 1', 'tunnel_link': {'tunnel': 10404, 'outer_term': 24363, 'with_item': 8}}, {'item': 50, 'class': 'nosource', 'object_uid': 25232, 'action': 'dw_2
+GATE PASS | ST 0 stale row(s) (items []): none names an action of this plan | []
+FACT ELRULE new [] closed [] uncertain base [] uncertain subvi []
+GATE PASS | R every elrule new item (0) attributed to an action and has a text key; closed [] | []
+GATE PASS | U unpredicted groups (session compile reb groups + delete_object rows with wires): [('UNPREDICTED:A77 t_k4o', ['t_k4o', 'w_k4out', 'w_k4r']), ('UNPREDICTED:A80 t_k4i', ['t_k4i', 'w_k4l', 'w_k4pass'])] | [{'action': 'UNPREDICTED:A77 t_k4o', 'id': 't_k4o', 'op_group': ['t_k4o', 'w_k4out', 'w_k4r'], 'A': [77, 78, 79], 'why': "connect_term_uid register_end_case_border (tunnel + register face through the case border, new SR SK4): step 2's same verb left +2 'Wire has loose ends.' items (diag_c162_a1_2_facts.md), step 3's left none (diag_c163_a2_2_facts.md:31); not decidable offline - the step-5 scratch measures it"}, {'action': 'UNPREDICTED:A80 t_k4i', 'id': 't_k4i', 'op_group': ['t_k4i', 'w_k4l', 'w_k4pass'], 'A': [80, 81, 82], 'why': "connect_term_uid register_end_case_border (tunnel + register face through the case border, new SR SK4): step 2's same verb left +2 'Wire has loose ends.' items (diag_c162_a1_2_facts.md), step 3's left none (diag_c163_a2_2_facts.md:31); not decidable offline - the step-5 scratch measures it"}]
+GATE PASS | F compare(read minus the 6 cleared = 47 items, the 46 predicted entries = 47 items) extra 0 missing 0 (raised rows are synthetic: 0) | ([], [], [])
+GATE PASS | PC per-class predicted total 47 == item total 47 (start 53 - cleared 6 + raised 0 - elrule closed 0) | {'input': 1, 'other:thiswireisnotconnectedtoanything': 22, 'other:wirewirehaslooseends': 23, 'other:youhayeconnectedtwoterminalsofdifferenttypes': 1}
+EL COUNTS cleared 6 raised 0 unpredicted 2 standing 47 stale 0 total 47 (upper 49)
+GATE PASS | W predicted file built (not written), 47 items == total; compare(read minus cleared, the file's own entries) extra 0 missing 0 == raised | 
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":10,"fail":0},"first_fail":null,"artefacts":[],"card":"166-a1-3","labview":"none"}
+GATE PASS | D step-5 replay: predict rc 0, total 47 == 47, cleared items [4, 6, 7, 8, 49, 50] include 4 and 49; compare(read 0c0664d8 47 items) extra 0 missing 0 | ([], [])
+GATE PASS | M0 pins {} | {}
+GATE PASS | M1 read md5 == expected file's measured_md5 7450dd98 | 7450dd98bcd4c57d56c0e7aedec63857
+GATE PASS | B compare(read 53 items, the 52 expected entries = 53 items) extra 0 missing 0 (baseline) | ([], [])
+FACT actions ['dw_10362', 'w_k3f', 'sr_k4', 'c_k4i', 'w_k4i', 't_k4o', 'w_k4out', 'w_k4r', 't_k4i', 'w_k4l', 'w_k4pass', 'dw_25232', 'w_k4f']; base uids named [(376, 'w_k4out'), (686, 'c_k4i'), (5204, 'w_k3f'), (5739, 'w_k4out'), (8776, 'w_k3f'), (10362, 'dw_10362'), (10404, 'w_k4f'), (23041, 'sr_k4'), (23405, 't_k4i'), (24342, 'w_k4f'), (25232, 'dw_25232'), (31308, 't_k4i'), (31506, 't_k4o'), (31517, 't_k4i'), (31803, 'w_k3f')]
+FACT TUNNEL-LINK item 4: wire carries t9631 (OuterTerminal of #5204, item 7 cleared by A73 w_k3f)
+FACT TUNNEL-LINK item 49: wire carries t24363 (OuterTerminal of #10404, item 8 cleared by A84 w_k4f)
+FACT CLEARED item 4 nosource uid 4337 by A73 w_k3f - tunnel-linked: its wire carries t9631, the OuterTerminal of #5204 whose undirected item 7 this action clears (rule 2, PD403(d)(2))
+FACT CLEARED item 6 nosource uid 10362 by A72 dw_10362 - action names #10362
+FACT CLEARED item 7 undirected uid 5204 by A73 w_k3f - action names #5204
+FACT CLEARED item 8 undirected uid 10404 by A84 w_k4f - action names #10404
+FACT CLEARED item 49 whilesubvi uid 9636 by A84 w_k4f - tunnel-linked: its wire carries t24363, the OuterTerminal of #10404 whose undirected item 8 this action clears (rule 2, PD403(d)(2))
+FACT CLEARED item 50 nosource uid 25232 by A83 dw_25232 - action names #25232
+GATE PASS | CL 6 row(s) cleared by an action of this plan (items [4, 6, 7, 8, 49, 50]) | [{'item': 4, 'class': 'nosource', 'object_uid': 4337, 'action': 'w_k3f', 'A': 73, 'how': 'tunnel-linked: its wire carries t9631, the OuterTerminal of #5204 whose undirected item 7 this action clears (rule 2, PD403(d)(2))', 'rule': 'PD403(d)(2) rule 2', 'tunnel_link': {'tunnel': 5204, 'outer_term': 9631, 'with_item': 7}}, {'item': 6, 'class': 'nosource', 'object_uid': 10362, 'action': 'dw_10362', 'A': 72, 'how': 'action names #10362'}, {'item': 7, 'class': 'undirected', 'object_uid': 5204, 'action': 'w_k3f', 'A': 73, 'how': 'action names #5204'}, {'item': 8, 'class': 'undirected', 'object_uid': 10404, 'action': 'w_k4f', 'A': 84, 'how': 'action names #10404'}, {'item': 49, 'class': 'whilesubvi', 'object_uid': 9636, 'action': 'w_k4f', 'A': 84, 'how': 'tunnel-linked: its wire carries t24363, the OuterTerminal of #10404 whose undirected item 8 this action clears (rule 2, PD403(d)(2))', 'rule': 'PD403(d)(2) rule 2', 'tunnel_link': {'tunnel': 10404, 'outer_term': 24363, 'with_item': 8}}, {'it
+GATE PASS | ST 0 stale row(s) (items []): none names an action of this plan | []
+FACT ELRULE new [] closed [] uncertain base [] uncertain subvi []
+GATE PASS | R every elrule new item (0) attributed to an action and has a text key; closed [] | []
+GATE PASS | U unpredicted groups (session compile reb groups + delete_object rows with wires): [('UNPREDICTED:A77 t_k4o', ['t_k4o', 'w_k4out', 'w_k4r']), ('UNPREDICTED:A80 t_k4i', ['t_k4i', 'w_k4l', 'w_k4pass'])] | [{'action': 'UNPREDICTED:A77 t_k4o', 'id': 't_k4o', 'op_group': ['t_k4o', 'w_k4out', 'w_k4r'], 'A': [77, 78, 79], 'why': "connect_term_uid register_end_case_border (tunnel + register face through the case border, new SR SK4): step 2's same verb left +2 'Wire has loose ends.' items (diag_c162_a1_2_facts.md), step 3's left none (diag_c163_a2_2_facts.md:31); not decidable offline - the step-5 scratch measures it"}, {'action': 'UNPREDICTED:A80 t_k4i', 'id': 't_k4i', 'op_group': ['t_k4i', 'w_k4l', 'w_k4pass'], 'A': [80, 81, 82], 'why': "connect_term_uid register_end_case_border (tunnel + register face through the case border, new SR SK4): step 2's same verb left +2 'Wire has loose ends.' items (diag_c162_a1_2_facts.md), step 3's left none (diag_c163_a2_2_facts.md:31); not decidable offline - the step-5 scratch measures it"}]
+GATE PASS | F compare(read minus the 6 cleared = 47 items, the 46 predicted entries = 47 items) extra 0 missing 0 (raised rows are synthetic: 0) | ([], [], [])
+GATE PASS | PC per-class predicted total 47 == item total 47 (start 53 - cleared 6 + raised 0 - elrule closed 0) | {'input': 1, 'other:thiswireisnotconnectedtoanything': 22, 'other:wirewirehaslooseends': 23, 'other:youhayeconnectedtwoterminalsofdifferenttypes': 1}
+EL COUNTS cleared 6 raised 0 unpredicted 2 standing 47 stale 0 total 47 (upper 49)
+STOP {"schema":"stop-line/1","kind":"traceback","message":"ValueError: path is on mount 'C:', start on mount 'G:'","t":"2026-10-12 17:55:02","exc":"ValueError","card":"166-a1-3"}
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\elpredict.py", line 311, in <module>
+    sys.exit(selftest())
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\elpredict.py", line 301, in selftest
+    rcE, outE, _t = predict(cfg, L.Gate(width=1000, fatal_default=False))
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\elpredict.py", line 226, in predict
+    "base_expected": {"path": rel(EXPF), "md5": md5(EXPF), "total": NROW}, "measured_from": ex["measured_from"], "measured_md5": ex["measured_md5"],
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\prep_c156_a1_1_lib.py", line 26, in <lambda>
+    rel = lambda p: os.path.relpath(p, ROOT).replace("\\", "/")                                   # noqa: E731
+  File "C:\Users\KimLab\AppData\Local\Programs\Python\Python310\lib\ntpath.py", line 744, in relpath
+    raise ValueError("path is on mount %r, start on mount %r" % (
+ValueError: path is on mount 'C:', start on mount 'G:'
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"ValueError: path is on mount 'C:', start on mount 'G:'","artefacts":[],"card":"166-a1-3","labview":"none"}
+BGRUN END rc=1 after 1s
+BGRUN START 2026-10-12 17:55:31 limit 3.0 min: py -u tools/elpredict.py --selftest
+BGRUN PID 23124
+GATE PASS | A is_stale / clears_by_in_plan / base_uids | 
+GATE PASS | B attached_wires / wires_of | 
+GATE PASS | C tunnel_links(base 2a5fa0c4, items 7 / 8 cleared) == {4: #5204 t9631, 49: #10404 t24363} | {4: {'tunnel': 5204, 'outer_term': 9631, 'with_item': 7, 'action': 'w_k3f', 'A': 73}, 49: {'tunnel': 10404, 'outer_term': 24363, 'with_item': 8, 'action': 'w_k4f', 'A': 84}}
+GATE PASS | M0 pins {'errorlist_expected_D1_ring_p5s02d_20261010_152518.json': 'c74200f2', 'plan_ring_p5s02e.json': 'fd23974e', 'graph_ring_p5s02d_20261010_154830.json': '2a5fa0c4'} | {'errorlist_expected_D1_ring_p5s02d_20261010_152518.json': 'c74200f2', 'plan_ring_p5s02e.json': 'fd23974e', 'graph_ring_p5s02d_20261010_154830.json': '2a5fa0c4'}
+GATE PASS | M1 read md5 == expected file's measured_md5 7450dd98 | 7450dd98bcd4c57d56c0e7aedec63857
+GATE PASS | B compare(read 53 items, the 52 expected entries = 53 items) extra 0 missing 0 (baseline) | ([], [])
+FACT actions ['dw_10362', 'w_k3f', 'sr_k4', 'c_k4i', 'w_k4i', 't_k4o', 'w_k4out', 'w_k4r', 't_k4i', 'w_k4l', 'w_k4pass', 'dw_25232', 'w_k4f']; base uids named [(376, 'w_k4out'), (686, 'c_k4i'), (5204, 'w_k3f'), (5739, 'w_k4out'), (8776, 'w_k3f'), (10362, 'dw_10362'), (10404, 'w_k4f'), (23041, 'sr_k4'), (23405, 't_k4i'), (24342, 'w_k4f'), (25232, 'dw_25232'), (31308, 't_k4i'), (31506, 't_k4o'), (31517, 't_k4i'), (31803, 'w_k3f')]
+FACT TUNNEL-LINK item 4: wire carries t9631 (OuterTerminal of #5204, item 7 cleared by A73 w_k3f) - also cleared by an earlier rule
+FACT TUNNEL-LINK item 49: wire carries t24363 (OuterTerminal of #10404, item 8 cleared by A84 w_k4f) - also cleared by an earlier rule
+FACT CLEARED item 4 nosource uid 4337 by A73 w_k3f - clears_by 'A70 w_k3f' names action w_k3f of this plan (rule 1, PD403(d)(2); no action names #4337)
+FACT CLEARED item 6 nosource uid 10362 by A72 dw_10362 - action names #10362
+FACT CLEARED item 7 undirected uid 5204 by A73 w_k3f - action names #5204
+FACT CLEARED item 8 undirected uid 10404 by A84 w_k4f - action names #10404
+FACT CLEARED item 49 whilesubvi uid 9636 by A84 w_k4f - clears_by 'A80 w_k4f' names action w_k4f of this plan (rule 1, PD403(d)(2); no action names #9636)
+FACT CLEARED item 50 nosource uid 25232 by A83 dw_25232 - action names #25232
+GATE PASS | CL 6 row(s) cleared by an action of this plan (items [4, 6, 7, 8, 49, 50]) | [{'item': 4, 'class': 'nosource', 'object_uid': 4337, 'action': 'w_k3f', 'A': 73, 'how': "clears_by 'A70 w_k3f' names action w_k3f of this plan (rule 1, PD403(d)(2); no action names #4337)", 'rule': 'PD403(d)(2) rule 1', 'tunnel_link': {'tunnel': 5204, 'outer_term': 9631, 'with_item': 7}}, {'item': 6, 'class': 'nosource', 'object_uid': 10362, 'action': 'dw_10362', 'A': 72, 'how': 'action names #10362'}, {'item': 7, 'class': 'undirected', 'object_uid': 5204, 'action': 'w_k3f', 'A': 73, 'how': 'action names #5204'}, {'item': 8, 'class': 'undirected', 'object_uid': 10404, 'action': 'w_k4f', 'A': 84, 'how': 'action names #10404'}, {'item': 49, 'class': 'whilesubvi', 'object_uid': 9636, 'action': 'w_k4f', 'A': 84, 'how': "clears_by 'A80 w_k4f' names action w_k4f of this plan (rule 1, PD403(d)(2); no action names #9636)", 'rule': 'PD403(d)(2) rule 1', 'tunnel_link': {'tunnel': 10404, 'outer_term': 24363, 'with_item': 8}}, {'item': 50, 'class': 'nosource', 'object_uid': 25232, 'action': 'dw_2
+GATE PASS | ST 0 stale row(s) (items []): none names an action of this plan | []
+FACT ELRULE new [] closed [] uncertain base [] uncertain subvi []
+GATE PASS | R every elrule new item (0) attributed to an action and has a text key; closed [] | []
+GATE PASS | U unpredicted groups (session compile reb groups + delete_object rows with wires): [('UNPREDICTED:A77 t_k4o', ['t_k4o', 'w_k4out', 'w_k4r']), ('UNPREDICTED:A80 t_k4i', ['t_k4i', 'w_k4l', 'w_k4pass'])] | [{'action': 'UNPREDICTED:A77 t_k4o', 'id': 't_k4o', 'op_group': ['t_k4o', 'w_k4out', 'w_k4r'], 'A': [77, 78, 79], 'why': "connect_term_uid register_end_case_border (tunnel + register face through the case border, new SR SK4): step 2's same verb left +2 'Wire has loose ends.' items (diag_c162_a1_2_facts.md), step 3's left none (diag_c163_a2_2_facts.md:31); not decidable offline - the step-5 scratch measures it"}, {'action': 'UNPREDICTED:A80 t_k4i', 'id': 't_k4i', 'op_group': ['t_k4i', 'w_k4l', 'w_k4pass'], 'A': [80, 81, 82], 'why': "connect_term_uid register_end_case_border (tunnel + register face through the case border, new SR SK4): step 2's same verb left +2 'Wire has loose ends.' items (diag_c162_a1_2_facts.md), step 3's left none (diag_c163_a2_2_facts.md:31); not decidable offline - the step-5 scratch measures it"}]
+GATE PASS | F compare(read minus the 6 cleared = 47 items, the 46 predicted entries = 47 items) extra 0 missing 0 (raised rows are synthetic: 0) | ([], [], [])
+GATE PASS | PC per-class predicted total 47 == item total 47 (start 53 - cleared 6 + raised 0 - elrule closed 0) | {'input': 1, 'other:thiswireisnotconnectedtoanything': 22, 'other:wirewirehaslooseends': 23, 'other:youhayeconnectedtwoterminalsofdifferenttypes': 1}
+EL COUNTS cleared 6 raised 0 unpredicted 2 standing 47 stale 0 total 47 (upper 49)
+GATE PASS | W predicted file built (not written), 47 items == total; compare(read minus cleared, the file's own entries) extra 0 missing 0 == raised | 
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":10,"fail":0},"first_fail":null,"artefacts":[],"card":"166-a1-3","labview":"none"}
+GATE PASS | D step-5 replay: predict rc 0, total 47 == 47, cleared items [4, 6, 7, 8, 49, 50] include 4 and 49; compare(read 0c0664d8 47 items) extra 0 missing 0 | ([], [])
+GATE PASS | M0 pins {} | {}
+GATE PASS | M1 read md5 == expected file's measured_md5 7450dd98 | 7450dd98bcd4c57d56c0e7aedec63857
+GATE PASS | B compare(read 53 items, the 52 expected entries = 53 items) extra 0 missing 0 (baseline) | ([], [])
+FACT actions ['dw_10362', 'w_k3f', 'sr_k4', 'c_k4i', 'w_k4i', 't_k4o', 'w_k4out', 'w_k4r', 't_k4i', 'w_k4l', 'w_k4pass', 'dw_25232', 'w_k4f']; base uids named [(376, 'w_k4out'), (686, 'c_k4i'), (5204, 'w_k3f'), (5739, 'w_k4out'), (8776, 'w_k3f'), (10362, 'dw_10362'), (10404, 'w_k4f'), (23041, 'sr_k4'), (23405, 't_k4i'), (24342, 'w_k4f'), (25232, 'dw_25232'), (31308, 't_k4i'), (31506, 't_k4o'), (31517, 't_k4i'), (31803, 'w_k3f')]
+FACT TUNNEL-LINK item 4: wire carries t9631 (OuterTerminal of #5204, item 7 cleared by A73 w_k3f)
+FACT TUNNEL-LINK item 49: wire carries t24363 (OuterTerminal of #10404, item 8 cleared by A84 w_k4f)
+FACT CLEARED item 4 nosource uid 4337 by A73 w_k3f - tunnel-linked: its wire carries t9631, the OuterTerminal of #5204 whose undirected item 7 this action clears (rule 2, PD403(d)(2))
+FACT CLEARED item 6 nosource uid 10362 by A72 dw_10362 - action names #10362
+FACT CLEARED item 7 undirected uid 5204 by A73 w_k3f - action names #5204
+FACT CLEARED item 8 undirected uid 10404 by A84 w_k4f - action names #10404
+FACT CLEARED item 49 whilesubvi uid 9636 by A84 w_k4f - tunnel-linked: its wire carries t24363, the OuterTerminal of #10404 whose undirected item 8 this action clears (rule 2, PD403(d)(2))
+FACT CLEARED item 50 nosource uid 25232 by A83 dw_25232 - action names #25232
+GATE PASS | CL 6 row(s) cleared by an action of this plan (items [4, 6, 7, 8, 49, 50]) | [{'item': 4, 'class': 'nosource', 'object_uid': 4337, 'action': 'w_k3f', 'A': 73, 'how': 'tunnel-linked: its wire carries t9631, the OuterTerminal of #5204 whose undirected item 7 this action clears (rule 2, PD403(d)(2))', 'rule': 'PD403(d)(2) rule 2', 'tunnel_link': {'tunnel': 5204, 'outer_term': 9631, 'with_item': 7}}, {'item': 6, 'class': 'nosource', 'object_uid': 10362, 'action': 'dw_10362', 'A': 72, 'how': 'action names #10362'}, {'item': 7, 'class': 'undirected', 'object_uid': 5204, 'action': 'w_k3f', 'A': 73, 'how': 'action names #5204'}, {'item': 8, 'class': 'undirected', 'object_uid': 10404, 'action': 'w_k4f', 'A': 84, 'how': 'action names #10404'}, {'item': 49, 'class': 'whilesubvi', 'object_uid': 9636, 'action': 'w_k4f', 'A': 84, 'how': 'tunnel-linked: its wire carries t24363, the OuterTerminal of #10404 whose undirected item 8 this action clears (rule 2, PD403(d)(2))', 'rule': 'PD403(d)(2) rule 2', 'tunnel_link': {'tunnel': 10404, 'outer_term': 24363, 'with_item': 8}}, {'it
+GATE PASS | ST 0 stale row(s) (items []): none names an action of this plan | []
+FACT ELRULE new [] closed [] uncertain base [] uncertain subvi []
+GATE PASS | R every elrule new item (0) attributed to an action and has a text key; closed [] | []
+GATE PASS | U unpredicted groups (session compile reb groups + delete_object rows with wires): [('UNPREDICTED:A77 t_k4o', ['t_k4o', 'w_k4out', 'w_k4r']), ('UNPREDICTED:A80 t_k4i', ['t_k4i', 'w_k4l', 'w_k4pass'])] | [{'action': 'UNPREDICTED:A77 t_k4o', 'id': 't_k4o', 'op_group': ['t_k4o', 'w_k4out', 'w_k4r'], 'A': [77, 78, 79], 'why': "connect_term_uid register_end_case_border (tunnel + register face through the case border, new SR SK4): step 2's same verb left +2 'Wire has loose ends.' items (diag_c162_a1_2_facts.md), step 3's left none (diag_c163_a2_2_facts.md:31); not decidable offline - the step-5 scratch measures it"}, {'action': 'UNPREDICTED:A80 t_k4i', 'id': 't_k4i', 'op_group': ['t_k4i', 'w_k4l', 'w_k4pass'], 'A': [80, 81, 82], 'why': "connect_term_uid register_end_case_border (tunnel + register face through the case border, new SR SK4): step 2's same verb left +2 'Wire has loose ends.' items (diag_c162_a1_2_facts.md), step 3's left none (diag_c163_a2_2_facts.md:31); not decidable offline - the step-5 scratch measures it"}]
+GATE PASS | F compare(read minus the 6 cleared = 47 items, the 46 predicted entries = 47 items) extra 0 missing 0 (raised rows are synthetic: 0) | ([], [], [])
+GATE PASS | PC per-class predicted total 47 == item total 47 (start 53 - cleared 6 + raised 0 - elrule closed 0) | {'input': 1, 'other:thiswireisnotconnectedtoanything': 22, 'other:wirewirehaslooseends': 23, 'other:youhayeconnectedtwoterminalsofdifferenttypes': 1}
+EL COUNTS cleared 6 raised 0 unpredicted 2 standing 47 stale 0 total 47 (upper 49)
+GATE PASS | W predicted file built (not written), 47 items == total; compare(read minus cleared, the file's own entries) extra 0 missing 0 == raised | 
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":10,"fail":0},"first_fail":null,"artefacts":[],"card":"166-a1-3","labview":"none"}
+GATE PASS | E rule 2 alone (items 4 / 49 clears_by -> standing in a temp copy): rc 0, total 47 == 47, items 4 / 49 cleared by rule 2 via #5204 / #10404 | [(4, 'w_k3f', 'PD403(d)(2) rule 2'), (6, 'dw_10362', None), (7, 'w_k3f', None), (8, 'w_k4f', None), (49, 'w_k4f', 'PD403(d)(2) rule 2'), (50, 'dw_25232', None)]
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":5,"fail":0},"first_fail":null,"artefacts":[],"card":"166-a1-3","labview":"none"}
+BGRUN END rc=0 after 11s

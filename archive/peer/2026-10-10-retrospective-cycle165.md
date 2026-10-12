@@ -505,4 +505,16 @@ VERDICT {"schema":"verdict/1","id":"retrospective-cycle165","verdict":"refuted",
 
 ## What was done with it
 
-(Claude fills in)
+Cycle 166 judgement (2026-10-12): both faults ACCEPTED; decisions in `docs/violation-decisions.md` (2026-10-12 entries)
+and `docs/d1/ring-p5c.md` PD403.
+- Fault 1 (inference-over-measurement): rule - a judgement cites a precedent or a refusal's location only from a line it
+  read in that session, and a tool fix's acceptance test REPLAYS the literal failing command (here: the failing maker run).
+  PD403 cites only lines read this session (`errorlist_predicted_D1_ring_p5s02e_end.json:180-186`, `:1005-1013`).
+- Fault 2 (device-failed): ACCEPTED. The adoption Error List step goes through `stagekit.el_advisory` (PD354(a)); the
+  adoption order is graph read -> `load_by_vi` -> Error List; a brief never scripts a RETURN on an EL delta that PD354(a)
+  only records. Device repair is a cycle-166 tooling item after the LabVIEW card (PD403(d)); not a hook.
+- The 47-item read is ACCEPTED as the P5 final's expected Error List (PD403(a)): the prediction's own `clears_by` named A70 /
+  A80 for items 4 / 49; the predictor's uid-only STANDING rule overrode them. Predictor fixed in PD403(d).
+- Finding 3 (rule-1a questions open on the "P5 final"): the tunnel facts of #5204 / #10404 are measured in cycle 166's read
+  card (PD403(b)); the #31815 value question stays with P6's numeric acceptance (PD238(f), PD374(d)).
+- Finding 5 (gate-fp starved): cycle 166 names the three non-hook entries fp-86/87/88 as pass items after the LabVIEW card.

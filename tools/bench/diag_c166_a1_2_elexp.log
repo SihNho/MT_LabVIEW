@@ -1,0 +1,17 @@
+BGRUN START 2026-10-12 17:46:36 limit 2.0 min: py -u tools/bench/diag_c166_a1_2_elexp.py
+BGRUN PID 10488
+FACT old tools/bench/errorlist_expected_D1_ring_p5_20261010_172913.json: absent
+GATE PASS | R read tools/bench/errorlist_D1_ring_p5s02e_20261010_172913_20261010_173731.json: items 47 == n_reported 47 == 47 | 
+GATE PASS | V D1_ring_p5_20261010_172913.vi and D1_ring_p5s02e_20261010_172913.vi md5 == 75773b0d; read bed == the s02e name at that md5 | ('75773b0ded2a08586bb1a542ddda5af6', '75773b0ded2a08586bb1a542ddda5af6', 'C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_ring_p5s02e_20261010_172913.vi', '75773b0ded2a08586bb1a542ddda5af6')
+GATE PASS | S predicted md5 2a8e2984, read md5 0c0664d8 | ('2a8e29840e9e36263e275f1c185f6547', '0c0664d8df07e47b8e63ac3278ed1daf')
+RECORD compare(read 0c0664d8, predicted 2a8e2984): extra 0 [] | missing 2 (PD354(a): record, not a gate)
+FACT dropped predicted item 4 (nosource) 'This wire connects one or more data sinks but has no source. [item 4]': tools/bench/errorlist_predicted_D1_ring_p5s02e_end.json:167 (entry), :182 (clears_by.action 'A70 w_k3f'), :46 (cleared[] action 'w_k3f' -> A[73]); PD403(a)
+FACT dropped predicted item 49 (whilesubvi) 'You have connected an input of While Loop to an input of Subvl. Change one to an output, or add a source. [item 49]': tools/bench/errorlist_predicted_D1_ring_p5s02e_end.json:993 (entry), :1009 (clears_by.action 'A80 w_k4f'), :54 (cleared[] action 'w_k4f' -> A[84]); PD403(a)
+GATE PASS | D dropped predicted entries == items [4, 49] cleared by A73 / A84 (cleared[] by action name) | {4: 73, 49: 84}
+GATE PASS | C every read item cited exactly once (47 indices 0..46; headers []) | {'cited': 47, 'ambiguous': []}
+GATE PASS | X compare(read, new expected): extra [] missing [] | {'extra': [], 'missing': []}
+GATE PASS | T total 47 == 47 read items | 47
+FACT wrote tools/bench/errorlist_expected_D1_ring_p5_20261010_172913.json md5 c94be128e4e8cb9275abf7bacb1fa192 total 47 entries 46 dropped 2
+RECORD class counts of the read: {"buildarraybuildarravcontainsunwiredorbadterminal": 1, "thiswireisnotconnectedtoanvthing": 1, "thiswireisnotconnectedtoanything": 21, "wirewirehaslooseends": 23, "youhaveconnectedtwoterminalsofdifferenttypes": 1}
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":7,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/bench/errorlist_expected_D1_ring_p5_20261010_172913.json","md5":"c94be128e4e8cb9275abf7bacb1fa192"}],"card":"166-a1-2","labview":"none"}
+BGRUN END rc=0 after 1s

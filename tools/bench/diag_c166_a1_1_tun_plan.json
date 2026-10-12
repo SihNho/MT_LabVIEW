@@ -1,0 +1,29 @@
+{
+ "schema_note": "card 166-a1-1 step 4 (docs/d1/ring-p5c.md:257-260, brief_166-a1-1.md:21-24): FINALIZED decision-row plan of tools/bench/diag_c166_a1_1_tun.py. READ-ONLY: never-saved byte copies of the P5 final (75773b0d) and of P5-1 (7f2582ae), one after the other, fresh LabVIEW; existing verbs gscript.tunnels + gscript.read_term_type only; nothing saved.",
+ "input": {
+  "vi": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p5_20261010_172913.vi",
+  "md5": "75773b0ded2a08586bb1a542ddda5af6",
+  "same_rows_as": null
+ },
+ "files": [
+  ["p5", "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p5_20261010_172913.vi", "75773b0ded2a08586bb1a542ddda5af6"],
+  ["p5s01", "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_ring_p5s01_20261009_124542.vi", "7f2582ae54dc5bc42c3df0bdf3c72d2e"]
+ ],
+ "tunnels": {
+  "5204": {"outer_term": 9631, "out_wire": 4337},
+  "10404": {"outer_term": 24363, "out_wire": 9636}
+ },
+ "tunnels_cite": "outer faces t9631 / t24363 and wires w4337 / w9636 in tools/bench/graph_ring_p5s01_20261009_125622.json and graph_ring_p5s02d_20261010_154830.json (tools/bench/diag_c166_a1_1_q_p5s01.log, diag_c166_a1_1_q_p5s02d.log)",
+ "restart_mb": 600.0,
+ "memstop_mb": 695.0,
+ "decisions": [
+  {"id": "D-0", "action": "stage", "what": "stagekit Stage on 75773b0d: restart LabVIEW, byte copy = work copy, discard_work (never saved)"},
+  {"id": "Q-1", "action": "check", "what": "protocol.check_requires: verbs gscript.tunnels / read_term_type, ops OpTunnels_v0 / OpTermDataType_v0 exist"},
+  {"id": "R-1", "action": "read", "what": "p5 copy: gscript._uid_index(LoopTunnel) + gscript.tunnels + gscript.read_term_type(outer face) for #5204 and #10404"},
+  {"id": "D-1", "action": "discard", "what": "close + delete the p5 copy (Stage.drop_scratch); restart LabVIEW if private bytes stay above restart_mb"},
+  {"id": "D-2", "action": "stage", "what": "Stage.scratch byte copy of 7f2582ae (never saved)"},
+  {"id": "R-2", "action": "read", "what": "p5s01 copy: the same reads as R-1"},
+  {"id": "C-1", "action": "check", "what": "IndexMode and outer type (canon + sig) equal per tunnel in both files; memory peak < memstop_mb; both md5 unchanged"},
+  {"id": "X", "action": "discard", "what": "close(): copies deleted, input md5 unchanged, LabVIEW killed and gone"}
+ ]
+}

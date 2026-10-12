@@ -1,0 +1,12 @@
+BGRUN START 2026-10-12 17:38:45 limit 2.0 min: py -u tools/bench/diag_c166_a1_1_mm.py
+BGRUN PID 9308
+GATE PASS | M0 steps 2-4 passed: graph read {'pass': 15, 'fail': 0}, tunnel read {'pass': 21, 'fail': 0} | ({'schema': 'result-line/1', 'status': 'PASS', 'gates': {'pass': 15, 'fail': 0}, 'first_fail': None, 'artefacts': [], 'card': '166-a1-1', 'labview': 'read'}, {'schema': 'result-line/1', 'status': 'PASS', 'gates': {'pass': 21, 'fail': 0}, 'first_fail': None, 'artefacts': [], 'card': '166-a1-1', 'labview': 'read'})
+GATE PASS | M1 memory_model.json md5 ff0fabca | ff0fabca220686e7222cfcb27aa622cd
+GATE PASS | M2 one `MEM after load` line in diag_c165_a3_4_graph.log | [(24, '  FACT  MEM after load: 647.8 MB private; handles 45935')]
+FACT P5 final md5 75773b0ded2a08586bb1a542ddda5af6; MEM line [(24, '  FACT  MEM after load: 647.8 MB private; handles 45935')]
+GATE PASS | M3 the P5 final md5 75773b0ded2a08586bb1a542ddda5af6 (pin 75773b0d) is not yet a load_by_vi key | 
+GATE PASS | M4 memory_model.json written in its old layout and line ending (backup diag_c166_a1_1_memory_model_before.json) | 
+GATE PASS | M5 JSON compare: only load_by_vi differs, by exactly the one new key; old keys equal; fail_above_mb 680.0 | (['load_by_vi'], ['75773b0ded2a08586bb1a542ddda5af6'], True, {'value': 680.0, 'cite': 'PD328(a) docs/d1/tooling.md (user 2026-10-03 "메모리 낮추고": 690 -> 680 after chat-M2 measured LabVIEW error 2 at 704.8 MB private, tools/bench/diag_chat_m1_mem.log:170-173); was 690 = PD275(b) docs/d1/tooling.md:79-82. THE ONE SOURCE of the X10 fail threshold: stagexec.X10_FAIL_MB and stage_prerun.X10_FAIL_MB read it'})
+FACT memory_model ff0fabca220686e7222cfcb27aa622cd -> d12bcd3b1ed3c776ab361fa71b55df4d; new key 75773b0ded2a08586bb1a542ddda5af6 = {"value": 647.8, "vi": "claudeDev\\D1_ring_p5_20261010_172913.vi (P5 FINAL = byte copy of the P5-2 step 5 ADOPTED scratch work copy D1_ring_p5s02e_20261010_172913.vi, card 165-3-4; close-out read card 166-a1-1, PD403(b))", "cite": "tools/bench/diag_c165_a3_4_graph.log:24 (MEM after load: 647.8 MB private)"}
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":6,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/bench/memory_model.json","md5":"d12bcd3b1ed3c776ab361fa71b55df4d"}],"card":"166-a1-1","labview":"read"}
+BGRUN END rc=0 after 1s

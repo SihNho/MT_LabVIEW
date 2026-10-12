@@ -638,27 +638,7 @@ def main():
         print("HANDLES (record, not a gate): before %s after %s delta %s advisory %s (tol %d)" % (
             R.get("handles_before"), R.get("handles_after"), R["handles_delta"], R["handles_advisory"],
             HANDLE_TOL), flush=True)
-        read_ok = all(R["gates"].values())
-        verdict = ("OK" if not (R["extra"] or R["missing"]) else "MISMATCH") if read_ok else "FAIL"
-        if verdict == "MISMATCH":
-            # card chat-S2 (PD327, user 2026-10-03): per-class exactness stays STOP for every class EXCEPT loose ends; a
-            # mismatch made only of loose-end items within max(5, 25 %) is LOG-only (gate_soft_log.jsonl), verdict OK
-            import gateclass as _GC
-            ev, erule = _GC.errorlist_verdict(R["extra"], R["missing"])
-            if ev == "log":
-                R["soft"] = erule
-                _GC.soft_record("EL-LOOSE " + os.path.basename(bed), "LooseEnds", R["missing"], R["extra"], erule)
-                print("SOFT  Error List loose-end mismatch is LOG-only: %s" % erule, flush=True)
-                verdict = "OK"
-            else:
-                bv, brule, bdet = by_design(R, expected, plan)
-                R["by_design"] = {"verdict": bv, "rule": brule, "detail": bdet}
-                if bv == "log":
-                    R["soft"] = brule
-                    print("SOFT  Error List by-design difference, prediction re-derived: %s" % brule, flush=True)
-                    verdict = "OK"
-                else:
-                    print("BY-DESIGN check: STOP - %s" % brule, flush=True)
+        verdict = final_verdict(R, expected, plan, exp_path)     # card 166-a1-3: the block moved, + EL-ADVISORY (PD403(d)(1))
     R["verdict"], R["seconds"] = verdict, round(time.time() - t0, 1)
     with open(out, "w", encoding="utf-8") as f:
         json.dump(R, f, indent=1, ensure_ascii=False, default=str)
@@ -680,6 +660,103 @@ def main():
         print("RESULT-LINE ERROR %s: %s" % (type(e).__name__, e), flush=True)
     print("ERRORLIST-VERDICT: %s %s" % (verdict, out), flush=True)
     return {"OK": 0, "MISMATCH": 1}.get(verdict, 2)
+
+
+# ADOPTION STEP JUDGED BY THE EL ADVISORY (card 166-a1-3, docs/d1/ring-p5c.md PD403(d)(1), docs/violation-decisions.md 2026-10-12 17:2x):
+# cycle 165's adoption read (47 items vs a 49-item PREDICTED end file) returned rc 1 on the by-design verdict
+# (tools/bench/diag_c165_a3_4_el.log:82-86) although stagekit.el_advisory (PD354(a)) records that difference. When the expected file IS a
+# predicted step-end file whose plan has a pred keyed to it, the advisory decides; the by-design verdict is printed and kept as a record.
+def _abs(p):
+    return p if (not p or os.path.isabs(p) or os.path.exists(p)) else os.path.join(ROOT, p)
+
+
+def advisory_inputs(exp_path):
+    """(pred_path, plan_path, None) when `exp_path` is a PREDICTED step-end file (errorlist-expected/1 with a `plan` {path, md5}) and
+    <plan stem>_pred.json exists, is keyed to that plan md5 (== the plan file now) and names THIS file (md5 equal) as its errorlist item_file;
+    else (None, None, why). Pure, offline. Self-test: tools/bench/selftest_c166_eladv.py."""
+    exp_path = _abs(exp_path)
+    if not exp_path or not os.path.exists(exp_path):
+        return None, None, "no expected file"
+    ex = json.load(open(exp_path, encoding="utf-8"))
+    pl = ex.get("plan") or {}
+    if ex.get("schema") != "errorlist-expected/1" or not pl.get("path") or not pl.get("md5"):
+        return None, None, "expected file names no plan (not a predicted step-end file)"
+    plan_path = os.path.normpath(os.path.join(ROOT, pl["path"]))
+    pred_path = plan_path[:-len(".json")] + "_pred.json"
+    if not (os.path.exists(plan_path) and os.path.exists(pred_path)):
+        return None, None, "plan or pred missing: %s / %s" % (pl["path"], os.path.basename(pred_path))
+    pr = json.load(open(pred_path, encoding="utf-8"))
+    itf = (pr.get("errorlist") or {}).get("item_file") or {}
+    try:
+        rel_exp = os.path.relpath(os.path.abspath(exp_path), ROOT).replace("\\", "/")
+    except ValueError:                                                             # another drive: cannot be the pred's item file
+        rel_exp = os.path.abspath(exp_path)
+    if not ((pr.get("plan") or {}).get("md5") == pl["md5"] == md5(plan_path) and itf.get("path") == rel_exp and itf.get("md5") == md5(exp_path)):
+        return None, None, "pred %s not keyed to plan %s / this file %s" % (os.path.basename(pred_path), pl["md5"][:8], rel_exp)
+    return pred_path, plan_path, None
+
+
+def final_verdict(R, expected, plan, exp_path=None, record=True):
+    """The --role final verdict of a read R (extra / missing / gates / items already set): OK / MISMATCH / FAIL, the block that was inline in
+    main() (loose-end LOG rule, by-design rule) - then, when advisory_inputs(exp_path) finds the pred of a predicted step-end file and the read
+    is complete, stagekit.el_advisory DECIDES (rc 0 -> OK, rc 1 -> MISMATCH; rc 2 -> the by-design verdict stands) and prints EL-ADVISORY;
+    the by-design verdict is kept in R['verdict_by_design']. record=False writes no gate_soft_log line. Self-test: tools/bench/selftest_c166_eladv.py."""
+    read_ok = all(R["gates"].values())
+    verdict = ("OK" if not (R["extra"] or R["missing"]) else "MISMATCH") if read_ok else "FAIL"
+    if verdict == "MISMATCH":
+        # card chat-S2 (PD327, user 2026-10-03): per-class exactness stays STOP for every class EXCEPT loose ends; a
+        # mismatch made only of loose-end items within max(5, 25 %) is LOG-only (gate_soft_log.jsonl), verdict OK
+        import gateclass as _GC
+        ev, erule = _GC.errorlist_verdict(R["extra"], R["missing"])
+        if ev == "log":
+            R["soft"] = erule
+            if record:
+                _GC.soft_record("EL-LOOSE " + os.path.basename(str(R.get("bed") or "")), "LooseEnds", R["missing"], R["extra"], erule)
+            print("SOFT  Error List loose-end mismatch is LOG-only: %s" % erule, flush=True)
+            verdict = "OK"
+        else:
+            bv, brule, bdet = by_design(R, expected, plan, record=record)
+            R["by_design"] = {"verdict": bv, "rule": brule, "detail": bdet}
+            if bv == "log":
+                R["soft"] = brule
+                print("SOFT  Error List by-design difference, prediction re-derived: %s" % brule, flush=True)
+                verdict = "OK"
+            else:
+                print("BY-DESIGN check: STOP - %s" % brule, flush=True)
+    pred_path, plan_path, why = advisory_inputs(exp_path) if (read_ok and exp_path) else (None, None, "read incomplete or no expected file")
+    if pred_path is None:
+        if exp_path and read_ok and os.path.exists(_abs(exp_path)):
+            print("EL-ADVISORY not applied (%s): the by-design verdict %s decides, as before" % (why, verdict), flush=True)
+        return verdict
+    import stagekit as _K
+    rc, rep = _K.el_advisory(R.get("items") or [], pred_path, plan_path)
+    _K.el_advisory_print(rc, rep)
+    R["el_advisory"] = {"rc": rc, "report": rep, "pred": os.path.relpath(pred_path, ROOT).replace("\\", "/"),
+                        "plan": os.path.relpath(plan_path, ROOT).replace("\\", "/")}
+    if rc not in (0, 1):
+        print("EL-ADVISORY rc %s (%s): the by-design verdict %s decides, as before" % (rc, rep.get("why"), verdict), flush=True)
+        return verdict
+    R["verdict_by_design"] = verdict
+    new = "OK" if rc == 0 else "MISMATCH"
+    print("EL-ADVISORY DECIDES (PD403(d)(1)): step verdict %s (rc %d); by-design verdict %s RECORDED, not deciding" % (new, rc, verdict), flush=True)
+    return new
+
+
+def rejudge_read(read_json, exp_path=None, record=False):
+    """Offline replay of a stored --role final read (errorlist_<stem>_<ts>.json, as main() wrote it) through the adoption path: items with
+    their licensing marks dropped, compare() against the expected file (exp_path, default the read's own expected_file; PD195(b): no derived
+    licences when it exists), the read's recorded gates, then final_verdict. Returns (verdict, rc as main() returns it, R). No LabVIEW, no GUI,
+    writes nothing (record=False). Self-test: tools/bench/selftest_c166_eladv.py."""
+    R = json.load(open(_abs(read_json), encoding="utf-8"))
+    exp_path = exp_path or R.get("expected_file")
+    ep = _abs(exp_path)
+    expected = json.load(open(ep, encoding="utf-8")).get("expected", []) if ep and os.path.exists(ep) else []
+    _sp, _pp, plan = plan_for_bed(R.get("bed") or "")
+    derived = derive_expected(plan) if plan and not (ep and os.path.exists(ep)) else []
+    R["items"] = [dict((k, v) for k, v in i.items() if k != "licensed_by") for i in R.get("items") or []]
+    R["extra"], R["missing"], R["licence_usage"] = compare(R["items"], expected, derived)
+    verdict = final_verdict(R, expected, plan, exp_path, record=record)
+    return verdict, {"OK": 0, "MISMATCH": 1}.get(verdict, 2), R
 
 
 if __name__ == "__main__":

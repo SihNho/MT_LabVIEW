@@ -1,0 +1,36 @@
+2026-10-10T12:05:53.527871Z ERROR codex_core::tools::router: error=Command blocked by PreToolUse hook: BLOCKED by tools/hooks/guardcore.py: guard_bash: BLOCKED by tools/hooks/guard_bash.py (CLAUDE.md section 3, judgement vs material): this session is treated as a JUDGEMENT session, and a judgement session never runs tools/recipes/*.py or tools/bench/*.py itself.
+Delegate it: spawn the `material` agent with the Agent tool (.claude/agents/material.md) and hand it the task; it returns a <=30-line fact summary.
+A material session declares itself with the --material flag on bgrun:
+  py tools/bgrun.py --material --max-min <N> --log tools/bench/<name>.log -- py -u <script>
+USE THAT FORM. The older env-prefix forms (MATERIAL=1 py ... / $env:MATERIAL='1'; py ...) are still
+accepted by this guard but are REFUSED BY THE PERMISSION LAYER under `claude -p`, because an allow
+rule never matches past an assignment of a non-known-safe variable - so they can never actually run
+(measured 2026-09-18, cycle 28: 11 refusals across 7 shapes in two material sessions).
+Reading logs, peer dispatch and the audit/retrospective tools are never blocked.. Command: py -u tools/bench/guardcore_fake/sentinel_lv.py
+2026-10-10T12:05:57.226579Z ERROR codex_core::tools::router: error=Command blocked by PreToolUse hook: BLOCKED by tools/hooks/guardcore.py: guard_bash: BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a motor by a route that bypasses the safe envelope.
+The user's 2026-09-17 ruling allows motors while the rig is assembled ONLY inside the envelope (ASI x/y within 1.0 mm of the fixed anchor and never home/origin; PI 0..39 mm; ASI focus axis free), and ONLY because the envelope is enforced by code.
+Decide the command with the gateway first:
+  py tools/motor_gate.py --device pi|asi|rotor --command "<one raw command>" --dry-run
+Read-only query scripts (serial_roundtrip*.ps1, read_motor_anchor.ps1, hw_rotor_read.py, probe_*) are never blocked. A VI that moves a motor internally (drive_original_copy.py runs the original's device setup) cannot be gated command-by-command - that one needs a judgement decision, not a flag.. Command: py tools/bench/guardcore_fake/hw_rotor_visible.py
+2026-10-10T12:06:00.016092Z ERROR codex_core::tools::router: error=Command blocked by PreToolUse hook: BLOCKED by tools/hooks/guardcore.py: guard_bash: BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a motor by a route that bypasses the safe envelope.
+The user's 2026-09-17 ruling allows motors while the rig is assembled ONLY inside the envelope (ASI x/y within 1.0 mm of the fixed anchor and never home/origin; PI 0..39 mm; ASI focus axis free), and ONLY because the envelope is enforced by code.
+Decide the command with the gateway first:
+  py tools/motor_gate.py --device pi|asi|rotor --command "<one raw command>" --dry-run
+Read-only query scripts (serial_roundtrip*.ps1, read_motor_anchor.ps1, hw_rotor_read.py, probe_*) are never blocked. A VI that moves a motor internally (drive_original_copy.py runs the original's device setup) cannot be gated command-by-command - that one needs a judgement decision, not a flag.. Command: py -c "open(r'tools/bench/guardcore_fake/marker_com_py.txt','w').write('import serial')"
+2026-10-10T12:06:04.856641Z ERROR codex_core::tools::router: error=Command blocked by PreToolUse hook: BLOCKED by tools/hooks/guardcore.py: guard_bash: BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a motor by a route that bypasses the safe envelope.
+The user's 2026-09-17 ruling allows motors while the rig is assembled ONLY inside the envelope (ASI x/y within 1.0 mm of the fixed anchor and never home/origin; PI 0..39 mm; ASI focus axis free), and ONLY because the envelope is enforced by code.
+Decide the command with the gateway first:
+  py tools/motor_gate.py --device pi|asi|rotor --command "<one raw command>" --dry-run
+Read-only query scripts (serial_roundtrip*.ps1, read_motor_anchor.ps1, hw_rotor_read.py, probe_*) are never blocked. A VI that moves a motor internally (drive_original_copy.py runs the original's device setup) cannot be gated command-by-command - that one needs a judgement decision, not a flag.. Command: Set-Content -Path tools/bench/guardcore_fake/marker_com_ps.txt -Value '[System.IO.Ports.SerialPort]'
+2026-10-10T12:06:11.266447Z ERROR codex_core::tools::router: error=Command blocked by PreToolUse hook: BLOCKED by tools/hooks/guardcore.py: guard_bash: BLOCKED by tools/hooks/guard_bash.py (CLAUDE.md 2b): a LabVIEW-touching command must run with run_in_background=true, or with an explicit timeout <= 30 s. Got timeout=None. Background it (you will be notified) or split it into a short step.. Command: py tools/bgrun.py --material --max-min 1 --log tools/bench/guardcore_fake/codex_conc.log -- py -u tools/bench/guardcore_fake/sentinel_lv.py
+2026-10-10T12:06:15.733642Z ERROR codex_core::tools::router: error=Command blocked by PreToolUse hook: BLOCKED by tools/hooks/guardcore.py: LabVIEW binary write ban (CLAUDE.md rule 1; was .claude/settings.json deny rules): add of new path tools/bench/guardcore_fake/codex_sentinel.vi. A .vi/.ctl/.lvlib/.lvproj changes only inside LabVIEW, saved under user.lib\claudeDev.. Command: *** Begin Patch
+*** Add File: tools/bench/guardcore_fake/codex_sentinel.vi
++sentinel
+*** End Patch
+2026-10-10T12:06:22.574120Z ERROR codex_core::tools::router: error=Command blocked by PreToolUse hook: BLOCKED by tools/hooks/guardcore.py: LabVIEW binary write ban (CLAUDE.md rule 1; was .claude/settings.json deny rules): rename of new path tools/bench/guardcore_fake/codex_ok_renamed.vi. A .vi/.ctl/.lvlib/.lvproj changes only inside LabVIEW, saved under user.lib\claudeDev.. Command: *** Begin Patch
+*** Update File: tools/bench/guardcore_fake/codex_ok.txt
+*** Move to: tools/bench/guardcore_fake/codex_ok_renamed.vi
+@@
+-ok
++moved
+*** End Patch

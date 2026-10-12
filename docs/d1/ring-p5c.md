@@ -230,3 +230,53 @@ How to add: see the 5-line note at the top of `docs/d1/INDEX.md`.
        `prep_c164_a3_1_mk.py` plus the inline census extension is accepted for this maker.
      - **(d)** This is the cycle's last hand-back round (3 of 3). If the fix cannot pass its self-test, or the scratch
        returns, the cycle closes on this next.json and the same purpose carries to cycle 166.
+403. **(cycle 166 judgement, 2026-10-12 17:2x — P5 final accepted with its measured 47-item Error List; P5 close-out read;
+     bed moves; P6 fact census before any P6 design)**
+     USER-RULES: U1 (relied on: nothing here edits the VI; the tunnel facts in (b) are the check that P5-2 left #5204/#10404
+     as they were, and the #31815 value question stays with P6's numeric acceptance, PD238(f)), U8/U9/U11 (relied on: (e) F4
+     only collects facts on the built overload path; no design), U13 (unchanged); none contradicted.
+     - **Accepted from `tools/bench/cards/assign_result_165_3.json` (items 0-16, 23):** the P5 final
+       `claudeDev\D1_ring_p5_20261010_172913.vi` 75773b0d (byte-equal to `D1_ring_p5s02e_20261010_172913.vi`, adopt.log 4/0),
+       scratch 20/0, peak 594.8, PRIME-SKIP lines for t8776/t24342. Broken file 6 of 6. The PRIME-skip change (stagexec
+       1d5309f4) is kept.
+     - **(a) The 47-item read is the expected Error List; the 2 "missing" items are a predictor bug, not a build fact.** Read
+       this session: the predicted file itself gives item 4 (w4337) `clears_by` A70 w_k3f
+       (`errorlist_predicted_D1_ring_p5s02e_end.json:180-186`) and item 49 (w9636) `clears_by` A80 w_k4f (`:1005-1013`), with
+       "the tunnel gets a source and its outer-side wire with it"; the predictor's uid-only STANDING rule overrode them
+       (`diag_c165_a3_3_facts.md:14-15`). The peer review (`archive/peer/2026-10-10-c165-a3-4-el-missing2.md:41-58`) found
+       w4337/w9636 kept with the same sinks and only the #5204/#10404 outer terminals turned source; that is its reading,
+       re-checked by the graph read in (b). The expected file `errorlist_expected_D1_ring_p5_20261010_172913.json` is written
+       by script from the read `errorlist_D1_ring_p5s02e_20261010_172913_20261010_173731.json` (0c0664d8), item by item, with
+       items 4/49 cited as cleared by A73/A84 (the plan's numbering of A70/A80). Under PD354(a) a 2-item miss in known classes
+       is RECORD, not RETURN; PD401(b)'s "any other EL delta = return" line was mine and is withdrawn.
+     - **(b) Close-out read, ONE read-only LabVIEW card on 75773b0d:** the prepared graph read `diag_c165_a3_4_graph.py`
+       (df5b47b5, plan 0aaef82b, prerun PASS) -> graph file + md5; w4337 / w9636 terminal sets equal to base 2a5fa0c4 except
+       the #5204/#10404 outer terminals now source; t8776/t24342 real sources vs the stagesim end; one `load_by_vi` entry in
+       `tools/bench/memory_model.json` (other keys equal, `fail_above_mb` 680); the measured census written into
+       `plan_ring_p5s02e_pred.json` by script. Order: graph read -> `load_by_vi` -> census (retrospective-cycle165 fault 2).
+       **Rule-1a tunnel check:** LoopTunnels #5204 and #10404 - indexing mode and outer-terminal data type - read in 75773b0d
+       AND in P5-1 `D1_ring_p5s01_20261009_124542.vi` 7f2582ae with an EXISTING read verb (checked by `protocol.py requires`).
+       Equal = recorded. Different = hand back (rule 1a). No existing verb = the fact is reported, no op is built, and it
+       becomes a P6 pre-run check.
+     - **(c) The bed moves when (a) and (b) pass:** STATUS `current-bed:` -> `D1_ring_p5_20261010_172913.vi`, INDEX "Work VI"
+       and the broken count 6 of 6. **P5 ENDS.** No further COUNTED broken file may be saved: the next counted file is P6's
+       and must RUN (ExecState 1). In-between files stay uncounted (D-2026-10-02-02, as before).
+     - **(d) Tooling, after the LabVIEW card, all offline, none in `tools/hooks/**`:** (1) the EL device repair of
+       `docs/violation-decisions.md` 2026-10-12 17:2x: the adoption Error List step judges the read with
+       `stagekit.el_advisory` and prints EL-ADVISORY; self-test on the stored 47-item read (rc 0) + a planted unseen class
+       (rc 1). (2) The EL predictor: a `clears_by` action that the plan contains is honoured even when no action names the
+       item's uid, and an action that clears a tunnel's undirected item also clears the nosource / While-to-SubVI items whose
+       sink set holds that tunnel's outer terminal. Its acceptance test REPLAYS the step-5 prediction from the stored inputs:
+       total 47, missing 0, extra 0; the stored step-1..4 predictions re-made are byte-equal or each difference is listed.
+       (3) PD397(e)'s PB tightening + self-test, then drain fp-86. (4) E5 and the reuse detectors by node identity (PD400(d)),
+       then drain fp-87 and fp-88. Stricter only; an adopted row a tightened rule blocks is handed back with the row.
+     - **(e) P6 fact census, offline, facts only (no design), beside or after (b):** `tools/bench/p6_facts.md` + `.json`.
+       F1: each of the 47 items - class, object uid, owner and loop, the P-step/action that produced it (or present since an
+       earlier bed), and for a "not connected" input what fed it in S1 (`graph_ring_p5s01_20261009_125622.json` lineage back
+       to the original copy). F2: PD374(g)'s carry (consumers of `#644` i and of `FrameIdx`, each: computes what, loop, used as
+       a counter or not). F3: the open P6 obligations measured on the step-5 graph: item 6 void->I32 (PD363), the `#2626`
+       input names vs S1 (PD366(d)). F4: the overload path as built (which nodes do jump-to-Latest, discard and the counters),
+       listed against U8/U9/U11 and STATUS's 2026-09-28 overload note - facts, no verdict. F5: the replay / ABBA tools that
+       exist (path, input, what they compare: PD224(d) recorded-frame replay, `tools/bench/drive_original_copy_v5.py`), and
+       the two steer_158 tests (frame-number gap; execution order with a test delay in 1.2) - what exists, what is missing.
+       Cycle 167's judgement writes `docs/d1/ring-p6.md` from these facts.

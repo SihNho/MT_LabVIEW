@@ -1,0 +1,54 @@
+{
+ "schema": "task/1",
+ "id": "166-a1-6",
+ "kind": "build",
+ "goal": "Per brief_166-a1-6.md (offline): E5 + reuse detectors judge a deleted node by identity (class, owner, owner uid, pos) in the shared module + self-test, drain fp-87/fp-88.",
+ "why": "Purpose items 12 and 13 of assignment 166-1 (PD403(d)(4), PD400(d)): uid reuse made E5 and the reuse detectors report wrongly on step 4; stricter only.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_166-a1-6.md", "md5": "07f83c67e5ec6b72070bc6c4ba8f85a8"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"},
+  {"path": "docs/d1/ring-p5c.md", "md5": "d62725b9e9ba1044dc77c35fe41d921a"},
+  {"path": "tools/stagekit.py", "md5": "93299121f363523b129cc8a41db0362b"},
+  {"path": "tools/bench/prep_c164_a3_7_ident.py", "md5": "48846e6f17bf4fd82201e7e462177303"}
+ ],
+ "pass": [
+  "Identity (class, owner class, owner uid, pos) in the shared module, moved from prep_c164_a3_7_ident ident(); E5 and reuse detectors use it, report uid_reused; docstrings name the self-test",
+  "Self-test selftest_c166_ident.py: step-4 data I1/I2 pass and uid reuse of 23501/23481 reported; a planted survivor is CAUGHT; lines quoted",
+  "Stricter-only proof: stored adopted graph pairs re-scored old vs new; no old-BLOCK becomes PASS; a newly BLOCKED adopted row = RETURN with the row",
+  "fp-87 and fp-88 drained via gate_fp.py drain citing function:line and the self-test line (or left open with the honest reason)",
+  "Stored plans p5s01a/b, p5s02a-e compile + dry byte-equal after all tooling edits (command+line quoted; p5s02d rc 1 pre-existing); drifted pins listed; seven VIs unchanged; no LabVIEW, no hooks edit"
+ ],
+ "outputs": [
+  "tools/bench/diag_c166_a1_6_facts.md",
+  "tools/bench/selftest_c166_ident.py"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c166_a1_6*",
+   "tools/bench/prep_c166_a1_6*",
+   "tools/bench/selftest_c166_ident*",
+   "tools/stagekit.py",
+   "docs/fn_descriptions.json",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/jev_*",
+   "tools/bench/cards/result_166-a1-6.json"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 90
+ },
+ "advances": ["M3", "M8", "R1"],
+ "rules": [
+  "Offline only; no LabVIEW; tools/hooks/** is never edited",
+  "Stricter only: an adopted row the tightened rule blocks is handed back, the rule is not loosened",
+  "No PB / EL-advisory / elpredict change here; no STATUS / INDEX / plan edit"
+ ]
+}

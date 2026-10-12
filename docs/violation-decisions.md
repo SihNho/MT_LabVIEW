@@ -2059,3 +2059,29 @@ DECISION: rule plus a narrow tightening, offline, not a hook (`docs/d1/ring-p5c.
 runs offline on its plan before any other card. A PB block hands back with the row; no further licence class is added. Device:
 after the step-4 LabVIEW card, PB class 3 requires recorded provenance (`RECORD PB <sink>` in the adopted step's scratch log),
 classes 2/3 check coverage per frame, and `chain_tunnel_case` is newest-wins. Self-tested on stored adopted data, stricter only.
+
+## inference-over-measurement — 2026-10-12 17:2x (cycle 166 judgement, after archive/peer/2026-10-10-retrospective-cycle165.md:498)
+
+`VIOLATION: inference-over-measurement | loss_min=18 | loss_usd=9.61 | evidence=docs/d1/ring-p5c.md:161`: ACCEPTED. PD400(b)
+cited a precedent (`diag_c161_p5s02b_scratch.log:97`) and a refusal location (compile, `stagexec.py:1930`) that the
+judgement had not read; both were wrong, and two of cycle 165's three hand-backs followed from them.
+
+DECISION: rule, no new device (the counter is DUE at 34; every earlier device for this slug was a gate on material work, and
+this occurrence was in the judgement's own text). Rule for every judgement: (1) a precedent, a refusal's location or a
+measured value is written into a Pre-decided item only from a line the judgement READ in that session, quoted as file:line;
+anything else is labelled "unread assumption" and becomes a pass item that reads it; (2) the acceptance test of a tool fix
+REPLAYS the literal failing command (the failing maker / dry / prerun run), not a unit test of the part the judgement
+believes failed. Applied first in `docs/d1/ring-p5c.md` PD403.
+
+## device-failed — 2026-10-12 17:2x (cycle 166 judgement, after archive/peer/2026-10-10-retrospective-cycle165.md:499)
+
+`VIOLATION: device-failed | loss_min=12 | loss_usd=? | evidence=tools/bench/diag_c165_a3_4_el.log:82`: ACCEPTED. The
+2026-10-08 01:16 Error List device (`stagekit.el_advisory`, `EL_TOTAL_TOL` 3, PD354(a)) was never on the adoption path: the
+adoption read ran `errorlist_check`'s by-design verdict, which returned rc 1 on a 2-item miss in known classes, and my
+PD401(b) scripted that return.
+
+DECISION: device repair, offline, not a hook (`docs/d1/ring-p5c.md` PD403(d)): the adoption Error List step judges the read
+with `stagekit.el_advisory` (rc 0 = RECORD, rc 1 = RETURN only on an unseen class or |total diff| > 3) and prints its
+EL-ADVISORY line; the by-design verdict stays as a recorded line. Self-test on the stored cycle-165 47-item read (rc 0) and a
+planted unseen class (rc 1). Adoption order: graph read -> `load_by_vi` -> Error List. Rule for every judgement: a brief never
+makes an Error List delta a RETURN condition beyond PD354(a).

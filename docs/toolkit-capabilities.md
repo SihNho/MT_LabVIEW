@@ -1030,7 +1030,7 @@ Outcome of every call: `ok | no_output | failed | timed_out` (tools/fncontract.p
 
 ## Every public function of the shared tools files - generated from code (card chat-T7)
 
-A file is SHARED when at least one OTHER file under tools/ imports it (import graph, measured at generation; cache tools/bench/capabilities_shared.json). Look here before writing any logic (docs/script-writing.md rule 8). 209 files, 2631 functions: 1430 described by a docstring, 304 by docs/fn_descriptions.json (existing functions, card chat-T8), 897 undocumented (per file in the table below). Regenerated at every cycle end and when a shared file is written.
+A file is SHARED when at least one OTHER file under tools/ imports it (import graph, measured at generation; cache tools/bench/capabilities_shared.json). Look here before writing any logic (docs/script-writing.md rule 8). 212 files, 2658 functions: 1453 described by a docstring, 304 by docs/fn_descriptions.json (existing functions, card chat-T8), 901 undocumented (per file in the table below). Regenerated at every cycle end and when a shared file is written.
 
 | file | kind | imported by | functions | side file | undocumented |
 |---|---|---|---|---|---|
@@ -1046,8 +1046,9 @@ A file is SHARED when at least one OTHER file under tools/ imports it (import gr
 | [`tools/debate_relay.py`](#tools-debate-relay-py) | shared module | 2 | 12 | 0 | 8 |
 | [`tools/dispo.py`](#tools-dispo-py) | shared module | 4 | 3 | 0 | 0 |
 | [`tools/doc_lint.py`](#tools-doc-lint-py) | shared module | 8 | 26 | 14 | 0 |
-| [`tools/elrule.py`](#tools-elrule-py) | shared module | 35 | 10 | 1 | 0 |
-| [`tools/errorlist_check.py`](#tools-errorlist-check-py) | shared module | 77 | 24 | 10 | 0 |
+| [`tools/elpredict.py`](#tools-elpredict-py) | shared module | 1 | 9 | 0 | 0 |
+| [`tools/elrule.py`](#tools-elrule-py) | shared module | 36 | 10 | 1 | 0 |
+| [`tools/errorlist_check.py`](#tools-errorlist-check-py) | shared module | 82 | 27 | 10 | 0 |
 | [`tools/fn_records.py`](#tools-fn-records-py) | shared module | 6 | 19 | 9 | 0 |
 | [`tools/fncontract.py`](#tools-fncontract-py) | shared module | 6 | 20 | 3 | 0 |
 | [`tools/gate_fp.py`](#tools-gate-fp-py) | shared module | 8 | 10 | 3 | 0 |
@@ -1075,17 +1076,17 @@ A file is SHARED when at least one OTHER file under tools/ imports it (import gr
 | [`tools/outcome_review.py`](#tools-outcome-review-py) | shared module | 3 | 6 | 0 | 3 |
 | [`tools/prior_art_review.py`](#tools-prior-art-review-py) | shared module | 2 | 7 | 0 | 2 |
 | [`tools/priorart_diff.py`](#tools-priorart-diff-py) | shared module | 8 | 8 | 0 | 5 |
-| [`tools/protocol.py`](#tools-protocol-py) | shared module | 665 | 63 | 14 | 0 |
+| [`tools/protocol.py`](#tools-protocol-py) | shared module | 681 | 63 | 14 | 0 |
 | [`tools/retro_due.py`](#tools-retro-due-py) | shared module | 2 | 6 | 0 | 2 |
 | [`tools/retrospective.py`](#tools-retrospective-py) | shared module | 2 | 8 | 0 | 2 |
 | [`tools/rules_coverage.py`](#tools-rules-coverage-py) | shared module | 2 | 11 | 0 | 6 |
 | [`tools/run_mode.py`](#tools-run-mode-py) | shared module | 1 | 3 | 3 | 0 |
 | [`tools/scope_header.py`](#tools-scope-header-py) | shared module | 14 | 21 | 8 | 0 |
-| [`tools/stage_prerun.py`](#tools-stage-prerun-py) | shared module | 230 | 127 | 29 | 0 |
+| [`tools/stage_prerun.py`](#tools-stage-prerun-py) | shared module | 231 | 127 | 29 | 0 |
 | [`tools/stage_shared.py`](#tools-stage-shared-py) | shared module | 20 | 3 | 0 | 0 |
-| [`tools/stagekit.py`](#tools-stagekit-py) | shared module | 328 | 143 | 10 | 0 |
+| [`tools/stagekit.py`](#tools-stagekit-py) | shared module | 336 | 151 | 10 | 0 |
 | [`tools/stagesim.py`](#tools-stagesim-py) | shared module | 194 | 68 | 25 | 0 |
-| [`tools/stagexec.py`](#tools-stagexec-py) | shared module | 388 | 190 | 61 | 0 |
+| [`tools/stagexec.py`](#tools-stagexec-py) | shared module | 389 | 190 | 61 | 0 |
 | [`tools/stop_record.py`](#tools-stop-record-py) | shared module | 31 | 19 | 0 | 2 |
 | [`tools/vigraph.py`](#tools-vigraph-py) | shared module | 172 | 22 | 4 | 0 |
 | [`tools/violations.py`](#tools-violations-py) | shared module | 2 | 5 | 0 | 2 |
@@ -1103,13 +1104,15 @@ A file is SHARED when at least one OTHER file under tools/ imports it (import gr
 | [`tools/bench/d0_locate.py`](#tools-bench-d0-locate-py) | shared file in the bench folder (move to tools/ later) | 1 | 11 | 0 | 6 |
 | [`tools/bench/d1_rewire_map.py`](#tools-bench-d1-rewire-map-py) | shared file in the bench folder (move to tools/ later) | 9 | 3 | 0 | 2 |
 | [`tools/bench/diag_c100_verbs_build.py`](#tools-bench-diag-c100-verbs-build-py) | shared file in the bench folder (move to tools/ later) | 4 | 32 | 0 | 27 |
-| [`tools/bench/diag_c108c_graph.py`](#tools-bench-diag-c108c-graph-py) | shared file in the bench folder (move to tools/ later) | 1 | 13 | 0 | 9 |
+| [`tools/bench/diag_c108c_graph.py`](#tools-bench-diag-c108c-graph-py) | shared file in the bench folder (move to tools/ later) | 2 | 13 | 0 | 9 |
 | [`tools/bench/diag_c115d_sel.py`](#tools-bench-diag-c115d-sel-py) | shared file in the bench folder (move to tools/ later) | 1 | 5 | 0 | 3 |
 | [`tools/bench/diag_c118_p0.py`](#tools-bench-diag-c118-p0-py) | shared file in the bench folder (move to tools/ later) | 2 | 5 | 0 | 5 |
 | [`tools/bench/diag_c138_6_run.py`](#tools-bench-diag-c138-6-run-py) | shared file in the bench folder (move to tools/ later) | 6 | 11 | 0 | 11 |
 | [`tools/bench/diag_c153_b2_1_rescore.py`](#tools-bench-diag-c153-b2-1-rescore-py) | shared file in the bench folder (move to tools/ later) | 1 | 4 | 0 | 4 |
 | [`tools/bench/diag_c156_b2_2_inv_c156a21.py`](#tools-bench-diag-c156-b2-2-inv-c156a21-py) | shared file in the bench folder (move to tools/ later) | 1 | 0 | 0 | 0 |
 | [`tools/bench/diag_c159_f1_2_t2.py`](#tools-bench-diag-c159-f1-2-t2-py) | shared file in the bench folder (move to tools/ later) | 1 | 8 | 0 | 8 |
+| [`tools/bench/diag_c166_a1_1_lib.py`](#tools-bench-diag-c166-a1-1-lib-py) | shared file in the bench folder (move to tools/ later) | 2 | 4 | 0 | 1 |
+| [`tools/bench/diag_c166_a1_4_dry.py`](#tools-bench-diag-c166-a1-4-dry-py) | shared file in the bench folder (move to tools/ later) | 1 | 3 | 0 | 3 |
 | [`tools/bench/diag_c61_localdir_write2.py`](#tools-bench-diag-c61-localdir-write2-py) | shared file in the bench folder (move to tools/ later) | 1 | 23 | 0 | 17 |
 | [`tools/bench/diag_c81_uidref.py`](#tools-bench-diag-c81-uidref-py) | shared file in the bench folder (move to tools/ later) | 1 | 18 | 0 | 16 |
 | [`tools/bench/diag_c83_connect2x2.py`](#tools-bench-diag-c83-connect2x2-py) | shared file in the bench folder (move to tools/ later) | 2 | 26 | 0 | 19 |
@@ -1154,7 +1157,7 @@ A file is SHARED when at least one OTHER file under tools/ imports it (import gr
 | [`tools/bench/m8b_replay_compare.py`](#tools-bench-m8b-replay-compare-py) | shared file in the bench folder (move to tools/ later) | 1 | 3 | 0 | 3 |
 | [`tools/bench/opmodels_lib.py`](#tools-bench-opmodels-lib-py) | shared file in the bench folder (move to tools/ later) | 3 | 6 | 0 | 3 |
 | [`tools/bench/prep_c143_3_elrule.py`](#tools-bench-prep-c143-3-elrule-py) | shared file in the bench folder (move to tools/ later) | 11 | 0 | 0 | 0 |
-| [`tools/bench/prep_c156_a1_1_lib.py`](#tools-bench-prep-c156-a1-1-lib-py) | shared file in the bench folder (move to tools/ later) | 41 | 6 | 0 | 1 |
+| [`tools/bench/prep_c156_a1_1_lib.py`](#tools-bench-prep-c156-a1-1-lib-py) | shared file in the bench folder (move to tools/ later) | 52 | 6 | 0 | 1 |
 | [`tools/bench/prep_c156_a1_2_lib.py`](#tools-bench-prep-c156-a1-2-lib-py) | shared file in the bench folder (move to tools/ later) | 7 | 8 | 0 | 0 |
 | [`tools/bench/prep_c159_c1_1_lib.py`](#tools-bench-prep-c159-c1-1-lib-py) | shared file in the bench folder (move to tools/ later) | 3 | 6 | 0 | 0 |
 | [`tools/bench/prep_c164_a2_3_lib.py`](#tools-bench-prep-c164-a2-3-lib-py) | shared file in the bench folder (move to tools/ later) | 19 | 9 | 0 | 2 |
@@ -1489,9 +1492,25 @@ shared module; imported by 8 file(s): `tools/audit_cycle.py`, `tools/bench/selft
 | `run` | skip_dispositions=False | Clears RESULT and runs every lint check in order, L1 to L12 (L6 replaced by a PASS note when skip_dispositions). Returns a copy of the (level, check, detail) list. | side file | - | 596 |
 | `main` |  | CLI: run() (--skip-dispositions; --quiet prints FAILs only), prints each result and a 'DOC-LINT PASS/FAIL: n fail, n warn, n pass' line. Returns 1 when any check FAILed, else 0. | side file | - | 617 |
 
+### tools/elpredict.py
+
+shared module; imported by 1 file(s): `tools/bench/diag_c166_a1_3_replay.py`
+
+| function | arguments | what it does | from | self-test | line |
+|---|---|---|---|---|---|
+| `rel` | p | prep_c156_a1_1_lib.rel (repo-relative, '/' separators); a path on another drive (a %TEMP% copy) is returned absolute. Returns a str. | docstring | - | 36 |
+| `base_uids` | a | Base (int) uids a plan action names: loop / body / parent / diagram, a delete row's uid / wire_uid, and a dict end's uid / term_uid; returns a | docstring | - | 48 |
+| `is_stale` | row, aids | (stale, action name): a row whose clears_by names an ACTION ('A70 w_k3f') that is not in this plan's ids 'aids'. == prep_c164_a2_3_lib.is_stale. | docstring | - | 59 |
+| `clears_by_in_plan` | row, aids | Rule 1: the action id (last word of clears_by.action, e.g. 'w_k3f') when the row's clears_by is an ACTION that this plan's ids 'aids' | docstring | - | 67 |
+| `attached_wires` | state, uid | Sorted wire uids on the terminal rows owned by object 'uid' in a sim state. Self-test: --selftest B. | docstring | - | 75 |
+| `wires_of` | s | Set of wire uids on any terminal row of a sim state / graph. Self-test: --selftest B. | docstring | - | 80 |
+| `tunnel_links` | rows, cleared_items, base | Rule 2: {row item: link} for every row of class nosource / whilesubvi whose object WIRE carries, in the base graph 'base', an OuterTerminal of | docstring | - | 85 |
+| `predict` | cfg, gate=None | cfg: PLAN, SESS, EXPF, OUT (None = do not write), PINS, A0 (A number of action 1), N_REB, STEP_TXT, CARD, MAKER, UNPRED_WHY, ELR_SPAN. | docstring | - | 106 |
+| `selftest` |  | A rule functions on literal rows; B attached_wires / wires_of on a toy state; C tunnel_links on the real base graph 2a5fa0c4 (items 4 / 49 | docstring | - | 273 |
+
 ### tools/elrule.py
 
-shared module; imported by 35 file(s): `tools/bench/diag_c149_a1_2_eladv.py`, `tools/bench/diag_c150_a3_2_elexp.py`, `tools/bench/diag_c151_a1_1_elexp.py`, `tools/bench/diag_c152_b3_1_elexp.py`, `tools/bench/diag_c154_a3_3_elexp.py`, `tools/bench/diag_c155_a3_2_elexp.py` ...
+shared module; imported by 36 file(s): `tools/bench/diag_c149_a1_2_eladv.py`, `tools/bench/diag_c150_a3_2_elexp.py`, `tools/bench/diag_c151_a1_1_elexp.py`, `tools/bench/diag_c152_b3_1_elexp.py`, `tools/bench/diag_c154_a3_3_elexp.py`, `tools/bench/diag_c155_a3_2_elexp.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -1508,7 +1527,7 @@ shared module; imported by 35 file(s): `tools/bench/diag_c149_a1_2_eladv.py`, `t
 
 ### tools/errorlist_check.py
 
-shared module; imported by 77 file(s): `tools/bench/c109_errorlist_reverdict.py`, `tools/bench/c87_errorlist_reverdict.py`, `tools/bench/c88_reverdict.py`, `tools/bench/diag_c109c_errorlist.py`, `tools/bench/diag_c110_errorlist.py`, `tools/bench/diag_c110d_elcounts.py` ...
+shared module; imported by 82 file(s): `tools/bench/c109_errorlist_reverdict.py`, `tools/bench/c87_errorlist_reverdict.py`, `tools/bench/c88_reverdict.py`, `tools/bench/diag_c109c_errorlist.py`, `tools/bench/diag_c110_errorlist.py`, `tools/bench/diag_c110d_elcounts.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -1535,7 +1554,10 @@ shared module; imported by 77 file(s): `tools/bench/c109_errorlist_reverdict.py`
 | `count_only_differs` | items, n_reported, expected, derived | (differs: bool, why: str) - a count-only read is accepted only when it matches the expectation exactly. | docstring | - | 481 |
 | `read_mode` | count_only, role | 'count' only for a scratch copy; the final saved file is always 'full'. | docstring | - | 495 |
 | `by_design` | R, expected, plan, record=True | card chat-S5 (PD337(c), the user's "S1" item 3): a MISMATCH whose only difference is extra session-boundary items | docstring | - | 500 |
-| `main` |  | CLI: copies the bed VI (--vi or STATUS's bed) to a scratch, opens it, reads its Error List (count-only or full with a double-click per item), compares with the expected file or plan licences, delet... | side file | - | 519 |
+| `main` |  | CLI: copies the bed VI (--vi or STATUS's bed) to a scratch, opens it, reads its Error List (count-only or full with a double-click per item), compares with the expected file or plan licences, judge... | side file | - | 519 |
+| `advisory_inputs` | exp_path | (pred_path, plan_path, None) when 'exp_path' is a PREDICTED step-end file (errorlist-expected/1 with a 'plan' {path, md5}) and | docstring | selftest_c166_eladv.py | 673 |
+| `final_verdict` | R, expected, plan, exp_path=None, record=True | The --role final verdict of a read R (extra / missing / gates / items already set): OK / MISMATCH / FAIL, the block that was inline in | docstring | selftest_c166_eladv.py | 699 |
+| `rejudge_read` | read_json, exp_path=None, record=False | Offline replay of a stored --role final read (errorlist_<stem>_<ts>.json, as main() wrote it) through the adoption path: items with | docstring | selftest_c166_eladv.py | 745 |
 
 ### tools/fn_records.py
 
@@ -2145,7 +2167,7 @@ shared module; imported by 8 file(s): `tools/bench/diag_c147_c3_3_proven.py`, `t
 
 ### tools/protocol.py
 
-shared module; imported by 665 file(s): `tools/audit_cycle.py`, `tools/bench/build_op_const_loopterm_77.py`, `tools/bench/build_op_termtype.py`, `tools/bench/build_opstopmode_v0.py`, `tools/bench/build_opwiringrules_v0.py`, `tools/bench/c109_errorlist_reverdict.py` ...
+shared module; imported by 681 file(s): `tools/audit_cycle.py`, `tools/bench/build_op_const_loopterm_77.py`, `tools/bench/build_op_termtype.py`, `tools/bench/build_opstopmode_v0.py`, `tools/bench/build_opwiringrules_v0.py`, `tools/bench/c109_errorlist_reverdict.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -2299,7 +2321,7 @@ shared module; imported by 14 file(s): `tools/bench/diag_c146_a1_1_repro.py`, `t
 
 ### tools/stage_prerun.py
 
-shared module; imported by 230 file(s): `tools/bench/c88_reverdict.py`, `tools/bench/diag_c101b_syntax.py`, `tools/bench/diag_c103d_jevfix.py`, `tools/bench/diag_c103d_launch.py`, `tools/bench/diag_c104_launch.py`, `tools/bench/diag_c104d_launch.py` ...
+shared module; imported by 231 file(s): `tools/bench/c88_reverdict.py`, `tools/bench/diag_c101b_syntax.py`, `tools/bench/diag_c103d_jevfix.py`, `tools/bench/diag_c103d_launch.py`, `tools/bench/diag_c104_launch.py`, `tools/bench/diag_c104d_launch.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -2443,7 +2465,7 @@ shared module; imported by 20 file(s): `tools/bench/prep_c150_a3_1_licence.py`, 
 
 ### tools/stagekit.py
 
-shared module; imported by 328 file(s): `tools/bench/allterms_s1.py`, `tools/bench/allterms_s2.py`, `tools/bench/allterms_s3.py`, `tools/bench/allterms_s4.py`, `tools/bench/allterms_v1.py`, `tools/bench/build_kswap_88.py` ...
+shared module; imported by 336 file(s): `tools/bench/allterms_s1.py`, `tools/bench/allterms_s2.py`, `tools/bench/allterms_s3.py`, `tools/bench/allterms_s4.py`, `tools/bench/allterms_v1.py`, `tools/bench/build_kswap_88.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -2514,7 +2536,7 @@ shared module; imported by 328 file(s): `tools/bench/allterms_s1.py`, `tools/ben
 | `term_identity_names` | base, sim, real | card 141-3 (PD325(b)) as it stood until card chat-T6 - identity (term uid, owner uid, NAME), wires (wire uid, source | docstring | - | 1401 |
 | `wire_ends_pos` | rows, ob=None, tb=None | {wire uid: (frozenset of source position keys, frozenset of sink position keys)} - a wire as its two ends. | docstring | - | 1454 |
 | `kept_nodes` | B, gone=() | The BASE nodes that keep at least one base position key (not all in 'gone'). Only these nodes' positions are compared | docstring | selftest_t6_poskey | 1464 |
-| `term_identity_pos` | base, sim, real, bind=None, renames=None | TD / unwired / D on position keys (block comment above). Returns the keys term_identity_gates always returned - | docstring | - | 1479 |
+| `term_identity_pos` | base, sim, real, bind=None, renames=None | TD / unwired / D on position keys (block comment above). Returns the keys term_identity_gates always returned - | docstring | selftest_c166_ident.py | 1479 |
 | `licence_renames` | lic | {(term uid, owner uid): (from, to)} from a pb-licence/1 dict's 'renames' list ([{node, term_uids, from?, to?}]); | docstring | - | 1525 |
 | `pb_rename_rows` | base, sim, real, renames=None, bind=None | (rows, restored, unlicensed) for PB's build4 - card chat-T6 (docs/d1/result-gates.md): every real row on a KEPT BASE node (kept_nodes) | docstring | - | 1538 |
 | `d4_load` | path | The D4 JSON ({s1: {path, md5}, scope_nodes}) plus 'scope' (set), 's1_md5_got' and 'names' = {node: {name: | docstring | - | 1570 |
@@ -2543,53 +2565,61 @@ shared module; imported by 328 file(s): `tools/bench/allterms_s1.py`, `tools/ben
 | `pb_bound_rows` | cd, G, V=None | {sink: frozenset of (source POSITION key, frozenset((tunnel, frame uid)))} of a frame-keyed cdiff's rows on graph G (its 'after' | docstring | selftest_c158_gates386.py | 1961 |
 | `pb_check_bound` | S1f, G1, Gpred, Gsimb, pred_rows, open_rows, move_frames, unlicensed=(), V=None, inherit=None | PB of PD386(a): pb_check(S1f, G1 = the real end, Gpred, ...) PLUS (1) the real PB == the PB of Gsimb = the sim end re-keyed by the | docstring | selftest_c158_gates386.py | 1979 |
 | `pb_inherit_ctx` | plan, flat, base_vi_md5=None, labels=None, fs_pairs=None, S1f=None, V=None, adopt_path=None | The context pb_inherited_row needs, from files only (PD394(a), PD395(b)). Returns {frames {node: {frame uid}} inherited from the | docstring | selftest_c161_pbinherit.py | 2033 |
-| `pb_inherited_row` | sink, y, res, G1, S1f, bound_end, ctx | Class 1 / class 2 of ONE pred-extra PB row (docs/d1/ring-p5b.md PD394(a), PD395(b)); y = its cdiff row, res = its 'after' sources | docstring | selftest_c161_pbinherit.py | 2102 |
-| `pb_386` | base_terms, L, real, objs, flat, plan, pred_rows, open_rows, labels, fs_pairs, renames=None, S1f=None, V=None, inheri... | The whole PD386(a) PB from a run's pieces - what RingSession.gate_pb calls: L = the sim end (sim uids), real = the read-back end | docstring | selftest_c158_gates386.py | 2156 |
-| `wire_pairs_pos` | rows, ob=None, tb=None, base_nodes=None | (Counter of (source end, sink end) pairs, {wire uid: sorted source ends} of source-only stubs) of one terminal table, ends = position | docstring | selftest_c158_gates386.py | 2178 |
-| `term_identity_pairs` | base, sim, real, bind=None, renames=None | D / TD of PD386(b): term_identity_pos's dict with d_ok / td_ok re-judged PAIR-KEYED. D: the new and the lost (source, sink) pairs | docstring | selftest_c158_gates386.py | 2200 |
-| `stub_sides` | hs, hr | card 159-e1-1: the one-sided source-only stubs of a sim side and a real side - hs / hr = {wire uid: source ends} -> {sim_only: | docstring | selftest_c159_cen2_ends.py | 2227 |
-| `wire_end_pairs` | rows, base_terms, base_frames | card 159-e1-1 (PD389(b), docs/d1/ring-p5b.md): (Counter of (source key, sink key, frame) end pairs, {wire uid: sorted source keys} | docstring | selftest_c159_cen2_ends.py | 2239 |
-| `cen2_wire_ends` | base, sim, real, base_frames=() | card 159-e1-1 (PD389(b), docs/d1/ring-p5b.md): CEN2's Wire class judged by ENDS. base / sim / real = terminal rows (base = c0's | docstring | selftest_c159_cen2_ends.py | 2273 |
-| `scratch_census` | log_path, sum_json=None, key='CENSUS-ALL new uids by class (every class) ' | (census {class: n}, whole-file line number, last-segment start line) from the ONE 'key' line in the LAST bgrun segment of a | docstring | selftest_c158_gates386.py | 2291 |
-| `op_class_census` | prev_rows, rows | Class census between two whole-VI terminal reads (no extra LabVIEW read): {terms: {term class: n new term uids}, owners: {owner | docstring | selftest_c158_gates386.py | 2308 |
-| `op_class_census_install` | rs, ops=(16, 17) | PRINTING ONLY (PD386(c), the PD385(b) per-op census owed): wrap the ring backend's read (sink_gate_backend_class) so the whole-VI | docstring | selftest_c158_gates386.py | 2325 |
-| `op_class_census_print` | h | Print one 'OPCENSUS op <k>' line per op of an op_class_census_install holder (or why it was not measured). Returns the dict. | docstring | - | 2349 |
-| `retry_card_arg` | argv, script | PRINTING ONLY: the '--retry-card <path>' / 'RETRY_CARD=<path>' judgement card in a recipe's own argv (stage_prerun.RETRY_CARD_RE, | docstring | selftest_c158_gates386.py | 2364 |
-| `sink_gate_spec` | e, actions, base, sim_end | One sink-gate census row (prep_*_session.json 'sink_gate_census', needs_sink_gate) -> its declared sink gate spec | docstring | selftest_t7_ring.py | 2381 |
-| `sink_gate_read` | e, d, x, rows, n_actions | (ok, detail) for the deferred op error on sink d['sink'] (stage_d1_ring_p5s01a.py:90-117 sg_read, unchanged): (a) the indicator | docstring | selftest_t7_ring.py | 2406 |
-| `sink_gate_backend_class` |  | stagexec.LVBackend subclass that KEEPS its last whole-VI read in 'last_terms' (no extra read; LVBackend.read is called exactly | docstring | - | 2438 |
-| `SimCensus` | (class) | card 159-a4-1 (PD387(e)): a {uid: class} census snapshot taken from a stagesim STATE, not from LabVIEW; Stage.census_gate | docstring | selftest_c159_a4_1.py | 2453 |
-| `sim_census_snapshot` | state, classes=None | card 159-a4-1 (PD387(e)): the SimCensus {uid: class} of one stagesim state - objs by class, terminals by term_class, every | docstring | selftest_c159_a4_1.py | 2459 |
-| `census_unpredicted_reason` | pred | card 159-a4-1 (PD387(e), docs/violation-decisions.md device-failed 2026-10-10 03:2x): None when a pred's census block covers | docstring | selftest_c159_a4_1.py | 2479 |
-| `RingSession` | (class) | The inputs of one ring stage session and the gates its body runs - stage_d1_ring_p5s01a.py:31-191 as calls. A recipe builds | docstring | selftest_t7_ring.py | 2498 |
-| `RingSession.stem` |  | The plan file's name without .json (gate labels name it). Returns a str. | docstring | - | 2529 |
-| `RingSession.sink_read` | e, d | (ok, detail) of sink_gate_read on this session's executor and last read; (True, 'dry') in a dry run. | docstring | - | 2533 |
-| `RingSession.census_snapshot` | s | {uid: class} of s.census_snapshot() kept to the pred's census classes (the recipes' 'snap'). ONE whole-VI read. | docstring | - | 2539 |
-| `RingSession.handles` |  | LabVIEW's handle count now (bench_prep.labview_handles); None in a dry run is the caller's business. | docstring | - | 2543 |
-| `RingSession.gate_l0` | s | L0 (FATAL): plan final + open_rows_match + plan_in == <plan>_in or <plan>_in<N> (plan_in_matches_stem); base graph md5 == pred == file; | docstring | - | 2547 |
-| `RingSession.executor` | s | SG (FATAL: one declared sink gate per census row) -> the backend (stagexec.DryPlanBE in a dry run, else the SGBackend | docstring | - | 2558 |
-| `RingSession.run` | s | Run the executor: E1 (every checkpoint's real graph == its simulated step). On stagexec.ExecStop: save ops 1..k-1 for a | docstring | - | 2579 |
-| `RingSession.gates_ng_fr_d` | s, real | NG (crossing ops' new tunnel names == the simulator's), FR (FATAL: created objects on the sim end's frames; real frames == | docstring | - | 2596 |
-| `RingSession.gate_cen2` | s, c0, c1, real=None | CEN2: the new-object census between snapshots c0 and c1 == the pred's census. Returns s.census_gate's delta. | docstring | - | 2624 |
-| `RingSession.gate_td` | s, real | TD: every base terminal the sim keeps wired is still wired; identities lost == the plan's deletes (position key). Records | docstring | - | 2657 |
-| `RingSession.gate_pb` | s, real | PB (FATAL, before save): pb_check(S1, real end) - by POSITION (fp-70). The real end's rows get the sim end's names on kept | docstring | - | 2671 |
-| `RingSession.finish` | s, h0, rk, dc, key, level, save=True | PH / HB (handles open -> save <= +700, PD236(b)), the rule-6 GUI save (broken by design), PS (saved, md5 differs, input | docstring | - | 2688 |
-| `pred_x10` | pred_path, plan_path | The X10 prediction of a plan: its pred file's memory_pred.peak_mb, ONLY when pred.plan.md5 == md5(plan) (the scratch | docstring | selftest_t7_ring.py | 2708 |
-| `census_all_install` | stage_cls=None | Wrap Stage.census_snapshot / census_gate (once) so every snapshot is kept and every census gate also prints the CENSUS-ALL | docstring | selftest_t7_ring.py | 2724 |
-| `el_norm_ocr` | s | An Error List text -> lower-case alphanumerics with the OCR aliases applied (== errorlist_check.norm). Returns a str. | docstring | - | 2761 |
-| `el_class` | it | One Error List item {raw, detail} -> its class: elrule.item_class's local / cond / sr, else input, else | docstring | selftest_t7_ring.py | 2770 |
-| `el_advisory` | items, pred_path, plan_path, pred=None | (rc, report) for one Error List read (its items) against the pred's errorlist.per_class (PD354(a), ADVISORY): rc 1 only for | docstring | selftest_t7_ring.py | 2782 |
-| `el_advisory_print` | rc, rep | Print the one EL-ADVISORY line of an el_advisory result. | docstring | - | 2805 |
-| `el_advisory_selftest` | pred_path, plan_path | Four synthetic Error List reads built from the pred's predicted per-class counts (offline, the scratch recipes' | docstring | - | 2812 |
-| `scratch_offline_modes` | argv, pred_path, plan_path | The scratch recipes' two OFFLINE modes, before any K.Stage: '--el-advisory-selftest' -> el_advisory_selftest's rc; | docstring | - | 2840 |
-| `scratch_tail` | st, rc, gone, key, tag, log, base_vi, base_md5, pred_path, plan_path, card, sum_json, fail_mb, launch_mb=680.0 | After K.run of a scratch: peak private MB from the log's METER lines vs the pinned X10 (pred_x10), and the gates MEM (peak <= | docstring | - | 2852 |
-| `made_symbols` | acts | The 'new:' symbols the rows create: every 'as' alias, plus <as>L / <as>R of an add_shift_reg; returns a set. | docstring | selftest_c160_stagemap.py | 2884 |
-| `used_symbols` | acts, made | Sorted earlier-step symbols the rows reference: 'new:X' (address heads) or 'new:X.f<k>' (frame diagrams), minus 'made'; returns a list. | docstring | selftest_c160_stagemap.py | 2894 |
-| `map_symbols` | used, sym, bound, graph | (REAL, bad, lines): each used symbol -> sim uid (sym) -> real uid (bound); a frame symbol's real uid must be an owners entry | docstring | selftest_c160_stagemap.py | 2912 |
-| `map_frames` | acts, all_acts, sym, bound, owners, default_frames=('False', 'True') | (FMAP {(action id, end uid): {...,'addr': '#<uid>'}}, bad, lines): a 'frame' name on an end whose tunnel ('tunnel' action in all_acts) | docstring | selftest_c160_stagemap.py | 2939 |
-| `apply_map` | acts, REAL, FMAP | The rows with earlier-step symbols -> real uids (string address 'new:X.t' in src/dst -> {'uid': real, 'term': 't'}) and mapped frame | docstring | selftest_c160_stagemap.py | 2975 |
-| `bound_from_cmap` | path | (head, {sim uid: real uid}) over the obj / diag / term entries of ONE creation-map/1 file, read by stage_prerun.read_creation_map; a sim id | docstring | selftest_c160_stagemap.py | 3001 |
-| `plan_in_matches_stem` | path, stem | True when the basename of 'path' without its extension is exactly <stem>_in or <stem>_in<ASCII digits> (a numbered revision of the | docstring | selftest_c160_l0stem.py | 3015 |
+| `pb_record_lines` | log_path | card 166-a1-4 (docs/d1/ring-p5c.md PD397(e)(1)): {sink: [(line no, frozenset of S1 source uids / None)]} of every 'RECORD PB <sink>: ...' | docstring | selftest_c166_pbtight.py | 2104 |
+| `pb_provenance` | sink, su, plan_path, ctx | card 166-a1-4 (PD397(e)(1)): (ok, why) - a class-3 row needs a 'RECORD PB <sink>' line in the scratch log of the ADOPTED step that wired | docstring | selftest_c166_pbtight.py | 2121 |
+| `pb_frame_coverage` | res, src_uids, su, own, cf, passthrough | card 166-a1-4 (PD397(e)(2)): (ok, why) - the per-frame coverage of a class-2 / class-3 PB row, in place of the multiplicity count. | docstring | selftest_c166_pbtight.py | 2134 |
+| `pb_inherited_row` | sink, y, res, G1, S1f, bound_end, ctx | Class 1 / class 2 of ONE pred-extra PB row (docs/d1/ring-p5b.md PD394(a), PD395(b)); y = its cdiff row, res = its 'after' sources | docstring | selftest_c161_pbinherit.py | 2162 |
+| `pb_386` | base_terms, L, real, objs, flat, plan, pred_rows, open_rows, labels, fs_pairs, renames=None, S1f=None, V=None, inheri... | The whole PD386(a) PB from a run's pieces - what RingSession.gate_pb calls: L = the sim end (sim uids), real = the read-back end | docstring | selftest_c158_gates386.py | 2224 |
+| `wire_pairs_pos` | rows, ob=None, tb=None, base_nodes=None | (Counter of (source end, sink end) pairs, {wire uid: sorted source ends} of source-only stubs) of one terminal table, ends = position | docstring | selftest_c158_gates386.py | 2246 |
+| `term_identity_pairs` | base, sim, real, bind=None, renames=None | D / TD of PD386(b): term_identity_pos's dict with d_ok / td_ok re-judged PAIR-KEYED. D: the new and the lost (source, sink) pairs | docstring | selftest_c158_gates386.py | 2268 |
+| `stub_sides` | hs, hr | card 159-e1-1: the one-sided source-only stubs of a sim side and a real side - hs / hr = {wire uid: source ends} -> {sim_only: | docstring | selftest_c159_cen2_ends.py | 2295 |
+| `wire_end_pairs` | rows, base_terms, base_frames | card 159-e1-1 (PD389(b), docs/d1/ring-p5b.md): (Counter of (source key, sink key, frame) end pairs, {wire uid: sorted source keys} | docstring | selftest_c159_cen2_ends.py | 2307 |
+| `cen2_wire_ends` | base, sim, real, base_frames=() | card 159-e1-1 (PD389(b), docs/d1/ring-p5b.md): CEN2's Wire class judged by ENDS. base / sim / real = terminal rows (base = c0's | docstring | selftest_c159_cen2_ends.py | 2341 |
+| `scratch_census` | log_path, sum_json=None, key='CENSUS-ALL new uids by class (every class) ' | (census {class: n}, whole-file line number, last-segment start line) from the ONE 'key' line in the LAST bgrun segment of a | docstring | selftest_c158_gates386.py | 2359 |
+| `op_class_census` | prev_rows, rows | Class census between two whole-VI terminal reads (no extra LabVIEW read): {terms: {term class: n new term uids}, owners: {owner | docstring | selftest_c158_gates386.py | 2376 |
+| `op_class_census_install` | rs, ops=(16, 17) | PRINTING ONLY (PD386(c), the PD385(b) per-op census owed): wrap the ring backend's read (sink_gate_backend_class) so the whole-VI | docstring | selftest_c158_gates386.py | 2393 |
+| `op_class_census_print` | h | Print one 'OPCENSUS op <k>' line per op of an op_class_census_install holder (or why it was not measured). Returns the dict. | docstring | - | 2417 |
+| `retry_card_arg` | argv, script | PRINTING ONLY: the '--retry-card <path>' / 'RETRY_CARD=<path>' judgement card in a recipe's own argv (stage_prerun.RETRY_CARD_RE, | docstring | selftest_c158_gates386.py | 2432 |
+| `sink_gate_spec` | e, actions, base, sim_end | One sink-gate census row (prep_*_session.json 'sink_gate_census', needs_sink_gate) -> its declared sink gate spec | docstring | selftest_t7_ring.py | 2449 |
+| `sink_gate_read` | e, d, x, rows, n_actions | (ok, detail) for the deferred op error on sink d['sink'] (stage_d1_ring_p5s01a.py:90-117 sg_read, unchanged): (a) the indicator | docstring | selftest_t7_ring.py | 2474 |
+| `sink_gate_backend_class` |  | stagexec.LVBackend subclass that KEEPS its last whole-VI read in 'last_terms' (no extra read; LVBackend.read is called exactly | docstring | - | 2506 |
+| `SimCensus` | (class) | card 159-a4-1 (PD387(e)): a {uid: class} census snapshot taken from a stagesim STATE, not from LabVIEW; Stage.census_gate | docstring | selftest_c159_a4_1.py | 2521 |
+| `sim_census_snapshot` | state, classes=None | card 159-a4-1 (PD387(e)): the SimCensus {uid: class} of one stagesim state - objs by class, terminals by term_class, every | docstring | selftest_c159_a4_1.py | 2527 |
+| `census_unpredicted_reason` | pred | card 159-a4-1 (PD387(e), docs/violation-decisions.md device-failed 2026-10-10 03:2x): None when a pred's census block covers | docstring | selftest_c159_a4_1.py | 2547 |
+| `RingSession` | (class) | The inputs of one ring stage session and the gates its body runs - stage_d1_ring_p5s01a.py:31-191 as calls. A recipe builds | docstring | selftest_t7_ring.py | 2566 |
+| `RingSession.stem` |  | The plan file's name without .json (gate labels name it). Returns a str. | docstring | - | 2597 |
+| `RingSession.sink_read` | e, d | (ok, detail) of sink_gate_read on this session's executor and last read; (True, 'dry') in a dry run. | docstring | - | 2601 |
+| `RingSession.census_snapshot` | s | {uid: class} of s.census_snapshot() kept to the pred's census classes (the recipes' 'snap'). ONE whole-VI read. | docstring | - | 2607 |
+| `RingSession.handles` |  | LabVIEW's handle count now (bench_prep.labview_handles); None in a dry run is the caller's business. | docstring | - | 2611 |
+| `RingSession.gate_l0` | s | L0 (FATAL): plan final + open_rows_match + plan_in == <plan>_in or <plan>_in<N> (plan_in_matches_stem); base graph md5 == pred == file; | docstring | - | 2615 |
+| `RingSession.executor` | s | SG (FATAL: one declared sink gate per census row) -> the backend (stagexec.DryPlanBE in a dry run, else the SGBackend | docstring | - | 2626 |
+| `RingSession.run` | s | Run the executor: E1 (every checkpoint's real graph == its simulated step). On stagexec.ExecStop: save ops 1..k-1 for a | docstring | - | 2647 |
+| `RingSession.gates_ng_fr_d` | s, real | NG (crossing ops' new tunnel names == the simulator's), FR (FATAL: created objects on the sim end's frames; real frames == | docstring | - | 2664 |
+| `RingSession.gate_cen2` | s, c0, c1, real=None | CEN2: the new-object census between snapshots c0 and c1 == the pred's census. Returns s.census_gate's delta. | docstring | - | 2692 |
+| `RingSession.gate_td` | s, real | TD: every base terminal the sim keeps wired is still wired; identities lost == the plan's deletes (position key). Records | docstring | - | 2725 |
+| `RingSession.gate_pb` | s, real | PB (FATAL, before save): pb_check(S1, real end) - by POSITION (fp-70). The real end's rows get the sim end's names on kept | docstring | - | 2741 |
+| `RingSession.finish` | s, h0, rk, dc, key, level, save=True | PH / HB (handles open -> save <= +700, PD236(b)), the rule-6 GUI save (broken by design), PS (saved, md5 differs, input | docstring | - | 2758 |
+| `pred_x10` | pred_path, plan_path | The X10 prediction of a plan: its pred file's memory_pred.peak_mb, ONLY when pred.plan.md5 == md5(plan) (the scratch | docstring | selftest_t7_ring.py | 2778 |
+| `census_all_install` | stage_cls=None | Wrap Stage.census_snapshot / census_gate (once) so every snapshot is kept and every census gate also prints the CENSUS-ALL | docstring | selftest_t7_ring.py | 2794 |
+| `el_norm_ocr` | s | An Error List text -> lower-case alphanumerics with the OCR aliases applied (== errorlist_check.norm). Returns a str. | docstring | - | 2831 |
+| `el_class` | it | One Error List item {raw, detail} -> its class: elrule.item_class's local / cond / sr, else input, else | docstring | selftest_t7_ring.py | 2840 |
+| `el_advisory` | items, pred_path, plan_path, pred=None | (rc, report) for one Error List read (its items) against the pred's errorlist.per_class (PD354(a), ADVISORY): rc 1 only for | docstring | selftest_t7_ring.py | 2852 |
+| `el_advisory_print` | rc, rep | Print the one EL-ADVISORY line of an el_advisory result. | docstring | - | 2875 |
+| `el_advisory_selftest` | pred_path, plan_path | Four synthetic Error List reads built from the pred's predicted per-class counts (offline, the scratch recipes' | docstring | - | 2882 |
+| `scratch_offline_modes` | argv, pred_path, plan_path | The scratch recipes' two OFFLINE modes, before any K.Stage: '--el-advisory-selftest' -> el_advisory_selftest's rc; | docstring | - | 2910 |
+| `scratch_tail` | st, rc, gone, key, tag, log, base_vi, base_md5, pred_path, plan_path, card, sum_json, fail_mb, launch_mb=680.0 | After K.run of a scratch: peak private MB from the log's METER lines vs the pinned X10 (pred_x10), and the gates MEM (peak <= | docstring | - | 2922 |
+| `made_symbols` | acts | The 'new:' symbols the rows create: every 'as' alias, plus <as>L / <as>R of an add_shift_reg; returns a set. | docstring | selftest_c160_stagemap.py | 2954 |
+| `used_symbols` | acts, made | Sorted earlier-step symbols the rows reference: 'new:X' (address heads) or 'new:X.f<k>' (frame diagrams), minus 'made'; returns a list. | docstring | selftest_c160_stagemap.py | 2964 |
+| `map_symbols` | used, sym, bound, graph | (REAL, bad, lines): each used symbol -> sim uid (sym) -> real uid (bound); a frame symbol's real uid must be an owners entry | docstring | selftest_c160_stagemap.py | 2982 |
+| `map_frames` | acts, all_acts, sym, bound, owners, default_frames=('False', 'True') | (FMAP {(action id, end uid): {...,'addr': '#<uid>'}}, bad, lines): a 'frame' name on an end whose tunnel ('tunnel' action in all_acts) | docstring | selftest_c160_stagemap.py | 3009 |
+| `apply_map` | acts, REAL, FMAP | The rows with earlier-step symbols -> real uids (string address 'new:X.t' in src/dst -> {'uid': real, 'term': 't'}) and mapped frame | docstring | selftest_c160_stagemap.py | 3045 |
+| `bound_from_cmap` | path | (head, {sim uid: real uid}) over the obj / diag / term entries of ONE creation-map/1 file, read by stage_prerun.read_creation_map; a sim id | docstring | selftest_c160_stagemap.py | 3071 |
+| `plan_in_matches_stem` | path, stem | True when the basename of 'path' without its extension is exactly <stem>_in or <stem>_in<ASCII digits> (a numbered revision of the | docstring | selftest_c160_l0stem.py | 3085 |
+| `node_ident` | uid, objs, rows, owners | (class, owner class, owner uid, pos) of object 'uid' in one graph (objs = {uid: obj}, rows = its terminal rows, owners = its | docstring | selftest_c166_ident.py | 3102 |
+| `ident_matches` | idb, objs, rows, owners | Sorted uids of the objects of one graph whose node_ident == idb (any uid). Moved from prep_c164_a3_7_ident.py matches(). | docstring | selftest_c166_ident.py | 3120 |
+| `deleted_nodes_by_ident` | deleted, base, after | E5's deleted-node test by IDENTITY. base / after = graph dicts {objs, terminals, owners} (the graph-read json). Returns {present, | docstring | selftest_c166_ident.py | 3131 |
+| `e5_check` | edits, after, base=None | E5 of the graph-read diags (diag_c16*_graph.py inline 'e5', as one call): edits = the plan's {made, deleted_nodes, deleted_wires, | docstring | selftest_c166_ident.py | 3160 |
+| `row_uid_reused` | base, real | The reuse detector on TERMINAL ROWS (fp-88): uids present in both tables whose ROLE set differs - a uid's roles are ('node', owner | docstring | selftest_c166_ident.py | 3184 |
 
 ### tools/stagesim.py
 
@@ -2668,7 +2698,7 @@ shared module; imported by 194 file(s): `tools/bench/dedupe_check_s2b.py`, `tool
 
 ### tools/stagexec.py
 
-shared module; imported by 388 file(s): `tools/bench/constsrc_l2a1_82.py`, `tools/bench/constsrc_l2a1_85.py`, `tools/bench/ctsrc_l2a1_82.py`, `tools/bench/diag_c100_6_parity.py`, `tools/bench/diag_c100_rows.py`, `tools/bench/diag_c101_resim.py` ...
+shared module; imported by 389 file(s): `tools/bench/constsrc_l2a1_82.py`, `tools/bench/constsrc_l2a1_85.py`, `tools/bench/ctsrc_l2a1_82.py`, `tools/bench/diag_c100_6_parity.py`, `tools/bench/diag_c100_rows.py`, `tools/bench/diag_c101_resim.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -3159,7 +3189,7 @@ shared file in the bench folder (move to tools/ later); imported by 4 file(s): `
 
 ### tools/bench/diag_c108c_graph.py
 
-shared file in the bench folder (move to tools/ later); imported by 1 file(s): `tools/bench/diag_c108c_groupB.py`
+shared file in the bench folder (move to tools/ later); imported by 2 file(s): `tools/bench/diag_c108c_groupB.py`, `tools/bench/diag_c166_a1_5_census.py`
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -3250,6 +3280,27 @@ shared file in the bench folder (move to tools/ later); imported by 1 file(s): `
 | `Serve.exec_module` | module | (undocumented) | - | - | 60 |
 | `child` | cfg_i | (undocumented) | - | - | 66 |
 | `main` |  | (undocumented) | - | - | 87 |
+
+### tools/bench/diag_c166_a1_1_lib.py
+
+shared file in the bench folder (move to tools/ later); imported by 2 file(s): `tools/bench/diag_c166_a1_1_census.py`, `tools/bench/diag_c166_a1_1_mm.py`
+
+| function | arguments | what it does | from | self-test | line |
+|---|---|---|---|---|---|
+| `text_like` | obj, old_text | The serialisation of 'obj' that reproduces the byte layout of 'old_text' (indent 1, ascii or not, trailing newline or not), | docstring | - | 16 |
+| `newline_of` | path | (undocumented) | - | - | 27 |
+| `rewrite_json` | path, obj, backup | Copy 'path' to 'backup', then write 'obj' in the old file's layout and line ending. Returns (written, old_obj). | docstring | - | 31 |
+| `changed_keys` | a, b | Top-level keys whose values differ between two dicts. | docstring | - | 45 |
+
+### tools/bench/diag_c166_a1_4_dry.py
+
+shared file in the bench folder (move to tools/ later); imported by 1 file(s): `tools/bench/diag_c166_a1_6_dry.py`
+
+| function | arguments | what it does | from | self-test | line |
+|---|---|---|---|---|---|
+| `run_one` | mode, recipe | (undocumented) | - | - | 34 |
+| `norm` | text | (undocumented) | - | - | 51 |
+| `main_all` |  | (undocumented) | - | - | 59 |
 
 ### tools/bench/diag_c61_localdir_write2.py
 
@@ -4004,7 +4055,7 @@ shared file in the bench folder (move to tools/ later); imported by 11 file(s): 
 
 ### tools/bench/prep_c156_a1_1_lib.py
 
-shared file in the bench folder (move to tools/ later); imported by 41 file(s): `tools/bench/diag_c160_g1_1.py`, `tools/bench/diag_c162_a1_1_hash.py`, `tools/bench/diag_c162_a1_2_hash.py`, `tools/bench/diag_c163_a2_1_hash.py`, `tools/bench/diag_c163_a2_2_hash.py`, `tools/bench/diag_c164_a3_5_hash.py` ...
+shared file in the bench folder (move to tools/ later); imported by 52 file(s): `tools/bench/diag_c160_g1_1.py`, `tools/bench/diag_c162_a1_1_hash.py`, `tools/bench/diag_c162_a1_2_hash.py`, `tools/bench/diag_c163_a2_1_hash.py`, `tools/bench/diag_c163_a2_2_hash.py`, `tools/bench/diag_c164_a3_5_hash.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|

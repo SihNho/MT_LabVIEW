@@ -1,0 +1,25 @@
+{
+  "schema": "result/1",
+  "id": "mb-T2",
+  "status": "PASS",
+  "gates": {"pass": 3, "fail": 0},
+  "first_fail": null,
+  "blocked_by": null,
+  "artefacts": [{"path": "tools/bench/cards/result_mb-T2.json"}],
+  "facts": [
+    "RUN 1: the first COMPLETED site with ExecState 0 was site 3, ForLoop body Diagram[50] #29894, wire w25157 from Median Filter SubVI #30306. OpCreateConstOnTerm_v0 raised 'error 1055: Invoke Node in OpCreateConstOnTerm_v0.vi'; t6 read 0, and ExecState after S03 was 0 (tools/bench/diag_c90_t0_step3b.log:172-176). Sites 0 and 2 had already completed with ExecState 1 (:78-79,134-135). The logged error is the constant-creation op's error; the CLFN compiler error text was NOT readable (:176).",
+    "RUN 1 For-body route failed at ALL five attempted sites: 3,4,5,16,17. Each constant-creation call reported the same Invoke Node error 1055 and each t6 read 0 (tools/bench/diag_c90_t0_step3b.log:172-173,213-214,253-254,573-574,613-614). The run left those unsuccessful CLFNs in the work copy; the final graph contained 21 added CallLibrary/DigitalNumericConstant objects for only eight completed sites (:673-678).",
+    "RUN 1 While-body route WORKED structurally at all eight sites: 0,2,8 in #639; 10,11,12,13 in #15266; 20 in #25392. Each had a nonzero t6 wire and a successful t8 branch with Is Broken? False, sink count +1, and t8 wire equal to the original site wire (tools/bench/diag_c90_t0_step3b.log:58-79,114-135,291-310,347-366,403-422,459-478,515-534,651-670). Later While sites' ExecState 0 does not negate their measured branch success: the cumulative work copy was already broken at S03 (:673).",
+    "RUN 2 excluded all For-body sites because run 1's ForLoop constant route raised 1055; case sites 6,7,14,15 were also excluded (tools/bench/diag_c90_t0_step3b_r2.log:23). It therefore did not retry or clear the For-body route fault.",
+    "RUN 2: first failed completed site was 0. The clean copy opened at ExecState 1; inserting the bare CLFN made it 0 before wiring. The constant call subsequently returned UID #23202 with both errors empty, but the post-purge read at Diagram[43].Nodes[74].t6 returned 0, and site 0 never completed its t8 branch (tools/bench/diag_c90_t0_step3b_r2.log:21-22,42-65,461). This is a separate fault from run 1's ForLoop error 1055.",
+    "RUN 2 fault: a cached Nodes index was used after deleting a preceding junk Invoke. At S00 the Invoke was Nodes[73], was deleted, and the code continued reading the old N[74] (:49,58,61-62); at S11 the Invoke was Nodes[23], was deleted, and the code continued reading old N[24] (:268,277,280-281), again reporting t6=0 despite an error-free constant creation. The supplied route caches n before creation/purge, then reads n and returns before branching on a zero t6 (tools/bench/diag_c90_t0_step3.py:82-90). Run 1's working S00 had the reverse ordering: Invoke N[74], target N[73], so the purge did not invalidate the target index (tools/bench/diag_c90_t0_step3b.log:46,55,58-61). The run-2 t6=0 readings therefore are not UID-verified evidence that the actual CLFN lost its constant wire.",
+    "RUN 2 While-body route completed six of eight sites: 2,8,10,12,13,20. Their t6 wires and t8 branches passed; sites 0 and 11 failed the post-purge t6 read. Every completed-site ExecState remained 0, with no recovery after S00 (tools/bench/diag_c90_t0_step3b_r2.log:104,122,163,181,222,240,322,340,381,399,440,458,461-463).",
+    "Both runs ended ExecState 0, saved no VI, and returned rc=1. Run 1: tools/bench/diag_c90_t0_step3b.log:674-679,720 (49 pass/23 fail at :719). Run 2: tools/bench/diag_c90_t0_step3b_r2.log:462-467,507-508 (38 pass/12 fail). Both final graph diffs list only CallLibrary/DigitalNumericConstant additions, with zero changed rows and zero removals (:677 and :465 respectively); neither final addition list contains Invoke. The old card 90-5's unmeasured junk-Invoke explanation must not be substituted for these measured faults (tools/bench/cards/result_90-5.json:22; archive/peer/2026-09-26-c90-t0step3-movewire.md:80,100)."
+  ],
+  "open": [
+    "The logs identify the failing For-body op and error 1055, but do not expose its internal invalid reference or the CLFN compiler error; VI.Get Errors 452 was unbuilt (run 1 log:176). No deeper internal cause is established offline.",
+    "Run 2 does not provide a post-purge UID-based terminal read for CLFNs at sites 0 and 11, or a compiler-error read (run 2 log:65). The index invalidation explains the failed read/early branch omission; the actual surviving CLFN t6 wiring is not established by those stale-index reads. The executed step3b.py is absent from this workspace; the supplied step3.py documents the cache/purge/read route."
+  ],
+  "cost": {"usd": null, "minutes": null, "labview_runs": 0},
+  "note": "PASS means the three offline diagnosis requirements are answered, not that either historical build passed. Logs and source text only; no script rerun, LabVIEW, GUI, hardware, peer dispatch, STATUS edit, or git commit. Only this result card was written."
+}
