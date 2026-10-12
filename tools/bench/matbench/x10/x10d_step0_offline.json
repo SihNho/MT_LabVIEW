@@ -1,0 +1,51 @@
+[
+ {
+  "case": "read (shell)",
+  "predicted": "ALLOW",
+  "got": "ALLOW",
+  "rc": 0,
+  "stdout": ""
+ },
+ {
+  "case": "read (read_file)",
+  "predicted": "ALLOW",
+  "got": "ALLOW",
+  "rc": 0,
+  "stdout": ""
+ },
+ {
+  "case": "apply_patch inside the cell",
+  "predicted": "ALLOW",
+  "got": "ALLOW",
+  "rc": 0,
+  "stdout": ""
+ },
+ {
+  "case": "apply_patch into the MAIN tree",
+  "predicted": "DENY",
+  "got": "DENY",
+  "rc": 0,
+  "stdout": "{\"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"permissionDecision\": \"deny\", \"permissionDecisionReason\": \"BLOCKED by matbench cell_guard: replay card: write only inside the worktree or %TEMP% (got G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/matbench/x10b_offline_probe.txt)\"}}"
+ },
+ {
+  "case": "sentinel_lv.py",
+  "predicted": "DENY",
+  "got": "DENY",
+  "rc": 0,
+  "stdout": "{\"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"permissionDecision\": \"deny\", \"permissionDecisionReason\": \"BLOCKED by tools/hooks/guardcore.py: guard_bash: BLOCKED by tools/hooks/guard_bash.py (CLAUDE.md 2b): a LabVIEW-touching command must run with run_in_background=true, or with an explicit timeout <= 30 s. Got timeout=None. Background it (you will be notified) or split it into a short step.\"}}"
+ },
+ {
+  "case": "unknown tool",
+  "predicted": "DENY",
+  "got": "DENY",
+  "rc": 0,
+  "stdout": "{\"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"permissionDecision\": \"deny\", \"permissionDecisionReason\": \"BLOCKED by matbench cell_guard: replay card: tool 'frobnicate_tool' is not shell / patch / read-only - refused (fail closed)\"}}"
+ },
+ {
+  "case": "tools/bench offline script (X10d)",
+  "predicted": "ALLOW",
+  "got": "DENY",
+  "rc": 0,
+  "stdout": "{\"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"permissionDecision\": \"deny\", \"permissionDecisionReason\": \"BLOCKED by tools/hooks/guardcore.py: guard_bash: BLOCKED by tools/hooks/guard_bash.py (CLAUDE.md 2b): a LabVIEW-touching command must run with run_in_background=true, or with an explicit timeout <= 30 s. Got timeout=None. Background it (you will be notified) or split it into a short step.\"}}"
+ }
+]

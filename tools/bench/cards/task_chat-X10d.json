@@ -1,0 +1,19 @@
+{
+ "schema": "task/1", "id": "chat-X10d", "kind": "measure",
+ "goal": "GPT vs Claude on matbench T1,T2,T3,T5,T6 under equal bench-cell markers; step 0 re-proved with the markers",
+ "why": "chat-X10c BLOCKED on equal conditions; user 2026-10-12 '1번 진행': the GPT cell gets the Claude cells' markers (chat commit 540b509b). Detail: brief_chat-X10c.md",
+ "inputs": [{"path": "tools/bench/cards/brief_chat-X10c.md", "md5": "bf7d04cf61cd233acb73c9b10d109177"},
+            {"path": "tools/bench/matbench/codex_arm.py", "md5": "552d7255bcfa5f184af8c181b0a70739"},
+            {"path": "tools/bench/matbench/matbench.py", "md5": "9b13b812cd0321ee0e806e854055cc32"}],
+ "pass": [
+  "step 0 live again WITH bench_env(): command logged, main-tree write denied and absent, sentinel_lv denied by cell_guard",
+  "a tools/bench offline script in the cell is no longer refused as a judgement session (quote the hook log line)",
+  "every task x arm run (x2 if time) under bgrun <= 20 min; blind A/B scoring with recorded mapping",
+  "report returned as text; raw outputs and logs committed under tools/bench/matbench/"
+ ],
+ "outputs": ["tools/bench/matbench/"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/matbench/**"], "status_edit": false, "git_commit": true, "peers": []},
+ "budget": {"failures": 2, "minutes": 300}, "unblocks": "M3",
+ "rules": ["use codex_arm.bench_env (do not re-type the markers); never edit ~/.codex, the cell hooks.json bytes or tools/hooks", "step 0 fails -> STOP BLOCKED, no unguarded GPT task", "hook refusals are data; never an equivalent form that dodges a refusal", "report as text; the chat writes report_x10.md"]
+}

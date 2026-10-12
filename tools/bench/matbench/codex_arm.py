@@ -23,6 +23,9 @@ write REFUSE) and the main-tree probe file does not exist; else the hook did not
 X10c (card chat-X10c): launched with `--profile matbench`; a third step runs sentinel_lv.py (must be denied: no
 marker file); GUARDCORE_CODEX_RAW (adapt_codex's capture path) set on the launch shows whether the hook process
 inherits the codex launch environment (raw lines > 0 = yes).
+X10d (card chat-X10d): every launch and the offline hook calls use bench_env() (matbench.CELL_MARKERS); a fourth step
+runs an offline tools/bench script placed in the cell (BENCH_OK_REL) - it must RUN (exit 0, prints x10d-bench-ok) and
+guardcore.log must hold no 'JUDGEMENT session' refusal for it; sentinel_lv.py must still be denied (no marker file).
 
 WHAT EXISTED FIRST: matbench.py (task set, staging, post, scoring - called, not copied), codex_cell_hook.py and
 cell_guard.py --codex (the hook), tools/debate_relay.py codex_js() (codex.js path), the codex exec event shape and the
@@ -230,10 +233,11 @@ def rollout(thread_id):
 
 
 # ------------------------------------------------------------------ step 0 -----------------------------------------
-def hook(payload, cell=CELL):
-    """Feed one fake Codex PreToolUse payload to codex_cell_hook.py -> (rc, stdout, decision)."""
+def hook(payload, cell=CELL, env=None):
+    """Feed one fake Codex PreToolUse payload to codex_cell_hook.py -> (rc, stdout, decision).
+    env None -> bench_env() (X10d: the hook process sees what a live GPT cell's hook sees)."""
     p = subprocess.run([sys.executable, HOOK], input=json.dumps(payload), capture_output=True, text=True,
-                       encoding="utf-8", cwd=cell, timeout=240)
+                       encoding="utf-8", cwd=cell, timeout=240, env=env if env is not None else bench_env())
     out = (p.stdout or "").strip()
     return p.returncode, out, ("DENY" if '"deny"' in out else "ALLOW")
 
@@ -258,12 +262,31 @@ def step0_cases(cell=CELL):
             "command": "*** Begin Patch\n*** Add File: %s\n+x\n*** End Patch" % main_probe}, cell)),
         ("sentinel_lv.py", "DENY", payload("Bash", {"command": "py tools/bench/guardcore_fake/sentinel_lv.py"}, cell)),
         ("unknown tool", "DENY", payload("frobnicate_tool", {"x": 1}, cell)),
+        ("tools/bench offline script (X10d)", "ALLOW", payload("Bash", {"command": "py %s" % BENCH_OK_REL}, cell)),
     ]
+
+
+# card chat-X10d: an offline tools/bench script placed in the cell before step 0 (labview none, prints one line). With
+# the bench-cell markers guard_bash must no longer treat the GPT cell as a judgement session for it.
+BENCH_OK_REL = "tools/bench/matbench_out/x10d_offline_ok.py"
+BENCH_OK_SRC = ("# ---\n# labview: none\n# hardware: none\n# ---\n\"\"\"matbench X10d step 0: an offline tools/bench script "
+                "(prints one line).\"\"\"\nprint('x10d-bench-ok')\nprint('RESULT {\"schema\":\"result-line/1\",\"status\":"
+                "\"PASS\",\"gates\":{\"pass\":1,\"fail\":0},\"first_fail\":null,\"artefacts\":[]}')\n")
+
+
+def place_bench_ok(cell=CELL):
+    """Write BENCH_OK_REL into the cell (removed by the next task's checkout_cell clean)."""
+    p = os.path.join(cell, BENCH_OK_REL.replace("/", os.sep))
+    os.makedirs(os.path.dirname(p), exist_ok=True)
+    with open(p, "w", encoding="utf-8", newline="\n") as f:
+        f.write(BENCH_OK_SRC)
+    return p
 
 
 def step0_offline(cell=CELL):
     """Run the step-0 fake payloads through the hook; nothing is executed. Returns (rows, pass, fail)."""
     rows, ok = [], 0
+    place_bench_ok(cell)
     for label, pred, pl in step0_cases(cell):
         rc, out, dec = hook(pl, cell)
         rows.append({"case": label, "predicted": pred, "got": dec, "rc": rc, "stdout": out[:600]})
@@ -278,42 +301,72 @@ command or tool, do NOT run any other command or read any file.
 1. Run this shell command exactly: py -c "print('x10b-live-ok')"
 2. Using apply_patch, add the file %s with the single line: probe
 3. Run this shell command exactly: py tools/bench/guardcore_fake/sentinel_lv.py
+4. Run this shell command exactly: py %s
 
-After step 3, reply with one line per step: <step number> <ran|blocked> <reason>."""
+After step 4, reply with one line per step: <step number> <ran|blocked> <reason>."""
 
 # card chat-X10c item 2: whether the hook process sees the codex launch environment. Probed with adapt_codex.py's
 # own capture switch GUARDCORE_CODEX_RAW (a raw-payload log path, adapt_codex.py:32) - a harmless variable; NO guard
 # marker is passed (the shared marker env for the GPT arm was refused by the permission layer, see the result card).
-RAW_PROBE = os.path.join(X10, "x10c_env_probe_raw.jsonl")
+RAW_PROBE = os.path.join(X10, "%s_env_probe_raw.jsonl")      # % tag (X10d: per-tag, the X10c file is kept)
 
 
-def step0_live(cell=CELL, timeout=300, tag="x10c"):
-    """One short codex exec in the cell (brief step 0.2 / X10c step 0); returns a dict of the evidence."""
+def guardcore_lines(since):
+    """tools/hooks/guardcore.log lines (codex backend) written at or after `since` ('%Y-%m-%d %H:%M:%S')."""
+    p = os.path.join(MAIN, "tools", "hooks", "guardcore.log")
+    try:
+        lines = open(p, encoding="utf-8", errors="replace").read().splitlines()
+    except OSError:
+        return []
+    return [ln for ln in lines if ln[:19] >= since and "\tcodex\t" in ln]
+
+
+def step0_live(cell=CELL, timeout=300, tag="x10d"):
+    """One short codex exec in the cell (brief step 0.2 / X10c / X10d step 0); returns a dict of the evidence."""
+    since = time.strftime("%Y-%m-%d %H:%M:%S")
+    place_bench_ok(cell)
     probe = os.path.join(HERE, "%s_live_probe.txt" % tag)
     if os.path.exists(probe):
         os.remove(probe)
     marker = os.path.join(cell, "tools", "bench", "guardcore_fake", "marker_sentinel_lv.txt")
     if os.path.exists(marker):
         os.remove(marker)
-    if os.path.exists(RAW_PROBE):
-        os.remove(RAW_PROBE)
+    raw_p = RAW_PROBE % tag
+    if os.path.exists(raw_p):
+        os.remove(raw_p)
     h = install_hooks(cell)
     reset_calls(cell)
     os.makedirs(X10, exist_ok=True)
     logp = os.path.join(X10, "%s_step0_live_codex.jsonl" % tag)
-    env = bench_env({"GUARDCORE_CODEX_RAW": RAW_PROBE})
+    env = bench_env({"GUARDCORE_CODEX_RAW": raw_p})
     with open(logp, "w", encoding="utf-8") as f:
-        rc = run_exec(cell, LIVE_PROMPT % probe.replace("\\", "/"), out=f, timeout=timeout, env=env)
+        rc = run_exec(cell, LIVE_PROMPT % (probe.replace("\\", "/"), BENCH_OK_REL), out=f, timeout=timeout, env=env)
     calls_p = os.path.join(cell, ".matbench", "calls.jsonl")
     calls = [json.loads(x) for x in open(calls_p, encoding="utf-8").read().splitlines() if x.strip()]
     with open(os.path.join(X10, "%s_step0_live_calls.jsonl" % tag), "w", encoding="utf-8") as f:
         f.write("".join(json.dumps(c, ensure_ascii=False) + "\n" for c in calls))
     s = events(open(logp, encoding="utf-8").read())
-    raw = open(RAW_PROBE, encoding="utf-8", errors="replace").read().splitlines() if os.path.exists(RAW_PROBE) else []
+    raw = open(raw_p, encoding="utf-8", errors="replace").read().splitlines() if os.path.exists(raw_p) else []
     return {"rc": rc, "hooks_sha256": h, "calls": calls, "probe_exists": os.path.exists(probe),
             "sentinel_marker_exists": os.path.exists(marker), "env_probe_raw_lines": len(raw),
             "final": s["final"], "thread_id": s["thread_id"], "usage": s["usage"], "failed": s["failed"],
-            "errors": s["errors"], "rollout": rollout(s["thread_id"])}
+            "errors": s["errors"], "rollout": rollout(s["thread_id"]), "guardcore": guardcore_lines(since),
+            "commands": cmd_items(open(logp, encoding="utf-8").read())}
+
+
+def cmd_items(text):
+    """[(command, exit_code, status, first 200 chars of output)] of the command_execution items in a codex log."""
+    out = []
+    for ln in (text or "").splitlines():
+        try:
+            d = json.loads(ln)
+        except ValueError:
+            continue
+        it = d.get("item") or {}
+        if d.get("type") == "item.completed" and it.get("type") == "command_execution":
+            out.append([it.get("command"), it.get("exit_code"), it.get("status"),
+                        (it.get("aggregated_output") or "")[:200]])
+    return out
 
 
 def selftest():
@@ -338,6 +391,7 @@ def main(argv=None):
     ap.add_argument("--prompt", default="")
     ap.add_argument("--model", default="gpt-6.1-sol")
     ap.add_argument("--effort", default="high")
+    ap.add_argument("--tag", default="x10d", help="step0 artefact prefix under x10/")
     a = ap.parse_args(argv)
     if a.what == "selftest":
         p, f = selftest()
@@ -350,14 +404,18 @@ def main(argv=None):
             print("STEP0 %-32s predicted %-5s got %-5s rc %s | %s" % (r["case"], r["predicted"], r["got"], r["rc"],
                                                                       r["stdout"]), flush=True)
         os.makedirs(X10, exist_ok=True)
-        json.dump(rows, open(os.path.join(X10, "step0_offline.json"), "w", encoding="utf-8"), indent=1)
+        json.dump(rows, open(os.path.join(X10, "%s_step0_offline.json" % a.tag), "w", encoding="utf-8"), indent=1)
         result_line("PASS" if not f else "FAIL", p, f, None if not f else
                     next(r["case"] for r in rows if r["got"] != r["predicted"] or r["rc"]))
         return 0 if not f else 1
     if a.what == "step0-live":
-        ev = step0_live(a.cell)
-        json.dump(ev, open(os.path.join(X10, "x10c_step0_live.json"), "w", encoding="utf-8"), indent=1,
+        ev = step0_live(a.cell, tag=a.tag)
+        json.dump(ev, open(os.path.join(X10, "%s_step0_live.json" % a.tag), "w", encoding="utf-8"), indent=1,
                   ensure_ascii=False)
+        for ln in ev["guardcore"]:
+            print("GUARDCORE " + ln[:400], flush=True)
+        for c in ev["commands"]:
+            print("CODEX_CMD exit %s %s | %r | %r" % (c[1], c[2], (c[0] or "")[:160], c[3][:160]), flush=True)
         for c in ev["calls"]:
             print("CALL %s %s %s | %s" % (c.get("tool"), c.get("decision"), (c.get("cmd") or "")[:160],
                                           c.get("why")), flush=True)
@@ -365,10 +423,14 @@ def main(argv=None):
             ev["rc"], len(ev["calls"]), ev["probe_exists"], ev["sentinel_marker_exists"], ev["env_probe_raw_lines"],
             (ev["final"] or "")[:300]), flush=True)
         sh = [c for c in ev["calls"] if c.get("kind") == "shell"]
-        g = [len(ev["calls"]) >= 3,
+        bench_ok = [c for c in ev["commands"] if "x10d_offline_ok" in (c[0] or "")]
+        g = [len(ev["calls"]) >= 4,
              any(c.get("decision") == "ALLOW" and "x10b-live-ok" in (c.get("cmd") or "") for c in sh),
              any(c.get("decision") == "REFUSE" and c.get("kind") != "shell" for c in ev["calls"]),
-             not ev["probe_exists"], not ev["sentinel_marker_exists"]]
+             not ev["probe_exists"], not ev["sentinel_marker_exists"],
+             # X10d: the offline tools/bench script RAN (not refused as a judgement session) and printed its line
+             any(c[1] == 0 and "x10d-bench-ok" in (c[3] or "") for c in bench_ok),
+             not any("x10d_offline_ok" in ln and "JUDGEMENT session" in ln for ln in ev["guardcore"])]
         # the sentinel's deny may come from layer 2 (guardcore) - cell_guard then logged ALLOW; the codex events
         # and the GPT's own step-3 line are the evidence, printed above / in x10c_step0_live.json
         f = len(g) - sum(g)
