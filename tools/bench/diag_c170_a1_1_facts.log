@@ -1,0 +1,29 @@
+BGRUN START 2026-10-12 23:47:35 limit 5.0 min: py -u tools/bench/diag_c170_a1_1_facts.py
+BGRUN PID 27112
+GATE PASS | L0 no LabVIEW process at start | 
+GATE PASS | F1a #6810 SubVI in P6 directly in While #637 (1.1); terminal names == S1 | ('SubVI', [637])
+GATE PASS | F1b P6 #5058 in While #10170 (1.2), Image In <- #29843; S1 #5058 Image In <- #6810 'Image Out' | ([10170], [(29843, 'element')], [(6810, 'Image Out')])
+GATE PASS | F1c #22692 in P6 under For #22433/#21305, no While; (name, partners) == S1 per terminal | ([22541, 22433, 21590, 21305], True)
+GATE PASS | F2a #26879 x on #6810 'current image number' wire; y <- LSR #27056; RSR #27039 on that wire; 27039->27056 in #637 | ([(27056, 'current image number')], [27056])
+GATE PASS | F2b counter #27311 'x+1' on d27219 inside Case #22694 in #637 | [22694, 637]
+GATE PASS | F2c 'Buffer to extract' <- LSR #5351; RSR #1117 <- #1978 x+1; 1117->5351; #1978 x <- #1034 (frames fed by #2179 / #1445) | ([(1445, 'LastBufferNumber'), (5351, 'LastBufferNumber')], [(1445, 'LastBufferNumber'), (2179, 'current image number')])
+GATE PASS | F2d get-buff: #529 BN In on 'Buffer to extract' control wire; BN Out on 'current image number' indicator wire | ([(3, 'Buffer to extract'), (76, 'x')], [(3, 'current image number'), (76, 'y')])
+GATE PASS | F3a 'next discards' -> only RSR #29648 (outer face unwired); LSR #29655 inner -> only #29724 'discards'; 29648->29655 in #10170 | ([(29648, '')], [0], [[(29724, 'discards')]])
+GATE PASS | F3b no terminal named like 'discard' outside #29724 (no indicator, no local) | [(29724, 'SubVI', 'discards'), (29724, 'SubVI', 'next discards')]
+GATE PASS | F3c indicator 'Total Lost Frames' on d3292 in P6 (loop 1.1) and S1 | ([4195], [4195])
+GATE PASS | F4a S1 cal write path: #26615 data <- #26446; 'Date and time' <- #26428; inputs #26411 date/time strings + #26136 | {'data': [(26117, 'output cluster'), (26446, 'output cluster'), (57292, 'input cluster')], 'dt': [(26428, 'concatenated string')], 'concat_in': [(26136, ''), (26411, 'date string'), (26411, 'time string')], 'unwired': ['byte order (0:big-endian, network order)', 'error in', 'file (use dialog)', 'prepend array or string size? (T)']}
+GATE PASS | F4b the same rows in P6 | {'data': [(26117, 'output cluster'), (26446, 'output cluster'), (57292, 'input cluster')], 'dt': [(26428, 'concatenated string')], 'concat_in': [(26136, ''), (26411, 'date string'), (26411, 'time string')], 'unwired': ['byte order (0:big-endian, network order)', 'error in', 'file (use dialog)', 'prepend array or string size? (T)']}
+GATE PASS | C every file:line citation found by a read (56) | []
+GATE PASS | I 11 md5-pinned card inputs equal (card 170-a1-1 end) | all equal
+GATE PASS | H D1_ring_p6_20261012_212645.vi md5 c2d9c13cb40c0a5cab7433896d1df157 vs pin c2d9c13c | equal
+GATE PASS | H D1_ring_p5_20261010_172913.vi md5 75773b0ded2a08586bb1a542ddda5af6 vs pin 75773b0d | equal
+GATE PASS | H D1_ring_p5s01_20261009_124542.vi md5 7f2582ae54dc5bc42c3df0bdf3c72d2e vs pin 7f2582ae | equal
+GATE PASS | H D1_s1_copy.vi md5 3e3d23cefd3a334001aa9d6156bf1aee vs pin 3e3d23ce | equal
+GATE PASS | H replay\D1_s1_replay_20260925_075422.vi md5 126f84975fca9f6124432a7e4decd0c8 vs pin 126f8497 | equal
+GATE PASS | H replay\replay_get_buff_image.vi md5 842ecad9a6674a5060ebb3d5522751a9 vs pin 842ecad9 | equal
+GATE PASS | H replay\replay_get_image_cal.vi md5 afce0d04346fc58234d28bcc0fc42e55 vs pin afce0d04 | equal
+GATE PASS | H replay\replay_imaqdx_get_image_buf.vi md5 a89dafc1db03feef7b528f0dd4fcc692 vs pin a89dafc1 | equal
+GATE PASS | A no LabVIEW process at end | 
+FACT HANDBACK-GATE: F2=EVERY F3=discard NOT READABLE; lost READABLE -> HANDBACK
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":24,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/bench/p6_replay_facts.md","md5":"870fbc5a7400e4f0377b344c2decea5a"},{"path":"tools/bench/p6_replay_facts.json","md5":"d1096d3c2b5bfff27841125c37eac9bd"}],"card":"170-a1-1","labview":"none"}
+BGRUN END rc=0 after 1s

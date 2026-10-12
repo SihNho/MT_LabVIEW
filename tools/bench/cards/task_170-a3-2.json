@@ -1,0 +1,71 @@
+{
+ "schema": "task/1",
+ "id": "170-a3-2",
+ "kind": "build",
+ "goal": "Per brief_170-a3-2.md: build claudeDev\\replay\\D1_ring_p6_replay_<ts>.vi from bed c2d9c13c via stage_replay_swap.py --plan 170 (#6810 -> paced60 get-buff, #22692 -> afce0d04); no run.",
+ "why": "Purpose item 3 of assignment 170-3 (PD409(e), PD410(d), PD411(e)); card 170-a3-1 built the paced pair the plan literal swaps in.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_170-a3-2.md", "md5": "26c8985d8eac45dd414ca5b103bc23e0"},
+  {"path": "tools/bench/cards/result_170-a3-1.json", "md5": "bbfb184a4d8f313410661b3d08c492fc"},
+  {"path": "tools/bench/diag_c170_a2_3_facts.md", "md5": "e0fceca546caa20e41edcb6031197f45"},
+  {"path": "tools/recipes/stage_replay_swap.py", "md5": "2bb111e296bf0f38967627483c517d68"},
+  {"path": "tools/bench/plans/plan_replay_swap_110.json", "md5": "6b5ef7e5bba88eb79445132e06c91188"},
+  {"path": "tools/bench/stage_replay_swap_110.json", "md5": "051d6efee1040df9b19c48c4c5ab755c"},
+  {"path": "tools/bench/graph_ring_p6_20261012_212645.json", "md5": "fbc7b7eef540b87f8b935a10df2a02bd"},
+  {"path": "tools/bench/memory_model.json", "md5": "464bed2528992746d7a515e4354e45f9"},
+  {"path": "docs/script-writing.md", "md5": "f5fd847a8621a26d58c0b40a85fad5a2"},
+  {"path": "docs/d1/ring-p6.md", "md5": "8d77a3f92de80ec90adc1edf1d61763d"}
+ ],
+ "pass": [
+  "plan_replay_swap_170.json + PLANS entry '170' are the only recipe/plan edits; plans 78/95/110 md5 unchanged; dry + prerun PASS quoted; prior-art review run and disposed",
+  "A2: #6810 and #22692 each call the OLD callee by name on the bed; A3 two replace_object, new uids; A4 callee diff == exactly the two swaps -> paced60 get-buff and afce0d04",
+  "A5 wire-edge diff 0 after remap; A6 ExecState 1 warm; C1 ES 1 COLD, C2 census == warm, C3 md5 unchanged cold; replay copy path, md5 and size recorded",
+  "Hygiene: bed c2d9c13c 75773b0d 7f2582ae 3e3d23ce 126f8497 842ecad9 a89dafc1 unchanged; no original opened; refs live 0; LabVIEW gone by tasklist; no hook/stage_prerun edit"
+ ],
+ "outputs": [
+  "tools/recipes/stage_replay_swap.py",
+  "tools/bench/plans/plan_replay_swap_170.json",
+  "tools/bench/stage_replay_swap_170.json",
+  "tools/bench/diag_c170_a3_2_facts.md",
+  "claudeDev\\replay\\D1_ring_p6_replay_<ts>.vi"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/recipes/stage_replay_swap.py",
+   "tools/bench/plans/plan_replay_swap_170*",
+   "tools/bench/plans/priorart_replay_swap_170*",
+   "tools/bench/stage_replay_swap_170*",
+   "tools/bench/diag_c170_a3_2*",
+   "tools/bench/launch_c170_p6swap*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_*",
+   "archive/peer/2026-10-13-priorart-c170-p6swap*",
+   "tools/bench/cards/result_170-a3-2.json"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "advances": ["M3", "M8"],
+ "requires": [
+  {"kind": "file", "name": "replay\\replay_get_buff_image_paced60.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "replay\\replay_get_image_cal.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "D1_ring_p6_20261012_212645.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "verb", "name": "replace_object", "where": "tools/gscript.py"}
+ ],
+ "rules": [
+  "Bed c2d9c13c is never saved or edited; only the dated replay copy is saved",
+  "X10 or launch-gate refusal = BLOCKED with the text; no memory_model.json edit, no bypass",
+  "No hook/stage_prerun/plan-of-record/STATUS edit; no VI Run, no hardware; unexpected result = RETURN"
+ ]
+}

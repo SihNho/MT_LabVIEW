@@ -1,0 +1,57 @@
+{
+ "schema": "task/1",
+ "id": "170-a2-2",
+ "kind": "measure",
+ "retry_of_card": "170-a2-1",
+ "goal": "Per brief_170-a2-2.md: run the offline cal decoder on the stored 110-7 cal001 files and write the .cal date/time field rule into p6_replay_facts F4 from the F4 read already taken.",
+ "why": "Purpose item 1 of assignment 170-2 (PD410(e)); the ONE retry of 170-a2-1, whose LabVIEW read worked and whose FAIL was a handle criterion and two constants no existing op reads.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_170-a2-2.md", "md5": "8bc4bd0481fa0fe3ff24c81c9f036f3f"},
+  {"path": "tools/bench/cards/result_170-a2-1.json", "md5": "a49e25c2d00a24ab75f34172dc17bc24"},
+  {"path": "tools/bench/diag_c170_a2_1_f4.json", "md5": "58fc2963a21635621758db4cda69451d"},
+  {"path": "tools/bench/diag_c170_a2_1_f4.log", "md5": "5604f249219a2a15c59c88caf9b655b6"},
+  {"path": "tools/bench/diag_c170_a2_1_cal.py", "md5": "58155c6418f094d554260d10e46d1f34"},
+  {"path": "tools/bench/p6_replay_facts.md", "md5": "870fbc5a7400e4f0377b344c2decea5a"},
+  {"path": "tools/bench/p6_replay_facts.json", "md5": "d1096d3c2b5bfff27841125c37eac9bd"},
+  {"path": "docs/script-writing.md", "md5": "f5fd847a8621a26d58c0b40a85fad5a2"}
+ ],
+ "pass": [
+  "diag_c170_a2_1_cal.py run: gates D1 D2 W F quoted; both stored cal001 walked to their last byte; field offset, length, text per leg; bytes outside the field identical A vs B as a fact",
+  "p6_replay_facts.md F4 section and .json f4 carry the layout, the position rule (offset/length read by the walk), the formats; #26136/#26145 marked NOT READ (f4.log:21-24); other lines unchanged",
+  "Gate H recorded as a fact (handles 57984 -> 51489, refs live 0): a fall, not growth; no LabVIEW session in this card, none running before or after",
+  "Hygiene: 3e3d23ce c2d9c13c 126f8497 unchanged; only facts/diag files written; no recipe/plan/hook edit"
+ ],
+ "outputs": [
+  "tools/bench/p6_replay_facts.md",
+  "tools/bench/p6_replay_facts.json",
+  "tools/bench/diag_c170_a2_2_cal.log",
+  "tools/bench/diag_c170_a2_1_cal.json"
+ ],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/p6_replay_facts.*",
+   "tools/bench/diag_c170_a2_*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/jev_*",
+   "tools/bench/cards/result_170-a2-2.json"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 30
+ },
+ "rules": [
+  "No LabVIEW session and no new op VI: the decoder only parses stored bytes",
+  "No motor, camera or GUI action; no save of any VI",
+  "Hook refusal = BLOCKED with its text; gate false positive via py tools/gate_fp.py log; no bypass",
+  "No plan, STATUS, INDEX, recipe, stage-tool or hook edit; facts file F4 section only"
+ ],
+ "advances": ["M3", "M8"]
+}

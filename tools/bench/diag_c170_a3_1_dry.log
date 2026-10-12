@@ -1,0 +1,37 @@
+BGRUN START 2026-10-13 00:37:46 limit 3.0 min: py -u tools/stage_prerun.py --dry tools/recipes/stage_replay_paced60.py
+BGRUN PID 21772
+  PASS  P0 the two outputs do not exist yet  ('C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_imaqdx_get_image_buf_paced60.vi', 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_get_buff_image_paced60.vi')
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == a89dafc1db03feef7b528f0dd4fcc692  got a89dafc1db03feef7b528f0dd4fcc692
+  PASS  DRY graph JSON for input md5 a89dafc1db03feef7b528f0dd4fcc692  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c170_a2_3_graph_buf.json
+  PASS  A0 the Wait donor's md5 == the plan's pin  6fc80d600cac1608c4dc77229b6e969d
+  UNVERIFIED  A1 wait copy #163: UID guard and exactly one new Function  (dry: stub input, after mutation g.restore_move_fixtures)
+  FACT  OP copy_top Function #163 -> err '' (0.0 s)
+  FACT  OP create_const_loop_term #0 60.0 -> err '' (0.0 s)
+  UNVERIFIED  A2 const 60.0 on #0.'milliseconds to wait': op errors empty, one new constant, sink wired  (dry: stub input, after mutation g.restore_move_fixtures)
+  FACT  A3 edges added [] removed []
+  UNVERIFIED  A3 edges: none removed, ONE added = const #0 -> Wait #0; the Wait wired only on that sink  (dry: stub input, after mutation g.restore_move_fixtures)
+  UNVERIFIED  A4 census delta Function +1, Constant +1, Wire +1  (dry: stub input, after mutation g.restore_move_fixtures)
+  FACT  ExecState [B1 warm] Test - Moving Objects Target.vi = <dry:g.exec_state>
+  UNVERIFIED  B1 paced buf ExecState 1 warm  (dry: stub input, after mutation g.restore_move_fixtures)
+
+---------- [G] get-buff copy: replace ONLY the buf callee by the paced file
+  PASS  G1 exactly one callee of the get-buff copy is the buf stand-in
+  FACT  OP replace_object gbf #0 -> err '' (0.0 s)
+  UNVERIFIED  G2 replace clean; callee diff == #0 -> paced only; wire-edge diff 0 after remap (17 edges); ES 1 warm  (dry: stub input, after mutation g.restore_move_fixtures)
+  FACT  OP save_gbf paced get-buff -> err '' (0.0 s)
+  FACT  SAVED paced buf {'path': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_imaqdx_get_image_buf_paced60.vi'}; paced get-buff {'path': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_get_buff_image_paced60.vi'}
+
+---------- [C] COLD: fresh LabVIEW, both files opened cold
+  UNVERIFIED  C1 buf ExecState 1 COLD, VI.Name '<dry:g.vi_ref.Name>' has no library  (dry: stub input, after mutation g.restore_move_fixtures)
+  PASS  C4 buf pane per slot == the unpaced file's  ({}, {})
+  UNVERIFIED  C1 gbf ExecState 1 COLD, VI.Name '<dry:g.vi_ref.Name>' has no library  (dry: stub input, after mutation g.restore_move_fixtures)
+  PASS  C4 gbf pane per slot == the unpaced file's  ({}, {})
+  UNVERIFIED  C2 paced buf COLD: Wait #0 present, const #0 text '60', its one edge const -> Wait  (dry: stub input, after mutation g.restore_move_fixtures)
+  PASS  C3 paced get-buff COLD callee census == warm
+  PASS  I both inputs' md5 unchanged  ('a89dafc1db03feef7b528f0dd4fcc692', '842ecad9a6674a5060ebb3d5522751a9')
+
+=== DRY PASS-UNVERIFIED A1 wait copy #163: UID guard and exactly one new Function; A2 const 60.0 on #0.'milliseconds to wait': op errors empty, one new constant, sink wired; A3 edges: none removed, ONE added = const #0 -> Wait #0; the Wait wired only on that sink; A4 census delta Function +1, Constant +1, Wire +1; B1 paced buf ExecState 1 warm; G2 replace clean; callee diff == #0 -> paced only; wire-edge diff 0 after remap (17 edges); ES 1 warm; C1 buf ExecState 1 COLD, VI.Name '<dry:g.vi_ref.Name>' has no library; C1 gbf ExecState 1 COLD, VI.Name '<dry:g.vi_ref.Name>' has no library; C2 paced buf COLD: Wait #0 present, const #0 text '60', its one edge const -> Wait: first_fail=None coverage 74/81 lines, first mutation g.restore_move_fixtures, unverified 9, graph tools/bench/diag_c170_a2_3_graph_buf.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[],"card":"170-a3-1","labview":"build"}
+BGRUN END rc=0 after 1s

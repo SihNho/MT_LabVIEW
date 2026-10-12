@@ -1,0 +1,42 @@
+BGRUN START 2026-10-13 01:04:22 limit 10.0 min: py -u tools/bench/m8b_replay_compare.py --selftest --slots 20
+BGRUN PID 28532
+FACT LEG run_dir values A/B [["G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\m8_out\\replay_s1_20260927_184651"], ["G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\m8_out\\replay_s1_20260927_185846"]]
+GATE G1 both tra parse (dims, LE header length prefix, exponent byte at pos 7) PASS
+GATE G2 >= 1000 common rows                             PASS
+GATE G3 X/Y/Z bit-identical over the common rows        PASS
+FACTS {"rows_s1": 4443, "rows_s3": 8548, "common": 4443, "identical_prefix": 4443, "rows_xyz_not_bit_identical": 0, "max_abs_diff_xyz": 0.0, "trans_rot_rows_differ": 114}
+CAL {"md5_s1": "e5570a96b7dfd4f68247c29b66e02533", "md5_s3": "ea1ed8a3774e852e6ea1d1819c45a456", "len": [857376, 857376], "first_diff_offset": 857296}
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":3,"fail":0},"first_fail":null,"artefacts":[{"path":"tools\\bench\\m8b_replay_selftest_main.json","md5":"0b459404cf99df5d145a204fb0aab26b"}],"card":"170-a3-3","labview":"none"}
+FACT TRA dims ('actual data points' = rows) A/B [[4443, 48], [8548, 48]]
+FACT XYZ {"common": 4443, "beads": 15, "cols_xyz": 45, "rows_not_identical": 0, "first_diff_row": null, "drop_signature_d": null, "finite_cells_per_bead": [13329, 13329, 13329, 13329, 13329, 13329, 13329, 13329, 13329, 13329, 13329, 13329, 13329, 13329, 4443], "nan_cells_A": 8886, "nan_cells_B": 8886, "nan_cells_per_bead_A": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8886]}
+FACT DISTINCT {"slots": 20, "rows": 4443, "pass": 4443, "fail": 0, "first_fail_row": null}
+FACT TRANSROT {"last_change_row_A": 55, "boundary": 56, "stationary_rows": 4387, "stationary_rows_differ": 58, "first_stationary_diff": 56, "init_rows_B": 56, "init_nonfinite_B": 0, "init_first_equal": false, "init_last_equal": false, "init_first_A": [21.5372, 0.0], "init_last_A": [30.0, 192118.32], "init_first_B": [21.589, 0.0], "init_last_B": [27.98125, 192118.32], "envelope": "NOT-EVALUATED: tools/motor_gate.py:14-17 says the script-level numeric envelope is DELETED (limits live in the controllers), :20-21/:32 the rotor has no envelope declared - no single envelope constant in motor_gate.py"}
+FACT CAL {"md5": ["e5570a96b7dfd4f68247c29b66e02533", "ea1ed8a3774e852e6ea1d1819c45a456"], "len": [857376, 857376], "bytes_differing": 5, "field": {"A": {"size": 857376, "walk_end": 857376, "consumed_exactly": true, "n_label": 1, "field_offset": 857264, "field_length": 40, "text_offset": 857268, "text": "2026년 9월 27일 일요일\r오후 6:51:02\r", "text_hex": "32303236b3e22039bff9203237c0cf20c0cfbfe4c0cf0dbfc0c8c420363a35313a30320d"}, "B": {"size": 857376, "walk_end": 857376, "consumed_exactly": true, "n_label": 1, "field_offset": 857264, "field_length": 40, "text_offset": 857268, "text": "2026년 9월 27일 일요일\r오후 7:02:38\r", "text_hex": "32303236b3e22039bff9203237c0cf20c0cfbfe4c0cf0dbfc0c8c420373a30323a33380d"}}, "outside_field_differing": 0, "first_outside_offset": null}
+FACT FILES {"cal001": {"status": "differ", "A": {"size": 857376, "md5": "e5570a96b7dfd4f68247c29b66e02533"}, "B": {"size": 857376, "md5": "ea1ed8a3774e852e6ea1d1819c45a456"}}, "tra001-000": {"status": "differ", "A": {"size": 1706560, "md5": "47f87a7492d86900f32958162c9d47e1"}, "B": {"size": 3282880, "md5": "2571a2eadcdbac6394f5e54c2a4b9a1b"}}}
+FACT COUNTERS 'lost frames' text offsets per file (empty = NOT FOUND) {"lost_frames_text": {"A": {"cal001": [], "tra001-000": []}, "B": {"cal001": [], "tra001-000": []}}}
+ITEM T tra both parse                                        PASS
+ITEM B1 X/Y/Z MATCH all common rows                          PASS
+ITEM C1 DISTINCT all common rows                             PASS
+ITEM B3 trans/rot stationary rows bit-identical              FAIL
+ITEM B4 init rows of B finite, first+last equal A            FAIL
+ITEM B2 cal walk exact both, field found, 0 bytes differ outside it PASS
+ITEM B5 every file present in both dirs                      PASS
+FACT INITRANGE {"rows": 56, "pi_range_mm": [0.0, 39.0], "trans_nonfinite": 0, "trans_outside_pi": 0, "trans_min": 21.589, "trans_max": 27.98125, "rot_nonfinite": 0, "asi": "NOT-EVALUATED: no ASI column in tra (time, trans, rot, then beads); range {'X': -3.8475, 'Y': -4.7744}..{'X': 0.1525, 'Y': -0.7744}", "ok": true}
+FACT LEGFILES {"clicks.json": {"status": "differ", "A": {"size": 95565, "md5": "f2136449052dabcfe485b865691059c3"}, "B": {"size": 96615, "md5": "acec8ae3a9e725df5e20a92e6d2e95fd"}}, "leg.json": {"status": "differ", "A": {"size": 15884, "md5": "fd9fc08ff4f81c2d9e0407672c1cf7cf"}, "B": {"size": 16745, "md5": "018c66fb900b45bfb23ae0c4aa1515bc"}}}
+ITEM B6 init rows of B: trans inside PI range, rot finite    PASS
+ITEM B7 every other leg file present in both leg dirs        PASS
+FACT GRAPH ring counter Q&R #27373 'y' source (graph_ring_p6_20261012_212645.json:1, md5 c2d9c13cb40c0a5cab7433896d1df157) {"qr": 27373, "y_term": 27416, "wire": 27911, "src_owner": 27433, "src_class": "DigitalNumericConstant", "obj": {"uid": 27433, "class": "DigitalNumericConstant", "pos": [6877, 2685], "owner": "Diagram"}, "value_stored": false}
+FACT S7 REPLACED by a citation (ring-p6.md PD411(c)): D = 20 from U13 + docs/d1/ring-p4b.md:21 at uid #27433; graph stores the value false
+FACT RUNDIR md5 {"G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\m8_out\\replay_s1_20260927_184651": {"cal001": {"size": 857376, "md5": "e5570a96b7dfd4f68247c29b66e02533"}, "tra001-000": {"size": 1706560, "md5": "47f87a7492d86900f32958162c9d47e1"}}, "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\m8_out\\replay_s1_20260927_185846": {"cal001": {"size": 857376, "md5": "ea1ed8a3774e852e6ea1d1819c45a456"}, "tra001-000": {"size": 3282880, "md5": "2571a2eadcdbac6394f5e54c2a4b9a1b"}}}
+GATE S0 leg A run_dir == the stored A dir, leg B has one run_dir (replay_s1_20260927_185846)    PASS
+GATE S1 old CLI main() G1-G3 PASS (unchanged path)                                              PASS
+GATE S2 4443 common rows                                                                        PASS
+GATE S3 0 X/Y/Z rows differ (MATCH all)                                                         PASS
+GATE S4 DISTINCT all common rows (slots 20)                                                     PASS
+GATE S5 cal: walk 857264/40 both (diag_c170_a2_2_cal.log:45,60), 0 outside, 5 bytes differ      PASS
+GATE S6 graph: Q&R #27373 y <- DigitalNumericConstant #27433                                    PASS
+GATE S9 init range on 110-7 B: PI range applied, 56 init rows, 0 outside, rot finite            PASS
+GATE S10 leg dirs: clicks.json + leg.json listed and compared                                   PASS
+GATE S8 110-7 run dirs unchanged (name, size, md5)                                              PASS
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":10,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/bench/m8b_replay_selftest_170.json","md5":"b779f8a5a078458d01f50a4e63f16f3b"},{"path":"tools/bench/m8b_replay_selftest_main.json","md5":"0b459404cf99df5d145a204fb0aab26b"}],"card":"170-a3-3","labview":"none"}
+BGRUN END rc=0 after 1s

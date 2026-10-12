@@ -1,0 +1,75 @@
+{
+ "schema": "task/1",
+ "id": "170-a3-4",
+ "kind": "build",
+ "retry_of_card": "170-a3-2",
+ "goal": "Per brief_170-a3-4.md: read a callee-naming graph of bed c2d9c13c (byte copy), then build claudeDev\\replay\\D1_ring_p6_replay_<ts>.vi via stage_replay_swap.py --plan 170; no run.",
+ "why": "Purpose item 3 of assignment 170-3 (PD409(e)); the ONE retry of 170-a3-2, whose dry failed A2 because the P6 graph JSON stores no SubVI names.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_170-a3-4.md", "md5": "cb9eab4b82cf78554b9e01f5c684d83c"},
+  {"path": "tools/bench/cards/brief_170-a3-2.md", "md5": "26c8985d8eac45dd414ca5b103bc23e0"},
+  {"path": "tools/bench/cards/result_170-a3-2.json", "md5": "902fda8cf079d7c55877d16616d860fa"},
+  {"path": "tools/bench/diag_c170_a3_2_facts.md", "md5": "bd7d73d07668d57cde51a26670f80e0a"},
+  {"path": "tools/recipes/stage_replay_swap.py", "md5": "fa94e80c9bdb6d1b7f2b5a9186165ddb"},
+  {"path": "tools/bench/plans/plan_replay_swap_170.json", "md5": "9ec7a13e367c76ad01e7261e8b1ec715"},
+  {"path": "tools/bench/diag_c170_a2_3_graph.py", "md5": "bb2ff8edfc9e85f334b4916f16f20539"},
+  {"path": "tools/bench/graph_ring_p6_20261012_212645.json", "md5": "fbc7b7eef540b87f8b935a10df2a02bd"},
+  {"path": "tools/stage_prerun.py", "md5": "db81a1d3206073cfb2c540943ff73202"},
+  {"path": "tools/bench/memory_model.json", "md5": "464bed2528992746d7a515e4354e45f9"},
+  {"path": "docs/script-writing.md", "md5": "f5fd847a8621a26d58c0b40a85fad5a2"}
+ ],
+ "pass": [
+  "Callee graph read from a bed byte copy (no save/run, scratch deleted): #6810, #22692 callee names quoted; fbc7b7ee unedited; plan 170 graph repointed; plans 78/95/110 md5 unchanged",
+  "Dry now passes A2; dry + prerun X10 PASS quoted; DRY-UNVERIFIED-OK labels named as printed; prior-art review run and disposed",
+  "A3 two replace_object; A4 callee diff == exactly the two swaps; A5 wire-edge diff 0 after remap; A6 ES 1; C1 ES 1 COLD, C2 census == warm, C3 md5 unchanged; replay copy path, md5, size",
+  "Hygiene: c2d9c13c 75773b0d 7f2582ae 3e3d23ce 126f8497 842ecad9 a89dafc1 unchanged; no original opened; refs live 0; LabVIEW gone; no hook/stage_prerun edit"
+ ],
+ "outputs": [
+  "tools/bench/graph_ring_p6_callees_<ts>.json",
+  "tools/bench/plans/plan_replay_swap_170.json",
+  "tools/bench/stage_replay_swap_170.json",
+  "tools/bench/diag_c170_a3_2_facts.md",
+  "claudeDev\\replay\\D1_ring_p6_replay_<ts>.vi"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/graph_ring_p6_callees*",
+   "tools/bench/plans/plan_replay_swap_170*",
+   "tools/bench/plans/priorart_replay_swap_170*",
+   "tools/bench/stage_replay_swap_170*",
+   "tools/bench/diag_c170_a3_2*",
+   "tools/bench/diag_c170_a3_4*",
+   "tools/bench/launch_c170_p6swap*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_*",
+   "archive/peer/2026-10-13-priorart-c170-p6swap*",
+   "tools/bench/cards/result_170-a3-4.json"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 75
+ },
+ "advances": ["M3", "M8"],
+ "requires": [
+  {"kind": "file", "name": "replay\\replay_get_buff_image_paced60.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "replay\\replay_get_image_cal.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "D1_ring_p6_20261012_212645.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "verb", "name": "replace_object", "where": "tools/gscript.py"}
+ ],
+ "rules": [
+  "DRY-UNVERIFIED-OK: A3; A4; A5; A6; C1; C2; C3",
+  "Bed c2d9c13c never saved or edited; graph read on a byte copy; only the dated replay copy is saved",
+  "X10 or launch-gate refusal = BLOCKED with the text; no memory_model.json edit, no bypass",
+  "No hook/stage_prerun/STATUS edit; no VI Run, no hardware; unexpected result = RETURN"
+ ]
+}

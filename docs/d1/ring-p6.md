@@ -227,3 +227,133 @@ the top of `docs/d1/INDEX.md`.
        entries go to the chat.
      - **(d) Next = cycle 170: P6-2** (recorded-frame replay, PD404 row P6-2) on the criterion answered in D-2026-10-12-01/02,
        base = the adopted P6 file c2d9c13c; hardware per PD405(f)(1) = motor_gate session (rig 조립 only).
+
+409. **(cycle 170 judgement, 2026-10-12 — the P6-2 plan: recorded-frame replay of S1 vs P6 on the answered criterion)**
+     USER-RULES: U1 (relied on: P6-2 is the numeric rule-1a test; it changes no computation, only stand-ins replace the two
+     camera calls in a REPLAY copy, as in cycles 78/95/110), U2 (relied on: each leg runs the original's device init, which
+     drives the PI stage and the ASI, so every leg runs inside a `motor_gate.py --session` start/end with readback, rig 조립
+     only), U6/U7/U8/U13 (relied on: the ring and the overload path are run as built; a frame the ring discards is a
+     measured fact, never forced away by a build change); none contradicted.
+     - **(a) Read before writing (retrospective-cycle169's fault):** this item cites only lines I read this session:
+       `tools/recipes/stage_replay_swap.py:22-58` (plans are named literals; swap by uid via `replace_object`; gates A1-A6,
+       C1-C3); `tools/bench/plans/plan_replay_swap_110.json` (swaps #6810 → `replay\replay_get_buff_image.vi` 842ecad9 and
+       #22692 → `replay\replay_get_image_cal.vi` afce0d04; S1 replay copy `replay\D1_s1_replay_20260925_075422.vi` 126f8497);
+       `tools/bench/m8b_replay_compare.py:15-50` (tra = header to 'not in z!)', 2 x I32 dims, <f8 rows `time, trans, rot`
+       + 15 x (x, y, z), 48 columns; rows joined by ROW INDEX; cal = whole-file byte compare); `diag_replay_standins.py:6-9`
+       (stand-in frame = paths[k mod 10044], k = its own call counter in an uninitialised shift register; buf stand-in
+       BN Out = BN In; cal stand-in BN Out = k); `tools/bench/p6_replay_ready.md` (X1-X15). Tool behaviour not on that list
+       is a fact to measure, not a premise.
+     - **(b) The criterion (D-2026-10-12-01/02, answered 2026-10-12 21:16, amends PD374(f)):** the same recorded frames go
+       into the S1 replay copy and the P6 replay copy. Per input frame: X/Y/Z bit-identical (by f64 bits; NaN cells counted
+       and reported, the number of FINITE cells compared reported per bead); `.cal` bytes identical except the date/time
+       field, whose offset and length are confirmed from the original's cal write path (cited node or format string), not
+       from where the two files happen to differ; tra column 0 (time) excluded; trans/rot bit-identical in the stationary
+       segment after device init; in the init segment every P6 row's trans/rot is finite, inside the motor envelope, and the
+       init sequence has the same start and end values as S1's; every OTHER file a leg writes is listed and compared under
+       the same rule before any cleanup deletes it (a file not compared is reported, never skipped).
+     - **(c) Row index = input frame only under zero drops.** Tracking may seed each frame from the previous one, so a
+       dropped frame changes later numbers legitimately and the comparison would mean nothing. The legs therefore need
+       measured evidence that neither copy dropped a frame: S1's lost-frames count and the P6 ring's discard count both 0
+       over the compared rows, read from where the facts step (d) shows they are readable. A P6 leg with discards > 0, or
+       with no readable discard count, is NOT compared: the card returns the numbers. Pacing a stand-in to the camera's
+       free-running period is a replay-tool change the next judgement decides on those facts; no card makes it.
+     - **(d) Facts first, offline, minutes (no LabVIEW):** on graph `graph_ring_p6_20261012_212645.json` (fbc7b7ee) and S1:
+       F1 #6810 / #22692 present by uid with the old callees; which loop calls each and how often per tracked frame in P6
+       vs S1. F2 what P6 uses to decide "new frame" (P3a counter, PD246(c); #26879 / #27039) and what the buf stand-in's
+       BN Out = BN In feeds it: does P6 track every frame the stand-in returns, some, or none? F3 where S1's lost-frames
+       count and the ring's discard count (#29724 'discards'/'next discards') end up (indicator, local, saved file) and how
+       a leg reads them. F4 the cal date/time field from the original's write path (b). F5 which files a leg writes and
+       which the v5 cleanup deletes (`drive_original_copy_v5.py:688`). F6 what the leg chain needs to run a ring replay copy
+       (X5-X9: plan literal, driver md5 pins, leg kind) — parameters on the existing shared functions, not a copied driver
+       (`docs/script-writing.md`). **Hand back before any LabVIEW leg** if F2 says P6 tracks no stand-in frame, or F3 finds
+       no readable discard count.
+     - **(e) Build the P6 replay copy (LabVIEW, no Run, no hardware):** `stage_replay_swap.py` with a NEW named plan literal
+       for c2d9c13c (the same two swaps; S1 replay copy 126f8497 reused and pinned, as plan 110) → gates A1-A6 + C1-C3 →
+       `claudeDev\replay\D1_ring_p6_replay_<ts>.vi`, saved only with ExecState 1 warm and cold. A replay copy, never the bed.
+       The recipe edit carries `flags.peers ["priorart"]` (guard_cycle refuses a recipe edited after its newest prior-art
+       review unless PROVEN-PATTERN or PRIORART-DIFF releases it, `tools/hooks/guard_cycle.py:568-604`).
+     - **(f) Two legs, then the compare:** S1 replay copy, then P6 replay copy, each its own LabVIEW session inside one
+       `motor_gate.py --session` start/end with limits read back, same frame source `G:\m8_replay_frames` (manifest md5
+       quoted), same run length, LabVIEW verified gone after each leg. The compare extends `m8b_replay_compare.py` (shared
+       function, not a copy) to (b), self-tested first on the stored 110-7 run dirs (`tools/bench/m8_out/
+       replay_s1_20260927_184651` = leg A, cal001 + tra001-000; leg B's dir from its `leg.json` run_dir) where it must reproduce 4443 common rows, 0 X/Y/Z rows differing, and cal differing only inside the F4 field (a
+       difference outside it is a fact returned). Then it runs on the two new legs. Every pass/fail of (b) is reported as a
+       fact; a FAIL is not re-run or diagnosed inside the card (return at first unexpected result).
+     - **(g) After P6-2, same purpose, last:** fp-102 (`stage_prerun.py:2192`, X10 read-only regex matching 'delete') drained
+       with a self-test; self-tests run one at a time, never a batch in parallel (retrospective-cycle169 finding 5: 13
+       launches in ~80 s timed out). Every card reports the X10 predicted vs measured peak. Deferred to the next purpose: the card-issue check retrospective-cycle169 proposed (recipe launch
+       with an empty peers list; a `bgrun --log` target that is also a pinned input), the c106c self-test regression, and
+       the PD405(f) tidy-ups. Hook entries (fp-101 and the rest) stay with the chat.
+     - **(h) Next:** P6-2 PASS on every (b) item = rule 1a shown numerically for P6 on recorded frames; then P6-3
+       (PD404(a)). A (b) FAIL is a rule-1a question for the judgement (and, if it cannot be explained, the user).
+
+410. **(cycle 170 judgement, hand-back round 1, 2026-10-12 — the zero-drop evidence for P6-2; replaces PD409(c)'s P6 half)**
+     USER-RULES: U1 (relied on: no computation in S1 or P6 changes; only the replay stand-in's timing changes, in a claudeDev
+     replay tool), U2 (relied on: legs stay inside motor_gate sessions as PD409(f)), U6/U7/U8/U13 (relied on: the ring and
+     its overload path run as built; nothing is added to the P6 replay copy); none contradicted.
+     - **(a) Card 170-a1-1 ACCEPTED** (PASS 37/0, `tools/bench/cards/result_170-a1-1.json`): re-hash no drift (manifest
+       9055d98a), F1-F6 in `tools/bench/p6_replay_facts.md`; F2 = EVERY stand-in frame is classed new and enters the ring;
+       F3 = the ring's discard count is not readable; F4 NOT-DETERMINED (needs the type of ClusterConstant #26159).
+     - **(b) The discard count is the wrong evidence, not merely an unreadable one.** By RingSeqCheck's arithmetic
+       (`ring-p4b.md:140-141`) it rises only on an invalid read; a frame overwritten before loop 1.2 reads it is a valid
+       skip and is not counted (`p6_replay_facts.md:75`). So no indicator is added to expose it (a build change that would
+       still prove nothing), and PD409(c)'s "P6 discards 0" gate is withdrawn. S1's half stands: S1 lost 0 (readable).
+     - **(c) The zero-drop evidence is the data itself (alignment check), computed by the compare:** rows are joined by
+       index; (1) DISTINCT: for each compared row i, S1 row i differs bitwise in at least one finite X/Y/Z cell from every
+       S1 row i+1..i+D, D = the ring's slot count (a graph fact quoted with its uid) — measured on S1 alone, reported as
+       count of rows passing; (2) MATCH: every compared row's X/Y/Z bit-identical (PD409(b)). DISTINCT on all rows + MATCH
+       on all rows = no frame dropped in the compared rows (a dropped frame would put another input frame's result on row
+       i). DISTINCT failing on a row = that row cannot carry the proof; the count is reported and the next judgement
+       decides. On a MATCH failure the compare reports the first differing row and, for it, every d in 1..D with P6 row i
+       == S1 row i+d (a drop signature) — facts, no retry. Counters reported beside it as facts, not gates: S1/P6 'Total
+       Lost Frames', frame-counter delta, tra 'actual data points' per leg.
+     - **(d) Pace the P6 leg's buf stand-in so loop 1.1 cannot lap loop 1.2 (decided now; PD409(c)'s last sentence).**
+       Prediction: unpaced, 1.1 (stand-in + ring write only) runs far faster than 1.2 (S1's whole serial loop measured
+       4081 frames in 120 s = 29.4 ms, `p6_replay_facts.md:131`), so the ring laps and (c) fails on a drop, not on maths.
+       Build: a NEW stand-in pair under `claudeDev\replay\` — a byte copy of `replay_imaqdx_get_image_buf.vi` a89dafc1
+       plus one `Wait (ms)` node with constant 60 and no data wire (`replay_imaqdx_get_image_buf_paced60.vi`), and a byte
+       copy of `replay_get_buff_image.vi` 842ecad9 with its inner stand-in swapped to the paced one by the same
+       `replace_object` verb (`replay_get_buff_image_paced60.vi`); each saved only with ExecState 1, md5 recorded. The P6 replay plan literal (PD409(e))
+       swaps #6810 to the paced outer copy; #22692 → afce0d04 as plan 110. The S1 replay copy 126f8497 stays unchanged
+       and unpaced (serial: it tracks every frame it fetches). Pacing changes no pixel and no computation (U1). The two
+       new files are replay tools, not counted broken files. Run length: P6 leg `--run-s` long enough for >= 1500 tra
+       rows at ~15 Hz (>= 120 s); S1 leg as 110-7 (120 s).
+     - **(e) F4 = ONE read-only LabVIEW card** on `claudeDev\D1_s1_copy.vi` 3e3d23ce (never the original): the type of
+       ClusterConstant #26159 (element order, types) and the values of #26136, #26126, #26145; no edit, no save, refs
+       balanced, LabVIEW gone; the cal date/time field's offset/length rule written into `p6_replay_facts.md` F4 from it.
+     - **(f) Order:** F4 read → paced stand-ins → P6 replay copy (PD409(e), peers priorart) → compare extension with (c)
+       + self-test on 110-7 (DISTINCT and MATCH both all rows there, 4443) → S1 leg → P6 leg → compare → fp-102 last.
+       Unchanged: PD409(a)(b)(e)(f)(g)(h). A new script needing a citation helper (`line_of`/`find_line`, 5 inline copies)
+       imports it from one shared module made from an existing copy, never a sixth copy (`docs/script-writing.md`).
+
+411. **(cycle 170 judgement, hand-back round 2, 2026-10-13 — `handback_170_2.json`, trigger c: card 170-a2-5 would write
+     `tools/bench/memory_model.json`, which the purpose did not name)**
+     USER-RULES: U1 (relied on: nothing here changes a computation; memory_model.json gets a measured load fact, no limit),
+     U13 (relied on: 20 slots, slot = counter mod 20, `ring-p4b.md:21`); none contradicted.
+     - **(a) F4 is MET by the bytes; the constant-value read is withdrawn.** 170-a2-1/170-a2-2 located the cal date/time field
+       by walking the flattened cluster: offset 857264, length 40, in both 110-7 legs, with 0 differing bytes outside it
+       (`diag_c170_a2_2_cal.log:45,60,64`; rule in `p6_replay_facts.md` F4). The compare finds the field by the same walk
+       (`m8b_replay_compare.py:69-163`), not by #26136/#26145's values, so those values decide nothing. Reading them would
+       need a new op for FixedConstant/EnumConstant, so the read is dropped. Gate H (a handle fall) was my criterion error;
+       refs live 0 is the gate that counts.
+     - **(b) X10 for the paced pair: the card may write `memory_model.json` `load_by_vi` only.** At most one entry per VI the
+       recipe opens (a89dafc1, 842ecad9). Each entry is a MEASURED load cited by its log line, like PD408's c2d9c13c 603.7 MB
+       (card 169-a1-1). `fail_above_mb`, MEMSTOP and the coefficients stay unchanged. If `x10_edit` still finds no op count
+       because the recipe edits outside `Stage._op`, the recipe moves its edits onto stagekit's `Stage._op` (a shared
+       function) and is dried and prerun again. The launch names its stub-only gates `DRY-UNVERIFIED-OK` with
+       `--unverified-card`, as card 170-a2-5 already does. If X10 still refuses after these two levers, the card returns
+       BLOCKED with the text. There is no third lever.
+     - **(c) D = 20 comes from the design, cited, not from the graph.** The graph JSON keeps no constant values
+       (`diag_c170_a2_4_graph.log:5,24`), so PD410(c)'s "graph fact quoted with its uid" cannot be met as written. D's
+       source is U13 + `ring-p4b.md:21` (PD323: the fixed 20-slot write), at uid #27433 → Q&R #27373 y. 170-a2-4's S7 gate is
+       replaced by that citation. Its other 8 gates are accepted: 4443 rows, 0 X/Y/Z rows differ, DISTINCT 4443/4443, cal
+       differs only inside the field. **The compare extension is accepted** (c2efe10d).
+     - **(d) trans/rot on 110-7 are facts of those legs, not a self-test failure.** PD409(f) asked the self-test for three
+       things only: 4443 rows, 0 X/Y/Z rows differing, cal differing only in the field. All three are met. Leg B of 110-7 is
+       the display-replay leg, so its 58 of 4387 stationary trans/rot rows and its init values are not an S1-vs-P6 case.
+       For S1 vs P6 the user's criterion stands (D-2026-10-12-01/02). **Prediction:** a few stationary rows may differ there
+       too, because they are hardware readbacks. If so, the compare returns them as a (b) FAIL fact; it is not re-run, and the
+       next judgement decides (PD409(h)). The init sanity check uses the ranges the motor_gate session sets
+       (`tools/bench/motor_limits.json`: PI and ASI). The rotor has no range there, so its check is "finite" only.
+     - **(e) Order:** paced pair (the 170-a2-5 retry under (b)) → P6 replay copy (PD409(e), peers priorart) → S1 leg → P6 leg
+       → compare with D = 20 → fp-102 last. PD410(d)-(f) are otherwise unchanged.

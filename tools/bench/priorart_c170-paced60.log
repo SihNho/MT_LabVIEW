@@ -1,0 +1,44 @@
+BGRUN START 2026-10-13 00:41:38 limit 20.0 min: py tools/prior_art_review.py --plan-file docs/d1/ring-p6.md --slug c170-paced60 --trigger cycle-start --recipe tools/recipes/stage_replay_paced60.py
+BGRUN PID 16620
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c170-paced60.txt (131903 chars)
+   review card tools\bench\cards\review_priorart-c170-paced60.json
+OUTCOME: ANSWERED (122s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-10-13-priorart-c170-paced60.md
+COST: $1.5246  in 36 / out 9781 / cache-create 117027 / cache-read 1962963  (118s, 23 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c170-paced60 verdict=novel -> tools\bench\cards\verdict_priorart-c170-paced60.json
+--- ANSWER ---
+**Verdict: novel.** Nothing in the project files has already built, measured, refuted or settled this paced stand-in pair, and it breaks none of the user's design rules.
+
+**PART A: the direction**
+- **A1 (settled already): no.** The only earlier decision on pacing is this cycle's own. PD409(c) left pacing to the next judgement, and PD410(d) decided it (`docs/d1/ring-p6.md`, PD410(d), quoted in the brief). No earlier cycle decided to pace a replay stand-in.
+- **A2 (refuted already): no.** The closest older text is the pool-era construction review: "Run the 10,043-frame correctness fixture losslessly and unpaced … If paced replay is later required, benchmark warm-cache `IMAQ ReadFile`" (`archive/peer/2026-09-14-stage2-construction-plan.md:42`). That advice is about TIFF throughput for the Q_free/Q_work pool, which U13 replaced. It doesn't argue against slowing a stand-in to keep a ring from lapping. The same review's line ":38" says "bit identity is meaningful only with zero acquisition and queue drops". That supports PD410(c)/(d) rather than refuting them.
+- **A3 (contradicted): no real contradiction, but one detail to note.** PD410(d) bases the 60 ms pace on "4081 frames in 120 s = 29.4 ms" (`tools/bench/p6_replay_facts.md:152`). That is an average. The frame-counter samples in the same leg slow down partway through:
+  - early samples step about 160 frames (`t0_legs/c110f_replay_20260927_184600/A_S1replay_a1/leg.json:487-492`);
+  - later samples step about 60 frames (`:493-546`).
+  - With 60 samples over 120 s (about 2 s apart), the steady per-frame time is about 33 ms, not 29.4 ms.
+
+  60 ms still clears 33 ms by about 1.8×, so the decision holds. The figure it cites is just optimistic by about 10%.
+- **A4 (unread evidence): none missing.** PD409(a)/PD410 already cite the stand-in mechanics (`diag_replay_standins.py:6-9`), the 110-7 legs and `p6_replay_facts.md`.
+
+**PART B: the artifact**
+- **B1 (already built): no.** `claudeDev\replay\` holds only the unpaced stand-ins, the swap probe and the S1/S3/display replay copies; there is no `*paced*` file. Neither `tools/recipes/stage_replay_standins.py` nor `tools/bench/diag_replay_standins.py` contains a Wait or any pacing.
+- **B2 (already failed): no.** The earlier attempt, card 170-a2-3, did not fail a build. It was refused at the launch gates before any LabVIEW edit (`tools/bench/diag_c170_a2_3_facts.md:7,18-25`):
+  - the dry run passed with gates left unverified, which needs `DRY-UNVERIFIED-OK`;
+  - the memory check (X10) refused because the memory use was unmeasured.
+
+  Both causes are addressed. The recipe now runs every edit through `Stage._op` via `op()` (`stage_replay_paced60.py:49-55,74,76,92,95`), launches with `--unverified-card` (`:27`), and PD411(b) allows the measured `load_by_vi` entries.
+- **B3 (helper exists): no.** The recipe calls the existing helpers rather than copying them: `diag_replay_lib.copy_to`, `gscript.create_const_loop_term`, `gscript.replace_object`, `diag_replay_lib.census`/`edges`/`tail`, `stagekit.Stage`, and the donor `OpWaitDonor_v0 #163` (`facts_c100_oplabels.json:266-273`). Its one direct verb call in place of `stage_replay_standins.const_top` has a documented reason: the dry-run rule DRY_RULE 3 (`diag_c170_a2_3_facts.md:26-29`). Its two small new helpers, `finfo` and `only_const_edge`, have no counterpart anywhere under `tools/`.
+- **B4 (already measured): no.** No paced replay leg has ever run. The 110-7 display-replay leg (`docs/d1-loop12-17-split-plan.md:1914`) still tracked frames one after another in a single loop, so it never tested ring lapping.
+
+**PART C: the user's rules**
+- **C1: no contradiction.**
+  - **U6** ("nothing we build may throttle, block or pace acquisition") is about real camera acquisition (`docs/decisions/camera_free_runs_never_gate_it.md:23-38`). The Wait goes into a replay stand-in that replaces the camera call in a claudeDev replay copy. No camera is involved, and it plays the part of a free-running camera at about 16.7 Hz.
+  - **U1** holds: the Wait has no data wire, and gates A3 and C2 check that only the constant feeds it.
+  - **U3** holds: the stand-in makes no serial or VISA call.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c170-paced60","verdict":"novel","alternative":"none in files; closest is pool-era advice to replay unpaced/benchmark IMAQ ReadFile (archive/peer/2026-09-14-stage2-construction-plan.md:42), superseded by U13","discriminating_test":"P6 leg: DISTINCT+MATCH on all compared rows; steady S1 1.2 cost ~33 ms (leg.json:493-546) vs 60 ms pace","violations":[],"sources":["docs/d1/ring-p6.md PD410(d)","tools/bench/diag_c170_a2_3_facts.md:7-25","archive/peer/2026-09-14-stage2-construction-plan.md:38-42","tools/bench/t0_legs/c110f_replay_20260927_184600/A_S1replay_a1/leg.json:486-548","docs/decisions/camera_free_runs_never_gate_it.md:23-38"],"note":"29.4 ms basis is a whole-run mean; steady 15-bead cadence ~33 ms/frame; 60 ms margin still ~1.8x"}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c170-paced60.md
+   STOP RECORD: none - 2026-10-13-priorart-c170-paced60.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_replay_paced60.py sha 5ea3f8eb9733 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 125s

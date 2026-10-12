@@ -1,0 +1,45 @@
+{
+ "schema": "assign/1",
+ "cycle": 170,
+ "round": 3,
+ "purpose": {
+  "act": "PD411: P6-2 - paced60 pair (tools/bench/memory_model.json load_by_vi entries only), P6 replay copy, S1 + P6 legs in motor_gate, compare with D = 20 (U13), then fp-102",
+  "pass": [
+   "Re-hash (drift = hand back): bed c2d9c13c, graph fbc7b7ee, S1 3e3d23ce, S1 replay 126f8497, stand-ins 842ecad9 afce0d04 a89dafc1, manifest 9055d98a, compare c2efe10d",
+   "PD410(d) replay\\replay_imaqdx_get_image_buf_paced60.vi (a89dafc1 + Wait 60 ms) and replay_get_buff_image_paced60.vi (842ecad9, inner swapped): each ExecState 1 warm+cold, md5",
+   "PD411(b) prerun X10 PASS quoted; memory_model.json changed ONLY by load_by_vi entries for a89dafc1/842ecad9, each a measured load cited by log line; no limit/coefficient change",
+   "PD409(e) replay\\D1_ring_p6_replay_<ts>.vi by stage_replay_swap.py, new plan on c2d9c13c (#6810 -> paced outer, #22692 -> afce0d04): A1-A6 C1-C3, ES 1 warm+cold, md5; peers priorart",
+   "PD409(f) S1 leg (120 s) then P6 leg (>= 1500 tra rows), each in motor_gate start/end (readback), LabVIEW gone; per leg tra rows, Total Lost Frames, counter delta, files+md5",
+   "PD410(c)+PD411(c) compare only if S1 lost 0, --slots 20 cited U13/ring-p4b.md:21: DISTINCT count, MATCH (first miss + drop signature); each a fact, a FAIL returned not re-run",
+   "PD409(b)+PD411(d) same compare: cal outside F4 field, trans/rot post-init, init inside motor_limits.json PI/ASI ranges (rotor finite), every other leg file: each PASS/FAIL as a fact",
+   "Hygiene: c2d9c13c 75773b0d 7f2582ae 3e3d23ce 126f8497 842ecad9 a89dafc1 unchanged; no original opened; refs balanced; only replay files added; LabVIEW gone; no hooks edit",
+   "PD409(g) AFTER all above: fp-102 (stage_prerun.py:2192 X10 regex matches 'delete') drained with a self-test"
+  ],
+  "plan": {
+   "path": "docs/d1/ring-p6.md",
+   "md5": "8d77a3f92de80ec90adc1edf1d61763d"
+  },
+  "advances": [
+   "M3",
+   "M8"
+  ],
+  "unblocks": null,
+  "task_kind": "measure",
+  "note": "Hand-back 170_2 judged (PD411): F4 met by the cal byte walk (value read withdrawn); 170-a2-4 compare extension accepted, S7 replaced by D = 20 from U13/ring-p4b.md:21; memory_model.json named for load_by_vi entries only. Rig 조립; motor_session OK."
+ },
+ "next_md5": "ce371ee75df2fe723f2f6056ca8bc2c3",
+ "caps": {
+  "minutes": 180.0,
+  "usd": 60.0,
+  "backstop_cards": 30
+ },
+ "state": "tools/bench/assign/state_170_3.json",
+ "result": "tools/bench/cards/assign_result_170_3.json",
+ "handback_in": "tools/bench/cards/handback_170_2.json",
+ "agents": [
+  "material",
+  "material-opus-max",
+  "material-fable-low",
+  "log-reader"
+ ]
+}

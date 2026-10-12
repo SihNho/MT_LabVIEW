@@ -20,7 +20,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(
 import diag_replay_lib as L                                                              # noqa: E402
 K, g = L.K, L.g
 PLANS = {"78": "plans/plan_replay_swap_78.json", "95": "plans/plan_replay_swap_95.json",
-         "110": "plans/plan_replay_swap_110.json"}                                     # card 110-6: the display-loop VI
+         "110": "plans/plan_replay_swap_110.json",                                     # card 110-6: the display-loop VI
+         "170": "plans/plan_replay_swap_170.json"}                                     # card 170-a3-2: the P6 replay copy (paced get-buff)
 PLAN_TAG = sys.argv[sys.argv.index("--plan") + 1] if "--plan" in sys.argv else (os.environ.get("REPLAY_SWAP_PLAN") or "78")
 P = json.load(open(os.path.join(K.BENCH, PLANS[PLAN_TAG]), encoding="utf-8"))
 cd = lambda rel: os.path.join(K.CLAUDEDEV, rel)                                          # noqa: E731

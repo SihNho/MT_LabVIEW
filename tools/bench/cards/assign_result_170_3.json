@@ -1,0 +1,23 @@
+{
+ "schema": "assign-result/1",
+ "cycle": 170,
+ "round": 3,
+ "status": "HANDBACK",
+ "cards": ["170-a3-1", "170-a3-2", "170-a3-3", "170-a3-4"],
+ "pass_evidence": [
+  {"item": 0, "met": true, "evidence": ["tools/bench/cards/result_170-a3-1.json", "tools/bench/diag_c170_a3_1_load.log"]},
+  {"item": 1, "met": true, "evidence": ["tools/bench/cards/result_170-a3-1.json", "tools/bench/diag_c170_a2_3_facts.md"]},
+  {"item": 2, "met": true, "evidence": ["tools/bench/diag_c170_a3_1_load.log:18", "tools/bench/memory_model.json"]},
+  {"item": 3, "met": false, "evidence": ["tools/bench/stage_replay_swap_170_dry.log:9", "tools/bench/stage_replay_swap_170_dry2.log:10", "tools/bench/diag_c170_a3_2_facts.md:30-37"]},
+  {"item": 4, "met": false, "evidence": ["tools/bench/diag_c170_a3_3_facts.md"]},
+  {"item": 5, "met": false, "evidence": []},
+  {"item": 6, "met": false, "evidence": []},
+  {"item": 7, "met": false, "evidence": []},
+  {"item": 8, "met": false, "evidence": []}
+ ],
+ "handback": {
+  "reason": "170-a3-4 (the one retry) BLOCKED by gate-fp fp-103: stage_prerun --dry fails A2 on stub data for any graph (dry ignores input.graph, stage_prerun.py:211-230,656-666); live read passes. No replay copy, no leg.",
+  "question": "How to pass the dry for plan 170: (a) tooling card gives the dry a graph-backed g.subvis; (b) recipe edit moves the census into the A2 gate so the dry prints UNVERIFIED; (c) release A2 for plan 170 on fp-103's live read?"
+ },
+ "note": "Done: item 0 no drift (re-hash 11/0). Item 1 paced pair built, e40ec867 and 59ec66b6 (170-a3-1 PASS). Item 2 X10 PASS with ONE measured load_by_vi entry a89dafc1 = 550.3 (memory_model.json 464bed2528992746d7a515e4354e45f9). Offline: tools/bench/drive_m8_replay_p6.py (cd09bbe3) with shared tools/bench/m8_legs.py (c2d5d6c4) and m8b_replay_compare.py 82443af9 (init-range and every-other-file listing added) - written and self-tested, not yet run (170-a3-3 PASS). Item 3 not met: plan 170 and its PLANS entry exist (plan 01c21526, recipe fa94e80c) and the callee graph graph_ring_p6_callees_20261013_011441.json (31641b28) was read from a byte copy, but the dry fails A2 as above. Items 4-8 not started: they need the replay copy; fp-102 was left until after all others by the purpose. No hardware, no motor session, LabVIEW gone after every card, originals unchanged."
+}

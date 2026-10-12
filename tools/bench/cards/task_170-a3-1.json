@@ -1,0 +1,75 @@
+{
+ "schema": "task/1",
+ "id": "170-a3-1",
+ "kind": "build",
+ "retry_of_card": "170-a2-3",
+ "goal": "Per brief_170-a3-1.md: re-hash inputs (drift = BLOCKED), release launch gates + X10 the sanctioned way (Stage._op, then load_by_vi only), build the 2 paced60 stand-ins.",
+ "why": "Purpose items 0-2 of assignment 170-3 (PD410(d), PD411(b)); the ONE retry of 170-a2-3 (170-a2-5 was handed back before dispatch), whose recipe and dry are ready and whose launch was refused by check_launch and X10 UNMEASURED.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_170-a3-1.md", "md5": "2ab9236e074ba07d996e8a13c0a5a8cd"},
+  {"path": "tools/bench/cards/brief_170-a2-3.md", "md5": "b9ee0e189ae89b3f40bdd4a7409094bb"},
+  {"path": "tools/bench/cards/result_170-a2-3.json", "md5": "8ff6df5af001479fff31411194d0e018"},
+  {"path": "tools/bench/diag_c170_a2_3_facts.md", "md5": "55cb0c505eea75bbca52418697143e1b"},
+  {"path": "tools/recipes/stage_replay_paced60.py", "md5": "9a465ed7875218eab13e0c224e3890f9"},
+  {"path": "tools/bench/memory_model.json", "md5": "8b4a9b480359210d93f5886f2f224973"},
+  {"path": "tools/stage_prerun.py", "md5": "db81a1d3206073cfb2c540943ff73202"},
+  {"path": "tools/recipes/stage_d1_m4b.py", "md5": "180c7a9e824d9799b78c81d3b4e3c046"},
+  {"path": "tools/stagekit.py", "md5": "22967183e5aee50fa9a43e8b4a7657e7"},
+  {"path": "tools/gscript.py", "md5": "1a80236ed35c1876c67f964c72fe820a"},
+  {"path": "tools/bench/m8b_replay_compare.py", "md5": "c2efe10d89ef93702fecc2a2c6230bad"},
+  {"path": "docs/script-writing.md", "md5": "f5fd847a8621a26d58c0b40a85fad5a2"},
+  {"path": "docs/d1/ring-p6.md", "md5": "8d77a3f92de80ec90adc1edf1d61763d"}
+ ],
+ "pass": [
+  "Re-hash quoted: c2d9c13c fbc7b7ee 3e3d23ce 126f8497 842ecad9 afce0d04 a89dafc1 9055d98a c2efe10d 75773b0d 7f2582ae; any drift = BLOCKED before LabVIEW",
+  "Launch gates released the sanctioned way: DRY-UNVERIFIED-OK named + --unverified-card; prerun X10 PASS verdict quoted verbatim; no limit/coefficient edit",
+  "memory_model.json diff = ONLY new load_by_vi keys (at most a89dafc1, 842ecad9), each a measured MEM-after-load cited by log line; new md5 quoted",
+  "replay_imaqdx_get_image_buf_paced60.vi: one Wait (ms) + constant 60, no data wire; ExecState 1 warm and COLD; md5 and size recorded; input a89dafc1 unchanged",
+  "replay_get_buff_image_paced60.vi: only the inner buf callee replaced by the paced file (census + wire-edge diff 0); ExecState 1 warm and COLD; md5; input 842ecad9 unchanged",
+  "Hygiene: refs balanced (live 0), LabVIEW gone by tasklist, 8 pinned VIs unchanged, no original opened, no hook/stage-tool edit; facts file updated"
+ ],
+ "outputs": [
+  "tools/recipes/stage_replay_paced60.py",
+  "tools/bench/memory_model.json",
+  "tools/bench/diag_c170_a2_3_facts.md",
+  "claudeDev\\replay\\replay_imaqdx_get_image_buf_paced60.vi",
+  "claudeDev\\replay\\replay_get_buff_image_paced60.vi"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/recipes/stage_replay_paced60*",
+   "tools/bench/diag_c170_a2_3*",
+   "tools/bench/diag_c170_a3_1*",
+   "tools/bench/launch_c170_paced*",
+   "tools/bench/memory_model.json",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_*",
+   "tools/bench/cards/result_170-a3-1.json"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "advances": ["M3", "M8"],
+ "requires": [
+  {"kind": "file", "name": "replay\\replay_imaqdx_get_image_buf.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "replay\\replay_get_buff_image.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "verb", "name": "replace_object", "where": "tools/gscript.py"}
+ ],
+ "rules": [
+  "DRY-UNVERIFIED-OK: A1; A2; A3; A4; B1; G2; C1; C2",
+  "Launch with --unverified-card <this card>; X10 refusal after the two levers = BLOCKED with the text, no bypass",
+  "memory_model.json (PD411(b)): load_by_vi entries for a89dafc1/842ecad9 only, measured; no limit edit",
+  "No hook/stage_prerun/plan/STATUS edit; only the 2 paced files; no VI Run, no hardware; unexpected result = RETURN"
+ ]
+}

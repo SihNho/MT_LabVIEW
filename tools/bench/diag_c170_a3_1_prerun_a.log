@@ -1,0 +1,54 @@
+BGRUN START 2026-10-13 00:37:57 limit 4.0 min: py -u tools/stage_prerun.py --prerun tools/recipes/stage_replay_paced60.py
+BGRUN PID 26420
+  PASS  P0 the two outputs do not exist yet  ('C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_imaqdx_get_image_buf_paced60.vi', 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_get_buff_image_paced60.vi')
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == a89dafc1db03feef7b528f0dd4fcc692  got a89dafc1db03feef7b528f0dd4fcc692
+  PASS  DRY graph JSON for input md5 a89dafc1db03feef7b528f0dd4fcc692  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c170_a2_3_graph_buf.json
+  PASS  A0 the Wait donor's md5 == the plan's pin  6fc80d600cac1608c4dc77229b6e969d
+  UNVERIFIED  A1 wait copy #163: UID guard and exactly one new Function  (dry: stub input, after mutation g.restore_move_fixtures)
+  FACT  OP copy_top Function #163 -> err '' (0.0 s)
+  FACT  OP create_const_loop_term #0 60.0 -> err '' (0.0 s)
+  UNVERIFIED  A2 const 60.0 on #0.'milliseconds to wait': op errors empty, one new constant, sink wired  (dry: stub input, after mutation g.restore_move_fixtures)
+  FACT  A3 edges added [] removed []
+  UNVERIFIED  A3 edges: none removed, ONE added = const #0 -> Wait #0; the Wait wired only on that sink  (dry: stub input, after mutation g.restore_move_fixtures)
+  UNVERIFIED  A4 census delta Function +1, Constant +1, Wire +1  (dry: stub input, after mutation g.restore_move_fixtures)
+  FACT  ExecState [B1 warm] Test - Moving Objects Target.vi = <dry:g.exec_state>
+  UNVERIFIED  B1 paced buf ExecState 1 warm  (dry: stub input, after mutation g.restore_move_fixtures)
+
+---------- [G] get-buff copy: replace ONLY the buf callee by the paced file
+  PASS  G1 exactly one callee of the get-buff copy is the buf stand-in
+  FACT  OP replace_object gbf #0 -> err '' (0.0 s)
+  UNVERIFIED  G2 replace clean; callee diff == #0 -> paced only; wire-edge diff 0 after remap (17 edges); ES 1 warm  (dry: stub input, after mutation g.restore_move_fixtures)
+  FACT  OP save_gbf paced get-buff -> err '' (0.0 s)
+  FACT  SAVED paced buf {'path': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_imaqdx_get_image_buf_paced60.vi'}; paced get-buff {'path': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_get_buff_image_paced60.vi'}
+
+---------- [C] COLD: fresh LabVIEW, both files opened cold
+  UNVERIFIED  C1 buf ExecState 1 COLD, VI.Name '<dry:g.vi_ref.Name>' has no library  (dry: stub input, after mutation g.restore_move_fixtures)
+  PASS  C4 buf pane per slot == the unpaced file's  ({}, {})
+  UNVERIFIED  C1 gbf ExecState 1 COLD, VI.Name '<dry:g.vi_ref.Name>' has no library  (dry: stub input, after mutation g.restore_move_fixtures)
+  PASS  C4 gbf pane per slot == the unpaced file's  ({}, {})
+  UNVERIFIED  C2 paced buf COLD: Wait #0 present, const #0 text '60', its one edge const -> Wait  (dry: stub input, after mutation g.restore_move_fixtures)
+  PASS  C3 paced get-buff COLD callee census == warm
+  PASS  I both inputs' md5 unchanged  ('a89dafc1db03feef7b528f0dd4fcc692', '842ecad9a6674a5060ebb3d5522751a9')
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  PASS-UNVERIFIED ['A1 wait copy #163: UID guard and exactly one new Function', "A2 const 60.0 on #0.'milliseconds to wait': op errors empty, one new constant, sink wired", 'A3 edges: none removed, ONE added = const #0 -> Wait #0; the Wait wired only on that sink', 'A4 census delta Function +1, Constant +1, Wire +1', 'B1 paced buf ExecState 1 warm', 'G2 replace clean; callee diff == #0 -> paced only
+  PASS  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  ['tools/bench/diag_c170_a2_3_plan.json']
+  PASS  X3 every plan row decided  5 rows + 0 stageplan actions
+  PASS  X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)  0 stageplan(s)
+  PASS  X11 no row wires one Build Array input while a sibling input is an open row (unless pb-licence/1)  0 stageplan(s)
+  PASS  X12 no row names a wire uid an earlier border-crossing connect re-created (connect_from_wire.json:266)  0 stageplan(s), 0 re-created source wire(s), none named later
+  PASS  X13 opmodel conformance: every recorded sample of the plan ops' model files replays in stagesim  0 op(s) []; files {}
+  PASS  X16 every declared terminal of a created primitive carries term_class (PD251(b))  0 non-const_donor create action(s) with declared terminals, all classed
+  PASS  X17 every created primitive's donor label == its declared prim (PD323(b))  0 primitive create action(s), every donor label == its prim
+  PASS  X4 every end addressable offline (0 ends)  []
+  PASS  X5 wiring ops executed in the dry run == plan wire rows  ops 0 vs plan wire rows 0 + stageplan wiring real ops 0 (covering 0/0 wire actions); delete ops {} vs plan delete rows {}; RLE ops 0 vs plan RLE rows 0
+  PASS  X6 ast lint: no re-typed uid / terminal name  uids []; names []
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+  PASS  X9 every dispatched verb's precondition holds offline (copy_in: work == gscript.MOVE_DST)  work C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\NIScriptingExamples\Moving Objects\Test - Moving Objects Target.vi; decisions rows NOT dispatched (recipe calls neither run_rows nor from_decision)
+  FAIL  X10 predicted LabVIEW private MB <= model fail_above_mb, from the compiled plan + checkpoint set (UNMEASURED: no stagexec.Executor plan in the dry run and no recorded meter covers the run (not read-only: dry ran 4 Stage._op edit op(s) ['copy_top', 'create_const_loop_term', 'replace_object', 'save_gbf']; dry mutation g.restore_move_fixtures; source calls edit verb(s) ['create_const_loop_term', 'save']; edit model: opened VI load unmeasured (md5 a89dafc1db03feef7b528f0dd4fcc692 not in memory_model load_by_vi)))  {'why': "UNMEASURED: no stagexec.Executor plan in the dry run and no recorded meter covers the run (not read-only: dry ran 4 Stage._op edit op(s) ['copy_top', 'create_const_loop_term', 'replace_object', 'save_gbf']; dry mutation g.restore_move_fixtures; source calls edit verb(s) ['create_const_loop_term', 'save']; edit model: opened VI load unmeasured (md5 a89dafc1db03feef7b528f0dd4fcc692 not in m
+  INFO  X14 rows 5, budget 15 (proven: no - stage_replay_standins.py)
+
+=== DRY PASS-UNVERIFIED A1 wait copy #163: UID guard and exactly one new Function; A2 const 60.0 on #0.'milliseconds to wait': op errors empty, one new constant, sink wired; A3 edges: none removed, ONE added = const #0 -> Wait #0; the Wait wired only on that sink; A4 census delta Function +1, Constant +1, Wire +1; B1 paced buf ExecState 1 warm; G2 replace clean; callee diff == #0 -> paced only; wire-edge diff 0 after remap (17 edges); ES 1 warm; C1 buf ExecState 1 COLD, VI.Name '<dry:g.vi_ref.Name>' has no library; C1 gbf ExecState 1 COLD, VI.Name '<dry:g.vi_ref.Name>' has no library; C2 paced buf COLD: Wait #0 present, const #0 text '60', its one edge const -> Wait: first_fail=None coverage 74/81 lines, first mutation g.restore_move_fixtures, unverified 9, graph tools/bench/diag_c170_a2_3_graph_buf.json
+=== PRERUN FAIL: 14 pass / 1 fail; first X10 predicted LabVIEW private MB <= model fail_above_mb, from the compiled plan + checkpoint set (UNMEASURED: no stagexec.Executor plan in the dry run and no recorded meter covers the run (not read-only: dry ran 4 Stage._op edit op(s) ['copy_top', 'create_const_loop_term', 'replace_object', 'save_gbf']; dry mutation g.restore_move_fixtures; source calls edit verb(s) ['create_const_loop_term', 'save']; edit model: opened VI load unmeasured (md5 a89dafc1db03feef7b528f0dd4fcc692 not in memory_model load_by_vi))): {'why': "UNMEASURED: no stagexec.Executor plan in the dry run and no recorded meter covers the run (not read-only: dry r
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":14,"fail":1},"first_fail":"X10 predicted LabVIEW private MB <= model fail_above_mb, from the compiled plan + checkpoint set (UNMEASURED: no stagexec.Executor plan in the dry run and no recorded meter covers the run (not read-on","artefacts":[],"card":"170-a3-1","labview":"build"}
+BGRUN END rc=1 after 3s

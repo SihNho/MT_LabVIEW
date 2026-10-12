@@ -1,0 +1,61 @@
+{
+ "schema": "task/1",
+ "id": "170-a2-1",
+ "kind": "measure",
+ "goal": "Per brief_170-a2-1.md: re-hash the P6-2 inputs; ONE read-only LabVIEW read of D1_s1_copy.vi (#26159 type, #26136/#26126/#26145 values); write the .cal date/time field rule into facts F4.",
+ "why": "Purpose items 0 and 1 of assignment 170-2 (PD410(e)). PD409(b) needs the field's offset and length from the original's write path before the compare can be extended.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_170-a2-1.md", "md5": "80b7125e35220129accefd2907f05d53"},
+  {"path": "docs/d1/ring-p6.md", "md5": "b1e31d26c17aafdc005086205e15f009"},
+  {"path": "tools/bench/p6_replay_facts.md", "md5": "870fbc5a7400e4f0377b344c2decea5a"},
+  {"path": "tools/bench/p6_replay_facts.json", "md5": "d1096d3c2b5bfff27841125c37eac9bd"},
+  {"path": "tools/bench/graph_ring_p6_20261012_212645.json", "md5": "fbc7b7eef540b87f8b935a10df2a02bd"},
+  {"path": "tools/bench/p6_replay_frames_manifest.txt", "md5": "9055d98a15a4c9c2fd4e03de7ac41bb3"},
+  {"path": "tools/bench/diag_c170_a1_1_hash.py", "md5": "2cc7899ecd2b7f06bde2432f93c42f42"},
+  {"path": "tools/stagekit.py", "md5": "22967183e5aee50fa9a43e8b4a7657e7"},
+  {"path": "docs/script-writing.md", "md5": "f5fd847a8621a26d58c0b40a85fad5a2"}
+ ],
+ "pass": [
+  "Re-hash table: inputs, 8 VIs (c2d9c13c 75773b0d 7f2582ae 3e3d23ce 126f8497 842ecad9 afce0d04 a89dafc1), graph fbc7b7ee, manifest 9055d98a; expected vs measured; a difference = DRIFT, returned",
+  "ONE read-only LabVIEW session on D1_s1_copy.vi (3e3d23ce unchanged): #26159 element order and types, #26136/#26126/#26145 values, the element #26446 fills; each quoted with log file:line; no save",
+  "p6_replay_facts.md F4 section and .json f4 carry the date/time field rule (layout, position rule, formats), cited; every other line of the facts file unchanged",
+  "Rule applied to the stored 110-7 cal001 of leg A and leg B: field offset, length, text per file; whether bytes outside the field are identical (facts only)",
+  "After LabVIEW: no LabVIEW process, VI Server references closed (handle count), only facts/diag files written, no original opened"
+ ],
+ "outputs": [
+  "tools/bench/p6_replay_facts.md",
+  "tools/bench/p6_replay_facts.json",
+  "tools/bench/diag_c170_a2_1_manifest.txt",
+  "tools/bench/diag_c170_a2_1_hash.log",
+  "tools/bench/diag_c170_a2_1_f4.log"
+ ],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/p6_replay_facts.*",
+   "tools/bench/diag_c170_a2_1*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_*",
+   "tools/bench/cards/result_170-a2-1.json"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 45
+ },
+ "rules": [
+  "LabVIEW read-only on D1_s1_copy.vi (never the original); no save, no VI Run; unexpected result = RETURN",
+  "No motor, camera or GUI action; VI Server refs closed (handle count); LabVIEW verified gone at the end",
+  "Hook refusal = BLOCKED with its text; gate false positive via py tools/gate_fp.py log; no bypass",
+  "No plan, STATUS, INDEX, recipe, stage-tool or hook edit; facts file F4 section only"
+ ],
+ "advances": ["M3", "M8"]
+}

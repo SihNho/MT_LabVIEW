@@ -1,0 +1,62 @@
+{
+ "schema": "task/1",
+ "id": "170-a1-1",
+ "kind": "measure",
+ "goal": "Per brief_170-a1-1.md: offline re-hash of the P6-2 inputs and the facts F1-F6 (PD409(d)) in p6_replay_facts.md+.json, with the HANDBACK-GATE line.",
+ "why": "Purpose items 0 and 1 of assignment 170-1 (PD409(d)). The assignment must know before any leg whether P6 tracks stand-in frames and whether the discard count is readable.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_170-a1-1.md", "md5": "f26bb5f03b829a3e5cef592e64bf83aa"},
+  {"path": "docs/d1/ring-p6.md", "md5": "bd2339fd3028aa761bb0fd93599cdc0c"},
+  {"path": "tools/bench/graph_ring_p6_20261012_212645.json", "md5": "fbc7b7eef540b87f8b935a10df2a02bd"},
+  {"path": "tools/recipes/stage_replay_swap.py", "md5": "2bb111e296bf0f38967627483c517d68"},
+  {"path": "tools/bench/plans/plan_replay_swap_110.json", "md5": "6b5ef7e5bba88eb79445132e06c91188"},
+  {"path": "tools/bench/m8b_replay_compare.py", "md5": "ab7c1a68141862b91cf195670ae300d3"},
+  {"path": "tools/bench/diag_replay_standins.py", "md5": "8e6250b1ca8689c951bc667dca63b943"},
+  {"path": "tools/bench/p6_replay_ready.md", "md5": "ee2c7cb5bb54815f378b071d9331bd38"},
+  {"path": "tools/bench/drive_original_copy_v5.py", "md5": "3ea486d55f1dea6636ece97d31c8e9e4"},
+  {"path": "tools/stagekit.py", "md5": "22967183e5aee50fa9a43e8b4a7657e7"},
+  {"path": "docs/script-writing.md", "md5": "f5fd847a8621a26d58c0b40a85fad5a2"}
+ ],
+ "pass": [
+  "Re-hash table (brief s.1): inputs, 8 VIs as bytes, frames manifest md5 (10045 files); expected vs measured per row; any difference = DRIFT, reported first",
+  "F1-F6 each present with at least one cited file:line or graph uid read in this card, each marked FACT or NOT-DETERMINED (with what is missing); no guess shown as a fact",
+  "F2 verdict EVERY|SOME|NONE and F3 verdict READABLE|NOT READABLE per count (discards, lost) written as words; the HANDBACK-GATE line present; p6_replay_facts.json has keys f1..f6 (verdict, cites, text)",
+  "F4: date/time field offset and length with the cited ORIGINAL write path, or NOT-DETERMINED naming the file that would have to be read",
+  "Hygiene: no .vi opened, no LabVIEW (tasklist none), no hardware; only facts/manifest/diag files written; no plan/STATUS/hook/stage-tool edit; script-writing rules 10-15"
+ ],
+ "outputs": [
+  "tools/bench/p6_replay_facts.md",
+  "tools/bench/p6_replay_facts.json",
+  "tools/bench/p6_replay_frames_manifest.txt",
+  "tools/bench/diag_c170_a1_1_hash.py",
+  "tools/bench/diag_c170_a1_1.log"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/p6_replay_facts.*",
+   "tools/bench/p6_replay_frames_manifest.txt",
+   "tools/bench/diag_c170_a1_1*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/jev_*",
+   "tools/bench/cards/result_170-a1-1.json"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 40
+ },
+ "rules": [
+  "Offline only: no LabVIEW, no hardware, no .vi opened (hash them as bytes only)",
+  "Every fact cites file:line read in this card; a fact not read is NOT-DETERMINED",
+  "A hook refusal = BLOCKED with its text; a gate false positive is logged with py tools/gate_fp.py log; no bypass variable",
+  "No plan, STATUS, INDEX, stage-tool or hook edit"
+ ],
+ "advances": ["M3", "M8"]
+}

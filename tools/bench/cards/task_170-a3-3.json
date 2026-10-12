@@ -1,0 +1,64 @@
+{
+ "schema": "task/1",
+ "id": "170-a3-3",
+ "kind": "build",
+ "goal": "Per brief_170-a3-3.md: offline, write tools/bench/drive_m8_replay_p6.py (S1 leg, P6 leg, each in a motor_gate session, then compare --slots 20) on a shared leg runner; self-tests only.",
+ "why": "Purpose items 4-6 of assignment 170-3 (PD409(f), PD410(c)/(f), PD411): the 110 driver hard-codes its legs, so the S1-vs-P6 chain needs a parameterised driver before the leg card.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_170-a3-3.md", "md5": "a9c70498025279baf2364eedb3f2ccb5"},
+  {"path": "tools/bench/drive_m8_replay_110.py", "md5": "4c564b8a832313cd0f5f8fd3b2465ee6"},
+  {"path": "tools/bench/diag_c104_leg.py", "md5": "3e455979ff1bfb004a40018e3ee00555"},
+  {"path": "tools/bench/m8b_replay_compare.py", "md5": "c2efe10d89ef93702fecc2a2c6230bad"},
+  {"path": "tools/motor_gate.py", "md5": "c68447c778c606d0a18a702d02924271"},
+  {"path": "tools/bench/p6_replay_facts.md", "md5": "04cf14eab7792c46fb6bfd4399751dca"},
+  {"path": "docs/script-writing.md", "md5": "f5fd847a8621a26d58c0b40a85fad5a2"},
+  {"path": "docs/d1/ring-p6.md", "md5": "8d77a3f92de80ec90adc1edf1d61763d"}
+ ],
+ "pass": [
+  "drive_m8_replay_p6.py exists with scope header, RESULT line; order pins -> (motor start, S1 leg, end) -> (start, P6 leg, end) -> compare only if S1 lost 0 and P6 rows >= 1500",
+  "leg runner extracted to ONE shared module with docstring + self-test; drive_m8_replay_110.py byte-unchanged (md5 quoted); its copies reported file:line; dupcheck quoted",
+  "Driver --selftest PASS on stored 110-7 dirs: order, pin stop, lost!=0 stop, <1500 rows stop, compare 4443 rows / 0 X/Y/Z differ / DISTINCT 4443 with --slots 20",
+  "Compare covers init-in-motor_limits ranges and every other leg file (added as shared fns if missing); m8b --selftest --slots 20 still PASS; new md5 quoted",
+  "Hygiene: no LabVIEW process before/after, no serial/VISA, no .vi touched, no hook/stage_prerun/STATUS edit; facts file written"
+ ],
+ "outputs": [
+  "tools/bench/drive_m8_replay_p6.py",
+  "tools/bench/m8_legs.py",
+  "tools/bench/m8b_replay_compare.py",
+  "tools/bench/diag_c170_a3_3_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/drive_m8_replay_p6*",
+   "tools/bench/m8_legs*",
+   "tools/bench/m8b_replay_compare.py",
+   "tools/bench/m8b_replay_selftest_170*",
+   "tools/bench/diag_c170_a3_3*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/jev_*",
+   "tools/bench/cards/result_170-a3-3.json"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 45
+ },
+ "advances": ["M3", "M8"],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/drive_m8_replay_110.py"},
+  {"kind": "file", "name": "tools/bench/m8b_replay_compare.py"},
+  {"kind": "file", "name": "tools/motor_gate.py"}
+ ],
+ "rules": [
+  "Offline only: no LabVIEW, no camera, no motor/ASI, no VISA; self-tests use stored data or stubs",
+  "Shared functions are called, never copied (docs/script-writing.md); 110 driver stays unchanged",
+  "Self-tests run one at a time; unexpected result = RETURN with the facts"
+ ]
+}

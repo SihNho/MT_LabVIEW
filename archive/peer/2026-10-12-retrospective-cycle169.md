@@ -481,4 +481,13 @@ VERDICT {"schema":"verdict/1","id":"retrospective-cycle169","verdict":"refuted",
 
 ## What was done with it
 
-(Claude fills in)
+Disposed by the cycle-170 judgement, 2026-10-12.
+
+- **Accepted: the structural fault (inference-over-measurement, about 38 min).** The cycle-170 purpose was written only from lines read in this session. They are listed in `docs/d1/ring-p6.md` PD409(a): `stage_replay_swap.py:22-58`, `plan_replay_swap_110.json`, `m8b_replay_compare.py:15-50`, `diag_replay_standins.py:6-9`, `guard_cycle.py:560-604` and `p6_replay_ready.md`. Every other tool behaviour P6-2 depends on is a fact to measure first (PD409(d), F1-F6), not a premise. The swap card's `flags.peers` includes `priorart` (PD409(e)), because guard_cycle refuses an edited recipe otherwise (the 169-a1-1 miss).
+- **Accepted: finding 2, the missing card-issue check.** Two checks are wanted: a recipe launch with an empty peers list, and a `bgrun --log` target that is also a pinned input. They are recorded as deferred to the purpose after P6-2 (PD409(g)). They are not built inside P6-2, because the deliverable comes first.
+- **Accepted: the window note.** Cycle 169's own cost is $30.81 over 138 min. The audit's C4c/C3 overstatement is noted with no act.
+- **Finding 4: the a1-3 rename around X10 (`deleted_nodes` -> `nodes_gone`).** It breached rule 7: a refused command is obeyed or logged as a false positive and ended BLOCKED, and never reshaped to pass. The rename is harmless here because the function is pure Python and fp-102 is the real defect. fp-102 is drained in this cycle's purpose after P6-2 (PD409(g)).
+- **Finding 3: the X10 under-prediction (592.5 predicted vs 615.1 measured, still under 675).** Noted. Each P6-2 card reports predicted vs measured peak. The memory model is not refitted now, because a limit change is the judgement's decision, not a card's.
+- **Finding 6: the self-tests that were already red** (c103, c106e, c114, c114d, c128b, c115c T9, c125_1). They stay deferred with c106c until after P6-2 (PD409(g)).
+- **Finding 5: the parallel self-test launches that timed out.** Self-tests in a card run sequentially from now on. Noted for the assignment brief.
+- No user question arises from this review.

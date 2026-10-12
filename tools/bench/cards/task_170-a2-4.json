@@ -1,0 +1,56 @@
+{
+ "schema": "task/1",
+ "id": "170-a2-4",
+ "kind": "build",
+ "goal": "Per brief_170-a2-4.md: extend m8b_replay_compare (b items, cal field rule, DISTINCT, MATCH, drop signature) via shared functions; self-test on the stored 110-7 runs.",
+ "why": "Purpose item 4 of assignment 170-2 (PD409(b), PD410(c)): the compare that turns two legs into zero-drop plus rule-1a facts; offline, no LabVIEW.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_170-a2-4.md", "md5": "044c0aae61e99a749ac9ec401e5e1502"},
+  {"path": "docs/d1/ring-p6.md", "md5": "b1e31d26c17aafdc005086205e15f009"},
+  {"path": "tools/bench/m8b_replay_compare.py", "md5": "ab7c1a68141862b91cf195670ae300d3"},
+  {"path": "tools/bench/diag_c170_a2_1_cal.py", "md5": "58155c6418f094d554260d10e46d1f34"},
+  {"path": "tools/bench/p6_replay_facts.md", "md5": "04cf14eab7792c46fb6bfd4399751dca"},
+  {"path": "tools/bench/graph_ring_p6_20261012_212645.json", "md5": "fbc7b7eef540b87f8b935a10df2a02bd"},
+  {"path": "tools/motor_gate.py", "md5": "c68447c778c606d0a18a702d02924271"},
+  {"path": "docs/script-writing.md", "md5": "f5fd847a8621a26d58c0b40a85fad5a2"}
+ ],
+ "pass": [
+  "m8b_replay_compare reports (b): X/Y/Z bit-identity, finite cells per bead, cal field offset/length by the walk, trans/rot segments, other files; (c): DISTINCT, MATCH, drop signature",
+  "Walk/decoder logic CALLED from one shared module (no copy); any extraction has a self-test and the old copy cited file:line; existing CLI unchanged",
+  "Self-test on 110-7: 4443 common rows, 0 X/Y/Z rows differ, DISTINCT all rows with D read from the graph by uid, cal differs only inside the F4 field; else returned as facts",
+  "Hygiene: no LabVIEW, 110-7 run dirs unchanged by md5, only compare/diag/facts files written, facts file written"
+ ],
+ "outputs": [
+  "tools/bench/m8b_replay_compare.py",
+  "tools/bench/diag_c170_a2_4_selftest.log",
+  "tools/bench/diag_c170_a2_4_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/m8b_replay_compare.py",
+   "tools/bench/m8b_replay_selftest*",
+   "tools/bench/diag_c170_a2_1_cal.py",
+   "tools/bench/diag_c170_a2_4*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/jev_*",
+   "tools/bench/cards/result_170-a2-4.json"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 45
+ },
+ "advances": ["M3", "M8"],
+ "rules": [
+  "Offline only: no LabVIEW, no hardware; shared functions called, not copied",
+  "A self-test result different from the expected values is returned as a fact, not tuned away",
+  "No hook, plan, STATUS, INDEX, recipe or stage-tool edit; hook false positive via py tools/gate_fp.py log"
+ ]
+}

@@ -1030,7 +1030,7 @@ Outcome of every call: `ok | no_output | failed | timed_out` (tools/fncontract.p
 
 ## Every public function of the shared tools files - generated from code (card chat-T7)
 
-A file is SHARED when at least one OTHER file under tools/ imports it (import graph, measured at generation; cache tools/bench/capabilities_shared.json). Look here before writing any logic (docs/script-writing.md rule 8). 216 files, 2679 functions: 1473 described by a docstring, 304 by docs/fn_descriptions.json (existing functions, card chat-T8), 902 undocumented (per file in the table below). Regenerated at every cycle end and when a shared file is written.
+A file is SHARED when at least one OTHER file under tools/ imports it (import graph, measured at generation; cache tools/bench/capabilities_shared.json). Look here before writing any logic (docs/script-writing.md rule 8). 217 files, 2703 functions: 1495 described by a docstring, 304 by docs/fn_descriptions.json (existing functions, card chat-T8), 904 undocumented (per file in the table below). Regenerated at every cycle end and when a shared file is written.
 
 | file | kind | imported by | functions | side file | undocumented |
 |---|---|---|---|---|---|
@@ -1054,7 +1054,7 @@ A file is SHARED when at least one OTHER file under tools/ imports it (import gr
 | [`tools/gate_fp.py`](#tools-gate-fp-py) | shared module | 8 | 10 | 3 | 0 |
 | [`tools/gateclass.py`](#tools-gateclass-py) | shared module | 13 | 14 | 3 | 0 |
 | [`tools/gen_capabilities.py`](#tools-gen-capabilities-py) | shared module | 7 | 21 | 0 | 0 |
-| [`tools/gscript.py`](#tools-gscript-py) | shared module | 653 | 135 | 9 | 0 |
+| [`tools/gscript.py`](#tools-gscript-py) | shared module | 655 | 135 | 9 | 0 |
 | [`tools/hash_probe.py`](#tools-hash-probe-py) | shared module | 64 | 2 | 2 | 0 |
 | [`tools/invcheck.py`](#tools-invcheck-py) | shared module | 9 | 7 | 0 | 0 |
 | [`tools/jev.py`](#tools-jev-py) | shared module | 33 | 10 | 2 | 0 |
@@ -1072,11 +1072,11 @@ A file is SHARED when at least one OTHER file under tools/ imports it (import gr
 | [`tools/logclass.py`](#tools-logclass-py) | shared module | 17 | 9 | 0 | 0 |
 | [`tools/lv_errorlist.py`](#tools-lv-errorlist-py) | shared module | 5 | 25 | 12 | 0 |
 | [`tools/lvclick.py`](#tools-lvclick-py) | shared module | 4 | 18 | 0 | 10 |
-| [`tools/motor_gate.py`](#tools-motor-gate-py) | shared module | 3 | 21 | 0 | 9 |
+| [`tools/motor_gate.py`](#tools-motor-gate-py) | shared module | 6 | 21 | 0 | 9 |
 | [`tools/outcome_review.py`](#tools-outcome-review-py) | shared module | 3 | 6 | 0 | 3 |
 | [`tools/prior_art_review.py`](#tools-prior-art-review-py) | shared module | 2 | 7 | 0 | 2 |
 | [`tools/priorart_diff.py`](#tools-priorart-diff-py) | shared module | 8 | 8 | 0 | 5 |
-| [`tools/protocol.py`](#tools-protocol-py) | shared module | 694 | 63 | 14 | 0 |
+| [`tools/protocol.py`](#tools-protocol-py) | shared module | 702 | 63 | 14 | 0 |
 | [`tools/retro_due.py`](#tools-retro-due-py) | shared module | 2 | 6 | 0 | 2 |
 | [`tools/retrospective.py`](#tools-retrospective-py) | shared module | 2 | 8 | 0 | 2 |
 | [`tools/rules_coverage.py`](#tools-rules-coverage-py) | shared module | 2 | 11 | 0 | 6 |
@@ -1084,14 +1084,14 @@ A file is SHARED when at least one OTHER file under tools/ imports it (import gr
 | [`tools/scope_header.py`](#tools-scope-header-py) | shared module | 14 | 21 | 8 | 0 |
 | [`tools/stage_prerun.py`](#tools-stage-prerun-py) | shared module | 232 | 127 | 29 | 0 |
 | [`tools/stage_shared.py`](#tools-stage-shared-py) | shared module | 20 | 3 | 0 | 0 |
-| [`tools/stagekit.py`](#tools-stagekit-py) | shared module | 346 | 156 | 10 | 0 |
+| [`tools/stagekit.py`](#tools-stagekit-py) | shared module | 347 | 156 | 10 | 0 |
 | [`tools/stagesim.py`](#tools-stagesim-py) | shared module | 195 | 68 | 25 | 0 |
-| [`tools/stagexec.py`](#tools-stagexec-py) | shared module | 393 | 190 | 61 | 0 |
+| [`tools/stagexec.py`](#tools-stagexec-py) | shared module | 394 | 190 | 61 | 0 |
 | [`tools/stop_record.py`](#tools-stop-record-py) | shared module | 31 | 19 | 0 | 2 |
 | [`tools/vigraph.py`](#tools-vigraph-py) | shared module | 178 | 22 | 4 | 0 |
 | [`tools/violations.py`](#tools-violations-py) | shared module | 2 | 5 | 0 | 2 |
-| [`tools/wiki_build.py`](#tools-wiki-build-py) | shared module | 91 | 11 | 0 | 5 |
-| [`tools/bench/bench_prep.py`](#tools-bench-bench-prep-py) | shared file in the bench folder (move to tools/ later) | 303 | 5 | 0 | 4 |
+| [`tools/wiki_build.py`](#tools-wiki-build-py) | shared module | 93 | 11 | 0 | 5 |
+| [`tools/bench/bench_prep.py`](#tools-bench-bench-prep-py) | shared file in the bench folder (move to tools/ later) | 305 | 5 | 0 | 4 |
 | [`tools/bench/build_opstopmode_v0.py`](#tools-bench-build-opstopmode-v0-py) | shared file in the bench folder (move to tools/ later) | 2 | 24 | 0 | 23 |
 | [`tools/bench/build_ringpickslot_v2.py`](#tools-bench-build-ringpickslot-v2-py) | shared file in the bench folder (move to tools/ later) | 1 | 13 | 0 | 13 |
 | [`tools/bench/c131_2_reach.py`](#tools-bench-c131-2-reach-py) | shared file in the bench folder (move to tools/ later) | 2 | 1 | 0 | 0 |
@@ -1104,7 +1104,7 @@ A file is SHARED when at least one OTHER file under tools/ imports it (import gr
 | [`tools/bench/d0_locate.py`](#tools-bench-d0-locate-py) | shared file in the bench folder (move to tools/ later) | 1 | 11 | 0 | 6 |
 | [`tools/bench/d1_rewire_map.py`](#tools-bench-d1-rewire-map-py) | shared file in the bench folder (move to tools/ later) | 9 | 3 | 0 | 2 |
 | [`tools/bench/diag_c100_verbs_build.py`](#tools-bench-diag-c100-verbs-build-py) | shared file in the bench folder (move to tools/ later) | 4 | 32 | 0 | 27 |
-| [`tools/bench/diag_c108c_graph.py`](#tools-bench-diag-c108c-graph-py) | shared file in the bench folder (move to tools/ later) | 5 | 13 | 0 | 9 |
+| [`tools/bench/diag_c108c_graph.py`](#tools-bench-diag-c108c-graph-py) | shared file in the bench folder (move to tools/ later) | 7 | 13 | 0 | 9 |
 | [`tools/bench/diag_c115d_sel.py`](#tools-bench-diag-c115d-sel-py) | shared file in the bench folder (move to tools/ later) | 1 | 5 | 0 | 3 |
 | [`tools/bench/diag_c118_p0.py`](#tools-bench-diag-c118-p0-py) | shared file in the bench folder (move to tools/ later) | 2 | 5 | 0 | 5 |
 | [`tools/bench/diag_c138_6_run.py`](#tools-bench-diag-c138-6-run-py) | shared file in the bench folder (move to tools/ later) | 6 | 11 | 0 | 11 |
@@ -1129,12 +1129,12 @@ A file is SHARED when at least one OTHER file under tools/ imports it (import gr
 | [`tools/bench/diag_queue_donor.py`](#tools-bench-diag-queue-donor-py) | shared file in the bench folder (move to tools/ later) | 1 | 8 | 0 | 7 |
 | [`tools/bench/diag_queue_donor2.py`](#tools-bench-diag-queue-donor2-py) | shared file in the bench folder (move to tools/ later) | 3 | 13 | 0 | 8 |
 | [`tools/bench/diag_replay_gbtest.py`](#tools-bench-diag-replay-gbtest-py) | shared file in the bench folder (move to tools/ later) | 1 | 6 | 0 | 6 |
-| [`tools/bench/diag_replay_lib.py`](#tools-bench-diag-replay-lib-py) | shared file in the bench folder (move to tools/ later) | 9 | 19 | 12 | 0 |
+| [`tools/bench/diag_replay_lib.py`](#tools-bench-diag-replay-lib-py) | shared file in the bench folder (move to tools/ later) | 13 | 19 | 12 | 0 |
 | [`tools/bench/diag_s2_scaffold.py`](#tools-bench-diag-s2-scaffold-py) | shared file in the bench folder (move to tools/ later) | 75 | 15 | 0 | 10 |
 | [`tools/bench/diag_s3b_l0_localname_v2.py`](#tools-bench-diag-s3b-l0-localname-v2-py) | shared file in the bench folder (move to tools/ later) | 1 | 23 | 0 | 15 |
 | [`tools/bench/diag_tunnelsource_onehop.py`](#tools-bench-diag-tunnelsource-onehop-py) | shared file in the bench folder (move to tools/ later) | 5 | 12 | 0 | 7 |
 | [`tools/bench/diag_vigraph_check.py`](#tools-bench-diag-vigraph-check-py) | shared file in the bench folder (move to tools/ later) | 1 | 8 | 0 | 5 |
-| [`tools/bench/drive_legguard.py`](#tools-bench-drive-legguard-py) | shared file in the bench folder (move to tools/ later) | 6 | 14 | 0 | 6 |
+| [`tools/bench/drive_legguard.py`](#tools-bench-drive-legguard-py) | shared file in the bench folder (move to tools/ later) | 8 | 14 | 0 | 6 |
 | [`tools/bench/drive_m8.py`](#tools-bench-drive-m8-py) | shared file in the bench folder (move to tools/ later) | 14 | 5 | 0 | 5 |
 | [`tools/bench/drive_original_copy_v2.py`](#tools-bench-drive-original-copy-v2-py) | shared file in the bench folder (move to tools/ later) | 4 | 32 | 0 | 27 |
 | [`tools/bench/drive_original_copy_v4.py`](#tools-bench-drive-original-copy-v4-py) | shared file in the bench folder (move to tools/ later) | 3 | 19 | 0 | 6 |
@@ -1155,16 +1155,17 @@ A file is SHARED when at least one OTHER file under tools/ imports it (import gr
 | [`tools/bench/launch_p3b2_c135_graph.py`](#tools-bench-launch-p3b2-c135-graph-py) | shared file in the bench folder (move to tools/ later) | 1 | 1 | 0 | 1 |
 | [`tools/bench/launch_p3b2_resume_c135_compare.py`](#tools-bench-launch-p3b2-resume-c135-compare-py) | shared file in the bench folder (move to tools/ later) | 3 | 3 | 0 | 1 |
 | [`tools/bench/m8_dry.py`](#tools-bench-m8-dry-py) | shared file in the bench folder (move to tools/ later) | 5 | 3 | 0 | 3 |
-| [`tools/bench/m8b_replay_compare.py`](#tools-bench-m8b-replay-compare-py) | shared file in the bench folder (move to tools/ later) | 1 | 3 | 0 | 3 |
+| [`tools/bench/m8_legs.py`](#tools-bench-m8-legs-py) | shared file in the bench folder (move to tools/ later) | 1 | 5 | 0 | 0 |
+| [`tools/bench/m8b_replay_compare.py`](#tools-bench-m8b-replay-compare-py) | shared file in the bench folder (move to tools/ later) | 4 | 22 | 0 | 5 |
 | [`tools/bench/opmodels_lib.py`](#tools-bench-opmodels-lib-py) | shared file in the bench folder (move to tools/ later) | 3 | 6 | 0 | 3 |
 | [`tools/bench/prep_c143_3_elrule.py`](#tools-bench-prep-c143-3-elrule-py) | shared file in the bench folder (move to tools/ later) | 11 | 0 | 0 | 0 |
-| [`tools/bench/prep_c156_a1_1_lib.py`](#tools-bench-prep-c156-a1-1-lib-py) | shared file in the bench folder (move to tools/ later) | 66 | 6 | 0 | 1 |
+| [`tools/bench/prep_c156_a1_1_lib.py`](#tools-bench-prep-c156-a1-1-lib-py) | shared file in the bench folder (move to tools/ later) | 72 | 6 | 0 | 1 |
 | [`tools/bench/prep_c156_a1_2_lib.py`](#tools-bench-prep-c156-a1-2-lib-py) | shared file in the bench folder (move to tools/ later) | 7 | 8 | 0 | 0 |
 | [`tools/bench/prep_c159_c1_1_lib.py`](#tools-bench-prep-c159-c1-1-lib-py) | shared file in the bench folder (move to tools/ later) | 3 | 6 | 0 | 0 |
 | [`tools/bench/prep_c164_a2_3_lib.py`](#tools-bench-prep-c164-a2-3-lib-py) | shared file in the bench folder (move to tools/ later) | 19 | 9 | 0 | 2 |
 | [`tools/bench/prep_c167_a1_1_graphlib.py`](#tools-bench-prep-c167-a1-1-graphlib-py) | shared file in the bench folder (move to tools/ later) | 4 | 3 | 0 | 0 |
 | [`tools/bench/prep_c168_a1_2_lib.py`](#tools-bench-prep-c168-a1-2-lib-py) | shared file in the bench folder (move to tools/ later) | 3 | 14 | 0 | 2 |
-| [`tools/bench/prep_c168_hashlib.py`](#tools-bench-prep-c168-hashlib-py) | shared file in the bench folder (move to tools/ later) | 5 | 2 | 0 | 0 |
+| [`tools/bench/prep_c168_hashlib.py`](#tools-bench-prep-c168-hashlib-py) | shared file in the bench folder (move to tools/ later) | 8 | 2 | 0 | 0 |
 | [`tools/bench/prep_plan_flow_lib.py`](#tools-bench-prep-plan-flow-lib-py) | shared file in the bench folder (move to tools/ later) | 12 | 3 | 0 | 0 |
 | [`tools/bench/s1_subvi_paths.py`](#tools-bench-s1-subvi-paths-py) | shared file in the bench folder (move to tools/ later) | 2 | 7 | 0 | 6 |
 | [`tools/bench/selftest_assign_flow.py`](#tools-bench-selftest-assign-flow-py) | shared file in the bench folder (move to tools/ later) | 1 | 11 | 0 | 9 |
@@ -1184,10 +1185,10 @@ A file is SHARED when at least one OTHER file under tools/ imports it (import gr
 | [`tools/recipes/build_opconnectfromwire_v0.py`](#tools-recipes-build-opconnectfromwire-v0-py) | recipe imported by another file | 55 | 12 | 0 | 10 |
 | [`tools/recipes/build_opconnectnested_v1.py`](#tools-recipes-build-opconnectnested-v1-py) | recipe imported by another file | 72 | 16 | 0 | 12 |
 | [`tools/recipes/build_opconstvalue_v1.py`](#tools-recipes-build-opconstvalue-v1-py) | recipe imported by another file | 59 | 6 | 0 | 5 |
-| [`tools/recipes/build_opconstvalue_v1b.py`](#tools-recipes-build-opconstvalue-v1b-py) | recipe imported by another file | 5 | 3 | 0 | 2 |
+| [`tools/recipes/build_opconstvalue_v1b.py`](#tools-recipes-build-opconstvalue-v1b-py) | recipe imported by another file | 6 | 3 | 0 | 2 |
 | [`tools/recipes/build_opconstvalue_v1c.py`](#tools-recipes-build-opconstvalue-v1c-py) | recipe imported by another file | 4 | 4 | 0 | 3 |
 | [`tools/recipes/build_opconstvaluen_v0.py`](#tools-recipes-build-opconstvaluen-v0-py) | recipe imported by another file | 1 | 4 | 0 | 4 |
-| [`tools/recipes/build_opcreateconstonterm_v0.py`](#tools-recipes-build-opcreateconstonterm-v0-py) | recipe imported by another file | 23 | 15 | 0 | 12 |
+| [`tools/recipes/build_opcreateconstonterm_v0.py`](#tools-recipes-build-opcreateconstonterm-v0-py) | recipe imported by another file | 24 | 15 | 0 | 12 |
 | [`tools/recipes/build_opfsinnertunnelconnect_v0.py`](#tools-recipes-build-opfsinnertunnelconnect-v0-py) | recipe imported by another file | 16 | 24 | 0 | 18 |
 | [`tools/recipes/build_opfstunnelterm_v0.py`](#tools-recipes-build-opfstunnelterm-v0-py) | recipe imported by another file | 1 | 25 | 0 | 17 |
 | [`tools/recipes/build_opfstunnelterm_v1.py`](#tools-recipes-build-opfstunnelterm-v1-py) | recipe imported by another file | 6 | 25 | 0 | 17 |
@@ -1684,7 +1685,7 @@ shared module; imported by 7 file(s): `tools/bench/diag_c158_a2_5_check.py`, `to
 
 ### tools/gscript.py
 
-shared module; imported by 653 file(s): `tools/allterms.py`, `tools/bench/allterms_s1.py`, `tools/bench/allterms_s2.py`, `tools/bench/allterms_s3.py`, `tools/bench/allterms_s4.py`, `tools/bench/allterms_tmscclass.py` ...
+shared module; imported by 655 file(s): `tools/allterms.py`, `tools/bench/allterms_s1.py`, `tools/bench/allterms_s2.py`, `tools/bench/allterms_s3.py`, `tools/bench/allterms_s4.py`, `tools/bench/allterms_tmscclass.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -2101,7 +2102,7 @@ shared module; imported by 4 file(s): `tools/bench/m3v1_verify.py`, `tools/recip
 
 ### tools/motor_gate.py
 
-shared module; imported by 3 file(s): `tools/bench/selftest_motor_fail_exit.py`, `tools/bench/selftest_motor_gate2.py`, `tools/cycle_runner.py`
+shared module; imported by 6 file(s): `tools/bench/drive_m8_replay_p6.py`, `tools/bench/m8_legs.py`, `tools/bench/m8b_replay_compare.py`, `tools/bench/selftest_motor_fail_exit.py`, `tools/bench/selftest_motor_gate2.py`, `tools/cycle_runner.py`
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -2171,7 +2172,7 @@ shared module; imported by 8 file(s): `tools/bench/diag_c147_c3_3_proven.py`, `t
 
 ### tools/protocol.py
 
-shared module; imported by 694 file(s): `tools/audit_cycle.py`, `tools/bench/build_op_const_loopterm_77.py`, `tools/bench/build_op_termtype.py`, `tools/bench/build_opstopmode_v0.py`, `tools/bench/build_opwiringrules_v0.py`, `tools/bench/c109_errorlist_reverdict.py` ...
+shared module; imported by 702 file(s): `tools/audit_cycle.py`, `tools/bench/build_op_const_loopterm_77.py`, `tools/bench/build_op_termtype.py`, `tools/bench/build_opstopmode_v0.py`, `tools/bench/build_opwiringrules_v0.py`, `tools/bench/c109_errorlist_reverdict.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -2469,7 +2470,7 @@ shared module; imported by 20 file(s): `tools/bench/prep_c150_a3_1_licence.py`, 
 
 ### tools/stagekit.py
 
-shared module; imported by 346 file(s): `tools/bench/allterms_s1.py`, `tools/bench/allterms_s2.py`, `tools/bench/allterms_s3.py`, `tools/bench/allterms_s4.py`, `tools/bench/allterms_v1.py`, `tools/bench/build_kswap_88.py` ...
+shared module; imported by 347 file(s): `tools/bench/allterms_s1.py`, `tools/bench/allterms_s2.py`, `tools/bench/allterms_s3.py`, `tools/bench/allterms_s4.py`, `tools/bench/allterms_v1.py`, `tools/bench/build_kswap_88.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -2707,7 +2708,7 @@ shared module; imported by 195 file(s): `tools/bench/dedupe_check_s2b.py`, `tool
 
 ### tools/stagexec.py
 
-shared module; imported by 393 file(s): `tools/bench/constsrc_l2a1_82.py`, `tools/bench/constsrc_l2a1_85.py`, `tools/bench/ctsrc_l2a1_82.py`, `tools/bench/diag_c100_6_parity.py`, `tools/bench/diag_c100_rows.py`, `tools/bench/diag_c101_resim.py` ...
+shared module; imported by 394 file(s): `tools/bench/constsrc_l2a1_82.py`, `tools/bench/constsrc_l2a1_85.py`, `tools/bench/ctsrc_l2a1_82.py`, `tools/bench/diag_c100_6_parity.py`, `tools/bench/diag_c100_rows.py`, `tools/bench/diag_c101_resim.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -2971,7 +2972,7 @@ shared module; imported by 2 file(s): `tools/bench/selftest_c156_b2_1_violations
 
 ### tools/wiki_build.py
 
-shared module; imported by 91 file(s): `tools/bench/build_kswap_88.py`, `tools/bench/c73_l7r_live.py`, `tools/bench/diag_c107b_bedgraph.py`, `tools/bench/diag_c108b_graph.py`, `tools/bench/diag_c108d_graph.py`, `tools/bench/diag_c108d_selind.py` ...
+shared module; imported by 93 file(s): `tools/bench/build_kswap_88.py`, `tools/bench/c73_l7r_live.py`, `tools/bench/diag_c107b_bedgraph.py`, `tools/bench/diag_c108b_graph.py`, `tools/bench/diag_c108d_graph.py`, `tools/bench/diag_c108d_selind.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -2989,7 +2990,7 @@ shared module; imported by 91 file(s): `tools/bench/build_kswap_88.py`, `tools/b
 
 ### tools/bench/bench_prep.py
 
-shared file in the bench folder (move to tools/ later); imported by 303 file(s): `tools/bench/allterms_s4.py`, `tools/bench/allterms_v1_check.py`, `tools/bench/build_kswap_88.py`, `tools/bench/build_op_const_loopterm_77.py`, `tools/bench/build_op_termtype.py`, `tools/bench/build_opstopmode_v0.py` ...
+shared file in the bench folder (move to tools/ later); imported by 305 file(s): `tools/bench/allterms_s4.py`, `tools/bench/allterms_v1_check.py`, `tools/bench/build_kswap_88.py`, `tools/bench/build_op_const_loopterm_77.py`, `tools/bench/build_op_termtype.py`, `tools/bench/build_opstopmode_v0.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -3198,7 +3199,7 @@ shared file in the bench folder (move to tools/ later); imported by 4 file(s): `
 
 ### tools/bench/diag_c108c_graph.py
 
-shared file in the bench folder (move to tools/ later); imported by 5 file(s): `tools/bench/diag_c108c_groupB.py`, `tools/bench/diag_c166_a1_5_census.py`, `tools/bench/diag_c167_a1_2_crows.py`, `tools/bench/diag_c167_a1_3_closure.py`, `tools/bench/diag_c167_a1_4_ready.py`
+shared file in the bench folder (move to tools/ later); imported by 7 file(s): `tools/bench/diag_c108c_groupB.py`, `tools/bench/diag_c166_a1_5_census.py`, `tools/bench/diag_c167_a1_2_crows.py`, `tools/bench/diag_c167_a1_3_closure.py`, `tools/bench/diag_c167_a1_4_ready.py`, `tools/bench/diag_c170_a1_1_explore.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -3601,7 +3602,7 @@ shared file in the bench folder (move to tools/ later); imported by 1 file(s): `
 
 ### tools/bench/diag_replay_lib.py
 
-shared file in the bench folder (move to tools/ later); imported by 9 file(s): `tools/bench/diag_c110f_dispgraph.py`, `tools/bench/diag_replay_defaults.py`, `tools/bench/diag_replay_gbtest.py`, `tools/bench/diag_replay_graph77.py`, `tools/bench/diag_replay_standins.py`, `tools/bench/diag_replay_test77.py` ...
+shared file in the bench folder (move to tools/ later); imported by 13 file(s): `tools/bench/diag_c110f_dispgraph.py`, `tools/bench/diag_c170_a2_3_graph.py`, `tools/bench/diag_c170_a3_1_load.py`, `tools/bench/diag_c170_a3_4_callees.py`, `tools/bench/diag_replay_defaults.py`, `tools/bench/diag_replay_gbtest.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -3713,7 +3714,7 @@ shared file in the bench folder (move to tools/ later); imported by 1 file(s): `
 
 ### tools/bench/drive_legguard.py
 
-shared file in the bench folder (move to tools/ later); imported by 6 file(s): `tools/bench/diag_c104_abba.py`, `tools/bench/diag_c106b_live.py`, `tools/bench/drive_m8_replay_110.py`, `tools/bench/drive_original_copy_v5.py`, `tools/bench/selftest_c108e_tools.py`, `tools/bench/selftest_leg_guard.py`
+shared file in the bench folder (move to tools/ later); imported by 8 file(s): `tools/bench/diag_c104_abba.py`, `tools/bench/diag_c106b_live.py`, `tools/bench/drive_m8_replay_110.py`, `tools/bench/drive_m8_replay_p6.py`, `tools/bench/drive_original_copy_v5.py`, `tools/bench/m8_legs.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -4036,15 +4037,46 @@ shared file in the bench folder (move to tools/ later); imported by 5 file(s): `
 | `FakeCom.call` | kind, *args, timeout=None | (undocumented) | - | - | 9 |
 | `stub` | v5, d4, d0 | (undocumented) | - | - | 13 |
 
+### tools/bench/m8_legs.py
+
+shared file in the bench folder (move to tools/ later); imported by 1 file(s): `tools/bench/drive_m8_replay_p6.py`
+
+| function | arguments | what it does | from | self-test | line |
+|---|---|---|---|---|---|
+| `wait_lv_gone` | log=print, lv_fn=LG.lv_running, kill=LG.kill_labview, wait_s=90 | Wait up to wait_s for LabVIEW to exit, then kill it; returns True when no LabVIEW.exe is listed (moved: 110 :46-49). | docstring | - | 27 |
+| `leg` | tag, src, picks, run_s, legdir, G, rows, log=print, precheck=None, run=None, lv_fn=LG.lv_running | Run ONE replay leg: VISA precheck, 'diag_c104_leg.py --src --picks --run-s --out <legdir>/<tag>_a<n>', LabVIEW-gone wait, | docstring | - | 37 |
+| `motor_session` | action, limits=None, log=print, run=None | 'py tools/motor_gate.py --session start/end' (the gate verifies by readback itself; the readback lines are re-checked here | docstring | - | 69 |
+| `keep_leg_files` | out, picks, run_s, t0, log=print | Copy the leg's tools/bench jsons written at or after t0 (m8_replay_s1_p<N>_r<S>.json, m8_v5_replay_s1_p<N>_r<S>[_clicks].json: | docstring | - | 101 |
+| `selftest` |  | Offline: M1 recorded session start (motor_session_start_cycle170.log) ok with PI 0..39 and ASI SL/SU readback; M2 recorded | docstring | - | 131 |
+
 ### tools/bench/m8b_replay_compare.py
 
-shared file in the bench folder (move to tools/ later); imported by 1 file(s): `tools/bench/drive_m8_replay_110.py`
+shared file in the bench folder (move to tools/ later); imported by 4 file(s): `tools/bench/diag_c170_a2_1_cal.py`, `tools/bench/diag_c170_a3_3_probe.py`, `tools/bench/drive_m8_replay_110.py`, `tools/bench/drive_m8_replay_p6.py`
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
 | `tra` | d | (undocumented) | - | - | 15 |
 | `cal` | d | (undocumented) | - | - | 26 |
 | `main` | a1, a3, out | (undocumented) | - | - | 31 |
+| `td_label` | td_hex | Label of one TD (hex of its bytes incl. the I16 length + I16 code): flag 0x40 = labelled; the label is the Pascal string that | docstring | - | 79 |
+| `walk` | tds, i, b, p, path, out, canon=None | Flattened LabVIEW DATA of TD tds[i] at b[p:] (big-endian; arrays: I32 per dim then elements; strings: I32 length + bytes; | docstring | - | 107 |
+| `run_dirs` | leg_json | Sorted distinct 'run_dir' string values anywhere in a leg.json. | docstring | - | 151 |
+| `md5f` | path | (undocumented) | - | - | 166 |
+| `cal_type` | path=CAL_TYPE | (tds, top) of the cal write's cluster from the stored type read (types.cluster_const_out: parsed TD list + top index). | docstring | - | 170 |
+| `cal_field` | b, tds, top, label=DATE_LABEL | Walk one cal file's bytes with the cluster type; returns {size, walk_end, consumed_exactly, n_label, field_offset, field_length, | docstring | - | 176 |
+| `cal_compare` | ca, cb, tds, top | (b) .cal: whole-file byte compare, the date/time field located by the WALK of each file, and the differing bytes split into | docstring | - | 193 |
+| `xyz_match` | ta, tb, slots | (b)+(c) MATCH: X/Y/Z (columns 3..) bit-identical per common row by f64 bits (time column 0 excluded); NaN cells per side and | docstring | - | 207 |
+| `distinct` | ta, n, slots | (c) DISTINCT on side A alone: row i (< n) passes when it differs bitwise in >= 1 X/Y/Z cell FINITE on both rows from EACH A | docstring | - | 235 |
+| `trans_rot` | ta, tb | (b) trans/rot (columns 1, 2). Init boundary = the first row after A's LAST row whose trans or rot differs (bits) from the row | docstring | - | 252 |
+| `dir_files` | d | {name: {size, md5}} of every entry of a run dir (a subdir = {dir: True}). | docstring | - | 271 |
+| `files_compare` | da, db | (b) every file by name: 'equal' / 'differ' (md5) / 'only A' / 'only B'. Returns {name: {status, A, B}}. | docstring | - | 280 |
+| `find_text` | d, needle=b'lost frames' | Counter search: {file: [offsets of the needle, case-insensitive]} over every file of a run dir (empty list = NOT FOUND). | docstring | - | 287 |
+| `y_source` | G, qr_uid | Graph fact: the source terminal wired to 'y' of Quotient & Remainder #qr_uid and that owner's stored obj fields (the graph | docstring | - | 293 |
+| `fact` | tag, x | (undocumented) | - | - | 305 |
+| `compare_bc` | da, db, slots, out | The whole (b)/(c) report of two run dirs (A = S1 side) with D = slots: tra parse + rows, MATCH + drop signature, DISTINCT, | docstring | - | 309 |
+| `init_range` | tb, k, limits | (b) init envelope on B's first k rows (k = trans_rot's init_rows_B): trans (col 1) finite and inside the PI range of | docstring | - | 351 |
+| `compare_p6` | da, db, slots, out, oa, ob, limits | compare_bc (unchanged) plus the two PD409(b) items it lacked: B6 init rows of B inside the session's PI range, rot finite | docstring | - | 370 |
+| `selftest` | slots | PD409(f) self-test on the stored 110-7 legs: A = m8_out/replay_s1_20260927_184651, B = the run_dir of B's leg.json; expects | docstring | - | 394 |
 
 ### tools/bench/opmodels_lib.py
 
@@ -4067,7 +4099,7 @@ shared file in the bench folder (move to tools/ later); imported by 11 file(s): 
 
 ### tools/bench/prep_c156_a1_1_lib.py
 
-shared file in the bench folder (move to tools/ later); imported by 66 file(s): `tools/bench/diag_c160_g1_1.py`, `tools/bench/diag_c162_a1_1_hash.py`, `tools/bench/diag_c162_a1_2_hash.py`, `tools/bench/diag_c163_a2_1_hash.py`, `tools/bench/diag_c163_a2_2_hash.py`, `tools/bench/diag_c164_a3_5_hash.py` ...
+shared file in the bench folder (move to tools/ later); imported by 72 file(s): `tools/bench/diag_c160_g1_1.py`, `tools/bench/diag_c162_a1_1_hash.py`, `tools/bench/diag_c162_a1_2_hash.py`, `tools/bench/diag_c163_a2_1_hash.py`, `tools/bench/diag_c163_a2_2_hash.py`, `tools/bench/diag_c164_a3_5_hash.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -4155,7 +4187,7 @@ shared file in the bench folder (move to tools/ later); imported by 3 file(s): `
 
 ### tools/bench/prep_c168_hashlib.py
 
-shared file in the bench folder (move to tools/ later); imported by 5 file(s): `tools/bench/diag_c168_a1_1_hash.py`, `tools/bench/diag_c168_a1_2_hash.py`, `tools/bench/diag_c169_a1_1_hash.py`, `tools/bench/diag_c169_a1_2_hash.py`, `tools/bench/diag_c169_a1_3_hash.py`
+shared file in the bench folder (move to tools/ later); imported by 8 file(s): `tools/bench/diag_c168_a1_1_hash.py`, `tools/bench/diag_c168_a1_2_hash.py`, `tools/bench/diag_c169_a1_1_hash.py`, `tools/bench/diag_c169_a1_2_hash.py`, `tools/bench/diag_c169_a1_3_hash.py`, `tools/bench/diag_c170_a1_1_facts.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -4503,7 +4535,7 @@ recipe imported by another file; imported by 59 file(s): `tools/bench/census_dnc
 
 ### tools/recipes/build_opconstvalue_v1b.py
 
-recipe imported by another file; imported by 5 file(s): `tools/bench/diag_constvalue_siblings.py`, `tools/gscript.py`, `tools/recipes/build_opconstvalue_v1c.py`, `tools/recipes/build_opconstvaluen_v0.py`, `tools/recipes/build_opconstvaluen_v1.py`
+recipe imported by another file; imported by 6 file(s): `tools/bench/diag_c170_a2_1_f4.py`, `tools/bench/diag_constvalue_siblings.py`, `tools/gscript.py`, `tools/recipes/build_opconstvalue_v1c.py`, `tools/recipes/build_opconstvaluen_v0.py`, `tools/recipes/build_opconstvaluen_v1.py`
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -4535,7 +4567,7 @@ recipe imported by another file; imported by 1 file(s): `tools/recipes/build_opc
 
 ### tools/recipes/build_opcreateconstonterm_v0.py
 
-recipe imported by another file; imported by 23 file(s): `tools/bench/build_op_const_loopterm_77.py`, `tools/bench/c52r2_astcheck.py`, `tools/bench/diag_c123_routes.py`, `tools/bench/diag_c123_struct.py`, `tools/bench/diag_c90_t0_step3.py`, `tools/bench/diag_c90_t0_step3b.py` ...
+recipe imported by another file; imported by 24 file(s): `tools/bench/build_op_const_loopterm_77.py`, `tools/bench/c52r2_astcheck.py`, `tools/bench/diag_c123_routes.py`, `tools/bench/diag_c123_struct.py`, `tools/bench/diag_c90_t0_step3.py`, `tools/bench/diag_c90_t0_step3b.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -5435,6 +5467,6 @@ hook - reference; imported by 2 file(s): `tools/bench/selftest_report_gate_fp31.
 | `unreported` |  | (undocumented) | - | - | 96 |
 | `decisions_block` | path=None | The OPEN user decisions (tools/bench/decisions_pending.json, schema decisions-pending/1) that every cycle-end | docstring | - | 102 |
 | `ack` |  | (undocumented) | - | - | 123 |
-| `main` |  | (undocumented) | - | - | 132 |
+| `main` |  | (undocumented) | - | - | 135 |
 
 <!-- GENERATED fn-list END -->

@@ -1,0 +1,68 @@
+{
+ "schema": "task/1",
+ "id": "170-a2-3",
+ "kind": "build",
+ "goal": "Per brief_170-a2-3.md: build replay_imaqdx_get_image_buf_paced60.vi (a89dafc1 + Wait 60 ms) and replay_get_buff_image_paced60.vi (842ecad9, inner swapped); ExecState 1 warm and cold.",
+ "why": "Purpose item 2 of assignment 170-2 (PD410(d)): the P6 replay leg needs a paced stand-in so loop 1.1 cannot lap loop 1.2.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_170-a2-3.md", "md5": "b9ee0e189ae89b3f40bdd4a7409094bb"},
+  {"path": "docs/d1/ring-p6.md", "md5": "b1e31d26c17aafdc005086205e15f009"},
+  {"path": "tools/bench/p6_replay_facts.md", "md5": "04cf14eab7792c46fb6bfd4399751dca"},
+  {"path": "tools/recipes/stage_replay_standins.py", "md5": "ee37527e0328228b5cec5663c51943cb"},
+  {"path": "tools/recipes/stage_d1_m4b.py", "md5": "180c7a9e824d9799b78c81d3b4e3c046"},
+  {"path": "tools/recipes/stage_d1_ring_p3a.py", "md5": "145010d601482c383997ad4eaeb3c145"},
+  {"path": "tools/bench/decision_m4b.json", "md5": "06c58d913384fe1ff9f921fbbcb74d74"},
+  {"path": "tools/bench/facts_c100_oplabels.json", "md5": "0ebb349b7a4f4df97bf0faf04184120b"},
+  {"path": "tools/bench/diag_replay_lib.py", "md5": "236d8e2582fe87f0c0d88e7fb0e62862"},
+  {"path": "tools/stagekit.py", "md5": "22967183e5aee50fa9a43e8b4a7657e7"},
+  {"path": "tools/gscript.py", "md5": "1a80236ed35c1876c67f964c72fe820a"},
+  {"path": "docs/script-writing.md", "md5": "f5fd847a8621a26d58c0b40a85fad5a2"}
+ ],
+ "pass": [
+  "Inputs a89dafc1 (buf) and 842ecad9 (get-buff) md5 equal before and after; no original opened; the 8 pinned VIs unchanged",
+  "replay_imaqdx_get_image_buf_paced60.vi: one Wait (ms) node + constant 60, no data wire; ExecState 1 warm and COLD; md5 and size recorded",
+  "replay_get_buff_image_paced60.vi: only the inner buf callee replaced by the paced file (census + wire-edge diff 0); ExecState 1 warm and COLD; md5 recorded",
+  "Hygiene: VI Server refs balanced, LabVIEW gone by tasklist, only the 2 new .vi and recipe/diag files written, facts file written"
+ ],
+ "outputs": [
+  "tools/recipes/stage_replay_paced60.py",
+  "tools/bench/diag_c170_a2_3_facts.md",
+  "claudeDev\\replay\\replay_imaqdx_get_image_buf_paced60.vi",
+  "claudeDev\\replay\\replay_get_buff_image_paced60.vi"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/recipes/stage_replay_paced60*",
+   "tools/bench/diag_c170_a2_3*",
+   "tools/bench/launch_c170_paced*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_*",
+   "tools/bench/cards/result_170-a2-3.json"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "advances": ["M3", "M8"],
+ "requires": [
+  {"kind": "file", "name": "replay\\replay_imaqdx_get_image_buf.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "replay\\replay_get_buff_image.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "verb", "name": "replace_object", "where": "tools/gscript.py"}
+ ],
+ "rules": [
+  "Build only the 2 paced files; no P6 replay copy, plan, leg or compare; no VI Run, no hardware",
+  "Prior-art route for Wait (ms): shared donor/rows; no new op VI; guard refusal = BLOCKED with text",
+  "Originals never opened; replay inputs unchanged; unexpected result = RETURN with the facts",
+  "No hook, plan, STATUS, INDEX or stage-tool edit; hook false positive via py tools/gate_fp.py log"
+ ]
+}

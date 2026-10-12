@@ -1,0 +1,29 @@
+{
+ "schema": "stageplan-lite/1",
+ "stage": "stage_replay_paced60 (card 170-a2-3; docs/d1/ring-p6.md PD410(d))",
+ "base": {"path": "tools/bench/diag_c170_a2_3_graph_buf.json", "md5": "e45205382126a4870c149a1a9d12c898"},
+ "input": {"vi": "claudeDev\\replay\\replay_imaqdx_get_image_buf.vi", "md5": "a89dafc1db03feef7b528f0dd4fcc692"},
+ "note": "Every node below is CREATED (the Wait copy, its constant) or swapped by uid read live (census), so no row carries an input-graph uid. The const is OpCreateConstTop_v0 (create_const_loop_term 'for_n', 77-4), not Stage._op; X5 counts 0 wiring ops against 0 'wire' rows, as plan_replay_77.json.",
+ "inputs": {"buf": "a89dafc1db03feef7b528f0dd4fcc692", "gbf": "842ecad9a6674a5060ebb3d5522751a9"},
+ "outputs": {"buf": "replay_imaqdx_get_image_buf_paced60.vi", "gbf": "replay_get_buff_image_paced60.vi"},
+ "donor": {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpWaitDonor_v0.vi",
+           "md5": "6fc80d600cac1608c4dc77229b6e969d", "cls": "Function", "uid": 163,
+           "source": "tools/bench/facts_c100_oplabels.json donors 'Wait (ms)'"},
+ "terms": {"wait_ms": "milliseconds to wait"},
+ "values": {"wait_ms": 60.0},
+ "pins": [["D1_ring_p6_20261012_212645.vi", "c2d9c13cb40c0a5cab7433896d1df157"],
+          ["D1_ring_p5_20261010_172913.vi", "75773b0ded2a08586bb1a542ddda5af6"],
+          ["D1_ring_p5s01_20261009_124542.vi", "7f2582ae54dc5bc42c3df0bdf3c72d2e"],
+          ["D1_s1_copy.vi", "3e3d23cefd3a334001aa9d6156bf1aee"],
+          ["replay\\D1_s1_replay_20260925_075422.vi", "126f84975fca9f6124432a7e4decd0c8"],
+          ["replay\\replay_get_buff_image.vi", "842ecad9a6674a5060ebb3d5522751a9"],
+          ["replay\\replay_get_image_cal.vi", "afce0d04346fc58234d28bcc0fc42e55"],
+          ["replay\\replay_imaqdx_get_image_buf.vi", "a89dafc1db03feef7b528f0dd4fcc692"]],
+ "decisions": [
+  {"id": "W01", "action": "copy", "what": "Wait (ms) #163 from OpWaitDonor_v0 into the buf copy's top-level diagram (diag_replay_lib.copy_to, no move_in)"},
+  {"id": "W02", "action": "const", "what": "constant 60 on the Wait's 'milliseconds to wait' (create_const_loop_term for_n, typed by the sink)"},
+  {"id": "W03", "action": "save", "what": "ExecState 1 warm, scripted save, copy -> replay_imaqdx_get_image_buf_paced60.vi"},
+  {"id": "W04", "action": "swap", "what": "byte copy of replay_get_buff_image.vi; replace ONLY the buf callee by the paced file; save -> replay_get_buff_image_paced60.vi"},
+  {"id": "W05", "action": "read", "what": "COLD: ExecState, VI.Name, pane per slot, constant text, Wait edge, callee census, input md5s, replay listing"}
+ ]
+}

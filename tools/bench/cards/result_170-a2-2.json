@@ -1,0 +1,25 @@
+{"schema":"result/1","id":"170-a2-2","status":"PASS","gates":{"pass":10,"fail":0},
+"first_fail":null,
+"blocked_by":null,
+"artefacts":[
+{"path":"tools/bench/p6_replay_facts.md","md5":"04cf14eab7792c46fb6bfd4399751dca"},
+{"path":"tools/bench/p6_replay_facts.json","md5":"0748bb273a5f2d0c6b993c817381f2f7"},
+{"path":"tools/bench/diag_c170_a2_2_cal.log","md5":"ec30c0acb004fcb2d616f22dd36a1d9b"},
+{"path":"tools/bench/diag_c170_a2_1_cal.json","md5":"6abffe4917e6d81b17411228abe608d2"},
+{"path":"tools/bench/diag_c170_a2_2_hygiene.py","md5":"7aebac403d9cf52dafff4e021363166d"},
+{"path":"tools/bench/diag_c170_a2_2_hygiene.log","md5":"f7a9ac2de43ecbfbb50674099dba8988"}],
+"facts":[
+"Decoder run 6/0: D1 D2 (one 'Date and time', element 6, String) W A+B walk 857376 of 857376 B, F A+B printable (diag_c170_a2_2_cal.log:3,25,35,46,50,61,65)",
+"Field both legs: offset 857264, length 40 = I32 36 + 36 text bytes; text offset 857268 (diag_c170_a2_2_cal.log:45,60)",
+"OBSERVED A '2026년 9월 27일 일요일'+0x0D+'오후 6:51:02'+0x0D; B same date, '오후 7:02:38' (diag_c170_a2_2_cal.log:45,60)",
+"Outside field A vs B identical before and after; whole files differ in 5 bytes, all in the time text; md5 A e5570a96 B ea1ed8a3 (diag_c170_a2_2_cal.log:64)",
+"#26428 concatenate has FOUR inputs: date + #26136 + time + #26136 (wire 26707 two sinks) - old F4 text said three (docs/wiki/subvi/D1_s1_copy.json:66485,83531)",
+"#26136/#26145 values NOT READ by an existing op (diag_c170_a2_1_f4.log:21-24); the trailing/middle 0x0D is consistent with #26136=CR, OBSERVED only",
+"Gate H (170-a2-1) recorded as fact: handles 57984->51489, a fall of 6495, refs live 0 (diag_c170_a2_1_f4.log:25-26), in p6_replay_facts.md F4",
+"F4 md section + json key f4 rewritten only (layout, rule, formats, per-file); position rule code walk() tools/bench/diag_c170_a2_1_cal.py:79-113",
+"Hygiene 4/0: c2d9c13c 3e3d23ce 126f8497 unchanged, facts JSON parses (diag_c170_a2_2_hygiene.log:3-6); tasklist: no LabVIEW before and after; no LabVIEW session",
+"Decoder td_label returns None for labelled numeric TDs (els 2,4,5,8; diag_c170_a2_2_cal.log:6,9,10,13); labels taken from f4.log:13 canon/hex - not fixed (no gate needs it)"],
+"open":[
+"Do #26136 (FixedConstant) / #26145 (EnumConstant) values need a READ (new op for FixedConstant/Enum Constant.Value), or is the OBSERVED CR + long-with-weekday text enough for the .cal comparison?"],
+"cost":{"usd":null,"minutes":4,"labview_runs":0},
+"note":"Jev ladder: both runs PASS, no failed gate, no NEXT-ACTION needed. guard_write refused the first hygiene script header (string 'LabVIEW.exe' in a tasklist call read as a LabVIEW invocation); removed the tasklist call from the script and used plain tasklist instead - not logged as gate-fp."}

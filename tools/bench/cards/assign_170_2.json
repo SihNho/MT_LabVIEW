@@ -1,0 +1,45 @@
+{
+ "schema": "assign/1",
+ "cycle": 170,
+ "round": 2,
+ "purpose": {
+  "act": "PD410: P6-2 replay S1 vs P6 c2d9c13c - F4 read, 60 ms paced P6 stand-in pair, P6 replay copy, compare with DISTINCT+MATCH zero-drop check, S1 + P6 legs in motor_gate, compare, then fp-102",
+  "pass": [
+   "Re-hash (drift = hand back): bed c2d9c13c, graph fbc7b7ee, S1 3e3d23ce, S1 replay 126f8497, stand-ins 842ecad9 afce0d04 a89dafc1, frames manifest 9055d98a",
+   "PD410(e) F4: ONE read-only LabVIEW card on claudeDev D1_s1_copy.vi: #26159 type, #26136/#26126/#26145 values, cal date/time field rule in p6_replay_facts.md F4; no save, refs balanced, LabVIEW gone",
+   "PD410(d) claudeDev\\replay\\replay_imaqdx_get_image_buf_paced60.vi (a89dafc1 + Wait 60 ms) and replay_get_buff_image_paced60.vi (842ecad9, inner swapped), each ExecState 1, md5",
+   "PD409(e) replay\\D1_ring_p6_replay_<ts>.vi by stage_replay_swap.py, new plan on c2d9c13c (#6810 -> paced outer, #22692 -> afce0d04): A1-A6 C1-C3 PASS, ES 1 warm+cold, md5; peers priorart",
+   "PD410(c) m8b_replay_compare extended (shared fns): PD409(b) + DISTINCT (D = ring slots, uid) + MATCH + drop signature; self-test 110-7: 4443 rows, DISTINCT+MATCH all, cal diff only in F4 field",
+   "PD409(f) S1 leg (120 s) then P6 leg (>= 1500 tra rows), each own LabVIEW session in motor_gate start/end (readback), LabVIEW gone; per leg tra rows, lost, frame-counter delta, files+md5",
+   "PD409(b)+PD410(c) compare only if S1 lost 0: DISTINCT count, MATCH, each (b) item PASS/FAIL as a fact; a FAIL (with its drop signature) is returned, not re-run",
+   "Hygiene: c2d9c13c 75773b0d 7f2582ae 3e3d23ce 126f8497 842ecad9 a89dafc1 unchanged; no original opened; refs balanced; only replay files added; LabVIEW gone; no hooks/limit edit",
+   "PD409(g) AFTER all above: fp-102 (stage_prerun.py:2192 X10 regex matches 'delete') drained with a self-test"
+  ],
+  "plan": {
+   "path": "docs/d1/ring-p6.md",
+   "md5": "b1e31d26c17aafdc005086205e15f009"
+  },
+  "advances": [
+   "M3",
+   "M8"
+  ],
+  "unblocks": null,
+  "task_kind": "measure",
+  "note": "Hand-back 170_1 judged (PD410): 170-a1-1 PASS accepted; F3's discard count is withdrawn as evidence because it misses overwritten frames (ring-p4b.md:140-141), not exposed by a build change. Rig 조립; motor_session OK."
+ },
+ "next_md5": "b386c2f431c080808a7c928a8acf5332",
+ "caps": {
+  "minutes": 180.0,
+  "usd": 60.0,
+  "backstop_cards": 30
+ },
+ "state": "tools/bench/assign/state_170_2.json",
+ "result": "tools/bench/cards/assign_result_170_2.json",
+ "handback_in": "tools/bench/cards/handback_170_1.json",
+ "agents": [
+  "material",
+  "material-opus-max",
+  "material-fable-low",
+  "log-reader"
+ ]
+}

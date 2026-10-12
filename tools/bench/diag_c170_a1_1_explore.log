@@ -1,0 +1,579 @@
+BGRUN START 2026-10-12 23:38:09 limit 5.0 min: py -u tools/bench/diag_c170_a1_1_explore.py
+BGRUN PID 27328
+KEYS p6 {'vi': ('str', 99), 'md5': ('str', 32), 'source': ('str', 151), 'terminals': ('list', 6221), 'objs': ('list', 10830), 'loops': ('list', 25), 'fs_tunnel_pairs': ('list', 576), 'owners': ('dict', 255), 'fs_measured': ('dict', 4)}
+SAMPLE p6.objs {"uid": 536, "class": "TopLevelDiagram", "pos": [-17836, -32546], "owner": ""}
+SAMPLE p6.owners keys ['57', '113', '124', '195', '206', '253', '637', '639', '686', '759', '1359', '1493', '1610', '1817', '2222', '2235', '2265', '2457', '2603', '2857'] first ["57", ["Diagram", 639]]
+SAMPLE p6.loops {"class": "WhileLoop", "index": 0, "loop_uid": 23041, "left_of": {"24083": [24133], "24150": [24187], "31347": [31352], "31659": [31666], "31756": [31764], "31812": [31817]}, "right_uids": [24083, 24150, 31347, 31659, 31756, 31812]}
+SAMPLE p6.fs_tunnel_pairs {"uid": 6115, "class": "FlatSequenceInnerTunnel", "face_a": "LeftTerm", "term_a": 86540, "wire_a": 40035, "face_b": "RightTerm", "term_b": 6117, "wire_b": 6124, "uid_back": 6115, "err": "", "err_a": "", "err_b": "", "errs": ""}
+KEYS s1 {'file': ('str', 83), 'md5': ('str', 32), 'bytes': ('int', 474202), 'read': ('dict', 5), 'fs_tunnel_pairs': ('list', 576), 'connector_pane': ('list', 114), 'connector_pane_source': ('str', 20), 'connector_pane_unassigned_slots': ('int', 0), 'connector_pane_unmatched_on_diagram': ('list', 0), 'terminals': ('list', 5748), 'wires': ('list', 1899), 'severed_wires': ('list', 0), 'graph_summary': ('dict', 14), 'io_paths': ('dict', 25), 'summary': ('str', 0), 'call_sites_in_main': ('dict', 2)}
+SAMPLE s1.graph_summary keys ['objects', 'nodes', 'wires', 'terminals', 'diagrams', 'loops', 'cases', 'sequences', 'locals', 'globals', 'subvi_nodes', 'subvi_calls', 'class_census', 'edge_method'] first ["objects", 9981]
+SAMPLE s1.fs_tunnel_pairs {"uid": 6115, "class": "FlatSequenceInnerTunnel", "face_a": "LeftTerm", "term_a": 86540, "wire_a": 40035, "face_b": "RightTerm", "term_b": 6117, "wire_b": 6124, "uid_back": 6115, "err": "", "err_a": "", "err_b": "", "errs": ""}
+KEYS gb {'file': ('str', 119), 'md5': ('str', 32), 'bytes': ('int', 13946), 'read': ('dict', 4), 'connector_pane': ('list', 9), 'connector_pane_source': ('str', 19), 'connector_pane_unassigned_slots': ('int', 7), 'connector_pane_unmatched_on_diagram': ('list', 0), 'terminals': ('list', 27), 'wires': ('list', 11), 'severed_wires': ('list', 0), 'graph_summary': ('dict', 14), 'io_paths': ('dict', 5), 'summary': ('str', 0), 'call_sites_in_main': ('dict', 2)}
+SAMPLE gb.graph_summary keys ['objects', 'nodes', 'wires', 'terminals', 'diagrams', 'loops', 'cases', 'sequences', 'locals', 'globals', 'subvi_nodes', 'subvi_calls', 'class_census', 'edge_method'] first ["objects", 43]
+UID p6 #6810 class SubVI loop 1.1 chain [(637, 'WhileLoop')] n_terms 16
+  T p6 t6822 'Session In' src=False w634 d639 direct=[(665, 'LoopTunnel', 'Value', 667)] ends=[(6810, 'SubVI', 'Session In', 6822, [])]
+  T p6 t6825 '' src=False w0 d639 direct=[] ends=[None]
+  T p6 t6829 '' src=False w0 d639 direct=[] ends=[None]
+  T p6 t6835 '' src=False w0 d639 direct=[] ends=[None]
+  T p6 t6843 'Session Out' src=True w4441 d639 direct=[(4442, 'LoopTunnel', 'Session Out', 4437)] ends=[(6810, 'SubVI', 'Session Out', 6843, [])]
+  T p6 t6857 'Image In' src=False w1651 d639 direct=[(1666, 'LoopTunnel', 'Value', 1669)] ends=[(6810, 'SubVI', 'Image In', 6857, [])]
+  T p6 t6865 'Image Out' src=True w28644 d639 direct=[(28565, 'SelectorTunnel', 'Image Out', 28624)] ends=[(6810, 'SubVI', 'Image Out', 6865, [])]
+  T p6 t6876 'Buffer to extract' src=False w5416 d639 direct=[(1445, 'SelectorTunnel', 'LastBufferNumber', 1482), (5351, 'LeftShiftRegister', 'LastBufferNumber', 5364)] ends=[(6810, 'SubVI', 'Buffer to extract', 6876, []), (1978, 'Function', 'x', 2042, [1445, 1034])]
+  T p6 t6884 'Missed frames?' src=True w3689 d639 direct=[(270, 'Tunnel', '', 276), (639, 'Diagram', 'Missing Frames?', 1924)] ends=[(6810, 'SubVI', 'Missed frames?', 6884, [])]
+  T p6 t6894 '' src=False w0 d639 direct=[] ends=[None]
+  T p6 t6897 'current image number' src=True w28534 d639 direct=[(28512, 'SelectorTunnel', 'current image number', 28528), (26879, 'Comparison', 'x', 27161), (5119, 'Function', 'x', 7680), (3078, 'SelectorTunnel', 'current image number', 3312), (2179, 'SelectorTunnel', 'current image number', 2194), (1605, 'LoopTunnel', 'current image number', 1607), (639, 'Diagram', 'current image number', 34217), (27039, 'RightShiftRegister', 'current image number', 27084)] ends=[(6810, 'SubVI', 'current image number', 6897, [])]
+  T p6 t6901 'error in' src=False w1961 d639 direct=[(924, 'LoopTunnel', 'error out', 879)] ends=[(6810, 'SubVI', 'error in', 6901, [])]
+  T p6 t6907 '' src=False w0 d639 direct=[] ends=[None]
+  T p6 t6916 '' src=False w0 d639 direct=[] ends=[None]
+  T p6 t6920 '' src=False w0 d639 direct=[] ends=[None]
+  T p6 t6924 'error out' src=True w28884 d639 direct=[(28785, 'SelectorTunnel', 'error out', 28825), (649, 'LoopTunnel', 'error out', 650)] ends=[(6810, 'SubVI', 'error out', 6924, [])]
+UID p6 #22692 class SubVI loop outside-while chain [(22541, 'Sequence'), (22433, 'ForLoop'), (21590, 'Sequence'), (21305, 'ForLoop')] n_terms 12
+  T p6 t22695 'error out' src=True w22759 d22650 direct=[(22549, 'Tunnel', 'error out', 22551)] ends=[(22692, 'SubVI', 'error out', 22695, [])]
+  T p6 t22698 'Buffer Number Out' src=True w22744 d22650 direct=[(22731, 'Comparison', 'y', 22736)] ends=[(22692, 'SubVI', 'Buffer Number Out', 22698, [])]
+  T p6 t22701 'Image Out' src=True w22756 d22650 direct=[(22650, 'Diagram', 'Image Out', 22656)] ends=[(22692, 'SubVI', 'Image Out', 22701, [])]
+  T p6 t22704 'Session Out' src=True w22762 d22650 direct=[(22589, 'Tunnel', 'Session Out', 22591)] ends=[(22692, 'SubVI', 'Session Out', 22704, [])]
+  T p6 t22707 '' src=False w0 d22650 direct=[] ends=[None]
+  T p6 t22710 '' src=False w0 d22650 direct=[] ends=[None]
+  T p6 t22713 '' src=False w0 d22650 direct=[] ends=[None]
+  T p6 t22716 'Buffer Number Mode (Next)' src=False w22747 d22650 direct=[(22663, 'EnumConstant', 'Buffer Number Mode (Next)', 22660)] ends=[(22692, 'SubVI', 'Buffer Number Mode (Next)', 22716, [])]
+  T p6 t22719 'error in' src=False w22771 d22650 direct=[(22544, 'Tunnel', 'error out', 22546)] ends=[(22692, 'SubVI', 'error in', 22719, [])]
+  T p6 t22722 'Buffer Number In' src=False w22753 d22650 direct=[(22731, 'Comparison', 'x', 22739), (22681, 'Function', 'x+y', 22683)] ends=[(22731, 'Comparison', 'x', 22739, []), (22692, 'SubVI', 'Buffer Number In', 22722, [])]
+  T p6 t22725 'Image In' src=False w22765 d22650 direct=[(22644, 'Tunnel', 'New Image', 22646)] ends=[(22692, 'SubVI', 'Image In', 22725, [])]
+  T p6 t22728 'Session In' src=False w22768 d22650 direct=[(22579, 'Tunnel', 'Session Out', 22581)] ends=[(22692, 'SubVI', 'Session In', 22728, [])]
+UID p6 #26879 class Comparison loop 1.1 chain [(637, 'WhileLoop')] n_terms 3
+  T p6 t27144 'x = y?' src=True w27245 d639 direct=[(27185, 'Tunnel', '', 27182)] ends=[(26879, 'Comparison', 'x = y?', 27144, [])]
+  T p6 t27154 'y' src=False w27167 d639 direct=[(27056, 'LeftShiftRegister', 'current image number', 27119)] ends=[(26879, 'Comparison', 'y', 27154, [])]
+  T p6 t27161 'x' src=False w28534 d639 direct=[(28512, 'SelectorTunnel', 'current image number', 28528), (5119, 'Function', 'x', 7680), (3078, 'SelectorTunnel', 'current image number', 3312), (2179, 'SelectorTunnel', 'current image number', 2194), (6810, 'SubVI', 'current image number', 6897), (1605, 'LoopTunnel', 'current image number', 1607), (639, 'Diagram', 'current image number', 34217), (27039, 'RightShiftRegister', 'current image number', 27084)] ends=[(26879, 'Comparison', 'x', 27161, []), (5119, 'Function', 'x', 7680, []), (639, 'Diagram', 'current image number', 34217, []), (28429, 'FlatSequenceOuterTunnel', 'current image number', 28452, [28512]), (2347, 'Function', 'x', 3155, [3078]), (194, 'Function', 'x', 787, [1605]), (26879, 'Comparison', 'y', 27154, [27039]), (1978, 'Function', 'x', 2042, [2179, 1034])]
+UID p6 #27039 class RightShiftRegister loop outside-while chain [] n_terms 2
+  T p6 t27103 'current image number' src=True w0 d686 direct=[] ends=[None]
+  T p6 t27084 'current image number' src=False w28534 d639 direct=[(28512, 'SelectorTunnel', 'current image number', 28528), (26879, 'Comparison', 'x', 27161), (5119, 'Function', 'x', 7680), (3078, 'SelectorTunnel', 'current image number', 3312), (2179, 'SelectorTunnel', 'current image number', 2194), (6810, 'SubVI', 'current image number', 6897), (1605, 'LoopTunnel', 'current image number', 1607), (639, 'Diagram', 'current image number', 34217)] ends=[(26879, 'Comparison', 'x', 27161, []), (5119, 'Function', 'x', 7680, []), (639, 'Diagram', 'current image number', 34217, []), (28429, 'FlatSequenceOuterTunnel', 'current image number', 28452, [28512]), (2347, 'Function', 'x', 3155, [3078]), (194, 'Function', 'x', 787, [1605]), (26879, 'Comparison', 'y', 27154, [27039]), (1978, 'Function', 'x', 2042, [2179, 1034])]
+UID p6 #27185 class Tunnel loop 1.1 chain [(637, 'WhileLoop')] n_terms 3
+  T p6 t27182 '' src=False w27245 d639 direct=[(26879, 'Comparison', 'x = y?', 27144)] ends=[]
+  T p6 t27192 '' src=True w0 d27219 direct=[] ends=[None]
+  T p6 t27196 '' src=True w0 d27232 direct=[] ends=[None]
+UID p6 #27258 class LeftShiftRegister loop outside-while chain [] n_terms 2
+  T p6 t27281 '' src=False w39360 d686 direct=[(27269, 'DigitalNumericConstant', '', 27266)] ends=[(27373, 'Function', 'x', 27424, [27258, 27344]), (27311, 'Function', 'x', 27322, [27258, 27344])]
+  T p6 t27278 '' src=True w27378 d639 direct=[(27344, 'SelectorTunnel', '', 27365)] ends=[(27269, 'DigitalNumericConstant', '', 27266, [27258]), (27311, 'Function', 'x+1', 27315, [27258, 27359])]
+UID p6 #29724 class SubVI loop 1.2 chain [(10170, 'WhileLoop')] n_terms 12
+  T p6 t29897 '' src=False w0 d23166 direct=[] ends=[None]
+  T p6 t29900 'valid' src=True w30457 d23166 direct=[(30897, 'Tunnel', '', 30893), (4577, 'Function', 's', 30668), (4576, 'Function', 's', 30646), (4538, 'Function', 's', 30607), (4586, 'Function', 's', 30587), (4590, 'Function', 's', 30536), (4594, 'Function', 's', 30500), (30398, 'Function', 's', 30440)] ends=[(29724, 'SubVI', 'valid', 29900, [])]
+  T p6 t29903 'next discards' src=True w30112 d23166 direct=[(29648, 'RightShiftRegister', '', 29657)] ends=[(29724, 'SubVI', 'next discards', 29903, [])]
+  T p6 t29907 'next last' src=True w30106 d23166 direct=[(29403, 'RightShiftRegister', '', 29563)] ends=[(29724, 'SubVI', 'next last', 29907, [])]
+  T p6 t29931 '' src=False w0 d23166 direct=[] ends=[None]
+  T p6 t29937 '' src=False w0 d23166 direct=[] ends=[None]
+  T p6 t29944 '' src=False w0 d23166 direct=[] ends=[None]
+  T p6 t29952 'discards' src=False w30109 d23166 direct=[(29655, 'LeftShiftRegister', '', 29671)] ends=[(29724, 'SubVI', 'discards', 29952, [])]
+  T p6 t29959 'Latest' src=False w30101 d23166 direct=[(30001, 'Local', 'Latest', 30008)] ends=[(29724, 'SubVI', 'Latest', 29959, [])]
+  T p6 t29962 'last' src=False w30081 d23166 direct=[(30060, 'LoopTunnel', '', 30068), (29548, 'LeftShiftRegister', '', 29582)] ends=[(29724, 'SubVI', 'last', 29962, []), (29719, 'SubVI', 'last', 29783, [30060])]
+  T p6 t29970 'n2' src=False w30682 d23166 direct=[(30743, 'FlatSequenceOuterTunnel', 'Index of closest\ncal image slice, bead 2', 30768)] ends=[(29724, 'SubVI', 'n2', 29970, [])]
+  T p6 t29996 'n1' src=False w30078 d23166 direct=[(30094, 'LoopTunnel', 'min Num', 30102)] ends=[(29724, 'SubVI', 'n1', 29996, [])]
+UID p6 #22694 class CaseStructure loop None chain None n_terms 0
+UID p6 #22541 class Sequence loop None chain None n_terms 0
+UID p6 #30240 class IndexArray loop 1.2 chain [(10170, 'WhileLoop')] n_terms 3
+  T p6 t30253 'array' src=False w30267 d23166 direct=[(30239, 'Local', 'FrameIdx', 30248)] ends=[(30240, 'IndexArray', 'array', 30253, [])]
+  T p6 t30260 'element' src=True w30278 d23166 direct=[(29240, 'Function', 'x', 29256), (10068, 'Function', 'x', 10083)] ends=[(30240, 'IndexArray', 'element', 30260, [])]
+  T p6 t30263 'index' src=False w30763 d23166 direct=[(30300, 'IndexArray', 'index', 30399), (30216, 'IndexArray', 'index', 30231), (30119, 'IndexArray', 'index', 30189), (30724, 'FlatSequenceOuterTunnel', 'min slot', 30760), (29843, 'IndexArray', 'index', 29855), (30179, 'LoopTunnel', 'min slot', 30192)] ends=[(30300, 'IndexArray', 'index', 30399, []), (30240, 'IndexArray', 'index', 30263, []), (30216, 'IndexArray', 'index', 30231, []), (30119, 'IndexArray', 'index', 30189, []), (30724, 'FlatSequenceOuterTunnel', 'min slot', 30760, []), (29843, 'IndexArray', 'index', 29855, [])]
+UID p6 #29719 class SubVI loop while#16483 chain [(16483, 'WhileLoop'), (10170, 'WhileLoop')] n_terms 12
+  T p6 t29742 '' src=False w0 d29699 direct=[] ends=[None]
+  T p6 t29747 'found' src=True w30055 d29699 direct=[(29818, 'Function', 'x', 29839)] ends=[(29719, 'SubVI', 'found', 29747, [])]
+  T p6 t29754 'min slot' src=True w30197 d29699 direct=[(30179, 'LoopTunnel', 'min slot', 30183)] ends=[(29719, 'SubVI', 'min slot', 29754, [])]
+  T p6 t29758 'min Num' src=True w30105 d29699 direct=[(30094, 'LoopTunnel', 'min Num', 30098)] ends=[(29719, 'SubVI', 'min Num', 29758, [])]
+  T p6 t29761 '' src=False w0 d29699 direct=[] ends=[None]
+  T p6 t29764 '' src=False w0 d29699 direct=[] ends=[None]
+  T p6 t29768 '' src=False w0 d29699 direct=[] ends=[None]
+  T p6 t29771 '' src=False w0 d29699 direct=[] ends=[None]
+  T p6 t29774 '' src=False w0 d29699 direct=[] ends=[None]
+  T p6 t29778 '' src=False w0 d29699 direct=[] ends=[None]
+  T p6 t29783 'last' src=False w30049 d29699 direct=[(30060, 'LoopTunnel', '', 30062)] ends=[(29719, 'SubVI', 'last', 29783, [])]
+  T p6 t29789 'Num' src=False w30038 d29699 direct=[(29720, 'Local', 'Num', 29734)] ends=[(29719, 'SubVI', 'Num', 29789, [])]
+UID p6 #376 class SubVI loop 1.7 chain [(31308, 'CaseStructure'), (23041, 'WhileLoop')] n_terms 12
+  T p6 t3934 'error out' src=True w31647 d31506 direct=[(31593, 'SelectorTunnel', 'error out', 31597)] ends=[(376, 'SubVI', 'error out', 3934, [])]
+  T p6 t3954 'total data array out' src=True w31670 d31506 direct=[(31628, 'SelectorTunnel', 'total data array out', 31632)] ends=[(376, 'SubVI', 'total data array out', 3954, [])]
+  T p6 t5683 'error in' src=False w31576 d31506 direct=[(31598, 'SelectorTunnel', 'error out', 31602)] ends=[(376, 'SubVI', 'error in', 5683, [])]
+  T p6 t5704 'file progress' src=True w31818 d31506 direct=[(31506, 'Diagram', 'file progress', 3453), (31803, 'SelectorTunnel', 'file progress', 31805)] ends=[(376, 'SubVI', 'file progress', 5704, [])]
+  T p6 t5739 'file number to append out' src=True w31861 d31506 direct=[(31847, 'SelectorTunnel', 'file number to append out', 31849)] ends=[(376, 'SubVI', 'file number to append out', 5739, [])]
+  T p6 t5754 'current frame data array in' src=False w31343 d31506 direct=[(31447, 'SelectorTunnel', 'x,y,z array', 31536)] ends=[(376, 'SubVI', 'current frame data array in', 5754, [])]
+  T p6 t5760 'cal cluster path' src=False w31391 d31506 direct=[(31546, 'SelectorTunnel', '', 31549)] ends=[(376, 'SubVI', 'cal cluster path', 5760, [])]
+  T p6 t5763 'frame index' src=False w31709 d31506 direct=[(31697, 'Function', 'x', 31704), (31718, 'SelectorTunnel', '', 31720)] ends=[(31697, 'Function', 'x', 31704, []), (376, 'SubVI', 'frame index', 5763, [])]
+  T p6 t5772 'saved file refnum' src=False w11774 d31506 direct=[(3052, 'ControlReferenceConstant', 'File # Saved', 3060)] ends=[(376, 'SubVI', 'saved file refnum', 5772, [])]
+  T p6 t5778 'file size' src=False w31537 d31506 direct=[(31557, 'SelectorTunnel', '', 31560)] ends=[(376, 'SubVI', 'file size', 5778, [])]
+  T p6 t5782 'total data array in' src=False w31604 d31506 direct=[(31640, 'SelectorTunnel', '', 31650)] ends=[(376, 'SubVI', 'total data array in', 5782, [])]
+  T p6 t5787 'selected path' src=False w31568 d31506 direct=[(31588, 'SelectorTunnel', '', 31591)] ends=[(376, 'SubVI', 'selected path', 5787, [])]
+UID p6 #5058 class SubVI loop 1.2 chain [(10170, 'WhileLoop')] n_terms 16
+  T p6 t5082 'Bead is good? array in' src=False w25517 d23166 direct=[(5680, 'SelectorTunnel', '', 6007)] ends=[(5058, 'SubVI', 'Bead is good? array in', 5082, [])]
+  T p6 t5089 'Image In' src=False w30097 d23166 direct=[(29843, 'IndexArray', 'element', 29851)] ends=[(5058, 'SubVI', 'Image In', 5089, [])]
+  T p6 t5106 'cross size' src=False w23898 d23166 direct=[(24053, 'LoopTunnel', '', 24078)] ends=[(5058, 'SubVI', 'cross size', 5106, [])]
+  T p6 t5111 'Bead is good? array out' src=True w30755 d23166 direct=[(4590, 'Function', 't', 30544), (30710, 'FlatSequenceOuterTunnel', 'Bead is good? array out', 30728)] ends=[(5058, 'SubVI', 'Bead is good? array out', 5111, [])]
+  T p6 t5124 'x,y,z array out' src=True w30419 d23166 direct=[(4594, 'Function', 't', 30509), (2765, 'SelectorTunnel', 'x,y,z array out', 2811)] ends=[(5058, 'SubVI', 'x,y,z array out', 5124, [])]
+  T p6 t5151 '' src=False w0 d23166 direct=[] ends=[None]
+  T p6 t5156 '' src=False w0 d23166 direct=[] ends=[None]
+  T p6 t5164 'x,y,z array' src=False w25520 d23166 direct=[(6016, 'SelectorTunnel', '', 6026)] ends=[(5058, 'SubVI', 'x,y,z array', 5164, [])]
+  T p6 t5171 'pos in cal image out' src=True w23807 d23166 direct=[(30398, 'Function', 't', 30444), (10969, 'Function', 'array', 10975), (23166, 'Diagram', 'Pos within cal image', 3173), (23166, 'Diagram', 'Pos: Diffraction Pattern', 9519)] ends=[(5058, 'SubVI', 'pos in cal image out', 5171, [])]
+  T p6 t5177 '# of bead 4 packs' src=False w23487 d23166 direct=[(24104, 'LoopTunnel', '', 24214)] ends=[(5058, 'SubVI', '# of bead 4 packs', 5177, [])]
+  T p6 t5180 '' src=False w0 d23166 direct=[] ends=[None]
+  T p6 t5184 '4 pack remainder' src=False w10354 d23166 direct=[(24268, 'LoopTunnel', '', 24316)] ends=[(5058, 'SubVI', '4 pack remainder', 5184, [])]
+  T p6 t5190 'Array of cal clusters' src=False w10286 d23166 direct=[(24324, 'LoopTunnel', '', 25226)] ends=[(5058, 'SubVI', 'Array of cal clusters', 5190, [])]
+  T p6 t5207 'pos in cal image in' src=False w23850 d23166 direct=[(30398, 'Function', 'f', 30433), (23792, 'LeftShiftRegister', '', 23853)] ends=[(30398, 'Function', 'f', 30433, []), (5058, 'SubVI', 'pos in cal image in', 5207, [])]
+  T p6 t5240 'Real-space cosine window' src=False w10283 d23166 direct=[(25228, 'LoopTunnel', 'Real-space cosine window', 25250)] ends=[(5058, 'SubVI', 'Real-space cosine window', 5240, [])]
+  T p6 t5262 'Cosine bandpass\nfor Hilbert ' src=False w10278 d23166 direct=[(25276, 'LoopTunnel', 'Cosine bandpass for Hilbert', 25300)] ends=[(5058, 'SubVI', 'Cosine bandpass\nfor Hilbert ', 5262, [])]
+UID s1 #6810 class None loop outside-while chain [] n_terms 16
+  T s1 t6822 'Session In' src=False w634 d639 direct=[(665, 'LoopTunnel', 'Value', 667)] ends=[(6810, 'SubVI', 'Session In', 6822, [])]
+  T s1 t6825 '' src=False w0 d639 direct=[] ends=[None]
+  T s1 t6829 '' src=False w0 d639 direct=[] ends=[None]
+  T s1 t6835 '' src=False w0 d639 direct=[] ends=[None]
+  T s1 t6843 'Session Out' src=True w4441 d639 direct=[(4442, 'LoopTunnel', 'Session Out', 4437)] ends=[(6810, 'SubVI', 'Session Out', 6843, [])]
+  T s1 t6857 'Image In' src=False w1651 d639 direct=[(1666, 'LoopTunnel', 'Value', 1669)] ends=[(6810, 'SubVI', 'Image In', 6857, [])]
+  T s1 t6865 'Image Out' src=True w3040 d639 direct=[(5058, 'SubVI', 'Image In', 5089)] ends=[(6810, 'SubVI', 'Image Out', 6865, [])]
+  T s1 t6876 'Buffer to extract' src=False w5416 d639 direct=[(1445, 'SelectorTunnel', 'LastBufferNumber', 1482), (5351, 'LeftShiftRegister', 'LastBufferNumber', 5364)] ends=[(1445, 'SelectorTunnel', 'LastBufferNumber', 1482, []), (6810, 'SubVI', 'Buffer to extract', 6876, [])]
+  T s1 t6884 'Missed frames?' src=True w3689 d639 direct=[(270, 'Tunnel', '', 276), (639, 'Diagram', 'Missing Frames?', 1924)] ends=[(6810, 'SubVI', 'Missed frames?', 6884, [])]
+  T s1 t6894 '' src=False w0 d639 direct=[] ends=[None]
+  T s1 t6897 'current image number' src=True w3747 d639 direct=[(5119, 'Function', 'x', 7680), (3078, 'SelectorTunnel', 'current image number', 3312), (2179, 'SelectorTunnel', 'current image number', 2194), (1605, 'LoopTunnel', 'current image number', 1607), (639, 'Diagram', 'current image number', 34217)] ends=[(6810, 'SubVI', 'current image number', 6897, [])]
+  T s1 t6901 'error in' src=False w1961 d639 direct=[(924, 'LoopTunnel', 'error out', 879)] ends=[(6810, 'SubVI', 'error in', 6901, [])]
+  T s1 t6907 '' src=False w0 d639 direct=[] ends=[None]
+  T s1 t6916 '' src=False w0 d639 direct=[] ends=[None]
+  T s1 t6920 '' src=False w0 d639 direct=[] ends=[None]
+  T s1 t6924 'error out' src=True w653 d639 direct=[(649, 'LoopTunnel', 'error out', 650)] ends=[(6810, 'SubVI', 'error out', 6924, [])]
+UID s1 #22692 class None loop outside-while chain [] n_terms 12
+  T s1 t22695 'error out' src=True w22759 d22650 direct=[(22549, 'Tunnel', 'error out', 22551)] ends=[(22692, 'SubVI', 'error out', 22695, [])]
+  T s1 t22698 'Buffer Number Out' src=True w22744 d22650 direct=[(22731, 'Comparison', 'y', 22736)] ends=[(22692, 'SubVI', 'Buffer Number Out', 22698, [])]
+  T s1 t22701 'Image Out' src=True w22756 d22650 direct=[(22650, 'Diagram', 'Image Out', 22656)] ends=[(22692, 'SubVI', 'Image Out', 22701, [])]
+  T s1 t22704 'Session Out' src=True w22762 d22650 direct=[(22589, 'Tunnel', 'Session Out', 22591)] ends=[(22692, 'SubVI', 'Session Out', 22704, [])]
+  T s1 t22707 '' src=False w0 d22650 direct=[] ends=[None]
+  T s1 t22710 '' src=False w0 d22650 direct=[] ends=[None]
+  T s1 t22713 '' src=False w0 d22650 direct=[] ends=[None]
+  T s1 t22716 'Buffer Number Mode (Next)' src=False w22747 d22650 direct=[(22663, 'EnumConstant', 'Buffer Number Mode (Next)', 22660)] ends=[(22692, 'SubVI', 'Buffer Number Mode (Next)', 22716, [])]
+  T s1 t22719 'error in' src=False w22771 d22650 direct=[(22544, 'Tunnel', 'error out', 22546)] ends=[(22692, 'SubVI', 'error in', 22719, [])]
+  T s1 t22722 'Buffer Number In' src=False w22753 d22650 direct=[(22731, 'Comparison', 'x', 22739), (22681, 'Function', 'x+y', 22683)] ends=[(22731, 'Comparison', 'x', 22739, []), (22692, 'SubVI', 'Buffer Number In', 22722, [])]
+  T s1 t22725 'Image In' src=False w22765 d22650 direct=[(22644, 'Tunnel', 'New Image', 22646)] ends=[(22692, 'SubVI', 'Image In', 22725, [])]
+  T s1 t22728 'Session In' src=False w22768 d22650 direct=[(22579, 'Tunnel', 'Session Out', 22581)] ends=[(22692, 'SubVI', 'Session In', 22728, [])]
+UID s1 #376 class None loop outside-while chain [] n_terms 12
+  T s1 t3934 'error out' src=True w541 d639 direct=[(24, 'RightShiftRegister', 'error out', 1339)] ends=[(376, 'SubVI', 'error out', 3934, [])]
+  T s1 t3954 'total data array out' src=True w464 d639 direct=[(15, 'RightShiftRegister', 'total data array out', 58)] ends=[(376, 'SubVI', 'total data array out', 3954, [])]
+  T s1 t5683 'error in' src=False w4880 d639 direct=[(1108, 'LeftShiftRegister', 'error out', 1700)] ends=[(376, 'SubVI', 'error in', 5683, [])]
+  T s1 t5704 'file progress' src=True w5274 d639 direct=[(1929, 'LoopTunnel', 'file progress', 1931), (639, 'Diagram', 'file progress', 3453)] ends=[(376, 'SubVI', 'file progress', 5704, [])]
+  T s1 t5739 'file number to append out' src=True w5056 d639 direct=[(5020, 'LoopTunnel', 'file number to append out', 5044)] ends=[(376, 'SubVI', 'file number to append out', 5739, [])]
+  T s1 t5754 'current frame data array in' src=False w4517 d639 direct=[(2626, 'BuildArray', 'appended array', 2813)] ends=[(376, 'SubVI', 'current frame data array in', 5754, [])]
+  T s1 t5760 'cal cluster path' src=False w3629 d639 direct=[(3644, 'LoopTunnel', '', 3651)] ends=[(376, 'SubVI', 'cal cluster path', 5760, [])]
+  T s1 t5763 'frame index' src=False w3268 d639 direct=[(29240, 'Function', 'x', 29256), (12195, 'FlatSequenceOuterTunnel', '', 12200), (1114, 'SubVI', 'index i', 3509), (10068, 'Function', 'x', 10083), (3045, 'SelectorTunnel', '', 3272), (2136, 'Function', 'x', 3211), (639, 'Diagram', '', 644), (639, 'Diagram', '', 644)] ends=[(29240, 'Function', 'x', 29256, []), (1114, 'SubVI', 'index i', 3509, []), (10068, 'Function', 'x', 10083, []), (3045, 'SelectorTunnel', '', 3272, []), (2136, 'Function', 'x', 3211, []), (376, 'SubVI', 'frame index', 5763, []), (2213, 'LoopTunnel', '', 2218, []), (12045, 'Function', 'x', 12054, [12195])]
+  T s1 t5772 'saved file refnum' src=False w1397 d639 direct=[(3052, 'ControlReferenceConstant', 'File # Saved', 3060)] ends=[(376, 'SubVI', 'saved file refnum', 5772, [])]
+  T s1 t5778 'file size' src=False w1581 d639 direct=[(2294, 'LoopTunnel', '', 2313)] ends=[(376, 'SubVI', 'file size', 5778, [])]
+  T s1 t5782 'total data array in' src=False w3497 d639 direct=[(51, 'LeftShiftRegister', 'total data array out', 76)] ends=[(376, 'SubVI', 'total data array in', 5782, [])]
+  T s1 t5787 'selected path' src=False w5090 d639 direct=[(23175, 'Function', 'path', 23213), (5096, 'LoopTunnel', '', 5098)] ends=[(23175, 'Function', 'path', 23213, []), (376, 'SubVI', 'selected path', 5787, [])]
+UID s1 #5058 class None loop outside-while chain [] n_terms 16
+  T s1 t5082 'Bead is good? array in' src=False w5637 d639 direct=[(5680, 'SelectorTunnel', 'Bead is good? array out', 6007)] ends=[(5058, 'SubVI', 'Bead is good? array in', 5082, [])]
+  T s1 t5089 'Image In' src=False w3040 d639 direct=[(6810, 'SubVI', 'Image Out', 6865)] ends=[(5058, 'SubVI', 'Image In', 5089, [])]
+  T s1 t5106 'cross size' src=False w373 d639 direct=[(2580, 'LoopTunnel', '', 2887)] ends=[(5058, 'SubVI', 'cross size', 5106, [])]
+  T s1 t5111 'Bead is good? array out' src=True w5859 d639 direct=[(5796, 'RightShiftRegister', 'Bead is good? array out', 5810)] ends=[(5058, 'SubVI', 'Bead is good? array out', 5111, [])]
+  T s1 t5124 'x,y,z array out' src=True w505 d639 direct=[(2626, 'BuildArray', 'array', 4168), (2765, 'SelectorTunnel', 'x,y,z array out', 2811), (1147, 'RightShiftRegister', 'x,y,z array out', 1148)] ends=[(5058, 'SubVI', 'x,y,z array out', 5124, [])]
+  T s1 t5151 '' src=False w0 d639 direct=[] ends=[None]
+  T s1 t5156 '' src=False w0 d639 direct=[] ends=[None]
+  T s1 t5164 'x,y,z array' src=False w5975 d639 direct=[(6016, 'SelectorTunnel', 'x,y,z array out', 6026)] ends=[(5058, 'SubVI', 'x,y,z array', 5164, [])]
+  T s1 t5171 'pos in cal image out' src=True w121 d639 direct=[(10969, 'Function', 'array', 10975), (10757, 'IndexArray', 'array', 10871), (119, 'RightShiftRegister', 'pos in cal image out', 3064), (639, 'Diagram', 'Pos within cal image', 3173), (639, 'Diagram', 'Pos: Diffraction Pattern', 9519)] ends=[(5058, 'SubVI', 'pos in cal image out', 5171, [])]
+  T s1 t5177 '# of bead 4 packs' src=False w42 d639 direct=[(2396, 'LoopTunnel', '', 2418)] ends=[(5058, 'SubVI', '# of bead 4 packs', 5177, [])]
+  T s1 t5180 '' src=False w0 d639 direct=[] ends=[None]
+  T s1 t5184 '4 pack remainder' src=False w3512 d639 direct=[(4432, 'LoopTunnel', '', 5059)] ends=[(5058, 'SubVI', '4 pack remainder', 5184, [])]
+  T s1 t5190 'Array of cal clusters' src=False w3646 d639 direct=[(3656, 'LoopTunnel', '', 3660)] ends=[(5058, 'SubVI', 'Array of cal clusters', 5190, [])]
+  T s1 t5207 'pos in cal image in' src=False w7429 d639 direct=[(2972, 'LeftShiftRegister', 'pos in cal image out', 3204)] ends=[(5058, 'SubVI', 'pos in cal image in', 5207, [])]
+  T s1 t5240 'Real-space cosine window' src=False w3912 d639 direct=[(3920, 'LoopTunnel', 'Real-space cosine window', 3918)] ends=[(5058, 'SubVI', 'Real-space cosine window', 5240, [])]
+  T s1 t5262 'Cosine bandpass\nfor Hilbert ' src=False w4027 d639 direct=[(4031, 'LoopTunnel', 'Cosine bandpass for Hilbert', 4013)] ends=[(5058, 'SubVI', 'Cosine bandpass\nfor Hilbert ', 5262, [])]
+== get buff image-lost frames: all terminals
+  GB t174 'x = 0?' owner #65 Function src=True w43 d3
+  GB t178 'x' owner #65 Function src=False w222 d3
+  GB t158 'x-y' owner #76 Function src=True w222 d3
+  GB t165 'y' owner #76 Function src=False w99 d3
+  GB t215 'x' owner #76 Function src=False w77 d3
+  GB t539 'error out' owner #529 SubVI src=True w397 d3
+  GB t542 'Buffer Number Out' owner #529 SubVI src=True w99 d3
+  GB t545 'Image Out' owner #529 SubVI src=True w370 d3
+  GB t548 'Session Out' owner #529 SubVI src=True w97 d3
+  GB t551 '' owner #529 SubVI src=False w0 d3
+  GB t554 '' owner #529 SubVI src=False w0 d3
+  GB t557 '' owner #529 SubVI src=False w0 d3
+  GB t560 'Buffer Number Mode (Next)' owner #529 SubVI src=False w298 d3
+  GB t563 'error in' owner #529 SubVI src=False w111 d3
+  GB t566 'Buffer Number In' owner #529 SubVI src=False w77 d3
+  GB t569 'Image In' owner #529 SubVI src=False w622 d3
+  GB t572 'Session In' owner #529 SubVI src=False w100 d3
+  GB t192 'Missed frames?' owner #3 TopLevelDiagram src=False w43 d3
+  GB t240 'current image number' owner #3 TopLevelDiagram src=False w99 d3
+  GB t314 'Buffer to extract' owner #3 TopLevelDiagram src=True w77 d3
+  GB t394 'Image Out' owner #3 TopLevelDiagram src=False w370 d3
+  GB t452 'error out' owner #3 TopLevelDiagram src=False w397 d3
+  GB t513 'error in' owner #3 TopLevelDiagram src=True w111 d3
+  GB t580 'Buffer Number Mode (Next)' owner #581 EnumConstant src=True w298 d3
+  GB t449 'Session In' owner #3 TopLevelDiagram src=True w100 d3
+  GB t407 'Session Out' owner #3 TopLevelDiagram src=False w97 d3
+  GB t612 'Image In' owner #3 TopLevelDiagram src=True w622 d3
+== GB subvi calls {529: 'NI_Vision_Acquisition_Software.lvlib:IMAQdx Get Image.vi'}
+== NAMEHITS p6 122
+  NH p6 #16 Function 'path' loop outside-while
+  NH p6 #124 Diagram 'Cal File Path' loop outside-while
+  NH p6 #124 Diagram 'Track File Path' loop outside-while
+  NH p6 #124 Diagram 'continue tracking' loop outside-while
+  NH p6 #251 ControlReferenceConstant 'Trans Pos (mm)' loop while#25380
+  NH p6 #376 SubVI 'cal cluster path' loop 1.7
+  NH p6 #376 SubVI 'saved file refnum' loop 1.7
+  NH p6 #376 SubVI 'selected path' loop 1.7
+  NH p6 #639 Diagram 'Estimated end time (min)' loop 1.1
+  NH p6 #1207 BooleanConstant 'Reset tracking' loop 1.2
+  NH p6 #1610 Diagram 'Lost Frame Message' loop outside-while
+  NH p6 #1626 ControlReferenceConstant 'Send to Trans' loop while#25380
+  NH p6 #1726 ControlReferenceConstant 'Trans Step (mm)' loop while#25380
+  NH p6 #2143 Local 'Total Lost Frames' loop outside-while
+  NH p6 #2991 Local 'Total Lost Frames' loop outside-while
+  NH p6 #3052 ControlReferenceConstant 'File # Saved' loop 1.7
+  NH p6 #3091 RightShiftRegister 'tran pos' loop outside-while
+  NH p6 #3097 Local 'Trans Pos (mm)' loop outside-while
+  NH p6 #3115 Global 'Trans position' loop outside-while
+  NH p6 #3125 Global 'Trans position' loop outside-while
+  NH p6 #3130 DigitalNumericConstant 'Total lost frames' loop outside-while
+  NH p6 #3133 LeftShiftRegister 'tran pos' loop outside-while
+  NH p6 #3292 Diagram 'Total Lost Frames' loop 1.1
+  NH p6 #3391 Function 'path' loop outside-while
+  NH p6 #3406 ControlReferenceConstant 'continue tracking' loop outside-while
+  NH p6 #3628 Diagram 'Stop Trans' loop outside-while
+  NH p6 #4277 Local 'File # Saved' loop outside-while
+  NH p6 #4609 DigitalNumericConstant 'files saved' loop outside-while
+  NH p6 #4866 Diagram 'File # Saved' loop outside-while
+  NH p6 #4866 Diagram 'TransPos' loop outside-while
+  NH p6 #5987 SubVI 'Continue tracking' loop outside-while
+  NH p6 #6384 SubVI 'base path/filename' loop outside-while
+  NH p6 #6384 SubVI 'cal cluster path' loop outside-while
+  NH p6 #6409 Global 'Trans position' loop outside-while
+  NH p6 #6810 SubVI 'Buffer to extract' loop 1.1
+  NH p6 #7476 DigitalNumericConstant 'final trans pos' loop outside-while
+  NH p6 #7613 ControlReferenceConstant 'Trans Speed (mm/s)' loop while#25380
+  NH p6 #8173 ControlReferenceConstant 'Stop Trans' loop while#25380
+  NH p6 #8377 BooleanConstant 'continue tracking' loop outside-while
+  NH p6 #10251 Tunnel 'Event Registration Refnum' loop 1.1
+  NH p6 #10263 Tunnel 'Event Registration Refnum' loop 1.1
+  NH p6 #10417 Diagram 'Focus Pos (Track)' loop 1.5
+  NH p6 #10972 Function 'millisecond timer value' loop 1.1
+  NH p6 #11081 Function 'millisecond timer value' loop while#16483
+  NH p6 #11574 Local 'Focus Pos (Track)' loop 1.5
+  NH p6 #12096 Function 'millisecond timer value' loop 1.1
+  NH p6 #12640 StringConstant 'Lost frame message' loop outside-while
+  NH p6 #14037 Diagram 'Max Travel Limit' loop outside-while
+  NH p6 #14037 Diagram 'Trans Speed (mm/s)' loop outside-while
+  NH p6 #14268 SubVI 'Timeout' loop outside-while
+  NH p6 #15547 Tunnel 'Event Registration Refnum' loop while#15173
+  NH p6 #15551 Tunnel 'Event Registration Refnum' loop while#15173
+  NH p6 #15599 NamedUnbundler 'Time' loop while#15173
+  NH p6 #15628 NamedUnbundler 'Time' loop while#15173
+  NH p6 #16827 SubVI 'BG color(transparent)' loop while#15173
+  NH p6 #16964 Diagram 'Max Trans Pos' loop outside-while
+  NH p6 #16964 Diagram 'Send to Trans' loop outside-while
+  NH p6 #17020 Diagram 'Trans Step (mm)' loop outside-while
+  NH p6 #17311 BooleanConstant 'Send to trans' loop outside-while
+  NH p6 #17321 DigitalNumericConstant 'Trans increment (F2)' loop outside-while
+  NH p6 #18240 Diagram 'Trans Pos (mm)' loop outside-while
+  NH p6 #18574 BooleanConstant 'Send to trans' loop outside-while
+  NH p6 #18584 DigitalNumericConstant 'Trans increment (F2)' loop outside-while
+  NH p6 #18605 SelectorTunnel 'millisecond timer value' loop 1.1
+  NH p6 #18730 Diagram 'Cycle Start Time' loop 1.1
+  NH p6 #18814 SelectorTunnel 'millisecond timer value' loop 1.1
+  NH p6 #20530 Diagram 'Time span after start (min)' loop 1.1
+  NH p6 #21710 Function 'millisecond timer value' loop 1.1
+  NH p6 #21871 Diagram 'Initial Time at Start' loop 1.1
+  NH p6 #21887 Function 'millisecond timer value' loop 1.1
+  NH p6 #22343 Function 'millisecond timer value' loop outside-while
+  NH p6 #22703 FormatScanString 'format string' loop 1.1
+  NH p6 #22950 StringConstant 'format string' loop 1.1
+  NH p6 #23166 Diagram 'Extension (nm) vs Time (Frame #)' loop 1.2
+  NH p6 #23166 Diagram 'Reset Tracking' loop 1.2
+  NH p6 #23175 Function 'path' loop 1.1
+  NH p6 #23175 Function 'stripped path' loop 1.1
+  NH p6 #23844 Function 'millisecond timer value' loop 1.5
+  NH p6 #25317 Function 'transposed array' loop outside-while
+  NH p6 #25928 FormatScanString 'format string' loop outside-while
+  NH p6 #26145 EnumConstant 'date format (0)' loop outside-while
+  NH p6 #26379 StringConstant 'prompt (Choose or enter file path)' loop outside-while
+  NH p6 #26411 Function 'date format (0)' loop outside-while
+  NH p6 #26411 Function 'date string' loop outside-while
+  NH p6 #26411 Function 'time string' loop outside-while
+  NH p6 #26446 NamedBundler 'Date and time' loop outside-while
+  NH p6 #26615 ReadWriteFile 'prompt (Choose or enter file path)' loop outside-while
+  NH p6 #26747 Function 'millisecond timer value' loop 1.1
+  NH p6 #27270 BooleanConstant 'Send to trans' loop outside-while
+  NH p6 #27282 DigitalNumericConstant 'Trans increment (F2)' loop outside-while
+  NH p6 #27864 Function 'transposed array' loop outside-while
+  NH p6 #27872 Function 'transposed array' loop outside-while
+  NH p6 #28180 SubVI 'time constant' loop 1.2
+  NH p6 #29045 Local 'TransPos' loop outside-while
+  NH p6 #29095 Local 'TransPos' loop outside-while
+  NH p6 #29551 Function 'path' loop outside-while
+  NH p6 #29724 SubVI 'discards' loop 1.2
+  NH p6 #29724 SubVI 'next discards' loop 1.2
+  NH p6 #30116 Local 'TransPos' loop 1.2
+  NH p6 #30355 BooleanConstant 'continue tracking' loop outside-while
+  NH p6 #30756 Function 'timed out?' loop 1.2
+  NH p6 #30756 Function 'timeout in ms (-1)' loop 1.2
+  NH p6 #30828 SubVI 'timeout (500ms)' loop outside-while
+  NH p6 #30846 SubVI 'Send to trans' loop while#25380
+  NH p6 #30846 SubVI 'change of trans speen ref' loop while#25380
+  NH p6 #30846 SubVI 'change of trans value ref' loop while#25380
+  NH p6 #30846 SubVI 'final trans pos' loop while#25380
+  NH p6 #30846 SubVI 'last trans pos' loop while#25380
+  NH p6 #30846 SubVI 'send to trans ref' loop while#25380
+  NH p6 #30846 SubVI 'tran display ref' loop while#25380
+  NH p6 #30846 SubVI 'tran pos' loop while#25380
+  NH p6 #31090 SubVI 'Maximum travel limit' loop outside-while
+  NH p6 #31262 Function 'timed out?' loop 1.7
+  NH p6 #31262 Function 'timeout in ms (-1)' loop 1.7
+  NH p6 #31263 SubVI 'Minimum travel limit' loop outside-while
+  NH p6 #31448 DigitalNumericConstant 'timeout in ms (-1)' loop 1.7
+  NH p6 #32340 DigitalNumericConstant 'final trans pos' loop outside-while
+  NH p6 #32497 RightShiftRegister 'final trans pos' loop outside-while
+  NH p6 #32504 LeftShiftRegister 'final trans pos' loop outside-while
+  NH p6 #32538 Function 'millisecond timer value' loop outside-while
+  NH p6 #43997 SubVI 'timeout (500ms)' loop outside-while
+  NH p6 #44143 Function 'millisecond timer value' loop outside-while
+== NAMEHITS s1 108
+  NH s1 #16 Function 'path' loop outside-while
+  NH s1 #124 Diagram 'Cal File Path' loop outside-while
+  NH s1 #124 Diagram 'Track File Path' loop outside-while
+  NH s1 #124 Diagram 'continue tracking' loop outside-while
+  NH s1 #251 ControlReferenceConstant 'Trans Pos (mm)' loop outside-while
+  NH s1 #376 SubVI 'cal cluster path' loop outside-while
+  NH s1 #376 SubVI 'saved file refnum' loop outside-while
+  NH s1 #376 SubVI 'selected path' loop outside-while
+  NH s1 #639 Diagram 'Estimated end time (min)' loop outside-while
+  NH s1 #639 Diagram 'Extension (nm) vs Time (Frame #)' loop outside-while
+  NH s1 #639 Diagram 'Reset Tracking' loop outside-while
+  NH s1 #1207 BooleanConstant 'Reset tracking' loop outside-while
+  NH s1 #1610 Diagram 'Lost Frame Message' loop outside-while
+  NH s1 #1626 ControlReferenceConstant 'Send to Trans' loop outside-while
+  NH s1 #1726 ControlReferenceConstant 'Trans Step (mm)' loop outside-while
+  NH s1 #2143 Local 'Total Lost Frames' loop outside-while
+  NH s1 #2991 Local 'Total Lost Frames' loop outside-while
+  NH s1 #3052 ControlReferenceConstant 'File # Saved' loop outside-while
+  NH s1 #3091 RightShiftRegister 'tran pos' loop outside-while
+  NH s1 #3097 Local 'Trans Pos (mm)' loop outside-while
+  NH s1 #3115 Global 'Trans position' loop outside-while
+  NH s1 #3125 Global 'Trans position' loop outside-while
+  NH s1 #3130 DigitalNumericConstant 'Total lost frames' loop outside-while
+  NH s1 #3133 LeftShiftRegister 'tran pos' loop outside-while
+  NH s1 #3292 Diagram 'Total Lost Frames' loop outside-while
+  NH s1 #3391 Function 'path' loop outside-while
+  NH s1 #3406 ControlReferenceConstant 'continue tracking' loop outside-while
+  NH s1 #3628 Diagram 'Stop Trans' loop outside-while
+  NH s1 #4277 Local 'File # Saved' loop outside-while
+  NH s1 #4609 DigitalNumericConstant 'files saved' loop outside-while
+  NH s1 #4866 Diagram 'File # Saved' loop outside-while
+  NH s1 #5987 SubVI 'Continue tracking' loop outside-while
+  NH s1 #6384 SubVI 'base path/filename' loop outside-while
+  NH s1 #6384 SubVI 'cal cluster path' loop outside-while
+  NH s1 #6409 Global 'Trans position' loop outside-while
+  NH s1 #6810 SubVI 'Buffer to extract' loop outside-while
+  NH s1 #7476 DigitalNumericConstant 'final trans pos' loop outside-while
+  NH s1 #7613 ControlReferenceConstant 'Trans Speed (mm/s)' loop outside-while
+  NH s1 #8173 ControlReferenceConstant 'Stop Trans' loop outside-while
+  NH s1 #8377 BooleanConstant 'continue tracking' loop outside-while
+  NH s1 #10251 Tunnel 'Event Registration Refnum' loop outside-while
+  NH s1 #10263 Tunnel 'Event Registration Refnum' loop outside-while
+  NH s1 #10417 Diagram 'Focus Pos (Track)' loop outside-while
+  NH s1 #10972 Function 'millisecond timer value' loop outside-while
+  NH s1 #11574 Local 'Focus Pos (Track)' loop outside-while
+  NH s1 #12096 Function 'millisecond timer value' loop outside-while
+  NH s1 #12640 StringConstant 'Lost frame message' loop outside-while
+  NH s1 #14037 Diagram 'Max Travel Limit' loop outside-while
+  NH s1 #14037 Diagram 'Trans Speed (mm/s)' loop outside-while
+  NH s1 #14268 SubVI 'Timeout' loop outside-while
+  NH s1 #15547 Tunnel 'Event Registration Refnum' loop outside-while
+  NH s1 #15551 Tunnel 'Event Registration Refnum' loop outside-while
+  NH s1 #15599 NamedUnbundler 'Time' loop outside-while
+  NH s1 #15628 NamedUnbundler 'Time' loop outside-while
+  NH s1 #16827 SubVI 'BG color(transparent)' loop outside-while
+  NH s1 #16964 Diagram 'Max Trans Pos' loop outside-while
+  NH s1 #16964 Diagram 'Send to Trans' loop outside-while
+  NH s1 #17020 Diagram 'Trans Step (mm)' loop outside-while
+  NH s1 #17311 BooleanConstant 'Send to trans' loop outside-while
+  NH s1 #17321 DigitalNumericConstant 'Trans increment (F2)' loop outside-while
+  NH s1 #18240 Diagram 'Trans Pos (mm)' loop outside-while
+  NH s1 #18574 BooleanConstant 'Send to trans' loop outside-while
+  NH s1 #18584 DigitalNumericConstant 'Trans increment (F2)' loop outside-while
+  NH s1 #18605 SelectorTunnel 'millisecond timer value' loop outside-while
+  NH s1 #18730 Diagram 'Cycle Start Time' loop outside-while
+  NH s1 #18814 SelectorTunnel 'millisecond timer value' loop outside-while
+  NH s1 #20530 Diagram 'Time span after start (min)' loop outside-while
+  NH s1 #21710 Function 'millisecond timer value' loop outside-while
+  NH s1 #21871 Diagram 'Initial Time at Start' loop outside-while
+  NH s1 #21887 Function 'millisecond timer value' loop outside-while
+  NH s1 #22343 Function 'millisecond timer value' loop outside-while
+  NH s1 #22703 FormatScanString 'format string' loop outside-while
+  NH s1 #22950 StringConstant 'format string' loop outside-while
+  NH s1 #23175 Function 'path' loop outside-while
+  NH s1 #23175 Function 'stripped path' loop outside-while
+  NH s1 #25317 Function 'transposed array' loop outside-while
+  NH s1 #25928 FormatScanString 'format string' loop outside-while
+  NH s1 #26145 EnumConstant 'date format (0)' loop outside-while
+  NH s1 #26379 StringConstant 'prompt (Choose or enter file path)' loop outside-while
+  NH s1 #26411 Function 'date format (0)' loop outside-while
+  NH s1 #26411 Function 'date string' loop outside-while
+  NH s1 #26411 Function 'time string' loop outside-while
+  NH s1 #26446 NamedBundler 'Date and time' loop outside-while
+  NH s1 #26615 ReadWriteFile 'prompt (Choose or enter file path)' loop outside-while
+  NH s1 #27270 BooleanConstant 'Send to trans' loop outside-while
+  NH s1 #27282 DigitalNumericConstant 'Trans increment (F2)' loop outside-while
+  NH s1 #27864 Function 'transposed array' loop outside-while
+  NH s1 #27872 Function 'transposed array' loop outside-while
+  NH s1 #28180 SubVI 'time constant' loop outside-while
+  NH s1 #29551 Function 'path' loop outside-while
+  NH s1 #30355 BooleanConstant 'continue tracking' loop outside-while
+  NH s1 #30828 SubVI 'timeout (500ms)' loop outside-while
+  NH s1 #30846 SubVI 'Send to trans' loop outside-while
+  NH s1 #30846 SubVI 'change of trans speen ref' loop outside-while
+  NH s1 #30846 SubVI 'change of trans value ref' loop outside-while
+  NH s1 #30846 SubVI 'final trans pos' loop outside-while
+  NH s1 #30846 SubVI 'last trans pos' loop outside-while
+  NH s1 #30846 SubVI 'send to trans ref' loop outside-while
+  NH s1 #30846 SubVI 'tran display ref' loop outside-while
+  NH s1 #30846 SubVI 'tran pos' loop outside-while
+  NH s1 #31090 SubVI 'Maximum travel limit' loop outside-while
+  NH s1 #31263 SubVI 'Minimum travel limit' loop outside-while
+  NH s1 #32340 DigitalNumericConstant 'final trans pos' loop outside-while
+  NH s1 #32497 RightShiftRegister 'final trans pos' loop outside-while
+  NH s1 #32504 LeftShiftRegister 'final trans pos' loop outside-while
+  NH s1 #32538 Function 'millisecond timer value' loop outside-while
+  NH s1 #43997 SubVI 'timeout (500ms)' loop outside-while
+  NH s1 #44143 Function 'millisecond timer value' loop outside-while
+== S1 subvi calls [[48, "ASI_adjust focus-subvi.vi"], [376, "save trace.vi"], [560, "Simple Error Handler.vi"], [1114, "WLC function sub.vi"], [1566, "SetCommand.vi"], [1675, "ASI TG-1000.lvlib:Get Current Position.vi"], [1779, "MOV.vi"], [1839, "NI_Vision_Acquisition_Software.lvlib:IMAQdx Stop Acquisition.vi"], [2078, "NI_Vision_Acquisition_Software.lvlib:IMAQdx Close Camera.vi"], [2431, "IMAQ Dispose"], [3587, "Simple Error Handler.vi"], [4620, "GOH.vi"], [4865, "make both cosine bandpass.vi"], [5058, "Track N beads four-fold over-kernel-v3.vi"], [5403, "VEL.vi"], [5497, "POS?.vi"], [5696, "N bead plot dZ.vi"], [5987, "check N bead pos v3-kimlab.vi"], [6085, "N bead plot Z.vi"], [6216, "grayscale color table.vi"], [6288, "exp-ref management.vi"], [6384, "save N xyz traces.vi"], [6810, "get buff image-lost frames.vi"], [7774, "Set Cursor (Icon Pict).vi"], [9944, "Set Cursor (Icon Pict).vi"], [13341, "ASI TG-1000.lvlib:Get Current Position.vi"], [13938, "IMAQ Create"], [13962, "NI_Vision_Acquisition_Software.lvlib:IMAQdx Configure Grab.vi"], [14196, "VEL.vi"], [14268, "Mercury_GCS_Configuration_Setup.vi"], [14331, "GOH.vi"], [14858, "Set Cursor (Icon Pict).vi"], [15403, "NI_Vision_Acquisition_Software.lvlib:IMAQdx Grab.vi"], [15442, "IMAQ ImageToArray"], [15472, "Flatten Pixmap.vi"], [15511, "Draw Flattened Pixmap.vi"], [15921, "ASI_adjust focus-subvi.vi"], [16031, "rect coord from center.vi"], [16073, "Draw Grayed Out Rect.vi"], [16184, "MOV.vi"], [16788, "Draw Circle by Radius.vi"], [16827, "Draw Text at Point.vi"], [17164, "VEL.vi"], [18136, "POS?.vi"], [19093, "ASI TG-1000.lvlib:Get Current Position.vi"], [19705, "Set Cursor (Icon Pict).vi"], [20387, "make both cosine bandpass.vi"], [20436, "IMAQ Create"], [21046, "VEL.vi"], [22692, "NI_Vision_Acquisition_Software.lvlib:IMAQdx Get Image.vi"], [23119, "calibration- generate 2 I of r, reentrant.vi"], [23278, "calibration- generate 2 I of r, reentrant.vi"], [23812, "calibration- generate 1 I of r, reentrant.vi"], [24170, "calibration- generate 2 I of r, reentrant.vi"], [24656, "calibration- generate 2 I of r, reentrant.vi"], [24815, "calibration- generate 1 I of r, reentrant.vi"], [25950, "build cal image.vi"], [25968, "choose bandpass v2.vi"], [26085, "MOV.vi"], [26539, "ASI TG-1000.lvlib:Move Axis Relative.vi"], [26582, "Simple Error Handler.vi"], [26739, "MOV.vi"], [27165, "SetCommand.vi"], [27194, "SetCommand.vi"], [27466, "SetCommand.vi"], [27605, "Max Trans Pos.vi"], [27618, "proc cal image-make bandpass.vi"], [27633, "prep cal image.vi"], [28083, "Magnet2Force v3_for M270.vi"], [28094, "SetCommand.vi"], [28180, "NI_AALBase.lvlib:Smoothing Filter Coefficients.vi"], [28233, "NI_AALBase.lvlib:FIR Filter (DBL).vi"], [28490, "Magnet2Force v3_for M270.vi"], [29009, "NI_AALBase.lvlib:Median Filter.vi"], [29546, "Max Trans Pos.vi"], [29815, "ASI TG-1000.lvlib:Close.vi"], [30064, "Configure.vi"], [30306, "NI_AALBase.lvlib:Median Filter.vi"], [30697, "ASI TG-1000.lvlib:Move Axis to Position.vi"], [30780, "MOV.vi"], [30804, "MOV.vi"], [30828, "ASI TG-1000.lvlib:Initialize.vi"], [30846, "Motor control v5_No Recording.vi"], [31090, "TMX?.vi"], [31263, "TMN?.vi"], [31870, "MOV.vi"], [33114, "SetCommand.vi"], [33151, "NI_Vision_Acquisition_Software.lvlib:IMAQdx Open Camera.vi"], [33882, "SetCommand.vi"], [34148, "ASI TG-1000.lvlib:Get Current Position.vi"], [34822, "ASI TG-1000.lvlib:Move Axis to Position.vi"], [34890, "SetCommand.vi"], [35532, "ASI TG-1000.lvlib:Move Axis to Position.vi"], [35648, "SetCommand.vi"], [43997, "ASI TG-1000.lvlib:Initialize.vi"], [44036, "ASI TG-1000.lvlib:Move Axis to Position.vi"], [44196, "ASI TG-1000.lvlib:Get Current Position.vi"]]
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[],"card":"170-a1-1","labview":"none"}
+BGRUN END rc=0 after 1s
+BGRUN START 2026-10-12 23:40:41 limit 5.0 min: py -u tools/bench/diag_c170_a1_1_explore.py
+BGRUN PID 27344
+KEYS p6 {'vi': ('str', 99), 'md5': ('str', 32), 'source': ('str', 151), 'terminals': ('list', 6221), 'objs': ('list', 10830), 'loops': ('list', 25), 'fs_tunnel_pairs': ('list', 576), 'owners': ('dict', 255), 'fs_measured': ('dict', 4)}
+SAMPLE p6.objs {"uid": 536, "class": "TopLevelDiagram", "pos": [-17836, -32546], "owner": ""}
+SAMPLE p6.owners keys ['57', '113', '124', '195', '206', '253', '637', '639', '686', '759', '1359', '1493', '1610', '1817', '2222', '2235', '2265', '2457', '2603', '2857'] first ["57", ["Diagram", 639]]
+SAMPLE p6.loops {"class": "WhileLoop", "index": 0, "loop_uid": 23041, "left_of": {"24083": [24133], "24150": [24187], "31347": [31352], "31659": [31666], "31756": [31764], "31812": [31817]}, "right_uids": [24083, 24150, 31347, 31659, 31756, 31812]}
+SAMPLE p6.fs_tunnel_pairs {"uid": 6115, "class": "FlatSequenceInnerTunnel", "face_a": "LeftTerm", "term_a": 86540, "wire_a": 40035, "face_b": "RightTerm", "term_b": 6117, "wire_b": 6124, "uid_back": 6115, "err": "", "err_a": "", "err_b": "", "errs": ""}
+KEYS s1 {'file': ('str', 83), 'md5': ('str', 32), 'bytes': ('int', 474202), 'read': ('dict', 5), 'fs_tunnel_pairs': ('list', 576), 'connector_pane': ('list', 114), 'connector_pane_source': ('str', 20), 'connector_pane_unassigned_slots': ('int', 0), 'connector_pane_unmatched_on_diagram': ('list', 0), 'terminals': ('list', 5748), 'wires': ('list', 1899), 'severed_wires': ('list', 0), 'graph_summary': ('dict', 14), 'io_paths': ('dict', 25), 'summary': ('str', 0), 'call_sites_in_main': ('dict', 2)}
+SAMPLE s1.graph_summary keys ['objects', 'nodes', 'wires', 'terminals', 'diagrams', 'loops', 'cases', 'sequences', 'locals', 'globals', 'subvi_nodes', 'subvi_calls', 'class_census', 'edge_method'] first ["objects", 9981]
+SAMPLE s1.fs_tunnel_pairs {"uid": 6115, "class": "FlatSequenceInnerTunnel", "face_a": "LeftTerm", "term_a": 86540, "wire_a": 40035, "face_b": "RightTerm", "term_b": 6117, "wire_b": 6124, "uid_back": 6115, "err": "", "err_a": "", "err_b": "", "errs": ""}
+KEYS gb {'file': ('str', 119), 'md5': ('str', 32), 'bytes': ('int', 13946), 'read': ('dict', 4), 'connector_pane': ('list', 9), 'connector_pane_source': ('str', 19), 'connector_pane_unassigned_slots': ('int', 7), 'connector_pane_unmatched_on_diagram': ('list', 0), 'terminals': ('list', 27), 'wires': ('list', 11), 'severed_wires': ('list', 0), 'graph_summary': ('dict', 14), 'io_paths': ('dict', 5), 'summary': ('str', 0), 'call_sites_in_main': ('dict', 2)}
+SAMPLE gb.graph_summary keys ['objects', 'nodes', 'wires', 'terminals', 'diagrams', 'loops', 'cases', 'sequences', 'locals', 'globals', 'subvi_nodes', 'subvi_calls', 'class_census', 'edge_method'] first ["objects", 43]
+OBJ #29648 {"uid": 29648, "class": "RightShiftRegister", "pos": [21394, 5927], "owner": "WhileLoop"} chain [('WhileLoop', None)]
+UID p6 #29648 class RightShiftRegister loop outside-while chain [] n_terms 2
+  T p6 t29663 '' src=True w0 d686 direct=[] ends=[None]
+  T p6 t29657 '' src=False w30112 d23166 direct=[(29724, 'SubVI', 'next discards', 29903)] ends=[(29724, 'SubVI', 'next discards', 29903, [])]
+OBJ #29655 {"uid": 29655, "class": "LeftShiftRegister", "pos": [15583, 5927], "owner": "WhileLoop"} chain [('WhileLoop', None)]
+UID p6 #29655 class LeftShiftRegister loop outside-while chain [] n_terms 2
+  T p6 t29673 '' src=False w29784 d686 direct=[(29662, 'DigitalNumericConstant', '', 29661)] ends=[(29662, 'DigitalNumericConstant', '', 29661, [])]
+  T p6 t29671 '' src=True w30109 d23166 direct=[(29724, 'SubVI', 'discards', 29952)] ends=[(29724, 'SubVI', 'discards', 29952, [])]
+OBJ #1978 {"uid": 1978, "class": "Function", "pos": [6253, 1259], "owner": "Diagram"} chain [('Diagram', None)]
+UID p6 #1978 class Function loop 1.1 chain [(637, 'WhileLoop')] n_terms 2
+  T p6 t2037 'x+1' src=True w1109 d639 direct=[(1117, 'RightShiftRegister', 'LastBufferNumber', 5355)] ends=[(6810, 'SubVI', 'Buffer to extract', 6876, [1117]), (1978, 'Function', 'x', 2042, [1117, 1445, 1034])]
+  T p6 t2042 'x' src=False w1644 d639 direct=[(1034, 'SelectorTunnel', 'LastBufferNumber', 1229)] ends=[(6810, 'SubVI', 'current image number', 6897, [1034, 2179]), (250, 'Property', 'LastBufferNumber', 1589, [1034, 1445, 5351]), (1978, 'Function', 'x+1', 2037, [1034, 1445, 5351])]
+OBJ #1445 {"uid": 1445, "class": "SelectorTunnel", "pos": [4795, 1227], "owner": "CaseStructure"} chain [('CaseStructure', None)]
+UID p6 #1445 class SelectorTunnel loop 1.1 chain [(637, 'WhileLoop')] n_terms 3
+  T p6 t1482 'LastBufferNumber' src=False w5416 d639 direct=[(6810, 'SubVI', 'Buffer to extract', 6876), (5351, 'LeftShiftRegister', 'LastBufferNumber', 5364)] ends=[(250, 'Property', 'LastBufferNumber', 1589, [5351]), (1978, 'Function', 'x+1', 2037, [5351])]
+  T p6 t1461 'LastBufferNumber' src=True w0 d206 direct=[] ends=[None]
+  T p6 t1479 'LastBufferNumber' src=True w1392 d253 direct=[(1034, 'SelectorTunnel', 'LastBufferNumber', 1180)] ends=[(1978, 'Function', 'x', 2042, [1034])]
+OBJ #1034 {"uid": 1034, "class": "SelectorTunnel", "pos": [4852, 1215], "owner": "CaseStructure"} chain [('CaseStructure', None)]
+UID p6 #1034 class SelectorTunnel loop 1.1 chain [(637, 'WhileLoop')] n_terms 3
+  T p6 t1229 'LastBufferNumber' src=True w1644 d639 direct=[(1978, 'Function', 'x', 2042)] ends=[(1978, 'Function', 'x', 2042, [])]
+  T p6 t1104 'LastBufferNumber' src=False w817 d206 direct=[(2179, 'SelectorTunnel', 'current image number', 2182)] ends=[(6810, 'SubVI', 'current image number', 6897, [2179])]
+  T p6 t1180 'LastBufferNumber' src=False w1392 d253 direct=[(1445, 'SelectorTunnel', 'LastBufferNumber', 1479)] ends=[(250, 'Property', 'LastBufferNumber', 1589, [1445, 5351]), (1978, 'Function', 'x+1', 2037, [1445, 5351])]
+OBJ #2179 {"uid": 2179, "class": "SelectorTunnel", "pos": [4795, 1215], "owner": "CaseStructure"} chain [('CaseStructure', None)]
+UID p6 #2179 class SelectorTunnel loop 1.1 chain [(637, 'WhileLoop')] n_terms 3
+  T p6 t2194 'current image number' src=False w28534 d639 direct=[(28512, 'SelectorTunnel', 'current image number', 28528), (26879, 'Comparison', 'x', 27161), (5119, 'Function', 'x', 7680), (3078, 'SelectorTunnel', 'current image number', 3312), (6810, 'SubVI', 'current image number', 6897), (1605, 'LoopTunnel', 'current image number', 1607), (639, 'Diagram', 'current image number', 34217), (27039, 'RightShiftRegister', 'current image number', 27084)] ends=[(6810, 'SubVI', 'current image number', 6897, [])]
+  T p6 t2182 'current image number' src=True w817 d206 direct=[(1034, 'SelectorTunnel', 'LastBufferNumber', 1104)] ends=[(1978, 'Function', 'x', 2042, [1034])]
+  T p6 t2188 'current image number' src=True w0 d253 direct=[] ends=[None]
+OBJ #5351 {"uid": 5351, "class": "LeftShiftRegister", "pos": [3265, 1412], "owner": "WhileLoop"} chain [('WhileLoop', None)]
+UID p6 #5351 class LeftShiftRegister loop outside-while chain [] n_terms 2
+  T p6 t5366 'LastBufferNumber' src=False w1827 d686 direct=[(194, 'Function', 'y', 331), (250, 'Property', 'LastBufferNumber', 1589), (3363, 'LoopTunnel', 'LastBufferNumber', 3370)] ends=[(250, 'Property', 'LastBufferNumber', 1589, [])]
+  T p6 t5364 'LastBufferNumber' src=True w5416 d639 direct=[(1445, 'SelectorTunnel', 'LastBufferNumber', 1482), (6810, 'SubVI', 'Buffer to extract', 6876)] ends=[(6810, 'SubVI', 'Buffer to extract', 6876, []), (1978, 'Function', 'x', 2042, [1445, 1034])]
+OBJ #27056 {"uid": 27056, "class": "LeftShiftRegister", "pos": [3265, 1137], "owner": "WhileLoop"} chain [('WhileLoop', None)]
+UID p6 #27056 class LeftShiftRegister loop outside-while chain [] n_terms 2
+  T p6 t27122 'current image number' src=False w39296 d686 direct=[(27095, 'DigitalNumericConstant', '', 27094)] ends=[(27095, 'DigitalNumericConstant', '', 27094, [])]
+  T p6 t27119 'current image number' src=True w27167 d639 direct=[(26879, 'Comparison', 'y', 27154)] ends=[(26879, 'Comparison', 'y', 27154, [])]
+OBJ #27039 {"uid": 27039, "class": "RightShiftRegister", "pos": [7208, 1137], "owner": "WhileLoop"} chain [('WhileLoop', None)]
+UID p6 #27039 class RightShiftRegister loop outside-while chain [] n_terms 2
+  T p6 t27103 'current image number' src=True w0 d686 direct=[] ends=[None]
+  T p6 t27084 'current image number' src=False w28534 d639 direct=[(28512, 'SelectorTunnel', 'current image number', 28528), (26879, 'Comparison', 'x', 27161), (5119, 'Function', 'x', 7680), (3078, 'SelectorTunnel', 'current image number', 3312), (2179, 'SelectorTunnel', 'current image number', 2194), (6810, 'SubVI', 'current image number', 6897), (1605, 'LoopTunnel', 'current image number', 1607), (639, 'Diagram', 'current image number', 34217)] ends=[(6810, 'SubVI', 'current image number', 6897, [])]
+OBJ #22692 {"uid": 22692, "class": "SubVI", "pos": [-8565, 30864], "owner": "Diagram"} chain [('Diagram', None)]
+UID p6 #22692 class SubVI loop outside-while chain [(22541, 'Sequence'), (22433, 'ForLoop'), (21590, 'Sequence'), (21305, 'ForLoop')] n_terms 12
+  T p6 t22695 'error out' src=True w22759 d22650 direct=[(22549, 'Tunnel', 'error out', 22551)] ends=[]
+  T p6 t22698 'Buffer Number Out' src=True w22744 d22650 direct=[(22731, 'Comparison', 'y', 22736)] ends=[(22731, 'Comparison', 'y', 22736, [])]
+  T p6 t22701 'Image Out' src=True w22756 d22650 direct=[(22650, 'Diagram', 'Image Out', 22656)] ends=[(22650, 'Diagram', 'Image Out', 22656, [])]
+  T p6 t22704 'Session Out' src=True w22762 d22650 direct=[(22589, 'Tunnel', 'Session Out', 22591)] ends=[(26117, 'Diagram', 'CamSessionOut', 35414, [22589, 22452, 21709, 21358, 20954, 25659])]
+  T p6 t22707 '' src=False w0 d22650 direct=[] ends=[None]
+  T p6 t22710 '' src=False w0 d22650 direct=[] ends=[None]
+  T p6 t22713 '' src=False w0 d22650 direct=[] ends=[None]
+  T p6 t22716 'Buffer Number Mode (Next)' src=False w22747 d22650 direct=[(22663, 'EnumConstant', 'Buffer Number Mode (Next)', 22660)] ends=[(22663, 'EnumConstant', 'Buffer Number Mode (Next)', 22660, [])]
+  T p6 t22719 'error in' src=False w22771 d22650 direct=[(22544, 'Tunnel', 'error out', 22546)] ends=[(22427, 'Diagram', 'error out', 22050, [22544, 22465])]
+  T p6 t22722 'Buffer Number In' src=False w22753 d22650 direct=[(22731, 'Comparison', 'x', 22739), (22681, 'Function', 'x+y', 22683)] ends=[(22681, 'Function', 'x+y', 22683, [])]
+  T p6 t22725 'Image In' src=False w22765 d22650 direct=[(22644, 'Tunnel', 'New Image', 22646)] ends=[(20436, 'SubVI', 'New Image', 20439, [22644, 22525, 21947, 21533, 20255])]
+  T p6 t22728 'Session In' src=False w22768 d22650 direct=[(22579, 'Tunnel', 'Session Out', 22581)] ends=[(22427, 'Diagram', 'Session Out', 22040, [22579, 22456])]
+OBJ #21305 {"uid": 21305, "class": "ForLoop", "pos": [-9296, 30694], "owner": "Diagram"} chain [('Diagram', None)]
+UID p6 #21305 class ForLoop loop None chain None n_terms 0
+OBJ #22541 {"uid": 22541, "class": "Sequence", "pos": [-8860, 30819], "owner": "Diagram"} chain [('Diagram', None)]
+UID p6 #22541 class Sequence loop None chain None n_terms 0
+OBJ #26411 {"uid": 26411, "class": "Function", "pos": [-4483, 30878], "owner": "Diagram"} chain [('Diagram', None)]
+UID p6 #26411 class Function loop outside-while chain [] n_terms 5
+  T p6 t26413 'time string' src=True w26710 d26117 direct=[(26428, 'Bundler', 'string', 26439)] ends=[(26428, 'Bundler', 'string', 26439, [])]
+  T p6 t26416 'date string' src=True w26719 d26117 direct=[(26428, 'Bundler', 'string', 26433)] ends=[(26428, 'Bundler', 'string', 26433, [])]
+  T p6 t26419 'want seconds? (F)' src=False w26716 d26117 direct=[(26126, 'BooleanConstant', 'want seconds? (F)', 26123)] ends=[(26126, 'BooleanConstant', 'want seconds? (F)', 26123, [])]
+  T p6 t26422 'seconds (now)' src=False w26722 d26117 direct=[(26406, 'Function', 'seconds since 1Jan1904', 26408)] ends=[(26406, 'Function', 'seconds since 1Jan1904', 26408, [])]
+  T p6 t26425 'date format (0)' src=False w26713 d26117 direct=[(26145, 'EnumConstant', 'date format (0)', 26142)] ends=[(26145, 'EnumConstant', 'date format (0)', 26142, [])]
+OBJ #26446 {"uid": 26446, "class": "NamedBundler", "pos": [-4172, 30696], "owner": "Diagram"} chain [('Diagram', None)]
+UID p6 #26446 class NamedBundler loop outside-while chain [] n_terms 11
+  T p6 t26448 'output cluster' src=True w26668 d26117 direct=[(26615, 'ReadWriteFile', 'data', 26638), (26117, 'Diagram', 'output cluster', 12936), (57292, 'FlatSequenceOuterTunnel', 'input cluster', 57294)] ends=[(26615, 'ReadWriteFile', 'data', 26638, []), (26117, 'Diagram', 'output cluster', 12936, []), (27462, 'NamedUnbundler', 'input cluster', 27464, [57292, 57284, 57256])]
+  T p6 t26451 'input cluster' src=False w26704 d26117 direct=[(26159, 'ClusterConstant', 'input cluster', 26156)] ends=[(26159, 'ClusterConstant', 'input cluster', 26156, [])]
+  T p6 t26452 'x,y pos array' src=False w26698 d26117 direct=[(25731, 'FlatSequenceInnerTunnel', '', 25733)] ends=[(25775, 'GrowableFunction', 'subarray', 25780, [25731])]
+  T p6 t26455 'cal image array' src=False w26695 d26117 direct=[(25667, 'FlatSequenceInnerTunnel', '2-sided cal image', 25669)] ends=[(25950, 'SubVI', '2-sided cal image', 25959, [25667, 25877])]
+  T p6 t26458 'bandpass/forget array' src=False w26692 d26117 direct=[(25739, 'FlatSequenceInnerTunnel', '', 25741)] ends=[(25992, 'BuildArray', 'appended array', 25994, [25739, 25883])]
+  T p6 t26461 '# slices in stack' src=False w26677 d26117 direct=[(26388, 'NamedUnbundler', '# images in stack', 26402)] ends=[(26388, 'NamedUnbundler', '# images in stack', 26402, [])]
+  T p6 t26464 'obj step between slices' src=False w26680 d26117 direct=[(26388, 'NamedUnbundler', 'z step between images', 26396)] ends=[(26388, 'NamedUnbundler', 'z step between images', 26396, [])]
+  T p6 t26467 '# avg per slice' src=False w26674 d26117 direct=[(26388, 'NamedUnbundler', '# to avg per image', 26393)] ends=[(26388, 'NamedUnbundler', '# to avg per image', 26393, [])]
+  T p6 t26470 'Date and time' src=False w26701 d26117 direct=[(26428, 'Bundler', 'concatenated string', 26430)] ends=[(26428, 'Bundler', 'concatenated string', 26430, [])]
+  T p6 t26473 'exp/ref array' src=False w26686 d26117 direct=[(25747, 'FlatSequenceInnerTunnel', 'exp/ref array', 25749)] ends=[(15103, 'ArrayConstant', 'exp/ref array', 15100, [25747, 21043, 20199, 19849, 19649, 15003]), (15874, 'BuildArray', 'appended array', 15876, [25747, 21043, 20199, 19849, 19649, 15003])]
+  T p6 t26476 'Pixel distance' src=False w26671 d26117 direct=[(25763, 'FlatSequenceInnerTunnel', 'pixel distance (nm)', 25765)] ends=[(12960, 'Diagram', 'pixel distance (nm)', 11190, [25763, 21087, 20231, 19865, 19665, 15019])]
+OBJ #26615 {"uid": 26615, "class": "ReadWriteFile", "pos": [-4010, 30757], "owner": "Diagram"} chain [('Diagram', None)]
+UID p6 #26615 class ReadWriteFile loop outside-while chain [] n_terms 9
+  T p6 t26617 'error out' src=True w0 d26117 direct=[] ends=[None]
+  T p6 t26620 'cancelled' src=True w0 d26117 direct=[] ends=[None]
+  T p6 t26623 'refnum out' src=True w59107 d26117 direct=[(59098, 'FlatSequenceOuterTunnel', 'refnum out', 59100)] ends=[(16, 'Function', 'refnum', 311, [59098, 59090, 59069, 59041])]
+  T p6 t26626 'prepend array or string size? (T)' src=False w0 d26117 direct=[] ends=[None]
+  T p6 t26629 'prompt (Choose or enter file path)' src=False w26689 d26117 direct=[(26379, 'StringConstant', 'prompt (Choose or enter file path)', 26376)] ends=[(26379, 'StringConstant', 'prompt (Choose or enter file path)', 26376, [])]
+  T p6 t26632 'error in' src=False w0 d26117 direct=[] ends=[None]
+  T p6 t26635 'byte order (0:big-endian, network order)' src=False w0 d26117 direct=[] ends=[None]
+  T p6 t26638 'data' src=False w26668 d26117 direct=[(26446, 'NamedBundler', 'output cluster', 26448), (26117, 'Diagram', 'output cluster', 12936), (57292, 'FlatSequenceOuterTunnel', 'input cluster', 57294)] ends=[(26446, 'NamedBundler', 'output cluster', 26448, [])]
+  T p6 t26641 'file (use dialog)' src=False w0 d26117 direct=[] ends=[None]
+OBJ #26145 {"uid": 26145, "class": "EnumConstant", "pos": [-4553, 30800], "owner": "Diagram"} chain [('Diagram', None)]
+UID p6 #26145 class EnumConstant loop outside-while chain [] n_terms 1
+  T p6 t26142 'date format (0)' src=True w26713 d26117 direct=[(26411, 'Function', 'date format (0)', 26425)] ends=[(26411, 'Function', 'date format (0)', 26425, [])]
+OBJ #3292 {"uid": 3292, "class": "Diagram", "pos": [4812, 1073], "owner": "CaseStructure"} chain [('CaseStructure', None)]
+UID p6 #3292 class Diagram loop 1.1 chain [(3191, 'CaseStructure'), (637, 'WhileLoop')] n_terms 1
+  T p6 t4195 'Total Lost Frames' src=False w27824 d3292 direct=[(3162, 'Function', 'x-y', 3164)] ends=[(3162, 'Function', 'x-y', 3164, [])]
+OBJ #2143 {"uid": 2143, "class": "Local", "pos": [21528, 1256], "owner": "Diagram"} chain [('Diagram', None)]
+UID p6 #2143 class Local loop outside-while chain [] n_terms 1
+  T p6 t3019 'Total Lost Frames' src=False w2271 d759 direct=[(7223, 'Function', 'x', 7235), (2283, 'FlatSequenceInnerTunnel', '', 2285)] ends=[(1628, 'Function', 'x-y', 1659, [2283])]
+OBJ #2991 {"uid": 2991, "class": "Local", "pos": [-3777, 1381], "owner": "Diagram"} chain [('Diagram', None)]
+UID p6 #2991 class Local loop outside-while chain [] n_terms 1
+  T p6 t3004 'Total Lost Frames' src=False w3152 d3628 direct=[(3130, 'DigitalNumericConstant', 'Total lost frames', 3147)] ends=[(3130, 'DigitalNumericConstant', 'Total lost frames', 3147, [])]
+OBJ #27311 {"uid": 27311, "class": "Function", "pos": [6937, 2545], "owner": "Diagram"} chain [('Diagram', None)]
+UID p6 #27311 class Function loop 1.1 chain [(22694, 'CaseStructure'), (637, 'WhileLoop')] n_terms 2
+  T p6 t27315 'x+1' src=True w27404 d27219 direct=[(27359, 'SelectorTunnel', '', 27368)] ends=[(27373, 'Function', 'x', 27424, [27359, 27250, 27344]), (27311, 'Function', 'x', 27322, [27359, 27250, 27344])]
+  T p6 t27322 'x' src=False w27331 d27219 direct=[(27373, 'Function', 'x', 27424), (27344, 'SelectorTunnel', '', 27347)] ends=[(27269, 'DigitalNumericConstant', '', 27266, [27344, 27258]), (27311, 'Function', 'x+1', 27315, [27344, 27258, 27359])]
+OBJ #27373 {"uid": 27373, "class": "Function", "pos": [6937, 2645], "owner": "Diagram"} chain [('Diagram', None)]
+UID p6 #27373 class Function loop 1.1 chain [(22694, 'CaseStructure'), (637, 'WhileLoop')] n_terms 4
+  T p6 t27394 'floor(x/y)' src=True w0 d27219 direct=[] ends=[None]
+  T p6 t27401 'x-y*floor(x/y)' src=True w29260 d27219 direct=[(29235, 'FlatSequenceOuterTunnel', '', 29245), (28413, 'FlatSequenceOuterTunnel', '', 28432), (28395, 'FlatSequenceOuterTunnel', '', 28409)] ends=[(29235, 'FlatSequenceOuterTunnel', '', 29245, []), (28413, 'FlatSequenceOuterTunnel', '', 28432, []), (28395, 'FlatSequenceOuterTunnel', '', 28409, [])]
+  T p6 t27416 'y' src=False w27911 d27219 direct=[(27433, 'DigitalNumericConstant', '', 27430)] ends=[(27433, 'DigitalNumericConstant', '', 27430, [])]
+  T p6 t27424 'x' src=False w27331 d27219 direct=[(27311, 'Function', 'x', 27322), (27344, 'SelectorTunnel', '', 27347)] ends=[(27269, 'DigitalNumericConstant', '', 27266, [27344, 27258]), (27311, 'Function', 'x+1', 27315, [27344, 27258, 27359])]
+OBJ #29403 {"uid": 29403, "class": "RightShiftRegister", "pos": [21394, 5927], "owner": "WhileLoop"} chain [('WhileLoop', None)]
+UID p6 #29403 class RightShiftRegister loop outside-while chain [] n_terms 2
+  T p6 t29577 '' src=True w0 d686 direct=[] ends=[None]
+  T p6 t29563 '' src=False w30106 d23166 direct=[(29724, 'SubVI', 'next last', 29907)] ends=[(29724, 'SubVI', 'next last', 29907, [])]
+OBJ #29548 {"uid": 29548, "class": "LeftShiftRegister", "pos": [15583, 5927], "owner": "WhileLoop"} chain [('WhileLoop', None)]
+UID p6 #29548 class LeftShiftRegister loop outside-while chain [] n_terms 2
+  T p6 t29583 '' src=False w29757 d686 direct=[(29576, 'DigitalNumericConstant', '', 29574)] ends=[(29576, 'DigitalNumericConstant', '', 29574, [])]
+  T p6 t29582 '' src=True w30081 d23166 direct=[(29724, 'SubVI', 'last', 29962), (30060, 'LoopTunnel', '', 30068)] ends=[(29724, 'SubVI', 'last', 29962, []), (29719, 'SubVI', 'last', 29783, [30060])]
+LOOP WhileLoop #10170 left_of hits {'29403': [29548], '29648': [29655]}
+LOOP WhileLoop #637 left_of hits {'1117': [5351], '27039': [27056]}
+ONDIAG 27219 []
+ONDIAG 27232 []
+ONDIAG 3292 []
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[],"card":"170-a1-1","labview":"none"}
+BGRUN END rc=0 after 1s

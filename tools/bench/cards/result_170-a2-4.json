@@ -1,0 +1,27 @@
+{"schema":"result/1","id":"170-a2-4","status":"FAIL","gates":{"pass":8,"fail":1},
+"first_fail":"S7 graph stores #27433's VALUE (= slots 20): the P6 graph JSON holds no constant values (diag_c170_a2_4_selftest.log:33)",
+"blocked_by":null,
+"artefacts":[
+{"path":"tools/bench/m8b_replay_compare.py","md5":"c2efe10d89ef93702fecc2a2c6230bad"},
+{"path":"tools/bench/diag_c170_a2_1_cal.py","md5":"31b58c44a7b9ecb71b625c5e14cd20d5"},
+{"path":"tools/bench/diag_c170_a2_4_selftest.log","md5":"00668d477753dcbc4000f9bbfea59ffa"},
+{"path":"tools/bench/diag_c170_a2_4_facts.md","md5":"a218a06d40001b4f107df3e42937dec3"},
+{"path":"tools/bench/m8b_replay_selftest_170.json","md5":"8aeb083f08e53511480f317ca65dab02"},
+{"path":"tools/bench/m8b_replay_selftest_main.json","md5":"0b459404cf99df5d145a204fb0aab26b"},
+{"path":"tools/bench/diag_c170_a2_4_graph.log","md5":"ea17db09fa8a85563630443115e5a823"}],
+"facts":[
+"110-7 self-test as expected: common 4443, 0 X/Y/Z rows differ, DISTINCT 4443/4443 at slots 20, old main G1-G3 PASS (diag_c170_a2_4_selftest.log:11-12,27-30)",
+"cal: walk exact 857376 B both, 'Date and time' offset 857264 len 40, 5 bytes differ, 0 outside the field (diag_c170_a2_4_selftest.log:14,31)",
+"Graph: Q&R #27373 y <- DigitalNumericConstant #27433 (selftest.log:24,32), but objs keep uid/class/pos/owner only, so 20 is NOT confirmed (diag_c170_a2_4_graph.log:5,24)",
+"NOT expected, a fact: trans/rot boundary row 56; 58 of 4387 stationary rows differ A vs B; init first/last B != A (21.589 vs 21.5372; 27.98125 vs 30.0) (selftest.log:13,20-21)",
+"Envelope NOT-EVALUATED: motor_gate.py:14-17 script envelope deleted, :20-21/:32 rotor has none; init rows of B non-finite 0 (selftest.log:13)",
+"Files: only cal001 + tra001-000 in each dir, both differ by md5; 'Lost Frames' text NOT FOUND in any run-dir file (selftest.log:15-16)",
+"walk/td_label/NUM/SIZE/run_dirs moved from diag_c170_a2_1_cal.py old :32-35,:43-65,:79-133 to m8b_replay_compare.py:69-163; diag now imports (:34), calls walk with canon (:87)",
+"The diag_c170_a2_1_cal.py switch was NOT re-run (labview: read header, card labview none); the moved walk reproduces its recorded 857264/40 (selftest.log:31)",
+"110-7 run dirs unchanged by md5 (A cal e5570a96 tra 47f87a74, B cal ea1ed8a3 tra 2571a2ea) (selftest.log:25,34); no LabVIEW, no hardware",
+"Jev ladder: no JEV-LADDER row yet for diag_c170_a2_4_selftest.log in tools/bench/jev_gate.log; nothing acted on"],
+"open":[
+"D=20 cannot be read from graph_ring_p6 (no constant values stored): accept U13/ring-p4b.md:21 as D's source, or order a LabVIEW read of #27433's value?",
+"110-7 trans/rot differ (58 stationary rows, init first/last): expected for these legs (B = dispreplay leg) or a (b) FAIL? The criterion was written for the coming S1/P6 legs."],
+"cost":{"usd":null,"minutes":9,"labview_runs":0},
+"note":"Self-test run: py -u tools/bench/m8b_replay_compare.py --selftest --slots 20 (the --slots value was passed by hand, not read from the graph)."}

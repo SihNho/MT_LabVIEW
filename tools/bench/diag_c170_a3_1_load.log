@@ -1,0 +1,40 @@
+BGRUN START 2026-10-13 00:38:57 limit 8.0 min: py -u tools/bench/diag_c170_a3_1_load.py
+BGRUN PID 17788
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 354 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == a89dafc1db03feef7b528f0dd4fcc692  got a89dafc1db03feef7b528f0dd4fcc692
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33992
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  diag_c170_a3_1_load_20261013_003857.vi
+  FACT  ExecState [after open] diag_c170_a3_1_load_20261013_003857.vi = 1
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so diag_c170_a3_1_load_20261013_003857.vi is deleted at close
+  FACT  MEM after load: 550.3 MB private; handles 34183
+  PASS  M1 MEM after load measured (550.3 MB private)  550.3
+  PASS  I input md5 unchanged  a89dafc1db03feef7b528f0dd4fcc692
+
+---------- [H] HYGIENE
+  FACT  close_panel(diag_c170_a3_1_load_20261013_003857.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 0}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 0}
+  FACT  LabVIEW handle count AFTER the work: 34182
+  PASS  H4 scratch deleted: diag_c170_a3_1_load_20261013_003857.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\replay\diag_c170_a3_1_load_20261013_003857.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before a89dafc1db03feef7b528f0dd4fcc692 / after a89dafc1db03feef7b528f0dd4fcc692
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33997
+  PASS  H9 LabVIEW gone
+
+====================================================================================================
+=== GATES: 11 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c170_a3_1_load.json   elapsed 115.3 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":11,"fail":0},"first_fail":null,"artefacts":[],"card":"170-a3-1","labview":"build"}
+BGRUN END rc=0 after 116s

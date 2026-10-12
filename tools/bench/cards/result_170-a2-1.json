@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"170-a2-1","status":"FAIL","gates":{"pass":24,"fail":2},
+"first_fail":"V2 #26136 FixedConstant value read as a string - tools/bench/diag_c170_a2_1_f4.log:22",
+"blocked_by":null,
+"artefacts":[
+{"path":"tools/bench/diag_c170_a2_1_hash.log","md5":"a35e0a49b68ba97da8c1472ec370aeb4"},
+{"path":"tools/bench/diag_c170_a2_1_manifest.txt","md5":"9055d98a15a4c9c2fd4e03de7ac41bb3"},
+{"path":"tools/bench/diag_c170_a2_1_f4.log","md5":"5604f249219a2a15c59c88caf9b655b6"},
+{"path":"tools/bench/diag_c170_a2_1_f4.json","md5":"58fc2963a21635621758db4cda69451d"},
+{"path":"tools/bench/diag_c170_a2_1_hash.py","md5":"8180bce97d6e47e2a72baa7266ad9683"},
+{"path":"tools/bench/diag_c170_a2_1_f4.py","md5":"803f3e79b1012cf55767fbd3b6733471"},
+{"path":"tools/bench/diag_c170_a2_1_cal.py","md5":"58155c6418f094d554260d10e46d1f34"}],
+"facts":[
+"Re-hash, no drift: 9 inputs, 8 VI pins, regenerated manifest 9055d98a15a4c9c2fd4e03de7ac41bb3 (10045 files) all equal, 12/0 (diag_c170_a2_1_hash.log:3-33)",
+"#26159 order: xy pos A2D<DBL>, cal image A3D<DBL>, #slices I32, bandpass/forget A2D<I32>, obj step DBL, #avg I32, Date and time String, exp/ref A1D<I32>, Pixel dist DBL (f4.log:13)",
+"'Date and time' = element 6 (0-based) of 9, labelled String TD (f4.log:13); #26446 output type == #26159 type, canon + sig (f4.log:17); sink t26470 is String (f4.log:11,18)",
+"#26126 'want seconds?' BooleanConstant = TRUE (OpConstValueB_v0, echo 26126, no error): seconds are in the time string (f4.log:19-20)",
+"#26136 is a FixedConstant, type String (t26133 TD 0030, f4.log:15). Value NOT READ: OpConstValue_v1 base cast gave a void variant TD 0x00, no error (f4.log:21-22) = gate V2 FAIL",
+"#26145 EnumConstant: Enum U16 items short/long/abbreviated (f4.log:14). Value NOT READ: OpConstValue_v1 void (f4.log:23), OpConstValueRing_v0 error 1055 (f4.log:24)",
+"Gate H FAIL is a DROP, not growth: handles 57984 -> 51489 (-6495); gscript refs opened 2 closed 2 live 0 (f4.log:25-26); the gate used abs(delta)<=100 (diag_c170_a2_1_f4.py:140)",
+"After LabVIEW: gone (f4.log:27-28), scratch copy deleted, nothing saved (:29), D1_s1_copy.vi still 3e3d23ce (:30); the original was never opened; tasklist shows no LabVIEW",
+"NOT DONE (returned at first unexpected result): F4 edit of p6_replay_facts.md/.json and the cal001 A/B check; offline parser diag_c170_a2_1_cal.py written (2 asserts), NOT run",
+"guard_bash refused the stagekit form (discard_work) -> gate-fp DEDUPED fp-63; used diag_c153_a2_6 plain form. Duplicates: manifest block diag_c170_a1_1_hash.py:37-40; gscript.py:4448-4474"],
+"open":[
+"#26136/#26145 values are unreadable by existing ops: build a FixedConstant/Enum-typed Constant.Value op, or derive separator+format from the stored cal001 text (run diag_c170_a2_1_cal.py)?",
+"Gate H used abs(handle delta)<=100 and the count FELL by 6495 - accept a fall (growth-only criterion)?",
+"Shared-function gaps outside my globs: frames-manifest writer -> prep_c168_hashlib; read_const_value lacks FixedConstant/EnumConstant (gscript.py:4412)"],
+"cost":{"usd":null,"minutes":10,"labview_runs":1},
+"note":"Jev ladder: no JEV-LADDER row for diag_c170_a2_1_f4.log (only PREFLIGHT, jev_gate.log:7612,7614), so no NEXT-ACTION."}

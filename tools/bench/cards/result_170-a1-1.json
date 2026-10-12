@@ -1,0 +1,33 @@
+{"schema": "result/1", "id": "170-a1-1", "status": "PASS",
+ "gates": {"pass": 37, "fail": 0},
+ "first_fail": null,
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/bench/p6_replay_facts.md", "md5": "870fbc5a7400e4f0377b344c2decea5a"},
+  {"path": "tools/bench/p6_replay_facts.json", "md5": "d1096d3c2b5bfff27841125c37eac9bd"},
+  {"path": "tools/bench/p6_replay_frames_manifest.txt", "md5": "9055d98a15a4c9c2fd4e03de7ac41bb3"},
+  {"path": "tools/bench/diag_c170_a1_1_hash.py", "md5": "2cc7899ecd2b7f06bde2432f93c42f42"},
+  {"path": "tools/bench/diag_c170_a1_1.log", "md5": "669de753b444eb78e997c5fceb0d076e"},
+  {"path": "tools/bench/diag_c170_a1_1_facts.py", "md5": "a0bf98824f7bc4277b5e613e132811fc"},
+  {"path": "tools/bench/diag_c170_a1_1_facts.log", "md5": "b8eb5b68d6a564a44e5afbed218210a5"}
+ ],
+ "facts": [
+  "Re-hash NO DRIFT: 11 inputs, 8 VIs (c2d9c13c..a89dafc1, 3rd stand-in = replay_imaqdx_get_image_buf.vi), 10045 frame files, manifest md5 9055d98a (diag_c170_a1_1.log:4-39)",
+  "HANDBACK-GATE: F2=EVERY F3=discard NOT READABLE; lost READABLE -> HANDBACK (p6_replay_facts.md:156; diag_c170_a1_1_facts.log:27)",
+  "F3 discards: #29724 'next discards' -> RSR #29648 only, loop-exit face unwired, LSR #29655 -> #29724 only; no indicator/local/file (facts.log:11-12)",
+  "F3 RingSeqCheck adds 1 only on an invalid read (valid = n1==n2 AND n1>last), so frames overwritten before 1.2 reads them are not counted (ring-p4b.md:140-141)",
+  "F3 lost: 'Total Lost Frames' indicator t4195 d3292 (1.1) in S1 and P6; v5 reads it once by label at end of RUN_S, before stop (drive_original_copy_v5.py:497-506)",
+  "F2: new frame = Case #22694 'False' (#26879 x!=y vs previous via SR 27039->27056); stand-in BN Out=BN In + #1978 x+1 gives current+1 per 1.1 iteration (facts.log:7-10)",
+  "F1: #6810 once per 1.1 iteration in both; S1 tracker #5058 takes its image directly, P6 #5058 (loop 1.2) reads the ring #29843; P6 calls/tracked frame is a run-time ratio (facts.log:4-5)",
+  "F1: #22692 is under For #22433/#21305 in the cal flat-sequence, no While, same terminals as S1: 0 calls per tracked frame; P6 callee name unread (graph has no subvi_calls)",
+  "F4 NOT-DETERMINED: original path #26615 Write<-#26446 'Date and time'<-#26428<-#26411 date+#26136+time, prepend/byte order unwired; cluster type #26159 unread (facts.log:14)",
+  "F6: no frame-count parameter (only --run-s seconds); stage_replay_swap PLANS {78,95,110} only; drive_m8_replay_110 pins leg B md5 from stage_replay_swap_110.json (drive_m8_replay_110.py:19-22)"
+ ],
+ "open": [
+  "Discard count is not readable by a leg (HANDBACK per PD409(d)), and even if exposed it does not count frames overwritten unread; what zero-drop evidence should a P6 leg carry?",
+  "F4 needs a LabVIEW read of ClusterConstant #26159's type (+ #26136/#26126/#26145 values) in claudeDev\\D1_s1_copy.vi; a separate labview:read card?",
+  "line_of/find_line citation helpers sit inline in diag_c167_a1_4_ready.py:84, diag_c167_a1_2_crows.py:73, diag_c166_a1_5_census.py:84, diag_c164_a3_3_dw.py:49 and now diag_c170_a1_1_facts.py (chk); extract to a shared module?"
+ ],
+ "cost": {"usd": null, "minutes": 16, "labview_runs": 0},
+ "note": "Offline only; no .vi opened, no LabVIEW (tasklist 0 before/after), no hardware. Extra file: tools/bench/diag_c170_a1_1_explore.py + explore/explore3 logs (graph exploration, within write globs). Gates: hash 13/0 + facts 24/0."
+}

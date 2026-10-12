@@ -1,24 +1,25 @@
 {
  "schema": "next/1",
- "cycle": 169,
- "act": "PD407: finish P6-1 on saved D1_ring_p6_20261012_212645.vi c2d9c13c - fix post DN gate ([11261]), re-run post-save reads, EL final, load_by_vi, bed moves; then fp-98/fp-100",
- "task_kind": "build",
+ "cycle": 170,
+ "act": "PD411: P6-2 - paced60 pair (tools/bench/memory_model.json load_by_vi entries only), P6 replay copy, S1 + P6 legs in motor_gate, compare with D = 20 (U13), then fp-102",
+ "task_kind": "measure",
  "plan": {
   "path": "docs/d1/ring-p6.md",
-  "md5": "f3e9dab8dea72dec6ef84f3ef75fe8f5"
+  "md5": "8d77a3f92de80ec90adc1edf1d61763d"
  },
  "pass": [
-  "Re-hash: saved c2d9c13c, bed 75773b0d, graphs 7815af09 57f33e7c fbc7b7ee, memory_model d12bcd3b, recipe stage_d1_ring_p6.py 85f2615f; drift = hand back",
-  "PD407(b) DN gate in diag_c169_a1_2_post.py patched (file:line): absent non-Wire objects whose owner is not absent; offline check on the 2 stored graphs = [11261]; dry + prerun PASS",
-  "PD407(e) post-save run on a byte copy of the saved bytes, deleted at close: ExecState 1; DN [11261]; e5_check ok; graph + md5; S-5 30 vs 30 both empty; MEM <= 675; c2d9c13c unchanged",
-  "PD406(e) errorlist_check --role final on the saved file: 0 error items, kept as errorlist_expected_D1_ring_p6_20261012_212645.json (md5, class counts); saved md5 unchanged",
-  "PD406(e) ONE load_by_vi entry in memory_model.json keyed c2d9c13c (MEM after load, file:line); nothing else changed; only after the two items above PASS",
-  "PD406(e) after all above PASS: STATUS current-bed + INDEX 'Work VI (bed)' -> D1_ring_p6_20261012_212645.vi c2d9c13c, RUNNABLE (ExecState 1, EL 0), count stays 6 of 6",
-  "Hygiene: c2d9c13c 75773b0d 7f2582ae 94ffff94 f9ae7751 564d8cbe 6dcd5c3d eb1d0f31 unchanged; no original opened; refs balanced; no scratch; LabVIEW gone; no re-save, recipe or hooks edit",
-  "PD406(f) AFTER the LabVIEW card: fp-98, fp-100 drained with self-tests; fp-99 only if its fix is outside tools/hooks/**, else open with the reason; fp-101 + hook entries -> chat"
+  "Re-hash (drift = hand back): bed c2d9c13c, graph fbc7b7ee, S1 3e3d23ce, S1 replay 126f8497, stand-ins 842ecad9 afce0d04 a89dafc1, manifest 9055d98a, compare c2efe10d",
+  "PD410(d) replay\\replay_imaqdx_get_image_buf_paced60.vi (a89dafc1 + Wait 60 ms) and replay_get_buff_image_paced60.vi (842ecad9, inner swapped): each ExecState 1 warm+cold, md5",
+  "PD411(b) prerun X10 PASS quoted; memory_model.json changed ONLY by load_by_vi entries for a89dafc1/842ecad9, each a measured load cited by log line; no limit/coefficient change",
+  "PD409(e) replay\\D1_ring_p6_replay_<ts>.vi by stage_replay_swap.py, new plan on c2d9c13c (#6810 -> paced outer, #22692 -> afce0d04): A1-A6 C1-C3, ES 1 warm+cold, md5; peers priorart",
+  "PD409(f) S1 leg (120 s) then P6 leg (>= 1500 tra rows), each in motor_gate start/end (readback), LabVIEW gone; per leg tra rows, Total Lost Frames, counter delta, files+md5",
+  "PD410(c)+PD411(c) compare only if S1 lost 0, --slots 20 cited U13/ring-p4b.md:21: DISTINCT count, MATCH (first miss + drop signature); each a fact, a FAIL returned not re-run",
+  "PD409(b)+PD411(d) same compare: cal outside F4 field, trans/rot post-init, init inside motor_limits.json PI/ASI ranges (rotor finite), every other leg file: each PASS/FAIL as a fact",
+  "Hygiene: c2d9c13c 75773b0d 7f2582ae 3e3d23ce 126f8497 842ecad9 a89dafc1 unchanged; no original opened; refs balanced; only replay files added; LabVIEW gone; no hooks edit",
+  "PD409(g) AFTER all above: fp-102 (stage_prerun.py:2192 X10 regex matches 'delete') drained with a self-test"
  ],
  "blocked_by": null,
  "stop_requested": false,
  "advances": ["M3", "M8"],
- "note": "PD407: items 0-5,8 accepted; FAIL = DN gate counted #11261's Terminals 11267/11270/11273. scratch-required rc 3 by design. task_169-a1-3 fits items 0-4,6 after re-pinning ring-p6.md (f3e9dab8). D-2026-10-12-01/02 answered: P6-2 next."
+ "note": "Hand-back 170_2 judged (PD411): F4 met by the cal byte walk (value read withdrawn); 170-a2-4 compare extension accepted, S7 replaced by D = 20 from U13/ring-p4b.md:21; memory_model.json named for load_by_vi entries only. Rig 조립; motor_session OK."
 }

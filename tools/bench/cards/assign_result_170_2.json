@@ -1,0 +1,23 @@
+{
+ "schema": "assign-result/1",
+ "cycle": 170,
+ "round": 2,
+ "status": "HANDBACK",
+ "cards": ["170-a2-1", "170-a2-2", "170-a2-3", "170-a2-4"],
+ "pass_evidence": [
+  {"item": 0, "met": true, "evidence": ["tools/bench/diag_c170_a2_1_hash.log:3-33", "tools/bench/diag_c170_a2_1_manifest.txt", "tools/bench/cards/result_170-a2-1.json:13"]},
+  {"item": 1, "met": false, "evidence": ["tools/bench/diag_c170_a2_1_f4.log:13-30", "tools/bench/p6_replay_facts.md:93-104", "tools/bench/diag_c170_a2_2_cal.log:35-64"]},
+  {"item": 2, "met": false, "evidence": ["tools/bench/diag_c170_a2_3_facts.md", "tools/bench/diag_c170_a2_3_checklaunch.log:3", "tools/bench/diag_c170_a2_3_prerun.log:44"]},
+  {"item": 3, "met": false, "evidence": []},
+  {"item": 4, "met": false, "evidence": ["tools/bench/diag_c170_a2_4_selftest.log:11-33", "tools/bench/diag_c170_a2_4_facts.md"]},
+  {"item": 5, "met": false, "evidence": []},
+  {"item": 6, "met": false, "evidence": []},
+  {"item": 7, "met": false, "evidence": []},
+  {"item": 8, "met": false, "evidence": []}
+ ],
+ "handback": {
+  "reason": "guard_assign c-outside-purpose: the retry card 170-a2-5 (paced stand-in build) needs flags.write tools/bench/memory_model.json (ONE load_by_vi entry, the precedent of 169-a1-1) to release prerun X10 UNMEASURED; the hook refused the dispatch. Nothing paced was built; no leg ran.",
+  "question": null
+ },
+ "note": "Done: item 0 no drift (12/0). Item 1 PARTLY: #26159 type, 9-element order, #26126 TRUE read; the .cal date/time field offset/length rule written into p6_replay_facts.md F4 (walk of the flattened cluster, 110-7 legs offset 857264 length 40, 5 differing bytes all in the time text); #26136 and #26145 values NOT READ (no existing op reads FixedConstant/EnumConstant); #26428 concatenates FOUR inputs; gate H was a criterion error (handles fell 57984 -> 51489, refs live 0). Item 2 BLOCKED (170-a2-3): recipe stage_replay_paced60.py + dry exist (PASS-UNVERIFIED, 9 stub-only gates), launch refused by check_launch (needs DRY-UNVERIFIED-OK naming + --unverified-card) and prerun X10 UNMEASURED (direct gscript edits, no Executor plan); retry card 170-a2-5 is written and validated, not dispatched. Item 4 PARTLY (170-a2-4 FAIL 8/1): m8b_replay_compare extended; on 110-7 it gives 4443 common rows, 0 X/Y/Z rows differ, DISTINCT 4443/4443 at D=20, cal differs only inside the field; the one failed gate S7: the slot count D=20 is not readable from the P6 graph (it stores no constant values; Q&R #27373 y <- #27433), D=20 was passed by hand from ring-p4b.md:21; also 110-7 trans/rot differ in 58 stationary rows and the init first/last values (B is the dispreplay leg) and the motor envelope has no single constant in motor_gate.py (NOT-EVALUATED) - facts, not diagnosed. Questions for the judgement: (1) may a card edit memory_model.json for ONE load_by_vi entry (or release X10 for a recipe with direct gscript edits another way); (2) read D from #27433 by a LabVIEW read (it fits the P6 replay copy build) or accept U13 / ring-p4b.md:21; (3) whether the trans/rot init-segment criterion fits the 110-7 legs (not S1 vs P6). Items 3, 5, 6, 7, 8 not started. No hardware, no motor session, LabVIEW gone after every card, originals unchanged."
+}
