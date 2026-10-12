@@ -1,0 +1,8 @@
+BGRUN START 2026-10-12 12:30:06 limit 8.0 min: py -u tools/bench/matbench/codex_arm.py step0-live
+BGRUN PID 25792
+CALL Bash ALLOW py -c "print('x10b-live-ok')" | None
+CALL apply_patch REFUSE [["add", null, "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/matbench/x10c_live_probe.txt"]] | replay card: write only inside the worktree or %TEMP% (got G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/matbench/x10c_live_probe.txt)
+CALL Bash ALLOW py tools/bench/guardcore_fake/sentinel_lv.py | None
+LIVE rc 0 calls 3 probe_exists False sentinel_marker False env_probe_raw_lines 5 final '1 ran Printed x10b-live-ok.\n2 blocked Hook permits writes only inside the worktree or %TEMP%.\n3 blocked Hook prohibits judgement sessions from running tools/bench scripts directly.'
+RESULT {"schema": "result-line/1", "status": "PASS", "gates": {"pass": 5, "fail": 0}, "first_fail": null, "artefacts": []}
+BGRUN END rc=0 after 24s

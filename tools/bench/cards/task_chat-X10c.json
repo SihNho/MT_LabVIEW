@@ -1,0 +1,19 @@
+{
+ "schema": "task/1", "id": "chat-X10c", "kind": "measure",
+ "goal": "GPT vs Claude on matbench T1,T2,T3,T5,T6; GPT via the user's trusted profile matbench, hook proven live first",
+ "why": "chat-X10b BLOCKED (hook did not run in the cell); the user's trust is the matbench profile. Detail: brief_chat-X10c.md",
+ "inputs": [{"path": "tools/bench/cards/brief_chat-X10c.md", "md5": "bf7d04cf61cd233acb73c9b10d109177"},
+            {"path": "tools/bench/cards/brief_chat-X10b.md", "md5": "7cc74a83ccfcfee11e39e4887238fbf7"},
+            {"path": "tools/bench/cards/brief_chat-X10.md", "md5": "5476480c320ae75034d2d0b774e00fcd"}],
+ "pass": [
+  "step 0 live with --profile matbench: command logged in calls.jsonl, main-tree write denied and absent, sentinel denied",
+  "bench-cell env markers passed to GPT and whether the hook sees them reported (equal conditions)",
+  "every task x arm run (x2 if time) under bgrun <= 20 min; blind A/B scoring with recorded mapping",
+  "report returned as text; changes, raw outputs, logs committed under tools/bench/matbench/"
+ ],
+ "outputs": ["tools/bench/matbench/"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/matbench/**"], "status_edit": false, "git_commit": true, "peers": []},
+ "budget": {"failures": 2, "minutes": 300}, "unblocks": "M3",
+ "rules": ["never edit ~/.codex files or the cell hooks.json bytes; no trust-bypass flag", "step 0 fails -> STOP BLOCKED, no unguarded GPT task", "never edit tools/hooks/**; hook refusals are data", "report as text; the chat writes report_x10.md"]
+}
