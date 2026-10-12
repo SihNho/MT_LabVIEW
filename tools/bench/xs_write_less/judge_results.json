@@ -1,17 +1,74 @@
 {
  "T1": {
-  "usd": null,
-  "verdict": null,
-  "raw": ""
+  "usd": 0.3419212,
+  "verdict": {
+   "pair1": {
+    "simpler": "A",
+    "correct_A": true,
+    "correct_B": true,
+    "edges_A": "Missing file: prints RESULT ok:false and exits 1. Empty file: ok:true, open 0, no class lines. One row: counted correctly. A missing gate counts as '?'. Groups gates into classes (guard_bash:stop_record -> guard_bash, checker:stage_prerun:X5 -> checker:stage_prerun), and asserts check the class rule.",
+    "edges_B": "Missing and empty files give the same output (ok:false, rows 0, exit 0), so they cannot be told apart, and a valid empty file is wrongly marked not ok. One row: fine. Counts the raw gate string, not a class: guard_bash and guard_bash:stop_record are listed apart, and so is each checker:stage_prerun:Xn.",
+    "reasons": "B is shorter, but it makes a missing file look like an empty one, marks a valid empty file not ok, and never groups gates into classes, so it splits counts over many raw strings. A costs about six extra lines: a tested class function and a separate missing-file check. Both read the queue with gate_fp.read_queue.",
+    "simpler_arm": "NEW"
+   },
+   "pair2": {
+    "simpler": "A",
+    "correct_A": true,
+    "correct_B": true,
+    "edges_A": "Missing file: prints RESULT ok:false with the path and exits 1. Empty file: ok:true, open 0. One row: fine. A missing gate counts as '(none)', and asserts cover the empty and mixed-status cases. Counts the raw gate field (its docstring says so), so suffixed gates are not grouped.",
+    "edges_B": "Missing file: read_queue returns [], so it prints rows 0 / open 0 with no ok or error field and exits 0, which looks the same as an empty file. Empty file: fine. One row: fine. Groups gates into classes correctly (guard_peer.undisposed -> guard_peer, checker:<tool>), but the class rule has no test.",
+    "reasons": "B is shorter and groups into true classes, but it silently treats a missing input as zero counts, which loses the missing-file edge case. A keeps every edge case (missing-file error, '(none)' gate, tested helper) at the cost of a few lines. A's weakness is counting raw gate strings instead of grouping by class.",
+    "simpler_arm": "NEW"
+   }
+  },
+  "raw": "{\"pair1\": {\"simpler\": \"A\", \"correct_A\": true, \"correct_B\": true, \"edges_A\": \"Missing file: prints RESULT ok:false and exits 1. Empty file: ok:true, open 0, no class lines. One row: counted correctly. A missing gate counts as '?'. Groups gates into classes (guard_bash:stop_record -> guard_bash, checker:stage_prerun:X5 -> checker:stage_prerun), and asserts check the class rule.\", \"edges_B\": \"Missing and empty files give the same output (ok:false, rows 0, exit 0), so they cannot be told apart, and a valid empty file is wrongly marked not ok. One row: fine. Counts the raw gate string, not a class: guard_bash and guard_bash:stop_record are listed apart, and so is each checker:stage_prerun:Xn.\", \"reasons\": \"B is shorter, but it makes a missing file look like an empty one, marks a valid empty file not ok, and never groups gates into classes, so it splits counts over many raw strings. A costs about six extra lines: a tested class function and a separate missing-file check. Both read the queue with gate_fp.read_queue.\"}, \"pair2\": {\"simpler\": \"A\", \"correct_A\": true, \"correct_B\": true, \"edges_A\": \"Missing file: prints RESULT ok:false with the path and exits 1. Empty file: ok:true, open 0. One row: fine. A missing gate counts as '(none)', and asserts cover the empty and mixed-status cases. Counts the raw gate field (its docstring says so), so suffixed gates are not grouped.\", \"edges_B\": \"Missing file: read_queue returns [], so it prints rows 0 / open 0 with no ok or error field and exits 0, which looks the same as an empty file. Empty file: fine. One row: fine. Groups gates into classes correctly (guard_peer.undisposed -> guard_peer, checker:<tool>), but the class rule has no test.\", \"reasons\": \"B is shorter and groups into true classes, but it silently treats a missing input as zero counts, which loses the missing-file edge case. A keeps every edge case (missing-file error, '(none)' gate, tested helper) at the cost of a few lines. A's weakness is counting raw gate strings inst"
  },
  "T2": {
-  "usd": null,
-  "verdict": null,
-  "raw": ""
+  "usd": 0.3816944,
+  "verdict": {
+   "pair1": {
+    "simpler": "A",
+    "correct_A": true,
+    "correct_B": true,
+    "edges_A": "Missing file (OSError) and empty 0-byte file (JSONDecodeError, a kind of ValueError) are both caught and print RESULT ok:false with exit 1. Wrong number of arguments gives a usage RESULT. items:[] and one row work, and the self-check covers empty lists. OCR spelling variants are treated as the same item.",
+    "edges_B": "Missing file and empty 0-byte file both crash with a traceback and print no RESULT line. With no arguments it falls back to the default pair. items:[] and one row work. It matches on norm only, with no OCR folding.",
+    "reasons": "Both get the right difference on the real pair, counting repeated items. A reuses class_counts and Counter subtraction, has a self-check and is about as long as B. B's hand-written multiset loop is extra code, and B prints no RESULT when a file is missing or empty. A is simpler and keeps the edge handling.",
+    "simpler_arm": "NEW"
+   },
+   "pair2": {
+    "simpler": "B",
+    "correct_A": true,
+    "correct_B": true,
+    "edges_A": "Missing file and empty 0-byte file both crash with a traceback and print no RESULT. It uses ['items'] and ['raw'] directly, so a JSON file without items or raw raises KeyError. With no arguments it uses the default pair. items:[] and one row work.",
+    "edges_B": "Missing file is caught and prints RESULT ok:false with exit 1. Wrong argument count gives a usage RESULT with exit 2. An empty 0-byte file still crashes with JSONDecodeError and prints no RESULT. items:[] and one row work, and the asserts cover empty and OCR-folded input.",
+    "reasons": "A is shorter but loses the missing-file handling and accepts only an exact layout. B reuses class_counts, checks arguments and missing files and prints a RESULT for them, so it gives up less. Neither handles a 0-byte file. B is the simpler script that does not lose edge handling.",
+    "simpler_arm": "NEW"
+   }
+  },
+  "raw": "{\"pair1\": {\"simpler\": \"A\", \"correct_A\": true, \"correct_B\": true, \"edges_A\": \"Missing file (OSError) and empty 0-byte file (JSONDecodeError, a kind of ValueError) are both caught and print RESULT ok:false with exit 1. Wrong number of arguments gives a usage RESULT. items:[] and one row work, and the self-check covers empty lists. OCR spelling variants are treated as the same item.\", \"edges_B\": \"Missing file and empty 0-byte file both crash with a traceback and print no RESULT line. With no arguments it falls back to the default pair. items:[] and one row work. It matches on norm only, with no OCR folding.\", \"reasons\": \"Both get the right difference on the real pair, counting repeated items. A reuses class_counts and Counter subtraction, has a self-check and is about as long as B. B's hand-written multiset loop is extra code, and B prints no RESULT when a file is missing or empty. A is simpler and keeps the edge handling.\"}, \"pair2\": {\"simpler\": \"B\", \"correct_A\": true, \"correct_B\": true, \"edges_A\": \"Missing file and empty 0-byte file both crash with a traceback and print no RESULT. It uses ['items'] and ['raw'] directly, so a JSON file without items or raw raises KeyError. With no arguments it uses the default pair. items:[] and one row work.\", \"edges_B\": \"Missing file is caught and prints RESULT ok:false with exit 1. Wrong argument count gives a usage RESULT with exit 2. An empty 0-byte file still crashes with JSONDecodeError and prints no RESULT. items:[] and one row work, and the asserts cover empty and OCR-folded input.\", \"reasons\": \"A is shorter but loses the missing-file handling and accepts only an exact layout. B reuses class_counts, checks arguments and missing files and prints a RESULT for them, so it gives up less. Neither handles a 0-byte file. B is the simpler script that does not lose edge handling.\"}}"
  },
  "T3": {
-  "usd": null,
-  "verdict": null,
-  "raw": ""
+  "usd": 0.7162526,
+  "verdict": {
+   "pair1": {
+    "simpler": "B",
+    "correct_A": true,
+    "correct_B": true,
+    "edges_A": "Missing file: crashes with a traceback and prints no RESULT. Empty file: RESULT with cycles 0. One row: works. Unpriced or orphaned cycles show '?' and are counted as cycles_unpriced. Unmatched ASSIGN end lines are counted.",
+    "edges_B": "Missing file: crashes with a traceback and prints no RESULT. Empty file: RESULT with ok true and cycles 0. One row: works. The selfcheck covers empty input and repeated cycle numbers. Unpriced cycles (116, 120, 141, 157) print $0.0000 instead of unknown.",
+    "reasons": "B reads the log once with two regexes and has a small selfcheck. A calls cycle_lines once per cycle, which re-reads the whole log about 170 times, and checks 'priced' separately. A is better only in marking unpriced cycles '?' instead of $0. That is a small loss and does not outweigh B's simpler structure.",
+    "simpler_arm": "NEW"
+   },
+   "pair2": {
+    "simpler": "A",
+    "correct_A": true,
+    "correct_B": true,
+    "edges_A": "Missing file: cycle_runner.read returns '', so it prints a RESULT with ok false and cycles 0 (no crash, but it looks the same as an empty file). Empty file: ok false. One row: works. Repeated priced CYCLE lines are summed. Unpriced cycles print '?'.",
+    "edges_B": "Missing file: explicit check, RESULT with ok false and an error message, exit code 1. Empty file: ok true, cycles 0. One row: works. Unpriced cycles print '$?'. When a cycle has several priced CYCLE lines, the last one wins instead of being summed (no such cycle in this input). It also reports how each cycle's last round ended.",
+    "reasons": "A is about 45 lines, top-level code with three regexes, and gives the same output on this log. B is about 100 lines with lb_collect imports, a fallback regex and a selfcheck. B handles a missing file more clearly, but A already ends cleanly with ok false. B's 'last wins' rule is a hidden change from summing.",
+    "simpler_arm": "OLD"
+   }
+  },
+  "raw": "{\"pair1\": {\"simpler\": \"B\", \"correct_A\": true, \"correct_B\": true, \"edges_A\": \"Missing file: crashes with a traceback and prints no RESULT. Empty file: RESULT with cycles 0. One row: works. Unpriced or orphaned cycles show '?' and are counted as cycles_unpriced. Unmatched ASSIGN end lines are counted.\", \"edges_B\": \"Missing file: crashes with a traceback and prints no RESULT. Empty file: RESULT with ok true and cycles 0. One row: works. The selfcheck covers empty input and repeated cycle numbers. Unpriced cycles (116, 120, 141, 157) print $0.0000 instead of unknown.\", \"reasons\": \"B reads the log once with two regexes and has a small selfcheck. A calls cycle_lines once per cycle, which re-reads the whole log about 170 times, and checks 'priced' separately. A is better only in marking unpriced cycles '?' instead of $0. That is a small loss and does not outweigh B's simpler structure.\"}, \"pair2\": {\"simpler\": \"A\", \"correct_A\": true, \"correct_B\": true, \"edges_A\": \"Missing file: cycle_runner.read returns '', so it prints a RESULT with ok false and cycles 0 (no crash, but it looks the same as an empty file). Empty file: ok false. One row: works. Repeated priced CYCLE lines are summed. Unpriced cycles print '?'.\", \"edges_B\": \"Missing file: explicit check, RESULT with ok false and an error message, exit code 1. Empty file: ok true, cycles 0. One row: works. Unpriced cycles print '$?'. When a cycle has several priced CYCLE lines, the last one wins instead of being summed (no such cycle in this input). It also reports how each cycle's last round ended.\", \"reasons\": \"A is about 45 lines, top-level code with three regexes, and gives the same output on this log. B is about 100 lines with lb_collect imports, a fallback regex and a selfcheck. B handles a missing file more clearly, but A already ends cleanly with ok false. B's 'last wins' rule is a hidden change from summing.\"}}"
  }
 }

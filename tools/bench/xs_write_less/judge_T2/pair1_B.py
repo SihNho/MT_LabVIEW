@@ -1,48 +1,53 @@
 # ---
-# labview: none
+# labview: none        # reads two saved Error List JSON files offline
 # hardware: none
 # ---
-r"""el_diff - the Error List items in one stored read but not the other (OFFLINE, json only, writes nothing).
-Found before writing: errorlist_check.class_counts(items, ocr=True) ({norm_ocr(raw): n}, tools/errorlist_check.py:471) is the
-item key every Error List check already uses; this file CALLS it and only subtracts the two count maps.
-    py tools/bench/xs_write_less/NEW_T2_r1/el_diff.py <a.json> <b.json>"""
-import collections, json, os, sys                                                          # noqa: E401
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..")))
-from errorlist_check import class_counts, norm_ocr                                         # noqa: E402
+"""el_diff - items in one Error List read but not the other (multiset, keyed by errorlist_check.norm of `raw`).
+
+  py el_diff.py [<a.json> <b.json>]       default: the c140_3 / c141 p4s01 pair in ../inputs
+Prints the items only in A, then only in B, then a RESULT {...} line.
+"""
+import collections, json, os, sys
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
+sys.path.insert(0, os.path.join(ROOT, "tools"))
+import errorlist_check as EC                                   # noqa: E402  (norm only; no LabVIEW import)
+
+INPUTS = os.path.join(HERE, "..", "inputs")
+DEFAULT = ("errorlist_scratch_c140_3_ring_p4s01_20261002_205117_20261002_205859.json",
+           "errorlist_scratch_c141_p4s01_20261002_230228_20261002_230850.json")
 
 
-def diff(items_a, items_b):
-    """(only_a, only_b): {class key: n} of the items in one read beyond the other, counts included, and {key: raw} for display."""
-    # shortcut: keys on the OCR-folded raw text only (vi name, row, detail ignored); upgrade if two classes share a raw text.
-    ca, cb = collections.Counter(class_counts(items_a, ocr=True)), collections.Counter(class_counts(items_b, ocr=True))
-    raw = {norm_ocr(it.get("raw")): it.get("raw") or "" for it in list(items_b or []) + list(items_a or [])}
-    return dict(ca - cb), dict(cb - ca), raw
+def raws(path):
+    return [it.get("raw") or "" for it in json.load(open(path, encoding="utf-8")).get("items") or []]
 
 
-# self-check: counts matter (2 vs 1 of a class is one extra), OCR aliases fold, empty input is fine
-_a = [{"raw": "X: y"}, {"raw": "X: y"}, {"raw": "SubVI z"}]
-_b = [{"raw": "X: y"}, {"raw": "SubVl z"}, {"raw": "W"}]
-assert diff(_a, _b)[:2] == ({"xy": 1}, {"w": 1}), diff(_a, _b)
-assert diff([], [])[:2] == ({}, {})
+def only_in(a, b):
+    """Raws of `a` left after removing, per norm key, as many as `b` holds (multiset difference)."""
+    left = collections.Counter(EC.norm(r) for r in b)
+    out = []
+    for r in a:
+        k = EC.norm(r)
+        if left[k]:
+            left[k] -= 1
+        else:
+            out.append(r)
+    return out
 
 
-def main(pa, pb):
-    a, b = (json.load(open(p, encoding="utf-8")).get("items") or [] for p in (pa, pb))
-    only_a, only_b, raw = diff(a, b)
-    for name, p, only in (("A", pa, only_a), ("B", pb, only_b)):
-        print("only in %s (%s): %d item(s)" % (name, os.path.basename(p), sum(only.values())))
-        for k, n in sorted(only.items()):
-            print("  %d x %s" % (n, raw[k] or "(empty raw)"))
-    return {"ok": True, "a_items": len(a), "b_items": len(b),
-            "only_a": sum(only_a.values()), "only_b": sum(only_b.values())}
+def main():
+    pa, pb = sys.argv[1:3] if len(sys.argv) >= 3 else [os.path.join(INPUTS, n) for n in DEFAULT]
+    a, b = raws(pa), raws(pb)
+    only_a, only_b = only_in(a, b), only_in(b, a)
+    for name, path, rows in (("A", pa, only_a), ("B", pb, only_b)):
+        print("only in %s (%s): %d" % (name, os.path.basename(path), len(rows)))
+        for r, n in sorted(collections.Counter(rows).items()):
+            print("  %2d x %s" % (n, r or "<empty raw>"))
+    print("RESULT " + json.dumps({"a": os.path.basename(pa), "b": os.path.basename(pb), "n_a": len(a),
+                                  "n_b": len(b), "only_a": len(only_a), "only_b": len(only_b),
+                                  "identical": not only_a and not only_b}))
 
 
 if __name__ == "__main__":
-    try:
-        if len(sys.argv) != 3:
-            raise ValueError("usage: el_diff.py <a.json> <b.json>")
-        r = main(sys.argv[1], sys.argv[2])
-    except (OSError, ValueError) as e:
-        r = {"ok": False, "error": "%s: %s" % (type(e).__name__, e)}
-    print("RESULT " + json.dumps(r))
-    sys.exit(0 if r["ok"] else 1)
+    main()

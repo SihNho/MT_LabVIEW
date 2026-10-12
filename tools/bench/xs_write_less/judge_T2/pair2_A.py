@@ -2,63 +2,46 @@
 # labview: none
 # hardware: none
 # ---
-"""el_diff.py - Error List items in one read but not the other (per item class, with counts), then a RESULT line.
+"""el_diff - items in one Error List read (errorlist_check JSON) but not the other, counted as a multiset
+(the same row may appear several times). Key = errorlist_check.norm_ocr(raw), the shared OCR-folded form.
 
-  py el_diff.py <errorlist_a.json> <errorlist_b.json>
-
-Item class = errorlist_check.class_counts(items, ocr=True) key (raw text normalised, OCR aliases folded), so an OCR
-spelling change ('anvthing') or spacing change is not reported as a difference. No second parser or normaliser.
+  py el_diff.py <a.json> <b.json>
+Last line: RESULT {...}.
 """
+import collections
 import json
 import os
 import sys
-from collections import Counter
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-TOOLS = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
-sys.path.insert(0, TOOLS)
-from errorlist_check import class_counts, norm_ocr  # noqa: E402
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
+sys.path.insert(0, os.path.join(ROOT, "tools"))
+from errorlist_check import norm_ocr  # noqa: E402  stdlib-only at import; LabVIEW modules load lazily
 
-
-# shortcut: compares by item text only, so two same-text items at different diagram places are one class with a
-# count; upgrade to a position/uid key once Error List reads carry the object uid (today uid=None).
-def diff(items_a, items_b):
-    """(only_a, only_b): {class key: surplus count} for each side."""
-    ca, cb = Counter(class_counts(items_a, ocr=True)), Counter(class_counts(items_b, ocr=True))
-    return dict(ca - cb), dict(cb - ca)
+INPUTS = os.path.join(ROOT, "tools", "bench", "xs_write_less", "inputs")
+DEFAULT = (os.path.join(INPUTS, "errorlist_scratch_c140_3_ring_p4s01_20261002_205117_20261002_205859.json"),
+           os.path.join(INPUTS, "errorlist_scratch_c141_p4s01_20261002_230228_20261002_230850.json"))
 
 
-def label(items, key):
-    """The first raw text in items whose class key is key (readable name for a folded key)."""
-    return next((it.get("raw") for it in items if norm_ocr(it.get("raw")) == key), key)
+def load(path):
+    items = json.load(open(path, encoding="utf-8"))["items"]
+    count = collections.Counter(norm_ocr(it["raw"]) for it in items)
+    text = {norm_ocr(it["raw"]): it["raw"] for it in items}
+    return count, text
 
 
-_a = [{"raw": "Wire: Wire has loose ends."}, {"raw": "This wire is not connected to anything."}] * 2
-_b = [{"raw": "This wire is not connected to anvthing."}, {"raw": "Wire:Wire has loose ends."}]
-assert diff(_a, _b) == ({norm_ocr(_a[0]["raw"]): 1, norm_ocr(_a[1]["raw"]): 1}, {})
-assert diff([], []) == ({}, {})
-assert diff([], _b)[1] and not diff([], _b)[0]
-assert label(_b, norm_ocr("Wire: Wire has loose ends.")) == "Wire:Wire has loose ends."
+def main():
+    a, b = sys.argv[1:3] if len(sys.argv) >= 3 else DEFAULT
+    (ca, ta), (cb, tb) = load(a), load(b)
+    only_a, only_b = ca - cb, cb - ca
+    for name, only, text in ((a, only_a, ta), (b, only_b, tb)):
+        print("only in {0}: {1}".format(os.path.basename(name), sum(only.values())))
+        for k in sorted(only):
+            print("  {0:>3} x {1}".format(only[k], text[k]))
+    print("RESULT " + json.dumps({"a": os.path.basename(a), "b": os.path.basename(b),
+                                  "n_a": sum(ca.values()), "n_b": sum(cb.values()),
+                                  "only_a": sum(only_a.values()), "only_b": sum(only_b.values()),
+                                  "rc": 0}))
 
-if len(sys.argv) != 3:
-    print("RESULT " + json.dumps({"ok": False, "why": "usage: el_diff.py <a.json> <b.json>"}))
-    sys.exit(2)
-paths = sys.argv[1:]
-missing = [p for p in paths if not os.path.isfile(p)]
-if missing:
-    print("RESULT " + json.dumps({"ok": False, "why": "missing file", "files": missing}))
-    sys.exit(1)
 
-reads = [json.load(open(p, encoding="utf-8")) for p in paths]
-items = [r.get("items") or [] for r in reads]
-only = diff(items[0], items[1])
-for side, (p, its, d) in enumerate(zip(paths, items, only)):
-    print("only in %s (%d of %d items):" % (os.path.basename(p), sum(d.values()), len(its)))
-    for k, n in sorted(d.items()):
-        print("  %2d x %s" % (n, label(its, k)))
-    if not d:
-        print("  (none)")
-print("RESULT " + json.dumps({
-    "ok": True, "n_items": [len(i) for i in items], "n_reported": [r.get("n_reported") for r in reads],
-    "only_a": {label(items[0], k): n for k, n in only[0].items()},
-    "only_b": {label(items[1], k): n for k, n in only[1].items()}}))
+if __name__ == "__main__":
+    main()

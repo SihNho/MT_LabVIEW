@@ -1,0 +1,29 @@
+{"schema": "result/1", "id": "chat-X13b", "status": "PASS",
+ "gates": {"pass": 4, "fail": 0},
+ "first_fail": null,
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/bench/xs_write_less/run_bench.py", "md5": "8799a363314a9909d057eb12f66ee17b"},
+  {"path": "tools/bench/xs_write_less/results.json", "md5": "1f6db209530f885acc57abd380f1c3c1"},
+  {"path": "tools/bench/xs_write_less/judge_mapping.json", "md5": "639d5850f7d710da2838ad7ebfe0866e"},
+  {"path": "tools/bench/xs_write_less/judge_results.json", "md5": "138476287c9e55d85fdaed6228da5e7f"}
+ ],
+ "facts": [
+  "Denial cause: all 5 denied cells cd'd into tools/... before Write; relative rule follows cwd. Fix: absolute //g/... rule (run_bench.py:136,151)",
+  "Proof cell NEW_T1_r2 cd'd into /tools then Write was granted, 0 Write denials (NEW_T1_r2/cell.log); then 4 more re-run, all wrote (cells_b2.log)",
+  "12 of 12 scripts now exist, all rc 0 with a RESULT line (judge_b.log CHECK lines; results.json)",
+  "T1 truth = gate_fp.is_checker_gate (run_bench.py:212): 29 open = 26 checker / 3 non-checker; 0 of 4 scripts print those classes",
+  "T1 informational: OLD_r1 and NEW_r2 print exact per-gate counts; OLD_r2 and NEW_r1 merge guard_peer.undisposed into guard_peer, against gate_fp:53",
+  "T3 truth = CYCLE-line USD + last ASSIGN end round (run_bench.py:255): 159 priced, 25 with rounds; all 4 scripts match 159/159 and 25/25",
+  "T2 checker unchanged and not a verdict: raw diff is 7 rows, OCR-folded 1; OLD_r2, NEW_r1, NEW_r2 print the 1 folded item, OLD_r1 prints 3",
+  "Judge parse fixed by ucbench.parse_stream (run_bench.py:416); 3 judges rc 0, all 6 verdicts parsed; mapping written 22:00:40 before launch",
+  "Blind verdicts: simpler = NEW in 5 of 6 pairs (T1 p1,p2; T2 p1,p2; T3 p1), OLD in T3 p2; judges marked all 12 scripts correct",
+  "Totals OLD/NEW: LOC 174/244, asserts 0/21, unasked opts 1/0, shortcut 0/2, skipped 0/1, cells $4.24/$4.94, 6.7/7.9 min"
+ ],
+ "open": [
+  "T1 truth taken literally (is_checker_gate, checker/non-checker) makes every T1 script wrong; keep it, or use per-gate counts?",
+  "T2 truth was not redefined: raw rows (7 diffs) or OCR-folded (1 diff)? The checker scores raw, so every T2 script fails it"
+ ],
+ "cost": {"usd": 5.42, "minutes": 14, "labview_runs": 0},
+ "note": "5 cells re-run $3.98 + 3 judges $1.44. NEW scripts are about 40% longer (asserts and edge handling), yet the blind judges called them simpler in 5 of 6 pairs. n=2 per cell cannot separate the arm from run-to-run noise."
+}

@@ -1,0 +1,18 @@
+{
+ "schema": "task/1", "id": "chat-X13b", "kind": "measure",
+ "goal": "Finish the write-less A/B: re-run the 5 cells whose Write was denied, fix the judge parse, define the truth, re-judge all 3 pairs",
+ "why": "chat-X13 FAIL on bench setup (Write allow rule refused 5 cells; judge JSON unparsed). User 2026-10-12 '추가하고 테스트'. Detail: brief_chat-X13.md",
+ "inputs": [{"path": "tools/bench/cards/brief_chat-X13.md", "md5": "08adee4fbf69ab3ac0a398380b1ae593"},
+            {"path": "tools/bench/xs_write_less/run_bench.py", "md5": "3cff87e98aa0c369bdd33a4ce5c1437f"}],
+ "pass": [
+  "Write allow rule fixed (absolute path form) and proven on one cell first; then NEW_T1_r2, OLD_T2_r1, OLD_T2_r2, NEW_T3_r1, NEW_T3_r2 re-run",
+  "truth: T1 class = tools/gate_fp.py's own classification; T3 cost = the CYCLE line USD, result = last ASSIGN round of that cycle",
+  "judge parse fixed (result line, not the trailing summary); 3 task pairs judged blind, mapping recorded first",
+  "report returned as text (12 cells table, totals per arm); bench folder committed"
+ ],
+ "outputs": ["tools/bench/xs_write_less/"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/xs_write_less/**"], "status_edit": false, "git_commit": true, "peers": []},
+ "budget": {"failures": 2, "minutes": 60}, "unblocks": "M3",
+ "rules": ["offline; cells write only under tools/bench/xs_write_less/", "keep the 7 existing cell outputs; re-run only the 5 missing", "Edit/Write only, no heredoc patches; refusals quoted, never dodged", "report as text; the chat writes the report file"]
+}

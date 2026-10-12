@@ -39,9 +39,12 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 MAIN = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
 sys.path.insert(0, os.path.join(MAIN, "tools"))
 sys.path.insert(0, os.path.join(MAIN, "tools", "bench", "matbench"))
+sys.path.insert(0, os.path.join(MAIN, "tools", "bench", "ucbench"))
 import protocol  # noqa: E402
-import score     # noqa: E402  - envelope(): the claude -p result object out of a bgrun log
+import gate_fp   # noqa: E402  - T1 truth: read_queue + is_checker_gate (gate_fp.py:60), its own classification
+import score     # noqa: E402  - rd()
 from matbench import cell_env  # noqa: E402
+from ucbench import parse_stream  # noqa: E402  - stream-json -> the type=="result" event (chat-X13b: not envelope())
 
 OLD_COMMIT = "8b4c43f5"
 REL = "tools/bench/xs_write_less"
@@ -130,6 +133,13 @@ def run_pool(jobs, par, max_min):
     return wall
 
 
+def abs_rule(rel):
+    """chat-X13b: a RELATIVE Write rule resolves against the session's current dir, which a cell's `cd` moves (all 5
+    denied cells cd'd into tools/... before writing). Absolute form: '//' + the path normalized to POSIX (G:\\x -> /g/x)."""
+    p = ab(rel).replace("\\", "/")
+    return "//" + p[0].lower() + p[2:] if p[1:2] == ":" else "/" + p
+
+
 def run_cells(only=None):
     jobs = []
     for c in cells():
@@ -138,7 +148,8 @@ def run_cells(only=None):
         d = ab(REL + "/" + c)
         os.makedirs(d, exist_ok=True)
         shutil.copyfile(ab(REL + "/arms/%s.md" % c.split("_")[0]), os.path.join(d, "script-rules.md"))
-        tools = ["Read", "Glob", "Grep", "Write(%s/%s/**)" % (REL, c), "Edit(%s/%s/**)" % (REL, c),
+        own = abs_rule("%s/%s" % (REL, c)) + "/**"
+        tools = ["Read", "Glob", "Grep", "Write(%s)" % own, "Edit(%s)" % own,
                  "Bash(py *)", "Bash(python *)", "Bash(ls *)", "Bash(wc *)", "Bash(head *)"]
         jobs.append((c, os.path.join(d, "cell.log"), claude_cmd(cell_prompt(c), tools)))
     wall = run_pool(jobs, 4, 10)
@@ -199,19 +210,26 @@ def metrics(src, asked_positionals):
 
 # ---------------------------------------------------------------- truth (independent of the cells)
 def truth_t1(path):
-    rows = [json.loads(ln) for ln in open(path, encoding="utf-8") if ln.strip()]
-    op = [r["gate"] for r in rows if str(r.get("status", "")).lower() == "open"]
-    return {"full": collections.Counter(op), "two": collections.Counter(":".join(g.split(":")[:2]) for g in op),
+    """chat-X13b truth: the class of an OPEN entry is gate_fp.py's own classification, is_checker_gate (gate_fp.py:60,
+    stored as the entry's `checker` field at :120) -> 'checker' / 'non-checker'. full/two/one = informational."""
+    op = [r.get("gate") or "" for r in gate_fp.read_queue(path) if r.get("status") == "open"]
+    return {"classes": collections.Counter("checker" if gate_fp.is_checker_gate(g) else "non-checker" for g in op),
+            "full": collections.Counter(op), "two": collections.Counter(":".join(g.split(":")[:2]) for g in op),
             "one": collections.Counter(g.split(":")[0] for g in op), "total": len(op)}
+
+
+def _has(lines, word_re, n):
+    return any(re.search(word_re, ln, re.I) and re.search(r"(?<![\w.])%d(?![\w.])" % n, ln) for ln in lines)
 
 
 def check_t1(out, tr):
     lines = out.splitlines()
-    ok = {}
-    for k in ("full", "two", "one"):
-        ok[k] = bool(tr[k]) and all(any(g in ln and re.search(r"(?<![\w.])%d(?![\w.])" % n, ln) for ln in lines)
-                    for g, n in tr[k].items())
-    return {"correct": any(ok.values()), "grouping_ok": ok, "total_open": tr["total"]}
+    ok = {k: bool(tr[k]) and all(any(g in ln and re.search(r"(?<![\w.])%d(?![\w.])" % n, ln) for ln in lines)
+                                 for g, n in tr[k].items()) for k in ("full", "two", "one")}
+    cls = {"checker": r"(?<!non)(?<!non-)(?<!non )(?<!not )\bchecker\b(?![:\w])",
+           "non-checker": r"\b(non-?\s?checker|not a checker)\b"}
+    correct = all(_has(lines, cls[k], n) for k, n in tr["classes"].items())
+    return {"correct": correct, "classes": dict(tr["classes"]), "grouping_ok": ok, "total_open": tr["total"]}
 
 
 def truth_t2(pa, pb):
@@ -229,37 +247,54 @@ def check_t2(out, tr):
             "out_lines": len(out.splitlines()), "expected_diffs": n}
 
 
-ASSIGN_RE = re.compile(r"^ASSIGN \| [^|]+\| cycle (\d+) round \d+ \| end [^|]*\| \$([\d.]+) \|[^|]*\|[^|]*\| ([A-Z_]+)")
+ASSIGN_RE = re.compile(r"^ASSIGN \| [^|]+\| cycle (\d+) round (\d+) \| end [^|]*\| \$([\d.]+) \|[^|]*\|[^|]*\| "
+                       r"([A-Z_]+)")
 CYCLE_RE = re.compile(r"^CYCLE (\d+) \|[^|]*\|[^|]*\|[^|]*\| \$([\d.]+)")
 
 
 def truth_t3(path):
-    out = collections.defaultdict(lambda: {"assign_usd": 0.0, "kinds": set(), "cycle_usd": []})
+    """chat-X13b truth: cost = the USD of the cycle's CYCLE line (one priced line per number in the snapshot; a rerun
+    leaves only unpriced attempt lines), result = the kind of the LAST ASSIGN end round of that cycle in file order
+    (cycle 147 logs round 1 twice; the orphaned cycle 157 has no end round and no price, so it is not scored)."""
+    out = collections.defaultdict(lambda: {"usd": None, "rounds": []})
     for ln in open(path, encoding="utf-8", errors="replace"):
         m = ASSIGN_RE.match(ln)
         if m:
-            c = out[int(m.group(1))]
-            c["assign_usd"] += float(m.group(2))
-            c["kinds"].add("PURPOSE_MET" if m.group(3).startswith("PURPOSE") else "HANDBACK")
+            out[int(m.group(1))]["rounds"].append("PURPOSE_MET" if m.group(4).startswith("PURPOSE") else "HANDBACK")
         m = CYCLE_RE.match(ln)
         if m:
-            out[int(m.group(1))]["cycle_usd"].append(float(m.group(2)))
-    return dict(out)
+            c = out[int(m.group(1))]
+            c["usd"] = (c["usd"] or 0.0) + float(m.group(2))
+    return {c: {"usd": v["usd"], "last": v["rounds"][-1] if v["rounds"] else None, "n_rounds": len(v["rounds"])}
+            for c, v in out.items()}
+
+
+FIRST_INT = re.compile(r"(?<![\d.$])(\d+)(?![\d.])")
 
 
 def check_t3(out, tr):
-    lines = out.splitlines()
-    bad_kind, cost_hits, with_assign = [], 0, [c for c in tr if tr[c]["kinds"]]
-    for c in with_assign:
-        ls = [ln for ln in lines if re.search(r"(?<![\d.$])%d(?![\d.])" % c, ln)]
-        if not all(any(k in ln for ln in ls) for k in tr[c]["kinds"]):
-            bad_kind.append(c)
-        nums = {round(float(x), 2) for ln in ls for x in re.findall(r"\d+\.\d+", ln)}
-        cand = {round(tr[c]["assign_usd"], 2), round(sum(tr[c]["cycle_usd"]), 2),
-                round(tr[c]["assign_usd"] + sum(tr[c]["cycle_usd"]), 2)} | {round(x, 2) for x in tr[c]["cycle_usd"]}
-        cost_hits += bool(nums & cand)
-    return {"correct": not bad_kind and cost_hits == len(with_assign), "cycles_with_assign": len(with_assign),
-            "kind_wrong": bad_kind[:10], "cost_matched": cost_hits}
+    """a cycle's output lines = lines whose first standalone integer is the cycle number; cost ok = a number on them
+    within 0.006 of the CYCLE USD; result ok = the LAST PURPOSE_MET/HANDBACK on them is the last round's kind."""
+    by = collections.defaultdict(list)
+    for ln in out.splitlines():
+        m = FIRST_INT.search(ln)
+        if m:
+            by[int(m.group(1))].append(ln)
+    cost_bad, kind_bad = [], []
+    for c, t in tr.items():
+        ls = by.get(c, [])
+        if t["usd"] is not None and not any(abs(float(x) - t["usd"]) < 0.006
+                                            for ln in ls for x in re.findall(r"\d+\.\d+", ln)):
+            cost_bad.append(c)
+        if t["last"]:
+            kinds = [k for ln in ls for k in re.findall(r"PURPOSE_MET|HANDBACK", ln)]
+            if not kinds or kinds[-1] != t["last"]:
+                kind_bad.append(c)
+    n_cost = sum(t["usd"] is not None for t in tr.values())
+    n_kind = sum(bool(t["last"]) for t in tr.values())
+    return {"correct": not cost_bad and not kind_bad, "cycles_priced": n_cost, "cost_matched": n_cost - len(cost_bad),
+            "cycles_with_assign": n_kind, "kind_matched": n_kind - len(kind_bad), "cost_wrong": cost_bad[:10],
+            "kind_wrong": kind_bad[:10]}
 
 
 # ---------------------------------------------------------------- check
@@ -306,7 +341,7 @@ def check_all():
         arm, t, rep = c.split("_")
         d = ab(REL + "/" + c)
         log = score.rd(os.path.join(d, "cell.log"))
-        env = score.envelope(log) or {}
+        env = parse_stream(log)[0]
         r = {"cell": c, "arm": arm, "task": t, "rep": rep, "usd": env.get("total_cost_usd"),
              "min": round((env.get("duration_ms") or 0) / 60000.0, 2), "bgrun_end": "BGRUN END rc=0" in log,
              "reply": (env.get("result") or "")[:1500]}
@@ -375,9 +410,13 @@ def run_judges():
               open(ab(REL + "/judge_mapping.json"), "w"), indent=1)   # BEFORE any judge starts
     print("MAPPING", json.dumps(mapping), flush=True)
     run_pool(jobs, 3, 10)
+    return parse_judges(mapping)
+
+
+def parse_judges(mapping):
     out = {}
     for t in TASKS:
-        env = score.envelope(score.rd(ab(REL + "/judge_%s/judge.log" % t))) or {}
+        env = parse_stream(score.rd(ab(REL + "/judge_%s/judge.log" % t)))[0]
         txt = env.get("result") or ""
         m = re.search(r"\{.*\}", txt, re.S)
         try:
@@ -401,15 +440,27 @@ def selftest():
     assert m["loc"] == 8 and m["doc_lines"] == 2, m
     assert m["non_stdlib_imports"] == ["yaml"] and m["asserts"] == 1 and m["shortcut_comments"] == 1, m
     assert m["argparse_flags"] == 1 and m["unasked_options"] == 1, m
-    tr = {"full": collections.Counter({"guard_peer": 2, "checker:a:b": 1}), "two": collections.Counter(),
+    tr = {"classes": collections.Counter({"checker": 2, "non-checker": 1}),
+          "full": collections.Counter({"guard_peer": 2, "checker:a:b": 1}), "two": collections.Counter(),
           "one": collections.Counter(), "total": 3}
-    assert check_t1("guard_peer  2\nchecker:a:b 1\n", tr)["correct"]
-    assert not check_t1("guard_peer  3\nchecker:a:b 1\n", tr)["correct"]
-    t3 = {165: {"assign_usd": 5.98, "kinds": {"HANDBACK"}, "cycle_usd": [1.0]}}
-    assert check_t3("cycle 165  $5.98  HANDBACK\n", t3)["correct"]
-    assert not check_t3("cycle 165  $5.98  PURPOSE_MET\n", t3)["correct"]
+    assert check_t1("checker  2\nnon-checker 1\n", tr)["correct"]
+    assert not check_t1("guard_peer  2\nchecker:a:b 1\n", tr)["correct"]      # per-gate counts are not the classes
+    assert check_t1("guard_peer  2\nchecker:a:b 1\n", tr)["grouping_ok"]["full"]
+    t3 = {165: {"usd": 42.4116, "last": "HANDBACK", "n_rounds": 3}, 1: {"usd": 28.2575, "last": None, "n_rounds": 0}}
+    assert check_t3("cycle 1 $28.26 -\ncycle 165  $42.41  r1 PURPOSE_MET, r2 HANDBACK\n", t3)["correct"]
+    assert not check_t3("cycle 1 $28.26\ncycle 165  $42.41  r1 HANDBACK, r2 PURPOSE_MET\n", t3)["correct"]
+    assert not check_t3("cycle 1 $28.26\ncycle 165  $5.98  HANDBACK\n", t3)["correct"]   # ASSIGN sum is not the cost
+    assert abs_rule(REL + "/X") == "//" + MAIN[0].lower() + MAIN[2:].replace("\\", "/") + "/" + REL + "/X"
+    fx = ab(INP + "/cycle_runner.log")
+    if os.path.exists(fx):                       # the snapshot: 58 ASSIGN end rounds in 25 cycles (chat-X13 OLD_T3)
+        t = truth_t3(fx)
+        assert sum(v["n_rounds"] for v in t.values()) == 58 and sum(bool(v["last"]) for v in t.values()) == 25, t
+        assert t[164]["last"] == "PURPOSE_MET" and abs(t[164]["usd"] - 58.3957) < 1e-6 and t[169]["usd"] is None
+    jl = ab(REL + "/judge_T1/judge.log")
+    if os.path.exists(jl):                       # run-1 judge log: the result event parses (envelope() did not)
+        assert "pair1" in json.loads(re.search(r"\{.*\}", parse_stream(score.rd(jl))[0]["result"], re.S).group(0))
     assert len(cells()) == 12
-    return 4
+    return 9
 
 
 def main():
