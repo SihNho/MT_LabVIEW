@@ -59,5 +59,21 @@ review; a diff-only review never re-reads copied lines) and nobody's job was to 
    a docstring gets its one-line description in `docs/fn_descriptions.json` (key `<module>.<function>`), not a docstring,
    so no `file:line` citation shifts; a NEW function gets a docstring (user 2026-10-09 "권장안대로 처리", card chat-T8).
 
+### Write less (user 2026-10-12 "추가하고 테스트"; taken from the Ponytail ruleset, DietrichGebert/ponytail
+### skills/ponytail/SKILL.md, after a read-only review - the plugin itself is NOT installed)
+
+These never override rule 1a: the original's computation is never "simplified", shortened or deleted.
+
+10. **Ask whether it needs to exist before writing it.** No option, flag, parameter or "for later" branch the card did
+    not ask for. Name what you skipped in ONE line of the result card's `facts` ("skipped: …").
+11. **Standard library or an installed package before new code.** Never add a dependency for a few lines.
+12. **Code moved into a shared module keeps its error handling and validation unchanged** (rule 4's extraction is a
+    move, not a rewrite).
+13. **A shortcut with a known limit says so in place:** `# shortcut: <limit>, <when to upgrade>`.
+14. **New non-trivial logic in ANY script (a branch, a parser, a comparison) leaves at least one `assert`-based
+    self-check** that runs with the script - not only the shared functions of rule 7.
+15. **Between options of the same size, take the one that is correct at the edges** (empty input, one row, missing
+    file). A one-liner that needs decoding is not short.
+
 The other script rules still hold: scope header (`CLAUDE.md` "ERRORS ARE CAUGHT AT THE START"), `RESULT {...}` line,
 runs only under `bgrun --material`, names from `docs/NAMES.md`, Edit/Write tools only.
