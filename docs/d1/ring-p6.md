@@ -90,3 +90,50 @@ the top of `docs/d1/INDEX.md`.
        files it compared; what is missing to point it at a ring file. Facts only; no tool built.
      - **(h) Order:** (d) first; (e)-(g) offline beside or after it; then the tooling notes (2), (6), (7). Nothing in
        `tools/hooks/**`. The next judgement writes PD405 = the P6-1 repair rows from (d)-(f).
+
+405. **(cycle 168 judgement, 2026-10-12 — after `tools/bench/cards/assign_result_167_1.json` (cards 167-a1-1..5), discussion
+     c168-outcome (`tools/bench/debate/c168-outcome/summary.json`, steer_168 FOLLOWED) and retrospective-cycle167)**
+     USER-RULES: U1 (relied on: the 168 card saves nothing that is adopted; the one deletion is measured on a scratch copy
+     and judged here before any P6-1 launch), U12 (relied on: #11261 and the other DISP rows feed display only; their feed is
+     rebuilt by the display loop fed by locals after P6, so P6-1 leaves them unfed), U4 (relied on: no control or data route
+     changes), U6/U8/U9/U13 (the ring and overload path are not touched); none contradicted.
+     - **(a) Accepted from 167 (items 0-10):** RBW measured on a scratch copy of 75773b0d: ExecState 0 → 0, wires 2091 → 2066
+       (25 deleted = 22 termless + 2 source-only + 1 data-carrying, w25618 #11261 'appended array' → t8323 'Force (pN) vs
+       Extension (nm)'), Error List 47 → 1 item "Build Array: Contains unwired or bad terminal", uid unread
+       (`tools/bench/diag_c167_a1_1_facts.md:14-25`); after-RBW graph `graph_ring_p6rbw_20261012_191349.json` c5531708;
+       closure table `p6_closure` (R 27, D 19, DISP 5, C 2, U 22); C-row facts `p6_crows`; replay readiness `p6_replay_ready`;
+       the tooling notes. The 167-a1-1 conversion of launch gates A0/R1 into rows was NOT the card's to make (retrospective
+       fault 2); its measurements stand because A0 read 0 and the wire count dropped by 25 as stated.
+     - **(b) 'RBW 후 소멸' (vanished after RBW):** the 22 U rows (looseends EL[0,1,4,6,14,21,25,31..42,45,46] and twotypes
+       EL[3]) are items RBW removed while deleting no data-carrying wire other than w25618 (`p6_rbw_deleted.json` 0a6c1206:
+       data-carrying 1). They are re-classed D-by-measurement and need no P6-1 row. **U = 0 (PD404(b)) applies to the P6
+       candidate's REMAINING Error List items and computation-diff rows only**, not to historical items RBW removed.
+     - **(c) Which Build Array is left is UNMEASURED.** F1 attributes the item to #2626, but in 7815af09 every #2626 input is
+       wired while #11261 'array' / 'element' have no source (`prep_c167_a1_3_explore.log:44-47,60-61`). #11261 feeds the
+       Force-vs-Extension display only (`docs/d1/ring-p4.md:52`, PD295(b)). The 168 measurement: offline on c5531708, every
+       BuildArray node's input wiring + #11261's output path (compute / save / control or display only); then ONE LabVIEW card
+       on a fresh scratch byte copy of 75773b0d: RBW (the 167 verb) → delete #11261 (existing `delete_object` route) →
+       ExecState → full Error List → graph read (`stagekit.e5_check`). Nothing adopted. ExecState 1 = STRUCTURAL only; the
+       card then reports each PD404(b) save gate as a fact. ExecState 0 = the remaining Error List and graph are returned
+       and no further repair is guessed inside the card.
+     - **(d) P6-1 repair rows (provisional, final after (c)):** R1 = RBW (method 410, as 167); R2 = delete #11261. DISP rows
+       (5: t11270, t11273, t8323, t17272, t28786) stay UNFED in P6-1 — no local now (U12, PD295(b)); the display loop feeds
+       them after P6. PD404(b)'s computation-diff gate uses the FRAME-KEYED mode, with the five #376 tag-only rows (cal
+       cluster path, error in, file size, selected path, total data array in) counted R by PD374(d) (they are the PB rows the
+       P5 scratch recorded, `diag_c167_a1_3_facts.md:12-14`).
+     - **(e) C rows t10083 (#10068 'x') and t29256 (#29240 'x'), fed by #30240 'element' (FrameIdx) instead of S1's `#644` i:**
+       P6-1 keeps FrameIdx (the PD374(b) record counter); it is not rewired. Basis: in four stored A legs of the original the
+       frame step was never ≤ 0 (`p6_crows.md`, "Repeated BufNum": steps_le0 0), so the original never re-processes a frame.
+       FrameIdx counts processed frames from 0 while `#644` i counts 1.1 iterations from 0; they are equal only while 1.2 drops
+       no frame. Their equivalence on numbers out is judged by the P6-2 numeric replay only (rule 1a), not by this argument.
+     - **(f) 167's open notes:** (1) **correction:** card 110-6 ran nothing; the replay legs ran under 110-7 and DID drive the
+       PI stage and the ASI through the replay copy's device init, under `motor_gate --session` (`diag_c167_a1_4_facts.md:12-14`);
+       every P6-2 card states `hardware: motor_gate session` (rig 조립 only), never `none`. cal files: until the user answers
+       D-2026-10-12-01/02 the criterion in force stays PD374(f) (saved files bit-identical). (2) STATUS relocation, (3) el_class
+       vs `errorlist_check.class_counts`, (4) inline copies, U-row uid recovery, shared-function moves and re-pins are DEFERRED
+       until after P6-1 and P6-2 (steer_168 item 6). (6) fp-98 (stage_prerun X5) and fp-99 (protocol.py:572) are non-hook
+       entries; they are drained in the first tooling card after P6-2. The op label `rbw_method410` is accepted as the RBW
+       op's name.
+     - **(g) Launch gates a dry run can only stub** (ExecState before/after, wire-count drop, #11261 absent) are NAMED in the
+       card as expected-unverified (the existing release); a material session never turns a gate into a row (rule 7).
+     - **(h) Next:** cycle 169's judgement writes PD406 = the final P6-1 plan from (c)'s facts.

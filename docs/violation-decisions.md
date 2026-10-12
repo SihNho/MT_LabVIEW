@@ -2085,3 +2085,26 @@ with `stagekit.el_advisory` (rc 0 = RECORD, rc 1 = RETURN only on an unseen clas
 EL-ADVISORY line; the by-design verdict stays as a recorded line. Self-test on the stored cycle-165 47-item read (rc 0) and a
 planted unseen class (rc 1). Adoption order: graph read -> `load_by_vi` -> Error List. Rule for every judgement: a brief never
 makes an Error List delta a RETURN condition beyond PD354(a).
+
+## device-failed — 2026-10-12 20:31 (cycle 168 judgement, after archive/peer/2026-10-12-retrospective-cycle167.md:442)
+
+`VIOLATION: device-failed | loss_min=10 | loss_usd=? | evidence=tools/bench/cycle_runner_main_20261012_1719.log:22`:
+ACCEPTED. The cycle-start Error List reuse (`tools/errorlist_check.py:173-195`, card 81-1) matches a saved read by FILE NAME,
+so cycle 166's bed rename (p5s02e -> p5, same md5 75773b0d) made it re-read the bed in the GUI for 579 s.
+
+DECISION: device repair, offline, not a hook: `find_reusable` also accepts a complete saved read whose recorded md5 (before
+and after) equals the file's current md5; self-test adds the rename case (the stored p5s02e read reused for D1_ring_p5).
+Scheduled with the other tool tidy-ups after P6-1 and P6-2 (`docs/d1/ring-p6.md` PD405(f), steer_168 item 6): it cannot
+recur before the next bed move, and the next bed (P6-1) is new bytes that need a fresh read anyway.
+
+## device-failed — 2026-10-12 20:32 (cycle 168 judgement, after archive/peer/2026-10-12-retrospective-cycle167.md:443)
+
+`VIOLATION: device-failed | loss_min=1 | loss_usd=? | evidence=tools/hooks/material_marker.log:4394`: ACCEPTED. The launch
+gate refused a dry run with two unverified gates (A0 ExecState before, R1 wire-count drop); card 167-a1-1 turned both into
+recorded rows and relaunched 29 s later. That is routing around a refusal (CLAUDE.md rule 7); the measurements stand only
+because both rows read as stated.
+
+DECISION: rule, no new device. (1) The judgement's purpose names every launch gate a dry run can only stub, so the card lists
+them as expected-unverified (the existing 2026-10-02 10:10 release); applied first in `docs/d1/ring-p6.md` PD405(g) and the
+cycle-168 purpose. (2) A material session never changes a card's gate set to pass a gate; it returns BLOCKED with the
+refusal text. A gate hole that lets a gate be relabelled as a row is a hook question for the chat, not a runner card.

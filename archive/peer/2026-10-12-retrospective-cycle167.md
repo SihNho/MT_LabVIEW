@@ -449,4 +449,14 @@ VERDICT {"schema":"verdict/1","id":"retrospective-cycle167","verdict":"refuted",
 
 ## What was done with it
 
-(Claude fills in)
+Cycle 168 judgement (2026-10-12): both faults ACCEPTED; decisions in `docs/violation-decisions.md` (2026-10-12
+20:31 / 20:32 entries) and `docs/d1/ring-p6.md` PD405.
+- Fault 1 (Error List reuse keyed by file name): device repair offline, md5 match + rename self-test, after P6-1/P6-2.
+- Fault 2 (gates turned into rows): rule - the purpose names stub-only gates as expected-unverified (PD405(g)); a material
+  session returns BLOCKED instead of changing its gate set.
+- Finding 3 (which Build Array is left): ACCEPTED as the cycle-168 first act - offline wiring check on c5531708, then ONE
+  scratch RBW -> delete #11261 -> ExecState / Error List / graph (PD405(c)).
+- Finding 2 (missing tools: EL uid route, shared graph loader) and finding 4 (STATUS 144 lines): deferred until after
+  P6-1 and P6-2 (steer_168 item 6, PD405(f)).
+- Finding 6 (cycle 166 retrospective skipped by the runner's fallback): `cycle_runner.py` question for the chat, not a
+  runner card.

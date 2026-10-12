@@ -1,0 +1,20 @@
+BGRUN START 2026-10-12 20:39:28 limit 3.0 min: py -u tools/bench/diag_c168_a1_1_ba.py
+BGRUN PID 27420
+GATE PASS | P1 before graph graph_ring_p5s02e_20261012_173009.json md5 7815af0993bd8aeb1f14c7d3d76b0da1 vs 7815af09 | equal
+GATE PASS | P1 after graph graph_ring_p6rbw_20261012_191349.json md5 c55317089900b64f83f863fc381ed73c vs c5531708 | equal
+FACT before: BuildArray nodes 19; with unwired input [11261]; all wired [2626, 4117, 5123, 5368, 8566, 14259, 15744, 15756, 15874, 17227, 21109, 23365, 23899, 24257, 24902, 25992, 27844, 29973]
+FACT after: BuildArray nodes 19; with unwired input [11261]; all wired [2626, 4117, 5123, 5368, 8566, 14259, 15744, 15756, 15874, 17227, 21109, 23365, 23899, 24257, 24902, 25992, 27844, 29973]
+GATE PASS | P2 before: #11261 t11270 'array' and t11273 'element' have no wire/source | {11270: (0, 'graph_ring_p5s02e_20261012_173009.json:terminals[1446]'), 11273: (0, 'graph_ring_p5s02e_20261012_173009.json:terminals[1447]')}
+GATE PASS | P2 after: #11261 t11270 'array' and t11273 'element' have no wire/source | {11270: (0, 'graph_ring_p6rbw_20261012_191349.json:terminals[1446]'), 11273: (0, 'graph_ring_p6rbw_20261012_191349.json:terminals[1447]')}
+GATE PASS | P3 before: every #2626 input wired | ["t2832 'element' <- ['t30354 #30300 IndexArray']", "t4160 'element' <- ['t30159 #30119 IndexArray']", "t4165 'element' <- ['t30228 #30216 IndexArray']", "t4168 'array' <- ['t30473 #4594 Function']"]
+GATE PASS | P4 before: t11267 w25618 -> t8323 only | {'term_uid': 11267, 'term_name': 'appended array', 'is_source': True, 'wire_uid': 25618, 'row': 'graph_ring_p5s02e_20261012_173009.json:terminals[1445]', 'other_ends': [{'term_uid': 8323, 'term_name': 'Force (pN) vs Extension (nm) ', 'owner_uid': 23166, 'owner_class': 'Diagram', 'term_class': 'ControlTerminal', 'is_source': False, 'row': 'graph_ring_p5s02e_20261012_173009.json:terminals[1700]'}]}
+GATE PASS | P4 after: t11267 carries no wire | {'term_uid': 11267, 'term_name': 'appended array', 'is_source': True, 'wire_uid': 0, 'row': 'graph_ring_p6rbw_20261012_191349.json:terminals[1445]', 'other_ends': []}
+GATE PASS | P5 after: Wire objects == 2066 (brief step 4) | 2066
+FACT before: t11267 reach 1 keys, leaves [('8323|ControlTerminal|Force (pN) vs Extension (nm) |0', 'display-only')], overall display-only
+FACT before chain: t11267 #11261 BuildArray 'appended array' [graph_ring_p5s02e_20261012_173009.json:terminals[1445]] -> t8323 #23166 ControlTerminal 'Force (pN) vs Extension (nm) ' [graph_ring_p5s02e_20261012_173009.json:terminals[1700]]
+FACT before: rows sharing the leaf label: [{'term_uid': 8323, 'owner_uid': 23166, 'owner_class': 'Diagram', 'is_source': False, 'term_class': 'ControlTerminal', 'wire_uid': 25618, 'row': 'graph_ring_p5s02e_20261012_173009.json:terminals[1700]'}]
+FACT after: t11267 reach 0 keys, leaves [], overall none-reached
+FACT after: rows sharing the leaf label: []
+FACT delete prediction: attached []; Wire objs 2066 -> expected 2066
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":8,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/bench/p6_buildarray.json","md5":"302026dd2e7dbab7324f9dda75d0beea"},{"path":"tools/bench/p6_buildarray.md","md5":"7dba759cef3149475e8ad9bd1d80ffe1"}],"card":"168-a1-1","labview":"none"}
+BGRUN END rc=0 after 1s

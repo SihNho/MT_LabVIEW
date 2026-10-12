@@ -1,0 +1,22 @@
+{"schema":"result/1","id":"168-a1-1","status":"PASS","gates":{"pass":19,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/prep_c168_hashlib.py","md5":"e212fa39839fa8be69becd0d36aceb13"},
+ {"path":"tools/bench/diag_c168_a1_1_hash.py","md5":"be462cfad108f6802027e719a3b3cdee"},
+ {"path":"tools/bench/diag_c168_a1_1_ba.py","md5":"ab1821c68d561085309637891bc3f66f"},
+ {"path":"tools/bench/p6_buildarray.json","md5":"302026dd2e7dbab7324f9dda75d0beea"},
+ {"path":"tools/bench/p6_buildarray.md","md5":"7dba759cef3149475e8ad9bd1d80ffe1"},
+ {"path":"tools/bench/diag_c168_a1_1_facts.md","md5":"3d24bd07f3dba7d216e453fc903b6a37"}],
+"facts":[
+ "Hash before 8/0 and after 8/0: 13 card inputs + 7 VI pins equal (diag_c168_a1_1_hash_before.log:11, _after.log:11); shared check() self-test 3/0 (prep_c168_hashlib_selftest.log:37)",
+ "19 BuildArray nodes in both 7815af09 and c5531708; ONLY #11261 has an unwired input, before and after RBW; other 18 incl. #2626 all wired (diag_c168_a1_1_ba.log:5-6)",
+ "#11261 t11270 'array' / t11273 'element': wire 0, source none in both graphs (graph_ring_p6rbw_20261012_191349.json:terminals[1446],[1447]; ba.log:7-8)",
+ "#2626 inputs in 7815af09 sourced by #30300/#30119/#30216 IndexArray and #4594 Function (diag_c168_a1_1_ba.log:9)",
+ "7815af09: t11267 -w25618-> t8323 'Force (pN) vs Extension (nm) ' ControlTerminal sink, the only reached terminal, no outgoing edge, no Local/Global of that label (p6_buildarray.md:108-110)",
+ "Class from the graph: display-only (per sink and overall). Not measured: outflow via control reference/Property Node, which vigraph does not model (vigraph.py:28-31)",
+ "c5531708: t11267 and t8323 both carry no wire; reach 0 (p6_buildarray.md:111; graph_ring_p6rbw json terminals[1445])",
+ "Delete prediction c5531708: 0 wires attached to #11261; Wire objects 2066 (2091 before) -> expected 2066 after deleting #11261 (p6_buildarray.md:116; ba.log:18)",
+ "Plan cites docs/d1/ring-p4.md:52 for #11261 display-only, but that line names #11608 and #1359, not #11261 (ring-p4.md:52)",
+ "Terminal types are not stored in the graph json: every type column = unread (p6_buildarray.md:4); #11261 container: #23166 Diagram < WhileLoop #10170 < Diagram #686 (p6_buildarray.md:15)"],
+"open":["The 1 Error List item 'Build Array: Contains unwired or bad terminal' (uid unread) matches the only BuildArray with an unwired input (#11261); whether that settles PD405(c) attribution without a uid read is judgement."],
+"cost":{"usd":null,"minutes":6,"labview_runs":0},
+"note":"Offline only; LabVIEW not running (tasklist empty). prep_c168_hashlib_selftest.log keeps an earlier run whose planted drift cases printed as GATE FAIL (lines 12,16; that run's RESULT 3/0 at :18); rerun prints them as EXPECTED-DRIFT."}
