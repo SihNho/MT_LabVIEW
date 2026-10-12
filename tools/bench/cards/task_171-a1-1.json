@@ -1,0 +1,71 @@
+{
+ "schema": "task/1",
+ "id": "171-a1-1",
+ "kind": "build",
+ "goal": "Per brief_171-a1-1.md: re-hash the inputs, then fix tools/stage_prerun.py so a dry's taint follows names bound from stub reads (PD412(b)), self-test one at a time, prior-art review, drain fp-103.",
+ "why": "Purpose items 0-5 of assignment 171-1 (PD412): the dry of plan 170 FAILs gate A2 on stub data (fp-103); this checker is the gate refusing the P6 replay copy's launch, so it is fixed first (DELIVERABLE FIRST exception).",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_171-a1-1.md", "md5": "181d0fc84704092d4336242de5a11917"},
+  {"path": "tools/stage_prerun.py", "md5": "db81a1d3206073cfb2c540943ff73202"},
+  {"path": "tools/recipes/stage_replay_swap.py", "md5": "fa94e80c9bdb6d1b7f2b5a9186165ddb"},
+  {"path": "tools/bench/plans/plan_replay_swap_170.json", "md5": "01c215260c268e8a8990984139c4cfef"},
+  {"path": "tools/bench/plans/plan_replay_swap_78.json", "md5": "cdc14e3201b842e2a3c7c833f7896ec0"},
+  {"path": "tools/bench/plans/plan_replay_swap_95.json", "md5": "ea7cf810390ef601ba0314172ad26346"},
+  {"path": "tools/bench/plans/plan_replay_swap_110.json", "md5": "6b5ef7e5bba88eb79445132e06c91188"},
+  {"path": "tools/bench/selftest_c134_1_dry.py", "md5": "c04341463c623e523bd4d2368d6ab1d4"},
+  {"path": "tools/bench/selftest_dry_c130_5.py", "md5": "4b85ada0985569f7b18187385eba8a71"},
+  {"path": "tools/bench/stage_replay_swap_170_dry.log", "md5": "0b7a19b083231cb2331d8819e4e3e72e"},
+  {"path": "tools/bench/stage_replay_swap_170_dry2.log", "md5": "bd5d201dbf1006370269c38e35b3c085"},
+  {"path": "docs/script-writing.md", "md5": "f5fd847a8621a26d58c0b40a85fad5a2"},
+  {"path": "docs/d1/ring-p6.md", "md5": "89b995750dbc7ec3a783ed138186fac6"}
+ ],
+ "pass": [
+  "Step 0 re-hash table quoted (all VI/graph/script hashes of the brief equal; drift = RETURN before any edit)",
+  "stage_prerun.py: a name bound in a statement that touched a stub is tainted; a gate whose statement reads a tainted name scores tainted; new md5 + changed lines quoted; peers priorart run and disposed",
+  "Plan 170 dry prints UNVERIFIED for A2 (not FAIL), no other gate FAILs; the line where the dry ends quoted",
+  "Card-134-1 cases hold: selftest_c134_1_dry.py same counts; new selftest_c171_a1_1_taint.py asserts the 4 cases of brief step 2.2",
+  "Dries of plans 78/95/110 + one ring stage recipe give their stored verdicts (any difference listed as a fact); selftest_dry_c130_5.py still passes; self-tests run one at a time",
+  "fp-103 drained with the self-test name; fp-102 untouched; no hook edit, no LabVIEW, no VISA, plans 78/95/110/170 and stage_replay_swap.py md5 unchanged"
+ ],
+ "outputs": [
+  "tools/stage_prerun.py",
+  "tools/bench/selftest_c171_a1_1_taint.py",
+  "tools/bench/diag_c171_a1_1_facts.md",
+  "archive/peer/2026-10-13-priorart-c171-taint.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stage_prerun.py",
+   "tools/bench/selftest_c171_a1_1*",
+   "tools/bench/diag_c171_a1_1*",
+   "tools/bench/stage_replay_swap_171*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/jev_*",
+   "archive/peer/2026-10-13-priorart-c171-taint*",
+   "tools/bench/cards/result_171-a1-1.json"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "advances": ["M3", "M8"],
+ "requires": [
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/recipes/stage_replay_swap.py"},
+  {"kind": "file", "name": "tools/bench/selftest_c134_1_dry.py"}
+ ],
+ "rules": [
+  "Offline only: no LabVIEW, no camera, no motor/ASI, no VISA; Edit/Write tools only, never a heredoc",
+  "Only stage_prerun.py is edited; no hooks edit; plan-170 dry still FAILs = RETURN, no second tool change",
+  "Self-tests run one at a time; unexpected result = RETURN with the facts"
+ ]
+}

@@ -1,0 +1,144 @@
+diff --git a/tools/stage_prerun.py b/tools/stage_prerun.py
+index bdd6dfbf..db8c8885 100644
+--- a/tools/stage_prerun.py
++++ b/tools/stage_prerun.py
+@@ -402,6 +402,7 @@ class DryState(object):
+         self.executors = []                  # card 130-1 (PD267(b)): every stagexec.Executor the recipe built (X10 model)
+         self.x10_probe = False               # card 130-1: stop the recipe at its first Executor (self-test probe)
+         self.discards = []                   # card chat-M2 (fp-35): every Stage work path the recipe declared a scratch
++        self.frames = {}                     # card 171-a1-1 (PD412(b)): id(recipe frame) -> its statement + tainted names
+
+
+ D = DryState()
+@@ -817,6 +818,9 @@ def patch_stagekit():
+         # calls the gate (snapshot at the recipe's last line event, dry()'s tracer), not "since the previous gate": a stub
+         # used by an unrelated statement between two gates (s.es) no longer relabels a FALSE gate on simulated data.
+         tainted = D.taint != (D.line_taint if D.line_taint is not None else D.gate_taint)
++        # card 171-a1-1 (PD412(b), fp-103): ... or the statement READS a name an earlier statement bound from a stub read
++        # (stage_replay_swap.py:39 binds c0 from the stub census, :40-41 gates on c0.get(u)); _gate_reads_tainted_name
++        tainted = tainted or bool(_gate_reads_tainted_name())
+         D.gate_taint = D.taint
+         # card 134-1 (PD287(a), docs/violation-decisions.md repeated-failure-class 2026-10-02 10:10): a gate FALSE on
+         # simulated / real-graph (non-stub) data FAILS the dry, whatever op it follows. The old rule relabelled ANY false
+@@ -1021,6 +1025,105 @@ class _UnroutableTap(object):
+         return getattr(self.inner, k)
+
+
++_UNITS = {}
++
++
++def _line_units(path):
++    """card 171-a1-1 (PD412(b)): {line: (unit key, names bound, names read)} of one recipe file, for dry()'s name taint.
++    A unit = every simple statement (or compound-statement HEADER: `for` target/iter, `if`/`while` test, `with` items, `def`
++    name, `except .. as` name) covering that line, so a multi-line call is one unit and `a(); b = c` is one unit (the tracer
++    sees lines, not statements). Bound = Name targets (assign/for/with/walrus/import/def), not comprehension variables and not
++    attribute/subscript targets (they bind no name); read = every Name loaded, so `c0.get(u)` / `c0[u]` read `c0` (base name).
++    Cached per path; {} when the file does not parse. Self-test: tools/bench/selftest_c171_a1_1_taint.py."""
++    if path in _UNITS:
++        return _UNITS[path]
++    items, by_line = [], {}
++    try:
++        tree = ast.parse(open(path, encoding="utf-8").read(), path)
++    except Exception:                                                              # noqa: BLE001
++        _UNITS[path] = {}
++        return {}
++    for node in ast.walk(tree):
++        if not isinstance(node, (ast.stmt, ast.excepthandler)):
++            continue
++        body = getattr(node, "body", None)
++        if isinstance(body, list) and body and isinstance(body[0], ast.stmt):   # compound: its header lines only
++            end = max(node.lineno, body[0].lineno - 1)
++            parts = [v for f, v in ast.iter_fields(node) if f not in ("body", "orelse", "finalbody", "handlers")]
++        else:
++            end, parts = (node.end_lineno or node.lineno), [node]
++        stores, loads, comp = set(), set(), set()
++        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
++            stores.add(node.name)
++            parts = list(getattr(node, "decorator_list", []))
++        if isinstance(node, ast.excepthandler) and node.name:
++            stores.add(node.name)
++        flat = [x for p in parts for x in (p if isinstance(p, list) else [p]) if isinstance(x, ast.AST)]
++        for part in flat:
++            for sub in ast.walk(part):
++                if isinstance(sub, ast.comprehension):
++                    comp.update(n.id for n in ast.walk(sub.target) if isinstance(n, ast.Name))
++                elif isinstance(sub, ast.Name):
++                    (stores if isinstance(sub.ctx, ast.Store) else loads if isinstance(sub.ctx, ast.Load) else set()).add(sub.id)
++                elif isinstance(sub, ast.alias):
++                    stores.add((sub.asname or sub.name).split(".")[0])
++        items.append((stores - comp, loads))
++        for ln in range(node.lineno, end + 1):
++            by_line.setdefault(ln, []).append(len(items) - 1)
++    out = {}
++    for ln, ix in by_line.items():
++        out[ln] = (tuple(ix), frozenset().union(*[items[i][0] for i in ix]), frozenset().union(*[items[i][1] for i in ix]))
++    _UNITS[path] = out
++    return out
++
++
++def _name_step(frame, event):
++    """card 171-a1-1 (PD412(b)): dry()'s tracer hook for ONE recipe frame. When the frame moves to a new unit
++    (_line_units), the unit it leaves binds its names: TAINTED when D.taint moved during it (it touched a COM stub), CLEAN
++    otherwise (a tainted name rebound by a statement that touched no stub becomes clean); a unit left by an exception binds
++    nothing. Names are per frame (a function's names, not its caller's) and dropped at the frame's return. The rule is the
++    one PD412(b) states: taint does NOT propagate through a clean statement that reads a tainted name (`x = c0` -> x clean).
++    Self-test: tools/bench/selftest_c171_a1_1_taint.py."""
++    key = id(frame)
++    st = D.frames.get(key)
++    if st is not None and st["frame"] is not frame:
++        st = None
++    if event == "return":
++        D.frames.pop(key, None)
++        return
++    if event == "exception":
++        if st is not None:
++            st["raised"] = True
++        return
++    if event != "line":
++        return
++    unit = _line_units(frame.f_code.co_filename).get(frame.f_lineno, (None, frozenset(), frozenset()))
++    if st is None:
++        D.frames[key] = {"frame": frame, "unit": unit, "t0": D.taint, "tainted": set(), "raised": False}
++        return
++    if unit[0] is not None and unit[0] == st["unit"][0]:
++        return                                     # still the same unit (next line of a multi-line statement)
++    if not st["raised"]:
++        if D.taint != st["t0"]:
++            st["tainted"] |= st["unit"][1]
++        else:
++            st["tainted"] -= st["unit"][1]
++    st["unit"], st["t0"], st["raised"] = unit, D.taint, False
++
++
++def _gate_reads_tainted_name():
++    """card 171-a1-1 (PD412(b)): the tainted names the CURRENT statement of the nearest traced recipe frame reads (the
++    statement that called the gate, directly or through a stagekit helper); empty set when there is none.
++    Self-test: tools/bench/selftest_c171_a1_1_taint.py."""
++    f = sys._getframe(1)
++    while f is not None:
++        st = D.frames.get(id(f))
++        if st is not None and st["frame"] is f:
++            return st["unit"][2] & st["tainted"]
++        f = f.f_back
++    return set()
++
++
+ def dry(recipe, graph=None):
+     """Run in THIS process (the caller is a fresh process: `--dry` / `--prerun`). Returns the trace dict."""
+     install(graph)
+@@ -1043,6 +1146,7 @@ def dry(recipe, graph=None):
+     def other_recipe(frame, event, arg):
+         if event == "line":
+             D.line_taint = D.taint
++        _name_step(frame, event)                  # card 171-a1-1 (PD412(b)): names bound from stub reads
+         return other_recipe
+
+     def tracer(frame, event, arg):
+@@ -1050,6 +1154,7 @@ def dry(recipe, graph=None):
+             hit.add(frame.f_lineno)
+             if event == "line":
+                 D.line_taint = D.taint            # card 134-1: the gate's taint is scoped to its statement
++            _name_step(frame, event)              # card 171-a1-1 (PD412(b)): names bound from stub reads
+             return tracer
+         # card 159-a4-1: a scratch recipe runs its pair's body (`return R.body(s)`, stage_d1_ring_p5s02a_scratch.py:50); the pair's
+         # statements are recipe statements too, else every gate of R.body shared ONE statement's taint (D/TD/PB tainted by s.es)

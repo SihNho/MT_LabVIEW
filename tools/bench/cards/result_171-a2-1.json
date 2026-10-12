@@ -1,0 +1,17 @@
+{"schema":"result/1","id":"171-a2-1","status":"PASS","gates":{"pass":5,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/diag_c171_a1_1_hash.py","md5":"bca9f5c7310a9fa5ec3d07781c900284"},
+ {"path":"tools/bench/diag_c171_a2_1_hash.log","md5":"1a76de5cba56db2306a000eaa2be1901"},
+ {"path":"tools/bench/diag_c171_a2_1_c130_5_unpatched.log","md5":"bd113cd29051edf5236a2b17fc495596"},
+ {"path":"tools/bench/diag_c171_a2_1_facts.md","md5":"626e08985551f9d7555f6597ce1551bd"}],
+"facts":[
+ "Re-hash 20/0: all 19 rows OK incl. swapped labels a89dafc1/842ecad9 and new row diag_c171_a1_2_patch.diff f8f1fd95; 7f2582ae found x2 (diag_c171_a2_1_hash.log:21-22)",
+ "stage_prerun.py md5 db81a1d3 before and after the run; git diff --stat tools/stage_prerun.py empty before and after",
+ "c130_5 run once on unpatched checker, 115 s: T1 SKIPPED (:4), T2 PASS (:6), T3 FAIL (:8), T4 PASS (:9); totals 2/1 (diag_c171_a2_1_c130_5_unpatched.log:10)",
+ "T3 first_fail (:8): DRY FAIL first_fail=GATE PB frame-keyed cdiff(S1, real end) == the P2b bed's 16 rows and the plan's 11 open (node, term) pairs ... unverified 1",
+ "CLASS A: lines 3-9 textually identical to diag_c171_a1_2_c130_5.log (diff shows only BGRUN header/END and RESULT card id) - the T3 PB FAIL predates the patch",
+ "Jev ladder: no JEV-LADDER row for diag_c171_a2_1_c130_5_unpatched in tools/bench/jev_gate.log; nothing acted on",
+ "No LabVIEW process before/after (tasklist 0), no .vi written, no hook/STATUS edit; facts file 22 lines (tools/bench/diag_c171_a2_1_facts.md)"],
+"open":["Class A: T3 PB FAIL exists on unpatched db81a1d3 as well - re-apply the f8f1fd95 patch, or hand back (assignment session's decision, PD413(c))"],
+"cost":{"usd":null,"minutes":6,"labview_runs":0},
+"note":"T3 FAIL is the measured value of the one measurement, not a card failure; record stays 3/0 at selftest_dry_c130_5_c134_2.log:10"}

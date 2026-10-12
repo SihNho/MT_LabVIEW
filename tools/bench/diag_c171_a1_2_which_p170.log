@@ -1,0 +1,36 @@
+BGRUN START 2026-10-13 01:45:23 limit 10.0 min: py -u tools/bench/diag_c171_a1_2_which.py p170
+BGRUN PID 10476
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == c2d9c13cb40c0a5cab7433896d1df157  got c2d9c13cb40c0a5cab7433896d1df157
+  PASS  DRY graph JSON for input md5 c2d9c13cb40c0a5cab7433896d1df157  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_ring_p6_20261012_212645.json
+  PASS  A1 copies md5 == sources  {'p6': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\D1_ring_p6_replay_20261013_014524.vi'}
+
+---------- [P6] D1_ring_p6_replay_20261013_014524.vi
+  NAME-TAINT  gate='A2 p6 BEFORE: #6810 calls get buff image-lost frames.vi, #22692 calls ' ok=False stmt_taint=False at stage_replay_swap.py:40 names={'c0': ('stage_replay_swap.py:[39, 39]', 'dict[0]', 'taint +185 (Fake +185, graph-after-mutation +0)')}
+  UNVERIFIED  A2 p6 BEFORE: #6810 calls get buff image-lost frames.vi, #22692 calls IMAQdx Get Image.vi  (dry: stub input)
+  FACT  ExecState [p6 before] D1_ring_p6_replay_20261013_014524.vi = <dry:g.exec_state>
+  UNVERIFIED  A2 p6 ExecState 1 before the swap  (dry: stub input)
+  FACT  p6 replace_object #6810 -> replay_get_buff_image_paced60.vi: <dry:g.replace_object>
+  UNVERIFIED  A3 p6 replace #6810: no error, new uid  (dry: stub input, after mutation g.replace_object)
+  FACT  p6 replace_object #22692 -> replay_get_image_cal.vi: <dry:g.replace_object>
+  UNVERIFIED  A3 p6 replace #22692: no error, new uid  (dry: stub input, after mutation g.replace_object)
+  NAME-TAINT  gate='A4 p6 callee diff == exactly the two swaps -> replay VIs' ok=False stmt_taint=False at stage_replay_swap.py:52 names={'dd': ('stage_replay_swap.py:[48, 48]', 'dict[0]', 'taint +186 (Fake +185, graph-after-mutation +1)')}
+  UNVERIFIED  A4 p6 callee diff == exactly the two swaps -> replay VIs  (dry: stub input, after mutation g.replace_object)
+  NAME-TAINT  gate='A5 p6 wire-edge diff 0 after remap (2426 edges before, 2426 after)' ok=True stmt_taint=False at stage_replay_swap.py:54 names={'E1': ('stage_replay_swap.py:[53, 53]', 'set[2426]', 'taint +1 (Fake +0, graph-after-mutation +1)')}
+  PASS  A5 p6 wire-edge diff 0 after remap (2426 edges before, 2426 after)  ([], [])
+  FACT  ExecState [p6 after] D1_ring_p6_replay_20261013_014524.vi = <dry:g.exec_state>
+  UNVERIFIED  A6 p6 ExecState 1 after the swaps  (dry: stub input, after mutation g.replace_object)
+  FACT  SAVED C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\replay\D1_ring_p6_replay_20261013_014524.vi md5 dry
+
+---------- [C] COLD: fresh LabVIEW
+  UNVERIFIED  C1 p6 ExecState 1 COLD  (dry: stub input, after mutation g.replace_object)
+  NAME-TAINT  gate='C2 p6 COLD callee census == warm' ok=True stmt_taint=False at stage_replay_swap.py:75 names={'cc': ('stage_replay_swap.py:[74, 74]', 'dict[0]', 'taint +186 (Fake +185, graph-after-mutation +1)')}
+  PASS  C2 p6 COLD callee census == warm
+  PASS  C3 p6 md5 unchanged by the cold load
+
+=== DRY PASS-UNVERIFIED A2 p6 BEFORE: #6810 calls get buff image-lost frames.vi, #22692 calls IMAQdx Get Image.vi; A2 p6 ExecState 1 before the swap; A3 p6 replace #6810: no error, new uid; A3 p6 replace #22692: no error, new uid; A4 p6 callee diff == exactly the two swaps -> replay VIs; A6 p6 ExecState 1 after the swaps; C1 p6 ExecState 1 COLD: first_fail=None coverage 65/69 lines, first mutation g.replace_object, unverified 7, graph tools/bench/graph_ring_p6_20261012_212645.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[],"card":"171-a1-2","labview":"none"}
+FACT  name-tainted gates 4; FALSE gates relabelled by the name taint alone: [('A2 p6 BEFORE: #6810 calls get buff image', 'stage_replay_swap.py:40', {'c0': ('stage_replay_swap.py:[39, 39]', 'dict[0]', 'taint +185 (Fake +185, graph-after-mutation +0)')}), ('A4 p6 callee diff == exactly the two swa', 'stage_replay_swap.py:52', {'dd': ('stage_replay_swap.py:[48, 48]', 'dict[0]', 'taint +186 (Fake +185, graph-after-mutation +1)')})]
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[],"card":"171-a1-2","labview":"none"}
+BGRUN END rc=0 after 3s

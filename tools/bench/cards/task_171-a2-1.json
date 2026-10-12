@@ -1,0 +1,59 @@
+{
+ "schema": "task/1",
+ "id": "171-a2-1",
+ "kind": "build",
+ "goal": "Per brief_171-a2-1.md: re-hash the P6-2 inputs (drift returns), then run selftest_dry_c130_5.py ONCE on unpatched stage_prerun db81a1d3; report T3's class (A same PB / B PASS / C other).",
+ "why": "Purpose items 0-2 of assignment 171-2 (PD413(c)): one measurement decides whether the value-criterion patch caused the c130_5 T3 FAIL or the FAIL predates it.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_171-a2-1.md", "md5": "56f8a0a41bdfa0d3c2bcb7a8d04c905b"},
+  {"path": "tools/bench/cards/handback_171_1.json", "md5": "4a91b7a3c584acc54cee7d0204e006f9"},
+  {"path": "tools/bench/diag_c171_a1_1_facts.md", "md5": "f2f95ff5b385239cc2d21b7cf7ab3332"},
+  {"path": "tools/stage_prerun.py", "md5": "db81a1d3206073cfb2c540943ff73202"},
+  {"path": "tools/bench/selftest_dry_c130_5.py", "md5": "4b85ada0985569f7b18187385eba8a71"},
+  {"path": "docs/script-writing.md", "md5": "f5fd847a8621a26d58c0b40a85fad5a2"}
+ ],
+ "pass": [
+  "Re-hash table (name -> hash) of the 18 listed files + 7f2582ae + patch diff f8f1fd95: all equal, or RETURN with the table (drift)",
+  "stage_prerun.py md5 db81a1d3 before AND after; git diff --stat empty for it",
+  "selftest_dry_c130_5.py run ONCE on the unpatched checker: T1/T2/T3 verdict lines and totals quoted with log line numbers",
+  "T3 first_fail line quoted verbatim and classed A (same GATE PB text as diag_c171_a1_2_c130_5.log:8) / B (PASS) / C (other); no decision taken",
+  "No LabVIEW process before/after, no .vi written, no hook edit; facts file tools/bench/diag_c171_a2_1_facts.md (<= 25 lines)"
+ ],
+ "outputs": [
+  "tools/bench/diag_c171_a1_1_hash.py",
+  "tools/bench/diag_c171_a2_1_hash.log",
+  "tools/bench/diag_c171_a2_1_c130_5_unpatched.log",
+  "tools/bench/diag_c171_a2_1_facts.md",
+  "tools/bench/cards/result_171-a2-1.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c171_a1_1_hash.py",
+   "tools/bench/diag_c171_a2_1*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/cards/result_171-a2-1.json"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 25
+ },
+ "advances": ["M3", "M8"],
+ "requires": [
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/bench/selftest_dry_c130_5.py"},
+  {"kind": "file", "name": "tools/bench/diag_c171_a1_1_hash.py"}
+ ],
+ "rules": [
+  "Offline only: no LabVIEW, no camera, no motor/ASI, no VISA; Edit/Write tools only, never a heredoc",
+  "stage_prerun.py is NOT edited; c130_5 runs exactly once; report the class, the decision is not yours",
+  "Unexpected result = RETURN with the facts"
+ ]
+}

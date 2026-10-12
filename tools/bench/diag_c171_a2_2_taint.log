@@ -1,0 +1,20 @@
+BGRUN START 2026-10-13 02:12:09 limit 10.0 min: py -u tools/bench/selftest_c171_a1_1_taint.py
+BGRUN PID 18500
+  PASS  U _line_units: :39 binds c0; :40-41 one unit reading c0  (['c0'], (23,), (23,), ['SW', 'all', 'c0', 'dict', 'o', 'os', 's', 'str'])
+  PASS  S _stub_shaped: Fake/empty/holds-a-Fake True; non-empty Fake-free data and scalars False  [True, True, True, True, True, False, False, False, False]
+  FACT  dry ends: === DRY FAIL: first_fail=GATE ZA plain false on real data coverage 23/23 lines, first mutation None, unverified 2, graph tools/bench/sim/ring_p3b2_base_real_fsmap.json
+  FACT  FAIL  ZA plain false on real data
+  FACT  UNVERIFIED  ZC gate on a name bound from a stub read  (dry: stub input)
+  FACT  FAIL  ZB plain false after an unrelated stub-binding statement
+  FACT  FAIL  ZD name rebound clean then gated false
+  FACT  FAIL  ZT simulated rows bound in a stub-touching statement, gated false
+  FACT  UNVERIFIED  ZF a container holding a stub value, gated false  (dry: stub input)
+  PASS  a FALSE gate on plain data FAILs (ZA)  
+  PASS  c name bound to an empty container from a stub read, gated one statement later -> UNVERIFIED (ZC)  
+  PASS  b unrelated stub-binding statement does not relabel the next gate (ZB FAILs)  
+  PASS  d name rebound clean then gated FALSE -> FAILs (ZD)  
+  PASS  t T1 shape: non-empty Fake-free data bound in a stub-touching statement, gated FALSE -> FAILs (ZT)  
+  PASS  f a container holding a stub value, gated FALSE -> UNVERIFIED (ZF)  
+  PASS  dry ends DRY FAIL naming ZA first  === DRY FAIL: first_fail=GATE ZA plain false on real data coverage 23/23 lines, first mutation None, unverified 2, graph tools/bench/sim/ring_p3b2_base_real_fsmap.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":9,"fail":0},"first_fail":null,"artefacts":[],"card":"171-a2-2","labview":"none"}
+BGRUN END rc=0 after 2s

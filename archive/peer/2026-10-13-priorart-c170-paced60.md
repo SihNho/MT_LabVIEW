@@ -680,4 +680,10 @@ VERDICT {"schema":"verdict/1","id":"priorart-c170-paced60","verdict":"novel","al
 
 ## What was done with it
 
-(Claude fills in)
+Verdict `novel`, no violations, no existing alternative found, so nothing in the design was changed. The paced stand-in pair was built
+as designed by card 170-a3-1 (recipe `tools/recipes/stage_replay_paced60.py`, X10 passed with one measured `load_by_vi` entry): `replay_imaqdx_get_image_buf_paced60.vi`
+e40ec867 and `replay_get_buff_image_paced60.vi` 59ec66b6 (`tools/bench/cards/result_170-a3-1.json`), and cycle 170's judgement accepted
+them (PD411/PD412). The reviewer's note (the 29.4 ms basis is a whole-run mean, the steady 15-bead cadence is about 33 ms per frame, the 60 ms pace
+still leaves about 1.8x margin) is recorded and needs no change to the 60 ms constant. The discriminating test it names (the P6 leg: DISTINCT and MATCH on all compared
+rows) is the compare of the current purpose (cycle 171 assignment round 2), where it will be measured. Written by the cycle-171 assignment session (round 2) because
+guard_peer refused the next prior-art review (card 171-a2-3) while this paragraph was empty.

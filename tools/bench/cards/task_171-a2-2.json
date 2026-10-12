@@ -1,0 +1,64 @@
+{
+ "schema": "task/1",
+ "id": "171-a2-2",
+ "kind": "build",
+ "goal": "Per brief_171-a2-2.md: re-apply patch af6937e8 to stage_prerun.py, then run plan-170 dry, c134_1 (11/0), taint self-test (9/0), c130_5 (T3 same PB text as unpatched), one at a time.",
+ "why": "Purpose items 3-4 of assignment 171-2 (PD413(a)): c130_5 T3 fails unpatched too (class A), so the value-criterion patch is re-applied and checked.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_171-a2-2.md", "md5": "5da6000df3060e247f811429698c17e3"},
+  {"path": "tools/bench/diag_c171_a2_1_facts.md", "md5": "626e08985551f9d7555f6597ce1551bd"},
+  {"path": "tools/bench/diag_c171_a1_2_patch.diff", "md5": "f8f1fd958637a66b065c5e08bc886108"},
+  {"path": "tools/stage_prerun.py", "md5": "db81a1d3206073cfb2c540943ff73202"},
+  {"path": "tools/bench/selftest_c171_a1_1_taint.py", "md5": "2107d4e21fb83990d2b84c0a0e5c018a"},
+  {"path": "tools/bench/selftest_c134_1_dry.py", "md5": "c04341463c623e523bd4d2368d6ab1d4"},
+  {"path": "tools/recipes/stage_replay_swap.py", "md5": "fa94e80c9bdb6d1b7f2b5a9186165ddb"},
+  {"path": "tools/bench/plans/plan_replay_swap_170.json", "md5": "01c215260c268e8a8990984139c4cfef"}
+ ],
+ "pass": [
+  "stage_prerun.py md5 starts af6937e8 after the Edit-tool re-apply; md5 and diff size quoted",
+  "Plan-170 dry (recorded): gate A2 UNVERIFIED line and the END line quoted; ends DRY PASS-UNVERIFIED, unverified 7, no FAIL",
+  "selftest_c134_1_dry 11/0 and selftest_c171_a1_1_taint 9/0, each with its log line",
+  "selftest_dry_c130_5: T3 line quoted, same GATE PB text as diag_c171_a2_1_c130_5_unpatched.log:8 (or difference listed); totals 2/1",
+  "Newest plan-170 record in prerun_records.jsonl is from the patched checker; plan 170 and recipe md5 unchanged; no hook edit, no LabVIEW"
+ ],
+ "outputs": [
+  "tools/stage_prerun.py",
+  "tools/bench/diag_c171_a2_2_dry170.log",
+  "tools/bench/diag_c171_a2_2_st134.log",
+  "tools/bench/diag_c171_a2_2_taint.log",
+  "tools/bench/diag_c171_a2_2_c130_5.log",
+  "tools/bench/diag_c171_a2_2_facts.md",
+  "tools/bench/cards/result_171-a2-2.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stage_prerun.py",
+   "tools/bench/diag_c171_a2_2*",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/jev_*",
+   "tools/bench/cards/result_171-a2-2.json"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 45
+ },
+ "advances": ["M3", "M8"],
+ "requires": [
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/bench/diag_c171_a1_2_patch.diff"},
+  {"kind": "file", "name": "tools/bench/selftest_c171_a1_1_taint.py"}
+ ],
+ "rules": [
+  "Offline only: no LabVIEW, camera, motor/ASI, VISA; Edit tool only, never a heredoc",
+  "Only stage_prerun.py is edited, with the patch's text; no new patch version; no hooks edit",
+  "Checks one at a time; unexpected result = RETURN with the facts, no re-run"
+ ]
+}

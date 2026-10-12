@@ -1,25 +1,29 @@
 {
  "schema": "next/1",
- "cycle": 170,
- "act": "PD411: P6-2 - paced60 pair (tools/bench/memory_model.json load_by_vi entries only), P6 replay copy, S1 + P6 legs in motor_gate, compare with D = 20 (U13), then fp-102",
- "task_kind": "measure",
+ "cycle": 171,
+ "act": "PD413: c130_5 baseline on unpatched db81a1d3 decides T3; re-apply value-criterion patch af6937e8, prior-art, drain fp-103; then P6-2 replay copy, S1+P6 legs, compare D = 20; fp-102 last",
+ "task_kind": "build",
  "plan": {
-  "path": "docs/d1/ring-p6.md",
-  "md5": "8d77a3f92de80ec90adc1edf1d61763d"
+  "path": "docs/d1/ring-p6b.md",
+  "md5": "170f04c93c10e2d7b49176d284d5cddc"
  },
  "pass": [
-  "Re-hash (drift = hand back): bed c2d9c13c, graph fbc7b7ee, S1 3e3d23ce, S1 replay 126f8497, stand-ins 842ecad9 afce0d04 a89dafc1, manifest 9055d98a, compare c2efe10d",
-  "PD410(d) replay\\replay_imaqdx_get_image_buf_paced60.vi (a89dafc1 + Wait 60 ms) and replay_get_buff_image_paced60.vi (842ecad9, inner swapped): each ExecState 1 warm+cold, md5",
-  "PD411(b) prerun X10 PASS quoted; memory_model.json changed ONLY by load_by_vi entries for a89dafc1/842ecad9, each a measured load cited by log line; no limit/coefficient change",
-  "PD409(e) replay\\D1_ring_p6_replay_<ts>.vi by stage_replay_swap.py, new plan on c2d9c13c (#6810 -> paced outer, #22692 -> afce0d04): A1-A6 C1-C3, ES 1 warm+cold, md5; peers priorart",
+  "Re-hash (drift = hand back): bed c2d9c13c, graph fbc7b7ee, S1 3e3d23ce, S1 replay 126f8497, stand-ins buf a89dafc1 get-buff 842ecad9 afce0d04, paced e40ec867 59ec66b6",
+  "Re-hash (drift = hand back): manifest 9055d98a, compare 82443af9, plan 170 01c21526, recipe fa94e80c, stage_prerun db81a1d3, patch diff f8f1fd95",
+  "PD413(c) FIRST: selftest_dry_c130_5.py on UNPATCHED db81a1d3: per-test verdicts, T3's first_fail line quoted. T3 PASS = return and hand back (patch caused it)",
+  "PD413(a) only if T3 FAILed at GATE PB unpatched: re-apply diag_c171_a1_2_patch.diff, stage_prerun md5 = af6937e8 quoted",
+  "PD413(a) patched: plan 170 dry A2 UNVERIFIED, end line quoted; selftest_c134_1_dry 11/0; selftest_c171_a1_1_taint 9/0; c130_5 T3 same PB line as unpatched",
+  "PD413(e) prior-art review of the patch (peers priorart), verdict quoted; fp-103 drained naming selftest_c171_a1_1_taint; c130_5 T3 queued as gate-fp entry",
+  "PD409(e) replay\\D1_ring_p6_replay_<ts>.vi by stage_replay_swap.py --plan 170: stub-only gates DRY-UNVERIFIED-OK via --unverified-card, X10 PASS quoted, peers priorart",
+  "PD409(e) same build: A1-A6 C1-C3 (#6810 -> paced outer, #22692 -> afce0d04), ES 1 warm+cold, md5",
   "PD409(f) S1 leg (120 s) then P6 leg (>= 1500 tra rows), each in motor_gate start/end (readback), LabVIEW gone; per leg tra rows, Total Lost Frames, counter delta, files+md5",
   "PD410(c)+PD411(c) compare only if S1 lost 0, --slots 20 cited U13/ring-p4b.md:21: DISTINCT count, MATCH (first miss + drop signature); each a fact, a FAIL returned not re-run",
   "PD409(b)+PD411(d) same compare: cal outside F4 field, trans/rot post-init, init inside motor_limits.json PI/ASI ranges (rotor finite), every other leg file: each PASS/FAIL as a fact",
-  "Hygiene: c2d9c13c 75773b0d 7f2582ae 3e3d23ce 126f8497 842ecad9 a89dafc1 unchanged; no original opened; refs balanced; only replay files added; LabVIEW gone; no hooks edit",
-  "PD409(g) AFTER all above: fp-102 (stage_prerun.py:2192 X10 regex matches 'delete') drained with a self-test"
+  "Hygiene: c2d9c13c 75773b0d 7f2582ae 3e3d23ce 126f8497 842ecad9 a89dafc1 e40ec867 59ec66b6 unchanged; no original opened; refs balanced; LabVIEW gone; no hooks edit",
+  "PD409(g) AFTER all above: fp-102 (stage_prerun.py X10 regex matches 'delete') drained with a self-test"
  ],
  "blocked_by": null,
  "stop_requested": false,
  "advances": ["M3", "M8"],
- "note": "Hand-back 170_2 judged (PD411): F4 met by the cal byte walk (value read withdrawn); 170-a2-4 compare extension accepted, S7 replaced by D = 20 from U13/ring-p4b.md:21; memory_model.json named for load_by_vi entries only. Rig 조립; motor_session OK."
+ "note": "Hand-back 171_1 judged (PD413): value criterion accepted as PD412(b)'s form (scalars as before); 78/110 restored by the patch; stand-in label swap accepted. c130_5 T3 PASS unpatched = hand back, no third patch. Rig 조립."
 }

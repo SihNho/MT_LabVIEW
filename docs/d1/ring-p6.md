@@ -357,3 +357,29 @@ the top of `docs/d1/INDEX.md`.
        (`tools/bench/motor_limits.json`: PI and ASI). The rotor has no range there, so its check is "finite" only.
      - **(e) Order:** paced pair (the 170-a2-5 retry under (b)) → P6 replay copy (PD409(e), peers priorart) → S1 leg → P6 leg
        → compare with D = 20 → fp-102 last. PD410(d)-(f) are otherwise unchanged.
+
+412. **(cycle 171 judgement, 2026-10-13 — `handback_170_3.json`, trigger b: the P6 replay copy's dry fails A2 twice, fp-103)**
+     USER-RULES: U1 (relied on: the dry is an offline check; nothing in S1, P6 or the replay copy changes); none contradicted.
+     - **(a) Round 3 ACCEPTED for items 0-2:** no drift; paced pair e40ec867 / 59ec66b6 built (170-a3-1 PASS); X10 PASS with
+       one measured `load_by_vi` entry a89dafc1 = 550.3 (`diag_c170_a3_1_load.log:18`). Plan 170 (01c21526) and recipe
+       fa94e80c exist; the live byte-copy census shows #6810 → get buff image-lost frames.vi, #22692 → IMAQdx Get Image.vi
+       (`diag_c170_a3_2_facts.md:33`), so A2's FACT is true and the dry's FAIL is wrong data, not a wrong plan.
+     - **(b) Answer = option (a), in this form: the dry's taint follows the variable.** Card 134-1's rule is "only a gate whose
+       inputs touched a COM stub may stay UNVERIFIED" (`tools/stage_prerun.py:824-825`), but it is scored per STATEMENT
+       (:816-820). A2's input `c0` was bound from the stub census one statement earlier (`stage_replay_swap.py:39`), so the
+       gate FAILs on stub data. That is a bug in the rule's approximation, not in the recipe. Fix in `stage_prerun.py`: a
+       name bound in a statement that touched a stub is tainted, and a gate whose statement reads a tainted name scores as
+       tainted. Rejected: (b) bending the recipe around a tool bug (and a fresh prior-art debt); (c) a release made for one
+       plan, which routes around a refusal (CLAUDE.md never-7). A graph-backed `g.subvis` is not chosen: graph fbc7b7ee
+       stores no callees, so it would need a second graph source just for this one stage.
+     - **(c) Self-test, one at a time:** (1) plan 170 dry: A2 prints UNVERIFIED, not FAIL; then quote where the dry ends.
+       (2) The card-134-1 cases still hold: a FALSE gate on simulated or real-graph data FAILs, and a stub read by an
+       unrelated statement between two gates does not relabel the next gate. (3) The dries of plans 78/95/110 and of one
+       ring stage recipe give the same verdicts as their stored records; any difference is returned as a fact. Then drain
+       fp-103 with the self-test's name. This edit is a tool change that sets which gates fail, so it gets `peers
+       ["priorart"]`.
+     - **(d) This tool fix goes FIRST only because it is the gate that refuses the deliverable's own launch** (DELIVERABLE
+       FIRST exception). Then PD409(e)-(f) and PD411(c)-(e) unchanged: the P6 replay copy (stub-only gates named
+       DRY-UNVERIFIED-OK with `--unverified-card`, peers priorart) → S1 leg → P6 leg → compare with D = 20 → fp-102 last.
+       If the fixed dry still FAILs A2, or FAILs another gate on the plan-170 dry, the card returns and hands back. No
+       second tool change is tried.

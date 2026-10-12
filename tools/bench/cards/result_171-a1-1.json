@@ -1,0 +1,27 @@
+{"schema":"result/1","id":"171-a1-1","status":"FAIL","gates":{"pass":2,"fail":1},
+"first_fail":"selftest_c134_1_dry T1 with the name-taint edit: 133-3 bytes end first_fail=GATE PB, unverified 2 (record: GATE FR, unverified 0) - diag_c171_a1_1_st134.log:4",
+"blocked_by":null,
+"artefacts":[
+{"path":"tools/bench/diag_c171_a1_1_facts.md","md5":"50239f58824614d1c5c27fdd47cf498e"},
+{"path":"tools/bench/diag_c171_a1_1_patch.diff","md5":"26aa09686dd2eac008243785b430b5f0"},
+{"path":"tools/bench/selftest_c171_a1_1_taint.py","md5":"0c95fce43494af2626c22651cc20e2fd"},
+{"path":"tools/bench/diag_c171_a1_1_dry170.log","md5":"a1c365fdf0a23977e96b2deecd5d0252"},
+{"path":"tools/bench/diag_c171_a1_1_st134.log","md5":"27d12d524b75b657f8a2217624d67dd0"},
+{"path":"tools/bench/diag_c171_a1_1_dry170_reverted.log","md5":"10b212a7798080b9e3cbf12e866ea46c"}],
+"facts":[
+"Step 0: 17/19 equal; the 2 DIFF rows are swapped brief labels (disk buf=a89dafc1, get-buff=842ecad9 = ring-p6.md:313-315), not drift; diag_c171_a1_1_hash.log",
+"Edit db81a1d3->8d25c12c (+105/-0, diag_c171_a1_1_patch.diff): AST unit table + tracer name taint per frame + OR at the gate's tainted line",
+"2.1 PASS: diag_c171_a1_1_dry170.log:10 UNVERIFIED A2 p6 BEFORE; ends :28 DRY PASS-UNVERIFIED, unverified 7, no FAIL",
+"2.2 FAIL: selftest_c134_1_dry 10/1 (record 11/0, selftest_c134_1_dry_c160_f3_1.log:15); T1 FR no longer first fail, 2 gates turned UNVERIFIED",
+"Pre-edit baselines already differ from stored: 78 FAIL A2 (_pre78.log:10), 110 FAIL A2 (_pre110.log:10), ring PASS (stored FAIL PB), 95 no graph",
+"stage_prerun.py REVERTED to db81a1d3 (re-hash _hash_end.log); patch kept in diag_c171_a1_1_patch.diff; selftest_c171 written, not run",
+"Patched dry's PASS-UNVERIFIED record (prerun_records 01:32:38) superseded by a reverted-checker FAIL A2 record (_dry170_reverted.log:10)",
+"Not done (returned first): post-edit 78/95/110/ring dries, selftest_dry_c130_5, prior-art review, fp-103 drain; fp-102 untouched",
+"Jev ladder | diag_c171_a1_1_st134.log | no row (RULE-OFFLINE-CARD, jev_gate.log:7700-7713) | none | -",
+"guard_write warned per edit: open card 170-a2-5 (no result) pins stage_prerun db81a1d3; valid again after revert; no LabVIEW, no hook edit"],
+"open":[
+"Re-dispatch the name-taint patch narrowed so FR in the 133-3 bytes still FAILs (diagnose which name taints FR first), or choose another fp-103 route?",
+"Taint-propagation through clean statements (x = c0 -> x clean under PD412(b) wording) - keep the literal rule?",
+"Brief step 0 had stand-in names swapped vs hashes; accepted here as a label error, not drift - confirm."],
+"cost":{"usd":null,"minutes":13,"labview_runs":0},
+"note":"Returned at the first unexpected result per PD412(d); checker restored so no unaccepted gate change stays live."}

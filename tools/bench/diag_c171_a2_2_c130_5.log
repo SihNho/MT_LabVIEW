@@ -1,0 +1,11 @@
+BGRUN START 2026-10-13 02:12:19 limit 10.0 min: py -u tools/bench/selftest_dry_c130_5.py
+BGRUN PID 10784
+  FACT plan_ring_p3b.json md5 747d712ef7767c416fa425919165204a
+  FACT T1 SKIPPED: plan_ring_p3b.json is no longer the stale 4003eaa5 fixture (re-finalized, PD268(c)); T2 reproduces the class by injection
+  FACT T2 rc 1 | === DRY FAIL: first_fail=EXECUTOR-STOP tools/bench/plan_ring_p3a.json: executed 4 of 21 ops, stopped IN op {'k': 5, 'op': 'connect', 'ids': ['p3a_w_kprev']}: ExecStop: SELFTEST injected stop at op 5 coverage 33/79 lines, first mutation Stage._op create, unverified 0, graph tools/bench/graph_ring_p2b_20261001_154542.json
+  PASS  T2 injected stop at op 5 on stage_d1_ring_p3a.py: --dry rc 1, EXECUTOR-STOP executed 4 of N  === DRY FAIL: first_fail=EXECUTOR-STOP tools/bench/plan_ring_p3a.json: executed 4 of 21 ops, stopped IN op {'k': 5, 'op': 'connect', 'ids': ['p3a_w_kprev']}: ExecStop: SELFTEST injected stop at op 5 coverage 33/79 lines, first mutation Stage._op create, unverified 0, graph tools/bench/graph_ring_p2b_20261001_154542.json
+  FACT T3 rc 1 | === DRY FAIL: first_fail=GATE PB frame-keyed cdiff(S1, real end) == the P2b bed's 16 rows and the plan's 11 open (node, term) pairs (FATAL, before save) coverage 61/79 lines, first mutation Stage._op create, unverified 1, graph tools/bench/graph_ring_p2b_20261001_154542.json | executors [{"plan": "tools/bench/plan_ring_p3a.json", "run": {"called": true, "completed": true, "planned": 21, "executed": 21, "stopped_in": null, "stop": null}}]
+  FAIL  T3 full run stage_d1_ring_p3a.py: --dry rc 0 PASS, every Executor completed, executed == planned  === DRY FAIL: first_fail=GATE PB frame-keyed cdiff(S1, real end) == the P2b bed's 16 rows and the plan's 11 open (node, term) pairs (FATAL, before save) coverage 61/79 lines, first mutation Stage._op create, unverified 1, graph tools/bench/graph_ring_p2b_20261001_154542.json
+  PASS  T4 executor_stops unit: completed [], not run EXECUTOR-NOT-RUN, compile error []  ([], ['EXECUTOR-NOT-RUN b: built, run() never called - 0 ops executed'], [])
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":2,"fail":1},"first_fail":"T3 full run stage_d1_ring_p3a.py: --dry rc 0 PASS, every Executor completed, executed == planned","artefacts":[],"card":"171-a2-2","labview":"none"}
+BGRUN END rc=1 after 115s

@@ -1,0 +1,74 @@
+{
+ "schema": "task/1",
+ "id": "171-a1-2",
+ "kind": "build",
+ "retry_of_card": "171-a1-1",
+ "goal": "Per brief_171-a1-2.md: diagnose why T1's FR gate scores tainted, narrow the stage_prerun name-taint by a principled criterion, self-test, prior-art review, drain fp-103.",
+ "why": "Purpose items 2-5 of assignment 171-1 (PD412(b)-(c)): the first patch made plan 170's A2 UNVERIFIED but turned T1 of selftest_c134_1_dry from FAIL FR into FAIL PB; this is the ONE retry.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_171-a1-2.md", "md5": "fceaa99fc8d6088e57e249e34426a192"},
+  {"path": "tools/bench/cards/brief_171-a1-1.md", "md5": "181d0fc84704092d4336242de5a11917"},
+  {"path": "tools/bench/cards/result_171-a1-1.json", "md5": "e550fbc8568cacef98eb395c4f4514c0"},
+  {"path": "tools/bench/diag_c171_a1_1_patch.diff", "md5": "26aa09686dd2eac008243785b430b5f0"},
+  {"path": "tools/bench/diag_c171_a1_1_facts.md", "md5": "50239f58824614d1c5c27fdd47cf498e"},
+  {"path": "tools/bench/diag_c171_a1_1_st134.log", "md5": "27d12d524b75b657f8a2217624d67dd0"},
+  {"path": "tools/stage_prerun.py", "md5": "db81a1d3206073cfb2c540943ff73202"},
+  {"path": "tools/recipes/stage_replay_swap.py", "md5": "fa94e80c9bdb6d1b7f2b5a9186165ddb"},
+  {"path": "tools/bench/plans/plan_replay_swap_170.json", "md5": "01c215260c268e8a8990984139c4cfef"},
+  {"path": "tools/bench/selftest_c134_1_dry.py", "md5": "c04341463c623e523bd4d2368d6ab1d4"},
+  {"path": "tools/bench/selftest_dry_c130_5.py", "md5": "4b85ada0985569f7b18187385eba8a71"},
+  {"path": "docs/script-writing.md", "md5": "f5fd847a8621a26d58c0b40a85fad5a2"}
+ ],
+ "pass": [
+  "Diagnosis quoted: which name(s), bound in which statement(s), made T1's FR gate tainted, next to plan 170's c0 case",
+  "stage_prerun.py: name-taint by a stated principled criterion (no recipe-specific string); new md5 + changed lines quoted; priorart review run and disposed",
+  "Plan 170 dry: A2 UNVERIFIED, no other gate FAILs, end line quoted; newest plan-170 prerun record is from the final checker",
+  "selftest_c134_1_dry.py 11/0 as its record; selftest_c171_a1_1_taint.py asserts T1 shape (FR FAILs) and plan-170 shape (UNVERIFIED); selftest_dry_c130_5.py same counts",
+  "Dries of plans 78/95/110 + ring recipe: verdict next to stored record and pre-edit baseline, differences listed; one at a time",
+  "fp-103 drained with the self-test name; fp-102 untouched; no hook edit, no LabVIEW, no VISA; plans/recipe md5 unchanged",
+  "No separating criterion exists: RETURN with the two statements side by side and ONE question (instead of items 1-5)"
+ ],
+ "outputs": [
+  "tools/stage_prerun.py",
+  "tools/bench/selftest_c171_a1_1_taint.py",
+  "tools/bench/diag_c171_a1_2_which.py",
+  "tools/bench/diag_c171_a1_1_facts.md",
+  "archive/peer/2026-10-13-priorart-c171-taint.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stage_prerun.py",
+   "tools/bench/selftest_c171_a1_1*",
+   "tools/bench/diag_c171_a1_1*",
+   "tools/bench/diag_c171_a1_2*",
+   "tools/bench/stage_replay_swap_171*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/jev_*",
+   "archive/peer/2026-10-13-priorart-c171-taint*",
+   "tools/bench/cards/result_171-a1-2.json"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "advances": ["M3", "M8"],
+ "requires": [
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/bench/diag_c171_a1_1_patch.diff"},
+  {"kind": "file", "name": "tools/bench/selftest_c134_1_dry.py"}
+ ],
+ "rules": [
+  "Offline only: no LabVIEW, no camera, no motor/ASI, no VISA; Edit/Write tools only, never a heredoc",
+  "Only stage_prerun.py is edited; no hooks edit; no recipe-specific strings; no bending of T1 or A2",
+  "Self-tests one at a time; unexpected result = RETURN with the facts (this is the retry)"
+ ]
+}

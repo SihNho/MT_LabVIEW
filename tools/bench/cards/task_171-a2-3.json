@@ -1,0 +1,58 @@
+{
+ "schema": "task/1",
+ "id": "171-a2-3",
+ "kind": "build",
+ "goal": "Per brief_171-a2-3.md: prior-art review of the stage_prerun value-criterion patch (af6937e8), then drain fp-103 naming selftest_c171_a1_1_taint and queue c130_5 T3 as a gate-fp entry.",
+ "why": "Purpose item 5 of assignment 171-2 (PD413(e)): the patch sets which gates fail, so it gets a prior-art review before fp-103 is drained.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_171-a2-3.md", "md5": "388758af309fc4f2851ef719ebe06dac"},
+  {"path": "tools/bench/diag_c171_a2_2_facts.md", "md5": "502502a3dc7764cd61476d4227f64e00"},
+  {"path": "tools/bench/diag_c171_a1_2_patch.diff", "md5": "f8f1fd958637a66b065c5e08bc886108"},
+  {"path": "tools/stage_prerun.py", "md5": "af6937e84fbe857e571f19bb55301465"},
+  {"path": "tools/bench/selftest_c171_a1_1_taint.py", "md5": "2107d4e21fb83990d2b84c0a0e5c018a"},
+  {"path": "tools/bench/diag_c171_a2_1_c130_5_unpatched.log", "md5": "bd113cd29051edf5236a2b17fc495596"}
+ ],
+ "pass": [
+  "Prior-art review run on the patch; verdict line quoted with file:line; disposition paragraph in archive/peer/2026-10-13-priorart-c171-taint.md",
+  "Verdict is not WRONG (else RETURN, no drain): fp-103 drained naming selftest_c171_a1_1_taint.py, output line quoted",
+  "c130_5 T3 queued as a gate-fp entry citing diag_c171_a2_1_c130_5_unpatched.log:8; new fp id and its gate_fp list line quoted",
+  "stage_prerun.py still af6937e8; fp-102 and fp-104 untouched; no hook edit, no LabVIEW; facts file diag_c171_a2_3_facts.md (<= 15 lines)"
+ ],
+ "outputs": [
+  "archive/peer/2026-10-13-priorart-c171-taint.md",
+  "tools/bench/diag_c171_a2_3_facts.md",
+  "tools/bench/cards/result_171-a2-3.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "archive/peer/2026-10-13-priorart-c171-taint*",
+   "tools/bench/cards/review_priorart-c171-taint*",
+   "tools/bench/diag_c171_a2_3*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/jev_*",
+   "tools/bench/cards/result_171-a2-3.json"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 40
+ },
+ "advances": ["M3", "M8"],
+ "requires": [
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/bench/diag_c171_a1_2_patch.diff"},
+  {"kind": "file", "name": "tools/prior_art_review.py"}
+ ],
+ "rules": [
+  "Offline only: no LabVIEW, camera, motor/ASI, VISA; Edit/Write tools only, never a heredoc",
+  "The patch and stage_prerun.py are not edited; no hook edit; do not touch fp-102 or fp-104",
+  "A WRONG verdict or any unexpected result = RETURN with the facts; no drain"
+ ]
+}

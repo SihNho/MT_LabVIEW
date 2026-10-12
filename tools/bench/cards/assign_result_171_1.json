@@ -1,0 +1,19 @@
+{"schema":"assign-result/1","cycle":171,"round":1,"status":"HANDBACK",
+ "cards":["171-a1-1","171-a1-2"],
+ "pass_evidence":[
+  {"item":0,"met":true,"evidence":["tools/bench/diag_c171_a1_1_facts.md:2-6","tools/bench/diag_c171_a1_1_hash.log"]},
+  {"item":1,"met":true,"evidence":["tools/bench/diag_c171_a1_1_facts.md:5-6","tools/bench/cards/result_171-a1-1.json"]},
+  {"item":2,"met":false,"evidence":["tools/bench/diag_c171_a1_1_patch.diff","tools/bench/diag_c171_a1_2_patch.diff","tools/bench/cards/result_171-a1-2.json"]},
+  {"item":3,"met":false,"evidence":["tools/bench/diag_c171_a1_2_dry170.log:10,28"]},
+  {"item":4,"met":false,"evidence":["tools/bench/diag_c171_a1_1_st134.log:4,15","tools/bench/diag_c171_a1_2_st134.log:4,15"]},
+  {"item":5,"met":false,"evidence":["tools/bench/diag_c171_a1_2_c130_5.log:8","tools/bench/diag_c171_a1_1_facts.md:30-33"]},
+  {"item":6,"met":false,"evidence":["tools/bench/cards/result_171-a1-2.json"]},
+  {"item":7,"met":false,"evidence":["tools/bench/cards/result_171-a1-2.json"]},
+  {"item":8,"met":false,"evidence":["tools/bench/cards/result_171-a1-2.json"]},
+  {"item":9,"met":false,"evidence":["tools/bench/cards/result_171-a1-2.json"]},
+  {"item":10,"met":false,"evidence":["tools/bench/cards/result_171-a1-2.json"]},
+  {"item":11,"met":false,"evidence":["tools/bench/cards/result_171-a1-2.json"]},
+  {"item":12,"met":false,"evidence":["tools/bench/cards/result_171-a1-2.json"]}
+ ],
+ "handback":{"reason":"fp-103 fix not accepted: literal name taint broke 134-1 T1 (FR->PB); retry's value-based patch met A2 and T1 but selftest_dry_c130_5 T3 FAILs PB (2/1, cause undiagnosed); stage_prerun reverted, no leg run.","question":null},
+ "note":"Judgement needs: (1) is the value criterion (name tainted only if its value is a Fake, holds a Fake, or is an empty container) an acceptable form of PD412(b)? The literal rule contradicts card-134-1 T1: T1's FR reads `real` (list of 5911 simulated rows) bound in a stub-touching statement, plan 170's A2 reads `c0` (empty dict) bound in one (diag_c171_a1_2_which_t1.log:160, _which_p170.log:10). (2) One offline baseline run of selftest_dry_c130_5.py on db81a1d3 (~2 min) decides if its T3 PB FAIL is caused by the patch. Re-apply = tools/bench/diag_c171_a1_2_patch.diff. Brief step 0: the stand-in names were swapped against their hashes (a89dafc1 = replay_imaqdx_get_image_buf.vi, 842ecad9 = replay_get_buff_image.vi), no drift. Pre-edit dries of plans 78/110 already differ from stored records (FAIL A2). Prior-art review, fp-103 drain, P6 replay copy, legs, compare and fp-102 not started; no LabVIEW, no hardware."}

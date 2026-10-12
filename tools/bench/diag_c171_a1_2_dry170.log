@@ -1,0 +1,30 @@
+BGRUN START 2026-10-13 01:46:45 limit 10.0 min: py -u tools/stage_prerun.py --dry tools/recipes/stage_replay_swap.py --plan 170
+BGRUN PID 14448
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == c2d9c13cb40c0a5cab7433896d1df157  got c2d9c13cb40c0a5cab7433896d1df157
+  PASS  DRY graph JSON for input md5 c2d9c13cb40c0a5cab7433896d1df157  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_ring_p6_20261012_212645.json
+  PASS  A1 copies md5 == sources  {'p6': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\D1_ring_p6_replay_20261013_014646.vi'}
+
+---------- [P6] D1_ring_p6_replay_20261013_014646.vi
+  UNVERIFIED  A2 p6 BEFORE: #6810 calls get buff image-lost frames.vi, #22692 calls IMAQdx Get Image.vi  (dry: stub input)
+  FACT  ExecState [p6 before] D1_ring_p6_replay_20261013_014646.vi = <dry:g.exec_state>
+  UNVERIFIED  A2 p6 ExecState 1 before the swap  (dry: stub input)
+  FACT  p6 replace_object #6810 -> replay_get_buff_image_paced60.vi: <dry:g.replace_object>
+  UNVERIFIED  A3 p6 replace #6810: no error, new uid  (dry: stub input, after mutation g.replace_object)
+  FACT  p6 replace_object #22692 -> replay_get_image_cal.vi: <dry:g.replace_object>
+  UNVERIFIED  A3 p6 replace #22692: no error, new uid  (dry: stub input, after mutation g.replace_object)
+  UNVERIFIED  A4 p6 callee diff == exactly the two swaps -> replay VIs  (dry: stub input, after mutation g.replace_object)
+  PASS  A5 p6 wire-edge diff 0 after remap (2426 edges before, 2426 after)  ([], [])
+  FACT  ExecState [p6 after] D1_ring_p6_replay_20261013_014646.vi = <dry:g.exec_state>
+  UNVERIFIED  A6 p6 ExecState 1 after the swaps  (dry: stub input, after mutation g.replace_object)
+  FACT  SAVED C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\replay\D1_ring_p6_replay_20261013_014646.vi md5 dry
+
+---------- [C] COLD: fresh LabVIEW
+  UNVERIFIED  C1 p6 ExecState 1 COLD  (dry: stub input, after mutation g.replace_object)
+  PASS  C2 p6 COLD callee census == warm
+  PASS  C3 p6 md5 unchanged by the cold load
+
+=== DRY PASS-UNVERIFIED A2 p6 BEFORE: #6810 calls get buff image-lost frames.vi, #22692 calls IMAQdx Get Image.vi; A2 p6 ExecState 1 before the swap; A3 p6 replace #6810: no error, new uid; A3 p6 replace #22692: no error, new uid; A4 p6 callee diff == exactly the two swaps -> replay VIs; A6 p6 ExecState 1 after the swaps; C1 p6 ExecState 1 COLD: first_fail=None coverage 65/69 lines, first mutation g.replace_object, unverified 7, graph tools/bench/graph_ring_p6_20261012_212645.json
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[],"card":"171-a1-2","labview":"none"}
+BGRUN END rc=0 after 3s
