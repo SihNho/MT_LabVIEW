@@ -384,14 +384,12 @@ def prerun_gate(cmd):
     return 2
 
 
-def scope_gate(cmd, cwd=None):
+def scope_gate(cmd):
     """0 = pass, 2 = refuse: a launched tools/ script without a valid scope header, or a .py that does not compile
-    (tools/scope_header.launch_scope). A broken helper never wedges a command. cwd (chat-X11, scope-cwd-fix-20261012):
-    the payload's cwd - relative paths resolve against it, and a script under the cwd's tools/ outside the main tree
-    is also checked for header honesty."""
+    (tools/scope_header.launch_scope). A broken helper never wedges a command."""
     try:
         import scope_header as SH
-        bad = [(p, prob) for p, _lv, _hw, prob in SH.launch_scope(cmd, cwd=cwd) if prob]
+        bad = [(p, prob) for p, _lv, _hw, prob in SH.launch_scope(cmd) if prob]
     except Exception:          # noqa: BLE001
         return 0
     if not bad:
@@ -433,28 +431,20 @@ NON_SCRIPT_LV_RE = re.compile(r"lv_gui\.ps1\s+-Action|(?<![\w.])py[\w.]*\s+-c\s+
                               r"from\s+(?:gscript|lvclick))|peer\.ps1\s+-Agent|import gscript", re.I | re.S)
 
 
-def offline_scripts_only(cmd, cwd=None):
+def offline_scripts_only(cmd):
     """chat 2026-10-10 (Codex compatibility, found by the user's Codex chat): LABVIEW_RE counted EVERY `py tools/*.py`
     as a LabVIEW command, so `debate_gdoc.py say` (header `labview: none`, `hardware: none`) was refused in Codex,
     whose tool input carries no timeout. True when every launched tools/ script declares labview none AND hardware
     none (the header is checked true at write time by guard_write, card chat-E3) and nothing else in the command
-    drives LabVIEW. A broken helper answers False, i.e. the old routing applies.
-    chat-X11 (scope-cwd-fix-20261012, Claude + GPT agreed): the payload's cwd is handed to
-    scope_header.offline_exemption (no cwd = the rule above exactly); its absolute-path hint is kept in _EXEMPT_HINT[0]
-    for the 2b refusal text."""
-    _EXEMPT_HINT[0] = None
+    drives LabVIEW. A broken helper answers False, i.e. the old routing applies."""
     if NON_SCRIPT_LV_RE.search(cmd or ""):
         return False
     try:
         import scope_header as SH
-        ok, hint = SH.offline_exemption(cmd, cwd)
+        launched = SH.launch_scope(cmd)
     except Exception:          # noqa: BLE001
         return False
-    _EXEMPT_HINT[0] = hint
-    return bool(ok)
-
-
-_EXEMPT_HINT = [None]
+    return bool(launched) and all(lv == "none" and hw == "none" and not prob for _p, lv, hw, prob in launched)
 
 
 NEXT_SECTION_RE = re.compile(r"^##\s+NEXT\s*$(.*?)(?=^##\s|\Z)", re.M | re.S)
@@ -664,8 +654,7 @@ def _main():
     # SIXTH RULE (card chat-E3, user 2026-10-04 "초장에 에러 발생을 극소화"): every tools/ script a command RUNS carries a
     # valid scope header and (.py) compiles - for every session, carded or not. Seconds here; a failing log, a review
     # and a card otherwise. The card's flags against the header are judged above (guard_card -> protocol.check_command).
-    cwd = data.get("cwd") or None          # chat-X11: the payload's cwd (None = the behaviour before the fix)
-    rc = scope_gate(cmd, cwd)
+    rc = scope_gate(cmd)
     if rc:
         return rc
     # Benchmark cells spawned by tools/bench/matrix_run.py inherit this hook via the project
@@ -696,7 +685,7 @@ def _main():
     jev_advisories(cmd, data)
     if not LABVIEW_RE.search(cmd):
         return 0
-    if offline_scripts_only(cmd, cwd):
+    if offline_scripts_only(cmd):
         return 0
     # A PROSE dispatch (`peer.ps1 -Kind prose`, the reporter agent writing a user-facing report through codex)
     # touches no LabVIEW and must be WAITED FOR in the foreground: twice on 2026-09-16 the reporter cell, refused
@@ -723,9 +712,7 @@ def _main():
     sys.stderr.write(
         f"BLOCKED by tools/hooks/guard_bash.py (CLAUDE.md 2b): a LabVIEW-touching command must run with "
         f"run_in_background=true, or with an explicit timeout <= {MAX_FG_MS // 1000} s. "
-        f"Got timeout={timeout}. Background it (you will be notified) or split it into a short step."
-        + (f" An offline (labview none + hardware none) script needs no timeout, but {_EXEMPT_HINT[0]}."
-           if _EXEMPT_HINT[0] else "") + "\n")
+        f"Got timeout={timeout}. Background it (you will be notified) or split it into a short step.\n")
     return 2
 
 

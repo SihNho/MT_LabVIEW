@@ -1030,7 +1030,7 @@ Outcome of every call: `ok | no_output | failed | timed_out` (tools/fncontract.p
 
 ## Every public function of the shared tools files - generated from code (card chat-T7)
 
-A file is SHARED when at least one OTHER file under tools/ imports it (import graph, measured at generation; cache tools/bench/capabilities_shared.json). Look here before writing any logic (docs/script-writing.md rule 8). 209 files, 2630 functions: 1429 described by a docstring, 304 by docs/fn_descriptions.json (existing functions, card chat-T8), 897 undocumented (per file in the table below). Regenerated at every cycle end and when a shared file is written.
+A file is SHARED when at least one OTHER file under tools/ imports it (import graph, measured at generation; cache tools/bench/capabilities_shared.json). Look here before writing any logic (docs/script-writing.md rule 8). 209 files, 2631 functions: 1430 described by a docstring, 304 by docs/fn_descriptions.json (existing functions, card chat-T8), 897 undocumented (per file in the table below). Regenerated at every cycle end and when a shared file is written.
 
 | file | kind | imported by | functions | side file | undocumented |
 |---|---|---|---|---|---|
@@ -1235,7 +1235,7 @@ A file is SHARED when at least one OTHER file under tools/ imports it (import gr
 | [`tools/hooks/adapt_claude.py`](#tools-hooks-adapt-claude-py) | hook - reference | 1 | 3 | 0 | 1 |
 | [`tools/hooks/adapt_codex.py`](#tools-hooks-adapt-codex-py) | hook - reference | 1 | 5 | 0 | 1 |
 | [`tools/hooks/guard_assign.py`](#tools-hooks-guard-assign-py) | hook - reference | 6 | 17 | 0 | 8 |
-| [`tools/hooks/guard_bash.py`](#tools-hooks-guard-bash-py) | hook - reference | 13 | 12 | 0 | 0 |
+| [`tools/hooks/guard_bash.py`](#tools-hooks-guard-bash-py) | hook - reference | 13 | 13 | 0 | 0 |
 | [`tools/hooks/guard_card.py`](#tools-hooks-guard-card-py) | hook - reference | 4 | 4 | 0 | 2 |
 | [`tools/hooks/guard_cycle.py`](#tools-hooks-guard-cycle-py) | hook - reference | 29 | 14 | 0 | 3 |
 | [`tools/hooks/guard_peer.py`](#tools-hooks-guard-peer-py) | hook - reference | 27 | 27 | 0 | 4 |
@@ -1442,9 +1442,9 @@ shared module; imported by 2 file(s): `tools/debate_gdoc.py`, `tools/debate_loop
 | `summary` | d | The discussion's end state from <d>/state.json (rounds or turns mode): {rounds, converged, agreed (both sides' | docstring | selftest_rounds | 184 |
 | `step` | a | (undocumented) | - | - | 217 |
 | `round_` | a | Both speakers write AT THE SAME TIME (user 2026-10-09: "같은 단계에서 서로에게 질문하고 피드백하며 수렴"): | docstring | - | 292 |
-| `selftest_rounds` |  | (undocumented) | - | - | 376 |
-| `selftest` |  | (undocumented) | - | - | 415 |
-| `main` | argv=None | (undocumented) | - | - | 453 |
+| `selftest_rounds` |  | (undocumented) | - | - | 383 |
+| `selftest` |  | (undocumented) | - | - | 422 |
+| `main` | argv=None | (undocumented) | - | - | 460 |
 
 ### tools/dispo.py
 
@@ -5187,11 +5187,12 @@ hook - reference; imported by 13 file(s): `tools/bench/diag_c106d_jevrc2.py`, `t
 | `prerun_gate` | cmd | 0 = pass, 2 = refuse. The decision lives in tools/stage_prerun.py check_launch() (argv parsing + records). | docstring | - | 364 |
 | `scope_gate` | cmd | 0 = pass, 2 = refuse: a launched tools/ script without a valid scope header, or a .py that does not compile | docstring | - | 387 |
 | `retro_closes` | cmd, data | True when this retrospective launch really closes the session's cycle (see main). | docstring | - | 402 |
-| `next_md5` | status_path | md5 of STATUS.md's '## NEXT' section (stripped), or '' when the file/section is missing. | docstring | - | 430 |
-| `next_json_state` | root | (md5 of tools/bench/next.json bytes / 'absent', why-invalid / None). Session protocol v1 C7: the machine copy | docstring | - | 441 |
-| `next_gate` |  | Refuse a retrospective launch until the cycle has written a NEW, VALID 'tools/bench/next.json'. | docstring | - | 456 |
-| `jev_advisories` | cmd, data | ADVISORY ONLY. Returns the lines it printed (for the self-test); main() ignores them. Never raises. | docstring | - | 545 |
-| `main` |  | RETRY CAP (user 2026-09-24, card chat-D). This hook only CHECKS the cap (prerun_gate -> check_launch). It no | docstring | - | 583 |
+| `offline_scripts_only` | cmd | chat 2026-10-10 (Codex compatibility, found by the user's Codex chat): LABVIEW_RE counted EVERY 'py tools/*.py' | docstring | - | 434 |
+| `next_md5` | status_path | md5 of STATUS.md's '## NEXT' section (stripped), or '' when the file/section is missing. | docstring | - | 453 |
+| `next_json_state` | root | (md5 of tools/bench/next.json bytes / 'absent', why-invalid / None). Session protocol v1 C7: the machine copy | docstring | - | 464 |
+| `next_gate` |  | Refuse a retrospective launch until the cycle has written a NEW, VALID 'tools/bench/next.json'. | docstring | - | 479 |
+| `jev_advisories` | cmd, data | ADVISORY ONLY. Returns the lines it printed (for the self-test); main() ignores them. Never raises. | docstring | - | 568 |
+| `main` |  | RETRY CAP (user 2026-09-24, card chat-D). This hook only CHECKS the cap (prerun_gate -> check_launch). It no | docstring | - | 606 |
 
 ### tools/hooks/guard_card.py
 
@@ -5305,18 +5306,18 @@ hook - reference; imported by 3 file(s): `tools/bench/selftest_guardcore.py`, `t
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
-| `event` | backend, tool_name, kind, command='', shell=None, timeout_ms=None, background=False, paths=(), content=None, cwd=None... | A normalized event dict. paths = [{"op": add/modify/delete/rename/write/edit, "old": p/None, "new": p/None}] | docstring | - | 86 |
-| `vi_family_ban` | ev | R1: reason or None. | docstring | - | 113 |
-| `originals_ban` | ev | R2: reason or None. | docstring | - | 123 |
-| `runner_globs` |  | never_in_runner_globs from tools/bench/assign/assign_config.json + RUNNER_EXTRA_GLOBS (unreadable: tools/hooks/**). | docstring | - | 131 |
-| `runner_hook_ban` | ev | R3: reason or None. Only when the session is a runner cycle session (CYCLE_SESSION set). | docstring | - | 141 |
-| `labview_running` |  | True when the LabVIEW process image is in tasklist (or GUARDCORE_ASSUME_LABVIEW=1). Read-only process list; | docstring | - | 163 |
-| `labview_launches` | cmd | [(rel path, labview level)] of tools/ scripts this command RUNS whose scope header says labview read/build. | docstring | - | 176 |
-| `concurrency_ban` | ev, probe=None | R4: reason or None. | docstring | - | 185 |
-| `call_guard` | modname, payload, env=None | (rc, reason) of one existing hook's main() on 'payload'. rc 2 = deny. An exception inside the guard is reported | docstring | - | 216 |
-| `claude_payload` | ev, tool_name, tool_input | (undocumented) | - | - | 253 |
-| `judge` | ev, probe=None | ('allow' / 'deny', reason). The order: own path rules (R6, R1-R3), then the existing guards, then R4. | docstring | - | 276 |
-| `log` | ev, verdict, why | One line per decision (tools/hooks/guardcore.log). Never raises. | docstring | - | 320 |
+| `event` | backend, tool_name, kind, command='', shell=None, timeout_ms=None, background=False, paths=(), content=None, cwd=None... | A normalized event dict. paths = [{"op": add/modify/delete/rename/write/edit, "old": p/None, "new": p/None}] | docstring | - | 89 |
+| `vi_family_ban` | ev | R1: reason or None. | docstring | - | 116 |
+| `originals_ban` | ev | R2: reason or None. | docstring | - | 126 |
+| `runner_globs` |  | never_in_runner_globs from tools/bench/assign/assign_config.json + RUNNER_EXTRA_GLOBS (unreadable: tools/hooks/**). | docstring | - | 134 |
+| `runner_hook_ban` | ev | R3: reason or None. Only when the session is a runner cycle session (CYCLE_SESSION set). | docstring | - | 144 |
+| `labview_running` |  | True when the LabVIEW process image is in tasklist (or GUARDCORE_ASSUME_LABVIEW=1). Read-only process list; | docstring | - | 166 |
+| `labview_launches` | cmd | [(rel path, labview level)] of tools/ scripts this command RUNS whose scope header says labview read/build. | docstring | - | 179 |
+| `concurrency_ban` | ev, probe=None | R4: reason or None. | docstring | - | 188 |
+| `call_guard` | modname, payload, env=None | (rc, reason) of one existing hook's main() on 'payload'. rc 2 = deny. An exception inside the guard is reported | docstring | - | 219 |
+| `claude_payload` | ev, tool_name, tool_input | (undocumented) | - | - | 256 |
+| `judge` | ev, probe=None | ('allow' / 'deny', reason). The order: own path rules (R6, R1-R3), then the existing guards, then R4. | docstring | - | 279 |
+| `log` | ev, verdict, why | One line per decision (tools/hooks/guardcore.log). Never raises. | docstring | - | 323 |
 
 ### tools/hooks/report_gate.py
 

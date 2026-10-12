@@ -15,5 +15,8 @@ Measured before the decision: 74 of 147 commits in 14 days touched tools/hooks o
 - Still active: the common guard tools/hooks/guardcore.py + adapters, the trusted .codex hooks (live-tested 15/0), the guardcore-fix-20261010.
 - Discussion structure-equal-02 ended by the user's decision (/end, 2026-10-11).
 
+- 2026-10-12: REMOVED from the tree (user "그렇게 하자", docs/decisions/claude_main_gpt_debate_peer_only.md); recoverable
+  from git history at 87e48c28.
+
 **Why:** the device slows every hook fix by hours while GPT is still read-only; the benchmark decides the subscription by 2026-10-16.
 **How to apply:** do not switch the device on without the user; revisit when GPT is given write roles. Related: [[backend_agnostic_project_goal]], [[codex_sessions_run_full_access]].

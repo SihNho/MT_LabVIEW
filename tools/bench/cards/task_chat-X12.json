@@ -1,0 +1,19 @@
+{
+ "schema": "task/1", "id": "chat-X12", "kind": "measure",
+ "goal": "Regression after rolling back scope-cwd-fix and removing the apply-path device (user 2026-10-12 '그렇게 하자')",
+ "why": "Claude is main, GPT only discusses/reviews (docs/decisions/claude_main_gpt_debate_peer_only.md); GPT-only guard changes rolled back by the chat.",
+ "inputs": [{"path": "tools/hooks/guard_bash.py", "md5": "da9ee70b52f6e56f7bfa63215c36fa96"},
+            {"path": "tools/hooks/guardcore.py", "md5": "70f6d9d4296e32ed4b4ce2ea67649b95"},
+            {"path": "tools/scope_header.py", "md5": "f5eb3eb2bcddfa321554da2977909555"}],
+ "pass": [
+  "every hook self-test (selftest_*guard*/*gate*/*protocol*/*card*/*hook*/*scope*) run, exit and RESULT quoted",
+  "selftest_guardcore and selftest_guard_bash_codex run and quoted",
+  "each FAIL: test, first failing line, and whether it concerns the rolled-back files (c155_gatefp73 failed before)",
+  "no reference left to removed files: grep tools/ docs/ for rules_apply, rules_protected, git_precommit_rules, selftest_scope_cwd"
+ ],
+ "outputs": ["tools/bench/cards/result_chat-X12.json"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false, "write": ["tools/bench/cards/result_chat-X12.json"],
+  "status_edit": false, "git_commit": false, "peers": []},
+ "budget": {"failures": 2, "minutes": 30}, "unblocks": "M3",
+ "rules": ["OFFLINE, run tests only, change nothing", "tests with a labview: read header are skipped and named", "a refusal is quoted and the card ends BLOCKED - never a dodge"]
+}
