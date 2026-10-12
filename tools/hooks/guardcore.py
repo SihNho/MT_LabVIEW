@@ -176,18 +176,20 @@ def labview_running():
         return False
 
 
-def labview_launches(cmd):
-    """[(rel path, labview level)] of tools/ scripts this command RUNS whose scope header says labview read|build."""
+def labview_launches(cmd, cwd=None):
+    """[(rel path, labview level)] of tools/ scripts this command RUNS whose scope header says labview read|build.
+    cwd (chat-X11, scope-cwd-fix-20261012): the event's cwd - relative paths resolve against it and scripts under its
+    tools/ are read as well as ROOT's."""
     try:
         import scope_header as SH
-        return [(_rel(p), lv) for p, lv, _hw, _prob in SH.launch_scope(cmd) if lv in ("read", "build")]
+        return [(_rel(p), lv) for p, lv, _hw, _prob in SH.launch_scope(cmd, cwd=cwd) if lv in ("read", "build")]
     except Exception:          # noqa: BLE001 - a broken reader adds no refusal
         return []
 
 
 def concurrency_ban(ev, probe=None):
     """R4: reason or None."""
-    lv = labview_launches(ev.get("command") or "")
+    lv = labview_launches(ev.get("command") or "", ev.get("cwd"))
     if not lv:
         return None
     if not (probe or labview_running)():

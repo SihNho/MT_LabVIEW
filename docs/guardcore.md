@@ -33,6 +33,19 @@ Codex with the SAME safety rules.
 
 Sources: installed binary strings (`node_modules/@openai/codex-win32-x64/.../codex.exe`, 0.162.0); codex.danielvaughan.com 2026-05-25 "Codex CLI Hooks After GA"; Dicklesworthstone/destructive_command_guard `docs/codex-integration.md`; web summary of openai/codex issue #16732 / PR #18391 (apply_patch hooks). `developers.openai.com/codex/hooks` redirects to learn.chatgpt.com, which the permission layer refused to fetch.
 
+## Payload cwd (scope-cwd-fix-20261012, card chat-X11)
+
+guard_bash (scope_gate, offline_scripts_only) and R4 hand the payload's `cwd` to `tools/scope_header.py`: relative
+script paths resolve against it; a folder change or an unconfirmed / outside-tools launch is never timeout-exempt; when
+cwd is not the main tree only a drive-absolute path inside its `tools/` is exempt and a cell script gets the honesty
+check. Record: `tools/bench/debate/scope-cwd-fix/applied_scope-cwd-fix-20261012.md`.
+
+**OPEN (not fixed by this change, both debaters agreed to record it only, round 6):** a Codex shell call may carry its
+own `workdir` argument that the hook payload does not show (hook `cwd` = the session's start folder; reported for
+0.144/0.145 in openai/codex issues the debaters could not confirm, not measured on 0.162.0). A MAIN-folder Codex
+session (cwd = ROOT) still gets the relative-path exemption, so its relative `py tools/...` is judged against ROOT
+even if a hidden workdir points elsewhere. Unblock: measure a harmless call with a changed workdir and read its payload.
+
 ## Verification level
 
 EXECUTOR PATH VERIFIED / OUTSIDE THE EXECUTOR ONLY SECONDARY DEFENCE. Command-string checks see text, not what a process

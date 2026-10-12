@@ -1,0 +1,18 @@
+{
+ "schema": "task/1", "id": "chat-X11", "kind": "build",
+ "goal": "Implement scope-cwd-fix-20261012 exactly as Claude and GPT agreed (round 6), with regression and an applied record",
+ "why": "User 2026-10-12 '동의 받고 고쳐'; both sides agreed. Detail: brief_chat-X11.md",
+ "inputs": [{"path": "tools/bench/cards/brief_chat-X11.md", "md5": "4a99e0e9940b8d1197f0ff2f60ccf0da"}],
+ "pass": [
+  "cwd passed through scope_header launch reading, nested PowerShell, bgrun child, in_tools, guardcore R4, guard_bash",
+  "cwd != ROOT: only drive-absolute paths inside its tools/ exempt; relative refused with the hint; honesty check; mix/cd not exempt",
+  "new cases green; all hook self-tests, guardcore, guard_bash_codex run and quoted (c155 pre-existing)",
+  "applied record with md5s and results in tools/bench/debate/scope-cwd-fix/; md5 unchanged at commit; committed"
+ ],
+ "outputs": ["tools/scope_header.py", "tools/hooks/guard_bash.py", "tools/hooks/guardcore.py"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/scope_header.py", "tools/hooks/**", "tools/bench/selftest_guard_bash_codex.py", "tools/bench/selftest_scope_cwd.py", "tools/bench/debate/scope-cwd-fix/**", "docs/guardcore.md"],
+  "status_edit": false, "git_commit": true, "peers": []},
+ "budget": {"failures": 2, "minutes": 120}, "unblocks": "M3",
+ "rules": ["chat card: tools/hooks edits allowed, user approved after both agreed", "implement the agreed scope only", "Edit/Write tools only, no heredoc patches", "a refusal is quoted and the card ends BLOCKED - never a dodge"]
+}

@@ -1,0 +1,26 @@
+{"schema": "result/1", "id": "chat-X11", "status": "PASS",
+ "gates": {"pass": 4, "fail": 0}, "first_fail": null, "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/scope_header.py", "md5": "fc973af3030ec8a147b5e4112155d984"},
+  {"path": "tools/hooks/guard_bash.py", "md5": "f1219088285f644c291b0e2abd19d671"},
+  {"path": "tools/hooks/guardcore.py", "md5": "4a8efa7d45a630f72aee8b261b81e567"},
+  {"path": "tools/bench/selftest_scope_cwd.py", "md5": "6a0bf5b5759f2fc645933244635eb79c"},
+  {"path": "docs/guardcore.md", "md5": "9c2d718b2dc3e2ba214b96d9d95bfccd"},
+  {"path": "tools/bench/debate/scope-cwd-fix/applied_scope-cwd-fix-20261012.md", "md5": "9d84086807097bd5d745231d0d67b3e1"}
+ ],
+ "facts": [
+  "cwd flows: guard_bash._main data['cwd'] -> scope_gate / offline_scripts_only -> scope_header.launch_scope / offline_exemption; guardcore R4 labview_launches(cmd, ev cwd)",
+  "no cwd in payload = old rule exactly (scope_header.offline_exemption cwd None branch); guardcore events default cwd to ROOT as before",
+  "selftest_scope_cwd 26/26 PASS (reg/selftest_scope_cwd.log): ROOT say kept; cd/mix/outside refused; cell relative refused with hint; cell abs none allowed; dishonest header = scope_gate",
+  "39 hook self-tests run: all 0 fail except selftest_c155_gatefp73 8/2 (G1,G5 discard_work) = same as 2026-10-10 diag_c163_a1_4_st_c155_gatefp73.log",
+  "4 hook self-tests not run (labview: read header, card labview none): census_hookin_c123, leg_guard, prim_gate_c141_1, stagexec_gate",
+  "selftest_guardcore 111/0, selftest_guard_bash_codex 23/0 (bgrun calls its RESULT malformed: no gates field, pre-existing)",
+  "bgrun child resolves against bgrun's PROJECT (tools/bgrun.py:32,236) = cwd whenever bgrun is in cwd tools/ (applied record choice 4)",
+  "my first cd-prefixed foreground bgrun (13:25, timeout 420 s) was ALLOWED live although the same payload replayed in-process returns 2; a later identical shape was refused live - cause not checked"
+ ],
+ "open": [
+  "GPT step 0 rerun (codex live exec) named in the round-6 experiment was not run in this card",
+  "hidden Codex workdir for main-folder sessions recorded as OPEN in docs/guardcore.md, not fixed"
+ ],
+ "cost": {"usd": null, "minutes": 18, "labview_runs": 0},
+ "note": "committed; md5s re-verified unchanged after the regression run"}

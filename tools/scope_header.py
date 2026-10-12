@@ -418,14 +418,37 @@ def infer(path, src=None):
 
 
 # ------------------------------------------------------------------------------------------------ launch reading
-def _abs(p):
+# scope-cwd-fix-20261012 (card chat-X11; Claude + GPT agreed, tools/bench/debate/scope-cwd-fix/relay/round_06_*.md; user
+# 2026-10-12 "동의 받고 고쳐"): every launch reader takes the hook payload's `cwd`. cwd None = the behaviour before the fix,
+# byte for byte (relative paths against ROOT, no folder-change / mix / absolute-path rule). Self-test:
+# tools/bench/selftest_scope_cwd.py.
+DRIVE_ABS_RE = re.compile(r"^[A-Za-z]:[\\/]")
+CD_WORDS = {"cd", "chdir", "pushd", "popd", "set-location", "push-location", "pop-location", "sl"}
+PWSH_RE = re.compile(r"(?:^|[\\/])(?:powershell|pwsh)(?:\.exe)?$", re.I)
+
+
+def _base(cwd=None):
+    """The folder a relative script path resolves against: the payload's cwd when given, else ROOT."""
+    return os.path.normpath(cwd) if cwd else ROOT
+
+
+def is_root(cwd):
+    """True when cwd is absent or (normalized, case-folded) the main tree ROOT."""
+    return not cwd or os.path.normcase(os.path.normpath(cwd)) == os.path.normcase(ROOT)
+
+
+def _under(p, folder):
+    return os.path.normcase(os.path.normpath(p)).startswith(os.path.normcase(os.path.normpath(folder)) + os.sep)
+
+
+def _abs(p, cwd=None):
     p = p.strip("\"'")
-    return os.path.normpath(p if os.path.isabs(p) else os.path.join(ROOT, p))
+    return os.path.normpath(p if os.path.isabs(p) else os.path.join(_base(cwd), p))
 
 
-def in_tools(p):
-    a = os.path.normcase(_abs(p))
-    return a.startswith(os.path.normcase(TOOLS) + os.sep)
+def in_tools(p, cwd=None):
+    """True when `p` (resolved against cwd, else ROOT) lies under that folder's tools/."""
+    return _under(_abs(p, cwd), os.path.join(_base(cwd), "tools"))
 
 
 INTERP_RE = re.compile(r"^(?:\"[^\"]*\"|'[^']*'|\S+)$")
@@ -446,33 +469,54 @@ def _tok(seg):
         return [t.strip("\"'") for t in seg.split()]
 
 
-def launches(cmd):
+def launches(cmd, cwd=None):
     """[(script abs path, argv tokens after it)] for every script RUN by `cmd`: a .py in command position of a
     segment (env prefix allowed, interpreter flags skipped; `-c` / `-m <module>` run no file of ours), the child after
     a bgrun `--`, and a .ps1 after `&` or `-File`. A path that is only READ (`grep x a.py`, `git add a.py`,
-    `py -m py_compile a.py`) is not here."""
+    `py -m py_compile a.py`) is not here. Relative paths resolve against `cwd` (else ROOT)."""
+    return [(p, a) for p, a, _raw in _runs(cmd, cwd)]
+
+
+def _runs(cmd, cwd=None):
+    """[(script abs path, argv, raw path token as written)] - launches() plus the token, for the absolute-path rule."""
     out = []
     for seg in _segments(cmd):
-        out.extend(_seg_launches(seg))
+        out.extend(_seg_runs(seg, 0, cwd))
     return out
 
 
-def _seg_launches(seg, depth=0):
-    out = []
-    for m in PS1_RE.finditer(seg):
-        rest = seg[m.end():]
-        out.append((_abs(m.group(2)), _tok(rest)))
-    toks = _tok(seg)
+def _env_skip(toks):
     i = 0
     while i < len(toks) and re.match(r"^\w+=", toks[i]):
         i += 1
-    if i < len(toks) and depth < 2 and re.search(r"(?:^|[\\/])(?:powershell|pwsh)(?:\.exe)?$", toks[i], re.I):
-        m = re.search(r"-Command\s+(\"(?:[^\"]*)\"|'(?:[^']*)'|.+)$", seg, re.I)   # the command string it runs
-        if m:
-            inner = m.group(1).strip()
-            inner = inner[1:-1] if inner[:1] in "\"'" and inner[-1:] == inner[:1] else inner
+    return i
+
+
+def _pwsh_inner(seg):
+    """The command string a `powershell|pwsh ... -Command <x>` segment runs, or None."""
+    m = re.search(r"-Command\s+(\"(?:[^\"]*)\"|'(?:[^']*)'|.+)$", seg, re.I)
+    if not m:
+        return None
+    inner = m.group(1).strip()
+    return inner[1:-1] if inner[:1] in "\"'" and inner[-1:] == inner[:1] else inner
+
+
+def _seg_launches(seg, depth=0, cwd=None):
+    return [(p, a) for p, a, _raw in _seg_runs(seg, depth, cwd)]
+
+
+def _seg_runs(seg, depth=0, cwd=None):
+    out = []
+    for m in PS1_RE.finditer(seg):
+        rest = seg[m.end():]
+        out.append((_abs(m.group(2), cwd), _tok(rest), m.group(2)))
+    toks = _tok(seg)
+    i = _env_skip(toks)
+    if i < len(toks) and depth < 2 and PWSH_RE.search(toks[i]):
+        inner = _pwsh_inner(seg)       # the command string it runs
+        if inner is not None:
             for s in _segments(inner):
-                out.extend(x for x in _seg_launches(s, depth + 1) if x not in out)
+                out.extend(x for x in _seg_runs(s, depth + 1, cwd) if x not in out)
         return out
     if i >= len(toks) or not PY_PROG_RE.search(toks[i]):
         return out
@@ -483,12 +527,33 @@ def _seg_launches(seg, depth=0):
         i += 1
     if i >= len(toks) or not toks[i].lower().endswith(".py"):
         return out
-    script, argv = _abs(toks[i]), toks[i + 1:]
-    out.append((script, argv))
+    script, argv = _abs(toks[i], cwd), toks[i + 1:]
+    out.append((script, argv, toks[i]))
     if os.path.basename(script).lower() == "bgrun.py" and "--" in argv:
         child = argv[argv.index("--") + 1:]
-        out.extend(_seg_launches(" ".join('"%s"' % t if " " in t else t for t in child)))
+        # the child runs in bgrun's PROJECT (tools/bgrun.py:32,236 = the folder above bgrun's tools/); with a cwd that
+        # is where its relative paths resolve (== cwd whenever bgrun itself sits in cwd's tools/). cwd None: as before.
+        ccwd = os.path.dirname(os.path.dirname(script)) if cwd else None
+        out.extend(_seg_runs(" ".join('"%s"' % t if " " in t else t for t in child), 0, ccwd))
     return out
+
+
+def changes_folder(cmd, depth=0):
+    """True when a segment of `cmd` (or of a nested `powershell -Command`) starts with a folder change: cd / chdir /
+    pushd / popd / Set-Location / Push-Location / Pop-Location / sl (a leading `(` or `{` of a subshell is skipped).
+    Relative script paths after it no longer resolve against the payload cwd, so no timeout exemption (chat-X11)."""
+    for seg in _segments(cmd):
+        toks = _tok(seg.lstrip(" \t({"))
+        i = _env_skip(toks)
+        if i >= len(toks):
+            continue
+        if toks[i].lower() in CD_WORDS:
+            return True
+        if depth < 2 and PWSH_RE.search(toks[i]):
+            inner = _pwsh_inner(seg)
+            if inner is not None and changes_folder(inner, depth + 1):
+                return True
+    return False
 
 
 def effective(h, argv):
@@ -498,16 +563,23 @@ def effective(h, argv):
     return h["labview"], h["hardware"]
 
 
-def launch_scope(cmd, extra=()):
+def _judged(p, cwd=None):
+    """A launched path launch_scope judges: under ROOT's tools/, or (cwd given) under the cwd's tools/ as well."""
+    return _under(p, TOOLS) or bool(cwd and _under(p, os.path.join(_base(cwd), "tools")))
+
+
+def launch_scope(cmd, extra=(), cwd=None):
     """[(path, labview, hardware, problem|None)] for every tools/ script `cmd` runs. problem: missing/invalid header,
     or a .py that does not compile. `extra`: paths another detector (protocol.PY_TOKEN_RE) saw in command position
-    that launches() did not parse - judged by their header with NO offline-args (fail closed, never looser)."""
+    that launches() did not parse - judged by their header with NO offline-args (fail closed, never looser).
+    cwd (chat-X11): relative paths resolve against it; scripts under ROOT's tools/ AND under the cwd's tools/ are judged,
+    and a script outside ROOT's tools/ (a bench-cell file) also gets the header honesty check (problem when dishonest)."""
     out = []
-    runs = launches(cmd)
+    runs = launches(cmd, cwd)
     seen = {os.path.normcase(p) for p, _a in runs}
-    runs += [(_abs(p), []) for p in extra if os.path.normcase(_abs(p)) not in seen]
+    runs += [(_abs(p, cwd), []) for p in extra if os.path.normcase(_abs(p, cwd)) not in seen]
     for p, argv in runs:
-        if not in_tools(p) or not os.path.isfile(p):
+        if not _judged(p, cwd) or not os.path.isfile(p):
             continue
         h, err = read(p)
         if not err and _rel(p) in NO_TOUCH:      # chat-A1's files (this card may not edit them): registry fills the gap
@@ -528,8 +600,46 @@ def launch_scope(cmd, extra=()):
         ce = compile_error(p) if p.lower().endswith(".py") else None
         lv, hw = effective(h, argv)
         _OFFLINE_HINT[os.path.normcase(p)] = h.get("offline-args") or []
-        out.append((p, lv, hw, ("does not compile: %s" % ce) if ce else None))
+        prob = ("does not compile: %s" % ce) if ce else None
+        if prob is None and cwd and not _under(p, TOOLS):
+            prob = _cell_honesty(p, h)
+        out.append((p, lv, hw, prob))
     return out
+
+
+def _cell_honesty(p, h):
+    """None, or the problem: honesty() of a script outside ROOT's tools/ (guard_write never saw it). Fails closed."""
+    try:
+        probs = honesty(p, h)
+    except Exception as e:         # noqa: BLE001
+        probs = ["honesty check could not run (%s: %s)" % (type(e).__name__, e)]
+    return ("scope header is not honest: %s" % "; ".join(probs)) if probs else None
+
+
+def offline_exemption(cmd, cwd=None):
+    """(exempt, hint|None): may `cmd` run without the 2b timeout because every script it runs is effectively labview
+    none + hardware none? cwd None = the rule before chat-X11 exactly. With a cwd (scope-cwd-fix-20261012, agreed):
+    never exempt when it changes folder (changes_folder) or runs a script that is not a file under the cwd's tools/
+    (unconfirmed / outside); and when the normalized cwd is not ROOT, every script must be written as a drive-absolute
+    path. hint is set ONLY when that absolute-path rule is the reason. Self-test: tools/bench/selftest_scope_cwd.py."""
+    if cwd is None:
+        sc = launch_scope(cmd)
+        return bool(sc) and all(lv == "none" and hw == "none" and not prob for _p, lv, hw, prob in sc), None
+    if changes_folder(cmd):
+        return False, None
+    runs = _runs(cmd, cwd)
+    btools = os.path.join(_base(cwd), "tools")
+    if not runs or any(not _under(p, btools) or not os.path.isfile(p) for p, _a, _r in runs):
+        return False, None
+    sc = launch_scope(cmd, cwd=cwd)
+    if len(sc) != len(runs) or not all(lv == "none" and hw == "none" and not prob for _p, lv, hw, prob in sc):
+        return False, None
+    rel = [p for p, _a, raw in runs if not DRIVE_ABS_RE.match(raw)]
+    if rel and not is_root(cwd):
+        return False, ("the command runs in %s, not the main tree: there a script runs without a timeout only when it "
+                       "is given by its ABSOLUTE path with the drive, inside %s - e.g. py \"%s\""
+                       % (_base(cwd), btools, rel[0]))
+    return True, None
 
 
 _OFFLINE_HINT = {}
