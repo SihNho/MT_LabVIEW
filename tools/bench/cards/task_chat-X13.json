@@ -1,0 +1,17 @@
+{
+ "schema": "task/1", "id": "chat-X13", "kind": "measure",
+ "goal": "A/B: do script-writing rules 10-15 ('Write less') change scripts written by Opus material cells on 3 real tasks",
+ "why": "User 2026-10-12 '추가하고 테스트' after rules 10-15 were added (02bdfa47). Detail: brief_chat-X13.md",
+ "inputs": [{"path": "tools/bench/cards/brief_chat-X13.md", "md5": "08adee4fbf69ab3ac0a398380b1ae593"}],
+ "pass": [
+  "12 cells (3 tasks x OLD/NEW doc x 2) run under bgrun <= 10 min each, outputs only under tools/bench/xs_write_less/",
+  "mechanical metrics per cell: correct, LOC, unasked options, non-stdlib imports, assert, skipped line, shortcut, USD, min",
+  "one blind judge per task pair with the A/B mapping recorded before judging",
+  "report returned as text; bench folder committed"
+ ],
+ "outputs": ["tools/bench/xs_write_less/"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/xs_write_less/**"], "status_edit": false, "git_commit": true, "peers": []},
+ "budget": {"failures": 2, "minutes": 120}, "unblocks": "M3",
+ "rules": ["offline, read-only on the real input files", "cells write only under tools/bench/xs_write_less/", "Edit/Write only, no heredoc patches; refusals quoted, never dodged", "report as text; the chat writes the report file"]
+}
