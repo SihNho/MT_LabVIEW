@@ -1,0 +1,38 @@
+{
+ "schema": "result/1",
+ "id": "chat-X10e",
+ "status": "PASS",
+ "gates": {"pass": 4, "fail": 0},
+ "first_fail": null,
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/bench/matbench/codex_arm.py", "md5": "b365eeae28ab197081ba397826bbcd16"},
+  {"path": "tools/bench/matbench/matbench.py", "md5": "9a61f6bc4a3e62327392f912decfe5ef"},
+  {"path": "tools/bench/matbench/score.py", "md5": "3aede677654a20ca60c90305552288e5"},
+  {"path": "tools/bench/matbench/x10_bench.py", "md5": "05b765735e56ccdce3b27c8bf78d8452"},
+  {"path": "tools/bench/matbench/x10/results_x10.json", "md5": "08b244ddd3461316970f9bc9e6ceaeb5"},
+  {"path": "tools/bench/matbench/x10/blind_mapping.json", "md5": "277227af3e5555f483a31e58719aada8"},
+  {"path": "tools/bench/matbench/x10/x10e_step0_regate.log", "md5": "638293399cf1b22aff63e6bef7ebb561"},
+  {"path": "tools/bench/matbench/x10/x10e_gpt.log", "md5": "a631aef160a0c22a70ac0931a97f156d"},
+  {"path": "tools/bench/matbench/x10/x10e_claude.log", "md5": "acb6afa5a61188ff931432fcb930d54a"},
+  {"path": "tools/bench/matbench/x10/x10e_score.log", "md5": "a3e19f7cec0200e8299a642b3eeecd05"}
+ ],
+ "facts": [
+  "step0 live 7/7 (x10/x10e_step0_regate.log:18-25): logged, main-tree write REFUSE+absent, abs-path none script ran, relative refused with hint, never ran",
+  "step0 first judge said 6/1: guardcore.log cuts reasons at ~300 chars; the hint is in the codex event (x10e_step0_live_codex.jsonl:12); re-judged saved evidence, no 2nd exec",
+  "score (blind, x10/x10e_score.log:3-22): Claude opus-5-5/high 8/10 (T1 0,0 T2 1,1 T3 1,1 T5 1,1 T6 1,1); GPT gpt-6.1-sol/high 4/10 (T1 0,0 T2 1,0 T3 0,1 T5 1,1 T6 0,0)",
+  "GPT's 6 zeros: T1 x2 workaround (same as Claude); T2r2/T3r1 facts >200 chars; T6r1 BOM card w/o gates; T6r2 unknown card fields (x10e_score.log:5-22)",
+  "wall min (bgrun cells, all <=20, no TIMEOUT): Claude 32.17 total / 3.22 mean; GPT 42.58 / 4.26 (results_x10.json); Claude T5r2 12.68 wall vs 0.21 envelope min",
+  "Claude $14.47 for 10 cells (x10/x10e_claude.log:28), tokens out 96.7k, cache read 17.8M; GPT in 10.6M (cached 9.79M) out 76k, no usd (results_x10.json)",
+  "GPT plan %: 5h 23->38, reset in T5r1, 1->24 (~38 pts for 10 cells); weekly 4->11 (meta.json rollout first/last per cell). Claude weekly % for the chat to read",
+  "GPT relative-path refusals: 4 (T1r1, T1r2, T3r1, T3r2), counted apart (x10/x10e_gpt.log:23); each was re-run by the abs path or dropped",
+  "unequal: GPT gets MAIN's current hooks; scope-header rule refused base-commit tools/protocol.py, stagesim.py, own scripts: 8 refusals in 7 cells; Claude cells run base hooks",
+  "unequal: codex_cell_hook fail-closed UnicodeEncodeError on Korean text (surrogates) denied 2 GPT calls (T3r1 patch, T6r1); Claude validated cards 10/10 cells, GPT 0-1"
+ ],
+ "open": [
+  "Accept 8 vs 4 as the X10 number, or re-run GPT after equalising (a) hook version: base-commit hooks vs MAIN's scope-header rule, (b) the codex_cell_hook surrogate crash? Both are chat/tooling decisions.",
+  "Score the result card strictly (protocol limits: facts <= 200 chars, no extra fields, no BOM) for both arms as now, or also report a format-tolerant score? GPT's T2r2/T3r1/T6 misses are format, not content."
+ ],
+ "cost": {"usd": 14.47, "minutes": 60, "labview_runs": 0},
+ "note": "usd = Claude arm only. Step 0 regate read saved live evidence (no 2nd codex exec). Claude T5r2 envelope usage = last turn only. LabVIEW 0 before/after every batch; no ~/.codex, cell hooks.json or tools/hooks edit. x10/blind/ (derived copies) not committed."
+}

@@ -1,0 +1,15 @@
+{"schema":"result/1","id":"mb-T3","status":"PASS","gates":{"pass":7,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/bench/p2check_l2a1_88_desk.md","md5":"62f7303e35baddd4a057e90d457b7797"},{"path":"tools/bench/diag_c88_p2desk.py","md5":"30bcaf762ea3a506d636337ee0cdcc1c"},{"path":"tools/bench/diag_c88_p2desk.log","md5":"07ccd27d3502252c36ef85b581439498"}],
+"facts":[
+"sim sr1_L0/sr2_L0/sr3_L0: source = SR1L/SR2L/SR3L inner (-6/-14/-22). Sinks are SelectorTunnel OuterTerminals 5825:5883, 5702:6038, 10750:10760 (diag_c88_p2desk.log:6-49)",
+"sim tun1_in: T1 inner -27 -> SelectorTunnel 5725 OuterTerminal 5741. tun2_in: T2 inner -31 -> SelectorTunnel 5967 OuterTerminal 5976. All sinks are in diagram 23166 (log:72-121)",
+"At the final sim step (step_46), every one of the 5 sink nets has 1 source and 1 sink. tun1_out/tun2_out branch onto wires 2731/5812 (1 source, 4 sinks each). 7/7 gates pass (log:16-123)",
+"Rows 'tun1'/'tun2' are tunnel creations. The sink-bearing wire rows are tun1_in/tun2_in (stageplan_l2a1.json:286-341). I took those as the P2 rows",
+"stage_d1_l2a1.json bound the add_sr/tunnel symbols with diff n=0: sr1 -1->10850, -2->25240; sr2 -9->25339, -10->25344; sr3 -17->25371, -18->25382; T1 -25->25422; T2 -29->25428 (:2547-2930)",
+"stage_d1_l2a1.json: sr*_L0 are wire_sr rows with bound {} and diff skipped. Triples [21,2,5]/[21,2,3]/[21,5,2] (:2615-2866). No sink uid is recorded to compare with the sim",
+"stage_d1_l2a1.json:819-834: the ordered 2nd pass raised '#5825/#5702/#10750/#5725/#5967 not in Diagram[21].Nodes[]'. Is Broken? None for all 5. The sim says these owners are SelectorTunnels",
+"SR1R bound to 10850, a pre-existing-range uid. SR2R/SR3R bound to fresh 253xx uids (stage_d1_l2a1.json:2548,2661,2774)",
+"Bed md5 is still 51d9b8a3af5b4240cdc2ad193d9b4f41 and stageplan md5 is 329d89ee... (certutil). Parts (B) and (C) were not run (card pass[2])"],
+"open":["The 2nd-pass sink lookup searched Diagram[21].Nodes[], but the sim says all 5 sinks are SelectorTunnels. Should P2 address them as tunnel outer faces (OpTunOuterWire_v1) instead?","SR1R was bound to 10850 while SR2R/SR3R got fresh 253xx uids. Is that binding to be trusted?"],
+"cost":{"usd":null,"minutes":8,"labview_runs":0},
+"note":"Offline only: sim desk check plus stage-log comparison. No LabVIEW, GUI, peers or git."}

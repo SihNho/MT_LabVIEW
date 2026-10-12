@@ -146,6 +146,28 @@ def prepare(tid, cond_i, cond, rep=None):
         shutil.rmtree(wt, ignore_errors=True)
     git("worktree", "prune")
     git("worktree", "add", "--detach", wt, t["base"])
+    card, copied = stage_inputs(wt, tid)
+    # hooks: re-point the project's hooks at the worktree, put cell_guard first
+    sp = os.path.join(wt, ".claude", "settings.json")
+    txt = open(sp, encoding="utf-8").read()
+    mf, wf = MAIN.replace("\\", "/"), wt.replace("\\", "/")
+    txt = txt.replace(mf, wf).replace(json.dumps(MAIN)[1:-1], json.dumps(wt)[1:-1])
+    s = json.loads(txt)
+    os.makedirs(os.path.join(wt, ".matbench"), exist_ok=True)
+    shutil.copy2(os.path.join(HERE, "cell_guard.py"), os.path.join(wt, ".matbench", "cell_guard.py"))
+    s.setdefault("hooks", {}).setdefault("PreToolUse", []).insert(0, {"matcher": "*", "hooks": [
+        {"type": "command", "command": 'py "%s/.matbench/cell_guard.py"' % wf, "timeout": 15}]})
+    with open(sp, "w", encoding="utf-8") as f:
+        json.dump(s, f, ensure_ascii=False, indent=2)
+    left = [ln.strip()[:120] for ln in txt.splitlines() if "V6_ParallelLoop" in ln]   # hooks still on MAIN
+    return wt, card, copied, left
+
+
+def stage_inputs(wt, tid):
+    """Put the replay card + the inputs committed WITH it (or gitignored, from disk) into a checkout `wt` of the
+    task's base commit -> (card, copied). Shared by the Claude cells (prepare) and the GPT cell (codex_arm.py,
+    card chat-X10e: the same files in the same places for both arms)."""
+    t = TASKS[tid]
     copied = []
     card_p = os.path.join(HERE, "cards", "task_%s.json" % t["card"])
     with open(card_p, "rb") as f:
@@ -181,20 +203,7 @@ def prepare(tid, cond_i, cond, rep=None):
     if t.get("mtimes"):
         copied.append({"path": "(mtimes)", "from": "git-commit-times", "md5": "",
                        "n": restore_mtimes(wt, t["base"], copied, t["src"])})
-    # hooks: re-point the project's hooks at the worktree, put cell_guard first
-    sp = os.path.join(wt, ".claude", "settings.json")
-    txt = open(sp, encoding="utf-8").read()
-    mf, wf = MAIN.replace("\\", "/"), wt.replace("\\", "/")
-    txt = txt.replace(mf, wf).replace(json.dumps(MAIN)[1:-1], json.dumps(wt)[1:-1])
-    s = json.loads(txt)
-    os.makedirs(os.path.join(wt, ".matbench"), exist_ok=True)
-    shutil.copy2(os.path.join(HERE, "cell_guard.py"), os.path.join(wt, ".matbench", "cell_guard.py"))
-    s.setdefault("hooks", {}).setdefault("PreToolUse", []).insert(0, {"matcher": "*", "hooks": [
-        {"type": "command", "command": 'py "%s/.matbench/cell_guard.py"' % wf, "timeout": 15}]})
-    with open(sp, "w", encoding="utf-8") as f:
-        json.dump(s, f, ensure_ascii=False, indent=2)
-    left = [ln.strip()[:120] for ln in txt.splitlines() if "V6_ParallelLoop" in ln]   # hooks still on MAIN
-    return wt, card, copied, left
+    return card, copied
 
 
 # The bench-cell markers of every replay cell (unchanged since card chat-N2). ONE definition, used by the Claude arm here

@@ -1,0 +1,43 @@
+{
+  "schema": "result/1",
+  "id": "mb-T2",
+  "status": "BLOCKED",
+  "gates": {
+    "pass": 3,
+    "fail": 1
+  },
+  "first_fail": "Protocol bind refused: tools/protocol.py lacks the scope header required by tools/hooks/guard_bash.py.",
+  "blocked_by": {
+    "device": "tools/hooks/guard_bash.py (scope header, card chat-E3)",
+    "message": "Automatic approval review rejected protocol bind and validate: tools/protocol.py lacks the required labview/hardware scope header. Patching it is outside this card's write scope."
+  },
+  "artefacts": [
+    {
+      "path": "tools/bench/diag_c90_t0_step3b.log",
+      "md5": "9367d365592fbe46a337aeab16011722"
+    },
+    {
+      "path": "tools/bench/diag_c90_t0_step3b_r2.log",
+      "md5": "596415c3076fe950e3d4b935ae649cb2"
+    }
+  ],
+  "facts": [
+    "Run 1 first ExecState 0: site 3, w25157, For body D[50]=#29894; OpCreateConstOnTerm_v0 Invoke raised error 1055; t6 stayed bare (tools/bench/diag_c90_t0_step3b.log:172-176).",
+    "Run 1 For-body sites 3,4,5,16,17 all failed constant creation with error 1055; their branches were not completed (tools/bench/diag_c90_t0_step3b.log:701).",
+    "Run 1 While-body sites 0,2,8,10,11,12,13,20 all completed branches; ExecState was 1 after 0/2, then stayed 0 after site 3 (tools/bench/diag_c90_t0_step3b.log:673).",
+    "Run 2 skipped For-body sites 3,4,5,16,17 and case sites 6,7,14,15; these routes were not retested (tools/bench/diag_c90_t0_step3b_r2.log:23).",
+    "Run 2 site 0: junk at Nodes[73] of 75 was deleted; constant creation passed, then N[74] read t6=0 and ExecState=0 (tools/bench/diag_c90_t0_step3b_r2.log:49-65).",
+    "Deduction: deleting node 73 invalidated cached N[74] (75 nodes became 74); the failed read used the pre-purge index, so site 0's branch was skipped (tools/bench/diag_c90_t0_step3b_r2.log:49-65,461).",
+    "Run 2 site 11 repeated the stale-index fault: junk Nodes[23] of 25 deleted, then cached N[24] read t6=0 despite creation success (tools/bench/diag_c90_t0_step3b_r2.log:268-283).",
+    "Run 2 While-body branches worked at 2,8,10,12,13,20; sites 0/11 remained incomplete and ExecState stayed 0 throughout (tools/bench/diag_c90_t0_step3b_r2.log:461).",
+    "Both final diffs added only CallLibrary/DigitalNumericConstant, with no Invoke; leftover junk is not the recorded final fault (tools/bench/diag_c90_t0_step3b.log:677; diag_c90_t0_step3b_r2.log:465).",
+    "Neither run saved: ExecState 0. Node error text was unavailable (Get Errors 452 unbuilt); the CLFN compiler error is unmeasured (tools/bench/diag_c90_t0_step3b.log:176,678; step3b_r2.log:65,466)."
+  ],
+  "open": [],
+  "cost": {
+    "usd": null,
+    "minutes": null,
+    "labview_runs": 0
+  },
+  "note": "Three diagnosis criteria met from existing logs; protocol bind/validate blocked by the scope-header guard. No reruns, LabVIEW, GUI, hardware, peers, STATUS edits or git. Run-2 index cause is a log-based deduction; abbreviated log names refer to tools/bench."
+}

@@ -1,0 +1,18 @@
+{
+ "schema": "task/1", "id": "chat-X10e", "kind": "measure",
+ "goal": "GPT vs Claude on matbench T1,T2,T3,T5,T6 after scope-cwd-fix (c4efa1ec): step 0 live again, then the benchmark",
+ "why": "chat-X10d BLOCKED on the cwd inequality; Claude and GPT agreed scope-cwd-fix-20261012, applied by card chat-X11. Detail: brief_chat-X10c.md",
+ "inputs": [{"path": "tools/bench/cards/brief_chat-X10c.md", "md5": "bf7d04cf61cd233acb73c9b10d109177"},
+            {"path": "tools/bench/debate/scope-cwd-fix/applied_scope-cwd-fix-20261012.md", "md5": "9d84086807097bd5d745231d0d67b3e1"}],
+ "pass": [
+  "step 0 live (codex_arm, --profile matbench, bench_env): logged, main-tree write denied, an ABSOLUTE-path cell none script runs, a relative one is refused with the hint",
+  "every task x arm run (x2 if time) under bgrun <= 20 min; blind A/B scoring with recorded mapping",
+  "GPT's relative-path refusals counted separately (agreed asymmetry: cells need absolute paths for GPT)",
+  "report returned as text; raw outputs and logs committed under tools/bench/matbench/"
+ ],
+ "outputs": ["tools/bench/matbench/"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/matbench/**"], "status_edit": false, "git_commit": true, "peers": []},
+ "budget": {"failures": 2, "minutes": 300}, "unblocks": "M3",
+ "rules": ["codex_arm.bench_env and --profile matbench; never edit ~/.codex, the cell hooks.json bytes or tools/hooks", "step 0 fails -> STOP BLOCKED, no unguarded GPT task", "Edit/Write only, no heredoc patches; refusals quoted, never dodged", "report as text; the chat writes report_x10.md"]
+}

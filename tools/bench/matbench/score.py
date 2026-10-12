@@ -58,6 +58,16 @@ def envelope(log_text):
     return None
 
 
+def cell_envelope(log_text):
+    """envelope() for a Claude cell; for a GPT cell (codex exec --json events, card chat-X10e) the codex_arm envelope
+    (result = the last agent message, usage = the last turn's, no usd, no duration -> minutes = meta wall_min)."""
+    sys.path.insert(0, HERE)
+    import codex_arm            # noqa: E402  (stdlib only at import)
+    if codex_arm.is_codex_log(log_text):
+        return codex_arm.envelope(log_text)
+    return envelope(log_text)
+
+
 def card_from_text(txt):
     txt = (txt or "").strip()
     txt = re.sub(r"^```(?:json)?\s*|\s*```$", "", txt)
@@ -239,7 +249,7 @@ def score_cell_v1(rundir, tt):
     T5 score = t5_struct jaccard (1.0 when structurally equal to the reference); cells carry `rep`."""
     meta = json.loads(rd(os.path.join(rundir, "meta.json")) or "{}")
     log = rd(os.path.join(rundir, "cell.log"))
-    env = envelope(log)
+    env = cell_envelope(log)
     calls = [json.loads(ln) for ln in rd(os.path.join(rundir, "calls.jsonl")).splitlines() if ln.strip()]
     # bgrun's own line only: v1 T5/high cells QUOTED "BGRUN TIMEOUT" inside their result text and were mis-flagged
     timeout = bool(re.search(r"^BGRUN TIMEOUT", log, re.M))
