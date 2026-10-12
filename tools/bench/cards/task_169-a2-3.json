@@ -1,0 +1,65 @@
+{
+ "schema": "task/1",
+ "id": "169-a2-3",
+ "kind": "build",
+ "retry_of_card": "169-a2-2",
+ "goal": "Per brief_169-a2-3.md: fix the stale fp-98 checks in the new self-test, re-run the existing self-tests one at a time, drain fp-100 and fp-99. fp-98 is not touched. Offline.",
+ "why": "Retry of 169-a2-2 (FAIL: the fp-98 edit made c115c T8 worse and was reverted). fp-100 and fp-99 fixes are in place and self-tested; the drain and the fair before/after self-test comparison remain.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_169-a2-3.md", "md5": "df627a4524185c6c4e62987b87071b17"},
+  {"path": "docs/d1/ring-p6.md", "md5": "f3e9dab8dea72dec6ef84f3ef75fe8f5"},
+  {"path": "tools/stage_prerun.py", "md5": "db81a1d3206073cfb2c540943ff73202"},
+  {"path": "tools/protocol.py", "md5": "055870f3b3cb1417bc6d7f8831f67a99"},
+  {"path": "tools/gate_fp.py", "md5": "1f427fb5b1735584c19a699c2314b826"},
+  {"path": "tools/bench/selftest_c169_fp98_100.py", "md5": "a52d978c0f0006f97c60142033a79734"},
+  {"path": "tools/bench/diag_c169_a2_2_facts.md", "md5": "a873f8c469a845b96e25de5b436060c4"},
+  {"path": "tools/bench/diag_c167_a1_1_rbw.py", "md5": "0fda590db724fd00e0e6aeffe51f1a65"},
+  {"path": "docs/script-writing.md", "md5": "3583b9f34bba43f105f6f414d4756a93"}
+ ],
+ "pass": [
+  "Pins equal before; requires PASS; any drift = RETURN",
+  "selftest_c169_fp98_100.py: A1-A4 replaced by checks of the current X5 (167 label passes, extra connect_wire FAILS); whole file passes 100% with a RESULT line",
+  "Existing stage_prerun and protocol self-tests run one at a time; counts before/after quoted; none worse (already failing or timing out before = quoted as such); a worse one = revert that edit, RETURN",
+  "fp-100 and fp-99 drained with gate_fp.py (output quoted, patch file:line cited); fp-98, fp-101, fp-102 and hook entries untouched; fp-98 reason for staying open quoted",
+  "No tools/hooks/**, recipe, STATUS, INDEX, plan or memory_model edit; no X5 or T8 change; no LabVIEW; facts diag_c169_a2_3_facts.md with a skipped: line"
+ ],
+ "outputs": [
+  "tools/bench/selftest_c169_fp98_100.py",
+  "tools/bench/diag_c169_a2_3_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/selftest_c169_fp98_100*",
+   "tools/stage_prerun.py",
+   "tools/protocol.py",
+   "tools/bench/diag_c169_a2_3*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_*",
+   "tools/bench/cards/result_169-a2-3.json"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 90
+ },
+ "advances": ["M3", "M8"],
+ "requires": [
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/gate_fp.py"}
+ ],
+ "rules": [
+  "Editor tools only; patch in place; docs/script-writing.md rules 10-15",
+  "Never edit tools/hooks/**; no bypass variable; a hook refusal = BLOCKED with its text",
+  "Do not change X5, T8 or fp-98; stage_prerun.py/protocol.py are edited only to revert a regression",
+  "Self-tests run one at a time through bgrun; no LabVIEW, no hardware"
+ ]
+}

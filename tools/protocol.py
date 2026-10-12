@@ -1196,8 +1196,13 @@ def check_command(card, cmd):
         if g:
             return "flags.gui is false - %s performs state-changing GUI actions" % _rel(g[0])
     if not fl.get("run_vi"):
-        if RUN_VI_CMD_RE.search(cmd):
-            return "flags.run_vi is false - this command runs a VI (%s)" % RUN_VI_CMD_RE.search(cmd).group(0)
+        # gate-fp fp-99 (card 169-a2-2): judged on the command without the segments a read-only program leads (fp-25),
+        # so `grep -n motor tools/bench/<driver>_v5.py` reads the driver's source and runs nothing; a read piped INTO an
+        # interpreter (`cat <driver>.py | py -`) runs it, so then the whole command is judged as before
+        piped = re.search(r"\|\s*(?:py|python[\w.]*|powershell|pwsh|iex|Invoke-Expression)\b", cmd, re.I)
+        m = RUN_VI_CMD_RE.search(cmd if piped else _dispatch_text(cmd))
+        if m:
+            return "flags.run_vi is false - this command runs a VI (%s)" % m.group(0)
         r = [p for p in scripts if feats[p]["run"]]
         if r:
             return "flags.run_vi is false - %s calls the VI Run method" % _rel(r[0])   # no literal call text here

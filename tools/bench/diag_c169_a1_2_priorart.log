@@ -1,0 +1,42 @@
+BGRUN START 2026-10-12 21:18:38 limit 20.0 min: py -u tools/prior_art_review.py --plan-file tools/bench/cards/brief_169-a1-2.md --slug priorart-c169-p6 --trigger new-op --recipe tools/recipes/stage_d1_ring_p6.py
+BGRUN PID 27504
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-c169-p6.txt (91367 chars)
+   review card tools\bench\cards\review_priorart-priorart-c169-p6.json
+OUTCOME: ANSWERED (109s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-10-12-priorart-priorart-c169-p6.md
+COST: $1.2042  in 18 / out 8503 / cache-create 108934 / cache-read 812751  (105s, 16 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-priorart-c169-p6 verdict=novel -> tools\bench\cards\verdict_priorart-priorart-c169-p6.json
+--- ANSWER ---
+Verdict: **novel**. Nothing found blocks this card.
+
+The two edits (Remove Bad Wires, then delete Build Array #11261) have already been measured here once, on a scratch copy. The plan cites that run as its basis; it does not repeat it without saying so. I found one known fault that the recipe repeats, but it is already accepted and has a scheduled fix (B2 below).
+
+**PART A: the direction**
+- **A1 (already decided):** Yes, and the plan follows it. The decision is `docs/d1/ring-p6.md:141-176` (PD406, cycle 169 judgement, 2026-10-12): "P6-1 = ONE launch, no further scratch… If `stage_prerun --scratch-required` exits 3 … ONE scratch on a fresh byte copy precedes the launch (that is the tool's rule, not a new decision)" (`:159-162`). The brief's step 4 is that conditional scratch, so this is the plan's own source, not a competing decision.
+- **A2 (already refuted):** Nothing kills this direction. The one failed save gate from cycle 168 (F-S5) was ruled a criterion error, not a build fault, and its replacement is the gate this recipe uses (`ring-p6.md:153-158`).
+- **A3 (contradictions):** Two pairs look like conflicts but are reconciled in the record:
+  - STATUS NEXT says "168 counts as its scratch"; the brief's step 4 runs a scratch. PD406(c) (`ring-p6.md:159-162`) covers both: a scratch runs only if the tool asks.
+  - The memory model predicts 678.9, but every measured memory line must be ≤ 675. These are different checks: the 680 limit applies to the prediction, the 675 limit to measured lines, and the same sequence measured 611.7 in cycle 168 (`ring-p6.md:166-168`, `diag_c169_a1_1_facts.md:21`).
+- **A4 (unread evidence):** None found. The brief cites `diag_c168_a1_2_facts.md`, `p6_buildarray.md`, `diag_c169_a1_1_facts.md` and PD404–406.
+
+**PART B: the artifact**
+- **B1 (already built):** The same sequence on the same file exists as `tools/bench/diag_c168_a1_2_rbwdel.py`, but it never saves and was declared as the recipe's precedent (`stage_d1_ring_p6.py:12-18`).
+  - The shared ring helper `stagekit.RingSession` (`tools/stagekit.py:2566`) and the template `tools/recipes/stage_template_ring.py` don't fit. They run plan actions through stagexec with a forced broken save (`stagekit.py:2765`, `broken_ok=True`). P6-1 has no plan file and needs the ExecState-1 scripted save.
+  - That save already exists as `Stage.save(broken_ok=False)` (`stagekit.py:1204-1240`); it was used before in `tools/recipes/stage_d1_disp.py`. The recipe calls it. One line is copied from `RingSession.finish`: `scratches.remove`, at `stage_d1_ring_p6.py:164-165` vs `stagekit.py:2768-2769`. It is cited and trivial.
+  - The post-save read script (step 6) follows the pattern of `tools/bench/diag_c165_a3_4_graph.py:9-14`. That reader loads a byte copy of the adopted file and reports the load memory, the graph and the `e5_check` line. The brief asks for the shared helper `prep_c167_a1_1_graphlib.read_graph` rather than a copy, which is right.
+- **B2 (already failed), non-blocking:** `stage_d1_ring_p6.py:97` sets `gr["md5"] = BEDM`. That labels a graph read after Remove Bad Wires with the original file's md5 (75773b0d). This is the logged cause of false positive fp-100: "find_graph picked graph_ring_p6rbw_20261012_191349.json, whose header md5 says 75773b0d but is the RBW'd copy" (`tools/bench/diag_c168_a1_2_facts.md:14`). The same line is at `diag_c168_a1_2_rbwdel.py:89` and `diag_c167_a1_1_rbw.py:112`.
+  - It is handled for this card: the dry run passes `--graph` explicitly (PD406(d), `ring-p6.md:165-166`), and fp-100 is drained after the deliverable (PD406(f), `:177-179`).
+  - Even so, both runs (scratch and launch) will write another graph file mislabelled 75773b0d (`stage_d1_ring_p6.py:117`). Any later dry run of 75773b0d that doesn't pass `--graph` stays exposed until the fp-100 drain is done.
+- **B3 (helper exists):** No hand-rolled work found. The recipe calls `gscript.remove_bad_wires_scripted` (through `Stage.broken_wire_count`), `Stage.delete_object`, `gscript.exec_state`, `stagekit.e5_check`, `read_graph`, and the `prep_c168_a1_2_lib` checks (`fs3_check`, `fs4_check`, `cdiff_rowset_diff`, `el_read`, `Meter`).
+- **B4 (already measured):** The scratch result is measured: ExecState 1, Error List 0 items, graph 57f33e7c (`ring-p6.md:147-152`). The plan cites it. What has not been measured: the saved file, its reload, and its final Error List. Those are what this card produces.
+
+**PART C: user rules.** No contradiction. There is no queue, no serial call and no camera-loop change. The per-bead computation is untouched: the only node removed, #11261, feeds display only (U12, PD405(d)). Whether the numbers out are unchanged is left to the P6-2 replay test (`ring-p6.md:152`).
+
+**Outside prior-art scope:** the recipe's header and docstring still name card `task_169-a1-1.json` (`stage_d1_ring_p6.py:4,25`), while this card launches with `task_169-a1-2.json`.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-priorart-c169-p6","verdict":"novel","alternative":"Closest prior art is diag_c168_a1_2_rbwdel.py (same two edits, never saved), which the recipe declares as precedent; RingSession/stage_template_ring do not fit (plan-driven, broken-save route).","discriminating_test":"Non-blocking: after the run, check that a stage_prerun --dry of 75773b0d without --graph does not pick graph_ring_p6*_<ts>.json, which is labelled 75773b0d (stage_d1_ring_p6.py:97, fp-100 cause diag_c168_a1_2_facts.md:14).","violations":[],"sources":["docs/d1/ring-p6.md:141-176","tools/bench/diag_c169_a1_1_facts.md:16-29","tools/bench/diag_c168_a1_2_facts.md:14","tools/recipes/stage_d1_ring_p6.py:97","tools/stagekit.py:1204-1240","tools/stagekit.py:2758-2774","tools/bench/diag_c165_a3_4_graph.py:9-14"],"note":"fp-100 mislabel repeated at recipe line 97; covered for this card by explicit --graph (PD406(d)) and the scheduled fp-100 drain (PD406(f)). Recipe header names task_169-a1-1, card is 169-a1-2."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-c169-p6.md
+   STOP RECORD: none - 2026-10-12-priorart-priorart-c169-p6.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_ring_p6.py sha a096bccc249a -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 112s

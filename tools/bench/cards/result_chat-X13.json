@@ -1,0 +1,29 @@
+{"schema": "result/1", "id": "chat-X13", "status": "FAIL",
+ "gates": {"pass": 7, "fail": 5},
+ "first_fail": "5 of 12 cells produced no script: Write denied 3x each ('you haven't granted it yet') by the cell's --allowedTools Write(<rel dir>/**) rule",
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/bench/xs_write_less/run_bench.py", "md5": "3cff87e98aa0c369bdd33a4ce5c1437f"},
+  {"path": "tools/bench/xs_write_less/results.json", "md5": "86b60de79c16df28a53cd154b2cd3717"},
+  {"path": "tools/bench/xs_write_less/judge_mapping.json", "md5": "a4016f115568eedfe8a428404e0c2e28"},
+  {"path": "tools/bench/xs_write_less/judge_results.json", "md5": "5d399b47aa22426b0ff0060a2eb0d9f7"}
+ ],
+ "facts": [
+  "No script (Write denied 3x): NEW_T1_r2, OLD_T2_r1, OLD_T2_r2, NEW_T3_r1, NEW_T3_r2 (OLD_T2_r1/cell.log:65); rule at run_bench.py:141; 7 other cells wrote with same rule form",
+  "Scripts kept: T1 OLD r1/r2 + NEW r1; T2 NEW r1/r2 only; T3 OLD r1/r2 only. Only T1 r1 is a complete OLD/NEW pair (results.json)",
+  "LOC (non-blank, non-comment, no docstring): T1 OLD 13/18, NEW 26; T2 NEW 29/40; T3 OLD 41/40 (results.json)",
+  "asserts: every NEW script has them (T1 5, T2 2/4); no OLD script has one. '# shortcut:' only in NEW T2 (1 each). 'skipped:' line: 0 of 7",
+  "unasked CLI options: 0 everywhere except OLD_T3_r1 (1). All 7 import a project module (gate_fp, errorlist_check, debate_loop, cycle_runner), no 3rd-party",
+  "All 7 scripts rc 0 with a RESULT line on the snapshot inputs; no cell read docs/script-writing.md, all 12 read script-rules.md (results.json)",
+  "Judge T1 pair1 (A=OLD_r1, B=NEW_r1, judge_mapping.json): B simpler; A counts raw gate strings, not classes (judge_T1/judge.log:38)",
+  "My T1/T2/T3 auto-checkers are too narrow (T1 groups only by ':' prefixes, run_bench.py:212); 'correct' in results.json is NOT a verdict",
+  "Judge JSON unparsed: score.envelope takes the trailing stream-json task_summary line (run_bench.py:309,380); usd null in results.json",
+  "Cost: 12 cells $8.57 (0.44-1.08 each, 0.75-1.67 min wall), 3 judges $1.28; no LabVIEW, no hardware; commit b6d87022"
+ ],
+ "open": [
+  "Re-run the 5 denied cells (and the 3 judges) after fixing the Write allow rule (absolute //G:/... pattern or acceptEdits + a path hook) and the envelope parse? Needs a new card/minutes.",
+  "Is 'gate class' (T1) and 'cost per cycle' (T3, CYCLE line vs ASSIGN rounds) to be defined for the truth, or left to the writer and judged?"
+ ],
+ "cost": {"usd": 9.84, "minutes": 15, "labview_runs": 0},
+ "note": "Stopped at the first unexpected result (card chat-P2). n=2 with 5 cells missing shows only: NEW arm adds asserts (rule 14) and shortcut notes (13), no 'skipped:' lines (10). bench folder committed b6d87022."
+}

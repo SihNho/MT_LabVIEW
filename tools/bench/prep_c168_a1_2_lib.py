@@ -18,7 +18,9 @@ New pure helpers (no copy existed): inputs_of (sink terminals of one node + the 
 closure_rd_diff (frame cdiff row set vs p6_closure.json rows classed R / DISP, both differences).
 el_read / tunnel_read / Meter call LabVIEW only through the caller's `g` / Stage `s` (this module opens nothing at import).
 
-Self-test (offline, `--selftest`, replays recorded data; PREDICTION 6/0):
+Card 169-a1-1 added fs3_check / tunnels_read / fs4_check (extracted from diag_c168_a1_2_rbwdel.py:138-150) and cdiff_rowset_diff (PD406(b),
+new); self-tests T7-T10 replay the recorded 168 scratch (diag_c168_a1_2_rbwdel.json + graph 57f33e7c).
+Self-test (offline, `--selftest`, replays recorded data; PREDICTION 10/0; T7-T10 below the original six):
   T1 errorlist_check.class_counts on the stored items of errorlist_D1_ring_p6rbw_20261012_191349.json == its stored class_counts
   T2 frame_cdiff(7815af09 graph) has 31 rows and equals p6_closure.json's cdiff row set (closure gate E3)
   T3 inputs_of(7815af09, 2626): t2832<-#30300, t4160<-#30119, t4165<-#30216, t4168<-#4594 (diag_c168_a1_1_facts.md:20)
@@ -33,6 +35,7 @@ for _p in (os.path.join(ROOT, "tools"), os.path.join(ROOT, "tools", "recipes"), 
 
 BASE_GRAPH = os.path.join(HERE, "graph_ring_p5s02e_20261012_173009.json")       # 7815af09, graph of 75773b0d
 CLOSURE = os.path.join(HERE, "p6_closure.json")
+G168 = os.path.join(HERE, "graph_ring_p6rbwd_20261012_205248.json")             # 57f33e7c, the 168 scratch graph (PD406(b) S-5 reference)
 
 
 class Meter(object):
@@ -152,8 +155,58 @@ def closure_rd_diff(cd, closure):
             "only_closure_no_cdiff": sorted("{0} ({1})".format(r["key"], r["class"]) for r in rd if not r.get("cdiff"))}
 
 
+# ---- card 169-a1-1 (brief_169-a1-1.md step 2): the 168 save-gate comparisons, extracted from diag_c168_a1_2_rbwdel.py:138-150 (inline
+# copy left there as the record of what ran) + the PD406(b) row-set compare (new; no copy existed). Self-tests T7-T10.
+def fs3_check(base, gr, uid, n_inputs=4):
+    """S-3 / F-S3 (diag_c168_a1_2_rbwdel.py:138-142): node #uid has `n_inputs` sink terminals in `gr`, each wired and sourced, and the
+    (term, source owners) list equals the one in `base`. Returns (ok, evidence text, {"base": [...], "got": [...]}). Pure. Self-test: T7."""
+    i_b, i_s = inputs_of(base, uid), inputs_of(gr, uid)
+    sb = [(r["term_uid"], [x[0] for x in r["sources"]]) for r in i_b]
+    ss = [(r["term_uid"], r["wire_uid"], [x[0] for x in r["sources"]]) for r in i_s]
+    ok = len(i_s) == n_inputs and all(r["wire_uid"] and r["sources"] for r in i_s) and [(a, c) for a, _b, c in ss] == sb
+    return ok, "#{0} inputs got (term, wire, src owners) {1} vs base (term, src owners) {2}".format(uid, ss, sb), {"base": sb, "got": ss}
+
+
+def tunnels_read(s, g, W, plan):
+    """tunnel_read of every LoopTunnel in `plan` ({uid: {"outer_term": t, ...}}, diag_c166_a1_1_tun_plan.json tunnels) in uid order, one
+    `TUN #uid` fact each (diag_c168_a1_2_rbwdel.py:143-147). Returns {uid str: tunnel_read dict}. Read-only (LabVIEW via `g`). Self-test:
+    none offline; the recorded case is diag_c168_a1_2_rbwdel.json tunnels (checked by T8 through fs4_check)."""
+    tr = {}
+    for u, exp in sorted(plan.items(), key=lambda kv: int(kv[0])):
+        tr[u] = tunnel_read(s, g, W, int(u), exp["outer_term"])
+        s.fact("TUN #{0}: {1}".format(u, json.dumps(tr[u], sort_keys=True)))
+    return tr
+
+
+def fs4_check(tr, stored):
+    """S-4 / F-S4 (diag_c168_a1_2_rbwdel.py:148-150): per tunnel (IndexMode, canon, sig) read == stored (diag_c166_a1_1_tun.json
+    tunnels.p5s01 = 7f2582ae); every IndexMode read and every sig non-empty; the uid sets equal and non-empty (stricter than 168, which
+    compared tr's keys only). Returns (ok, evidence text, cmp {uid: (read 3, stored 3)}). Pure. Self-test: T8."""
+    cmp4 = dict((u, (tr[u].get("index_mode"), tr[u].get("canon"), tr[u].get("sig"), (stored.get(u) or {}).get("index_mode"),
+                     (stored.get(u) or {}).get("canon"), (stored.get(u) or {}).get("sig"))) for u in tr)
+    ok = bool(tr) and set(tr) == set(stored) and all(
+        c[0] is not None and c[2] and c[:3] == c[3:] for c in cmp4.values())
+    return ok, "#uid (IndexMode, canon, sig) read vs stored 7f2582ae (diag_c166_a1_1_tun.json tunnels.p5s01): {0}".format(cmp4), cmp4
+
+
+def _row_key(r):
+    return json.dumps([r.get("node"), r.get("class"), str(r.get("sink")), r.get("before"), r.get("after")], sort_keys=True, default=str)
+
+
+def cdiff_rowset_diff(cd_a, cd_b):
+    """PD406(b) S-5: two frame-keyed computation_diff results compared ROW FOR ROW (node, class, sink, before sources, after sources).
+    Returns {rows_a, rows_b, only_a, only_b (full rows, sorted), sinks_only_a, sinks_only_b (sink keys), ok (both full-row differences
+    empty)}. Pure. Self-test: T9 (57f33e7c vs itself: 30 rows, empty) and T10 (57f33e7c vs 7815af09: the 168 sink differences)."""
+    ka = dict((_row_key(r), r) for r in cd_a["rows"])
+    kb = dict((_row_key(r), r) for r in cd_b["rows"])
+    sa, sb = set(str(r["sink"]) for r in cd_a["rows"]), set(str(r["sink"]) for r in cd_b["rows"])
+    oa, ob = sorted(set(ka) - set(kb)), sorted(set(kb) - set(ka))
+    return {"rows_a": len(cd_a["rows"]), "rows_b": len(cd_b["rows"]), "only_a": oa, "only_b": ob,
+            "sinks_only_a": sorted(sa - sb), "sinks_only_b": sorted(sb - sa), "ok": not oa and not ob}
+
+
 def selftest():
-    """T1..T5 on recorded data (docstring above). Prints GATE lines + the C6 RESULT line; returns rc."""
+    """T1..T10 on recorded data (docstring above + T7-T10 of card 169-a1-1). Prints GATE lines + the C6 RESULT line; returns rc."""
     import errorlist_check as EC, protocol as PR                                           # noqa: E401
     G = {"pass": 0, "fail": 0, "first": None}
 
@@ -201,6 +254,29 @@ def selftest():
     a = gone_and_count(_G([1, 2], 2066), "W", "BuildArray", 11261, 2066, r1, lambda x: None)
     b = gone_and_count(_G([1, 11261], 2066), "W", "BuildArray", 11261, 2066, r2, lambda x: None)
     gate("T6 gone_and_count: absent+2066 -> ok; present -> not ok", a[0] is True and b[0] is False and r2["deleted_present"] is True, (a, b))
+    # ---- T7-T10 (card 169-a1-1): replay of the recorded 168 scratch (diag_c168_a1_2_rbwdel.json, graph 57f33e7c)
+    g168 = json.load(open(G168, encoding="utf-8"))
+    r168 = json.load(open(os.path.join(HERE, "diag_c168_a1_2_rbwdel.json"), encoding="utf-8"))
+    ok7, ev7, _d7 = fs3_check(base, g168, 2626)
+    nb7 = fs3_check(base, base, 11261, n_inputs=2)[0]
+    gate("T7 fs3_check(7815af09, 57f33e7c, #2626) PASS == recorded F-S3 {0}; #11261 (unwired in 7815af09) not ok".format(
+        r168["save_gates"]["F-S3"]["pass"]), ok7 is True and r168["save_gates"]["F-S3"]["pass"] is True and nb7 is False, ev7)
+    t7f = json.load(open(os.path.join(HERE, "diag_c166_a1_1_tun.json"), encoding="utf-8"))["tunnels"]["p5s01"]
+    ok8, ev8, _c8 = fs4_check(r168["tunnels"], t7f)
+    bad = json.loads(json.dumps(r168["tunnels"]))
+    bad["5204"]["index_mode"] = 1
+    gate("T8 fs4_check(168 tunnels, stored 7f2582ae) PASS == recorded F-S4 {0}; IndexMode altered -> not ok; {{}} -> not ok".format(
+        r168["save_gates"]["F-S4"]["pass"]), ok8 is True and r168["save_gates"]["F-S4"]["pass"] is True and fs4_check(bad, t7f)[0] is False
+        and fs4_check({}, t7f)[0] is False, ev8)
+    c168 = frame_cdiff(g168)
+    d9 = cdiff_rowset_diff(c168, frame_cdiff(g168))
+    gate("T9 cdiff_rowset_diff(57f33e7c, 57f33e7c): 30 rows (= recorded fs5.diff_rows {0}), both differences empty".format(
+        r168["fs5"]["diff_rows"]), d9["ok"] and d9["rows_a"] == 30 == r168["fs5"]["diff_rows"], {k: d9[k] for k in ("rows_a", "rows_b")})
+    d10 = cdiff_rowset_diff(c168, cd)
+    gate("T10 cdiff_rowset_diff(57f33e7c, 7815af09): not ok; 57f33e7c-only sinks include t8323's row; 7815af09-only include #11261's",
+         not d10["ok"] and "8323|ControlTerminal|Force (pN) vs Extension (nm) |0" in d10["sinks_only_a"]
+         and any(x.startswith("11261|") for x in d10["sinks_only_b"]),
+         {"sinks_only_a": d10["sinks_only_a"], "sinks_only_b": d10["sinks_only_b"], "rows": (d10["rows_a"], d10["rows_b"])})
     print(PR.result_line(PR.make_result(G["pass"], G["fail"], G["first"], [])), flush=True)
     return 1 if G["fail"] else 0
 

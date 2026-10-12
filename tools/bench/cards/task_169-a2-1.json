@@ -1,0 +1,61 @@
+{
+ "schema": "task/1",
+ "id": "169-a2-1",
+ "kind": "build",
+ "goal": "Per brief_169-a2-1.md: move the bed to the saved P6-1 file c2d9c13c in STATUS.md and docs/d1/INDEX.md. Text edit, no LabVIEW.",
+ "why": "PD406(e): the bed moves after post-save reads, final Error List and load_by_vi PASS. Card 169-a1-3 delivered all three (diag_c169_a1_3_facts.md); its one FAIL is its own ordered log rewrite (run1 kept).",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_169-a2-1.md", "md5": "89686bd5aa69af0ab4059c41ebb9f0a4"},
+  {"path": "docs/d1/ring-p6.md", "md5": "f3e9dab8dea72dec6ef84f3ef75fe8f5"},
+  {"path": "STATUS.md", "md5": "251cc7471813f83e873c09872eb8a798"},
+  {"path": "docs/d1/INDEX.md", "md5": "8b2a5143329c0ff5c571d90859fdb516"},
+  {"path": "tools/bench/diag_c169_a1_3_facts.md", "md5": "e6b0696109deaca3c097c7a109c5b0f1"},
+  {"path": "tools/bench/errorlist_expected_D1_ring_p6_20261012_212645.json", "md5": "5e2a4e6fb04a4eb80c3ce97f0d346ad2"},
+  {"path": "tools/bench/memory_model.json", "md5": "8b4a9b480359210d93f5886f2f224973"},
+  {"path": "tools/bench/launch_c169_p6.json", "md5": "892f71380622d724e5c335cf0842b687"},
+  {"path": "tools/bench/graph_ring_p6_20261012_212645.json", "md5": "fbc7b7eef540b87f8b935a10df2a02bd"},
+  {"path": "tools/errorlist_check.py", "md5": "bfa0a3879a137a4058bf4e84e5570569"}
+ ],
+ "pass": [
+  "Before editing: the saved file md5 is c2d9c13cb40c0a5cab7433896d1df157 (read by a Python md5 of the bytes, no LabVIEW), the inputs above equal; any drift = RETURN",
+  "STATUS.md: current-bed key, its comment and the bed paragraph moved to P6 c2d9c13c per brief step 2 (RUNNABLE, ExecState 1, EL 0, count 6 of 6, file:line cites); P5 paragraph becomes history",
+  "docs/d1/INDEX.md: the 'Work VI (bed)' entry names the same file, md5 and state, in the style of its previous move (brief step 3)",
+  "errorlist_check.current_bed_text() (import and call, no LabVIEW) returns D1_ring_p6_20261012_212645.vi; output quoted",
+  "Hygiene: only STATUS.md, docs/d1/INDEX.md and the card's outputs changed (git diff --stat); no NEXT, plan or hooks edit; no LabVIEW started"
+ ],
+ "outputs": [
+  "STATUS.md",
+  "docs/d1/INDEX.md",
+  "tools/bench/diag_c169_a2_1_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "STATUS.md",
+   "docs/d1/INDEX.md",
+   "tools/bench/diag_c169_a2_1*",
+   "tools/bench/cards/result_169-a2-1.json"
+  ],
+  "status_edit": true,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 30
+ },
+ "advances": ["M3", "M8"],
+ "requires": [
+  {"kind": "file", "name": "D1_ring_p6_20261012_212645.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "tools/errorlist_check.py"}
+ ],
+ "rules": [
+  "Editor tools only (Edit/Write); never a shell heredoc to patch STATUS.md (it was once truncated to 0 bytes)",
+  "STATUS.md: edit only the current-bed key, its comment line and the bed paragraph; ## NEXT is the judgement session's",
+  "Never open or load any .vi; the file is hashed as bytes only",
+  "A hook refusal = BLOCKED with its text; a gate_fp is logged with py tools/gate_fp.py log"
+ ]
+}

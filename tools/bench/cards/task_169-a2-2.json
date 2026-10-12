@@ -1,0 +1,66 @@
+{
+ "schema": "task/1",
+ "id": "169-a2-2",
+ "kind": "build",
+ "goal": "Per brief_169-a2-2.md: drain gate false positives fp-98 (X5 RBW class) and fp-100 (find_graph), and fp-99 if its fix is outside tools/hooks/**, each with a self-test. Offline.",
+ "why": "PD406(f): tooling after the deliverable. fp-98/fp-100 are stage_prerun checker false positives; fp-99 is drained only if the fix is in tools/protocol.py, otherwise left open with the reason.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_169-a2-2.md", "md5": "81dfc9aecb069d50d9f041c8ce3012d6"},
+  {"path": "docs/d1/ring-p6.md", "md5": "f3e9dab8dea72dec6ef84f3ef75fe8f5"},
+  {"path": "tools/stage_prerun.py", "md5": "7605116f1dfe1c6fd4963dbfcf259de1"},
+  {"path": "tools/protocol.py", "md5": "c3df3a687b564192cf904a7eb916bf03"},
+  {"path": "tools/gate_fp.py", "md5": "1f427fb5b1735584c19a699c2314b826"},
+  {"path": "tools/bench/diag_c167_a1_1_rbw.py", "md5": "0fda590db724fd00e0e6aeffe51f1a65"},
+  {"path": "tools/bench/diag_c168_a1_2_rbwdel.py", "md5": "5280f98db31f3d3fd213a49e21acdb57"},
+  {"path": "docs/script-writing.md", "md5": "3583b9f34bba43f105f6f414d4756a93"}
+ ],
+ "pass": [
+  "Pins equal before; requires PASS; any drift of a pin other than the files this card edits = RETURN",
+  "fp-98: X5 has an RBW class (patch file:line); self-test: the 167 RBW script passes X5, a plan with a real extra wiring op still FAILS",
+  "fp-100: find_graph picks 7815af09 for the bed (patch file:line); self-test also keeps an older stage script's graph choice; the 168 script dry no longer fails R1/D1 on it",
+  "fp-99: fix in tools/protocol.py with a self-test (entry grep accepted, a real VI run still refused), or left open with the reason if any part is in tools/hooks/**",
+  "Existing stage_prerun self-tests: pass counts quoted before and after, not worse; the new selftest_c169_fp98_100.py ends with a RESULT line",
+  "gate_fp.py drain calls for fixed entries only (output quoted); fp-101, fp-102, hook entries untouched; no tools/hooks/**, recipe, STATUS, INDEX or plan edit; no LabVIEW"
+ ],
+ "outputs": [
+  "tools/stage_prerun.py",
+  "tools/protocol.py",
+  "tools/bench/selftest_c169_fp98_100.py",
+  "tools/bench/diag_c169_a2_2_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stage_prerun.py",
+   "tools/protocol.py",
+   "tools/bench/selftest_c169_fp98_100.py",
+   "tools/bench/diag_c169_a2_2*",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_*",
+   "tools/bench/cards/result_169-a2-2.json"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 90
+ },
+ "advances": ["M3", "M8"],
+ "requires": [
+  {"kind": "file", "name": "tools/stage_prerun.py"},
+  {"kind": "file", "name": "tools/gate_fp.py"}
+ ],
+ "rules": [
+  "Editor tools only; patch in place, no copy of a shared function; docs/script-writing.md rules 10-15",
+  "Never edit tools/hooks/**; no bypass variable; a hook refusal = BLOCKED with its text",
+  "No LabVIEW, no hardware; self-tests run on stored graphs and scripts only",
+  "Existing stage_prerun self-tests must not get worse; a worse count = revert your edit and RETURN"
+ ]
+}

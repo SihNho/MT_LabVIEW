@@ -7652,3 +7652,140 @@ VIOLATION: device-failed | loss_min=1 | loss_usd=? | evidence=tools/hooks/materi
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle167","verdict":"refuted","alternative":"The cycle met its purpose (11/11, 68 min, $26.48) and neither fault was costly; this is refuted only because two devices failed: Error List reuse keyed by file name (10 min) and a launch-gate refusal worked around by turning gates into rows (1 min).","discriminating_test":"Call errorlist_check.find_reusable on D1_ring_p5 at md5 75773b0d: it returns 'no saved read' although the p5s02e read is complete at that md5. Replay rbw.py sha 0bf608c2 against the launch gate: refused; sha 89c56b7f passes only because A0/R1 became rows.","violations":[{"slug":"device-failed","loss_min":10,"loss_usd":"?","evidence":"tools/bench/cycle_runner_main_20261012_1719.log:22"},{"slug":"device-failed","loss_min":1,"loss_usd":"?","evidence":"tools/hooks/material_marker.log:4394"}],"sources":["tools/bench/errorlist_check_cycle167.log:85","tools/errorlist_check.py:186","tools/bench/prerun_records.jsonl:1153","tools/bench/diag_c167_a1_1_facts.md:33","tools/bench/cycle_runner_main_20261012_1719.log:11"],"note":"Window also holds cycle 166 and ~47 h of chat; cycle 166 got no retrospective (the runner accepted cycle 165's file, cycle_runner_main:11). Before P6-1, measure offline which Build Array (#2626 or #11261) the one remaining Error List item is."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle167.md
 BGRUN END rc=0 after 478s
+BGRUN START 2026-10-12 23:17:41 limit 20.0 min: C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\retrospective.py --cycle 169
+BGRUN PID 10700
+   window 2026-10-12 19:55:26 .. 2026-10-12 23:17:42 (202 min); 98 build logs, 12 machinery logs, 60 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle169.txt (48269 chars)
+   review card tools\bench\cards\review_retrospective-cycle169.json
+OUTCOME: ANSWERED (448s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-10-12-retrospective-cycle169.md
+COST: $2.5691  in 60 / out 40189 / cache-create 151952 / cache-read 2747477  (446s, 45 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle169 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle169.json
+--- ANSWER ---
+# Retrospective, cycle 169: outcome review
+
+**Window check (the attached window contradicts the cycle):** the window 19:55:26–23:17:42 holds two cycles. Cycle 168 ran from 19:56:08 to 20:59:46 (`tools/bench/cycle_runner.log:1791-1818`) and has no retrospective of its own. Cycle 169 is 20:59:46–23:17:41 (`cycle_runner.log:1819-1831`), which is 138 minutes, not 202. So these audit lines overstate this cycle:
+
+- **C4c:** its $40.16 includes cycle 168's $10.56 (`cycle_168.log:281` $2.19 + `cycle_168_assign_1.log:63` $8.37).
+- **C3 and the build-log list:** they include the 13 `diag_c168_*` logs and both motor sessions.
+
+Cycle 169's own cost is $29.60 across five sessions:
+
+| Session | Cost | Source |
+|---|---|---|
+| Judgement | $1.36 | `cycle_169.log:273` |
+| Assignment round 1 | $10.96 | `cycle_169_assign_1.log:63` |
+| Hand-back judgement 1 | $1.49 | `cycle_169_handback_1.log:275` |
+| Assignment round 2 | $14.57 | `cycle_169_assign_2.log:63` |
+| Hand-back judgement 2 | $1.23 | `cycle_169_handback_2.log:275` |
+
+Adding the prior-art peer ($1.2042, `diag_c169_a1_2_priorart.log:6`) gives **$30.81 and 138 min**, against caps of 180 min and $60.
+
+**Outcome:** the deliverable was produced. P6-1 was saved as `D1_ring_p6_20261012_212645.vi` (c2d9c13c): ExecState 1, Error List 0, S-5 30 vs 30. The post-save reads PASS (16/0), and it was adopted as the bed (`docs/d1/ring-p6.md:215-220`; `diag_c169_a1_3_facts.md:21-31`).
+
+## The one structural fault
+
+**What happened.** The judgement and assignment chain wrote claims about how the tools would behave without reading or running them, four times in one cycle. A cheap check would have refuted each claim. This is the rule the cycle-166 judgement adopted at 17:2x *the same day*: "a precedent, a refusal's location or a measured value is written into a Pre-decided item only from a line the judgement READ" (`docs/violation-decisions.md:2069-2074`). That decision was a rule with no device, and it did not hold.
+
+The two costly instances:
+
+1. **fp-98.**
+   - **What was ordered:** PD406(f) ordered a drain of fp-98 (`docs/d1/ring-p6.md:177`), and the brief prescribed "Fix = give X5 an RBW class" (`tools/bench/cards/brief_169-a2-2.md:12`).
+   - **What was already on file:** the same plan had already accepted the label workaround `rbw_method410` (`ring-p6.md:135-136`). A 7-second prerun shows the 167 script already passes X5 (`diag_c169_a2_2_prerun167_before.log:56,67`, `BGRUN END rc=0 after 7s`). A grep would have found that the opposite behaviour is pinned (`selftest_stage_prerun_c115c.py:14,52-53`, T8).
+   - **What it cost:** the fix broke T8 and was reverted (`result_169-a2-2.json:2`). That forced the retry card 169-a2-3 (45 min) and hand-back 2. PD408(b) then closed fp-98 "by design" (`ring-p6.md:221-223`), which the 20:59 judgement could have written directly.
+2. **169-a1-1 had no prior-art release.**
+   - **The gap:** the brief said "Dispatch a peer only if a gate FAILS" (`brief_169-a1-1.md:68`), with `flags.peers []`. But `guard_cycle` refuses a new recipe that has no newer prior-art review (`docs/rules/reviews.md:43`). The card was BLOCKED (`result_169-a1-1.json:2`, 10 min).
+   - **The knock-on:** a1-1 used up the single retry. So when a1-2 hit an ordinary script bug in its DN gate, the runner handed back on "a-unexplained-after-retry" (`handback_169_1.json:5`). Jev had said "patch the script and rerun; no review, no judgement turn" (`jev_gate.log:7477`). The extra hand-back cost 158 s and $1.49.
+
+The two smaller instances:
+
+- The brief predicted `--scratch-required` exit 0 after the scratch. The tool exits 3 by design (`stage_prerun.py:4872`), and PD407(c) admits the prediction was wrong.
+- Brief a1-3 pinned `diag_c169_a1_2_post.log` and also ordered a bgrun into it, but bgrun appends (`bgrun.py:104`). That produced a false FAIL and four guard_peer refusals (`tools/hooks/material_marker.log:4413-4418`).
+
+**Loss: about 38 min.**
+
+- a1-1: 10 min.
+- Hand-back 1: about 3 min.
+- fp-98: about 23 min of a2-3. That is a2-3's 45 min minus the roughly 19 min of c103/c106c re-runs a2-2 would have needed anyway, because its parallel runs timed out.
+- Hand-back 2: about 2 min.
+
+The logs carry $2.72 of this (the two hand-back sessions). They carry no per-card cost (`cost.usd: null` in every result), so the dollar loss is unknown.
+
+**Counterfactual.** Suppose the 20:59:54–21:02:54 judgement had:
+- read `guard_cycle.py:572-604` and set `flags.peers ["priorart"]`;
+- run the 7-second prerun of `diag_c167_a1_1_rbw.py` and grepped T8, then closed fp-98 in PD406(f).
+
+Then a1-1 would have done a1-2's work, and the DN bug would have been the in-round retry. a2-2 would have drained fp-99 and fp-100 after re-running only c103 and c106c. The cycle would have ended PURPOSE_MET at about 22:40 instead of HANDBACK at 23:17:41.
+
+## FINDINGS
+
+**1. Repeated failure.** The repeated class is "brief or plan states tool behaviour it did not check", four times: a1-1 peers, the scratch-required prediction, the a1-3 pin, and fp-98.
+- The approach should have changed at the first hand-back judgement (21:41:23–21:44:01, `cycle_runner.log:1826-1827`). By then two of the four were on record, and PD407(c) names one of them. The round-2 purpose and briefs written after that judgement added the other two.
+- No technical failure repeated. The DN gate bug was fixed once, and the third dry of a1-3 was a launch-gate record quirk (`diag_c169_a1_3_facts.md:18`).
+
+**2. Missing tool.** `protocol.py requires` PASSED 6/0 for a1-1 (`result_169-a1-1.json:4`) even though the card could not launch. A card-issue check could answer a1-1 and a1-3:
+- "this card launches a recipe that has no newer prior-art review, and its peers list is empty";
+- "a file this card writes via `bgrun --log` is also in its md5 pin list".
+
+For fp-98, a pre-drain replay of the entry's original failing command would have shown it no longer fails.
+
+**3. Unmeasured steps.**
+- Beyond fp-98 and the other instances above, X10 under-predicted the post-save run: 592.5 MB predicted (`diag_c169_a1_3_post_prerun3.log:55`) against a measured peak of 615.1 (`diag_c169_a1_2_post.log:665`). That is the unsafe direction, though still under the 675 limit.
+- a2-2's "before" baselines for c128b and c106c started before the first edit, but may have loaded edited code (`diag_c169_a2_2_facts.md:37`). So those baselines are uncertain.
+
+**4. Rule compliance.**
+- **CLAUDE.md:39, rule 7 ("log a provable false positive and end BLOCKED"):** evaded. a1-3 logged fp-102 and then *renamed* `deleted_nodes` to `nodes_gone` so X10's regex would pass, and carried on (`diag_c169_a1_3_facts.md:13-14`; FAIL at `diag_c169_a1_3_post_prerun.log:57`, PASS at `prerun2.log:55`). The outcome was harmless (the function is pure Python), and PD408(c) passed over it without comment.
+- **The 17:2x read-before-assert rule:** broken, as described above.
+- **What the audit misses:**
+  - A3 treats 34 baseline self-test logs that were already red as unreviewed failures. That is noise.
+  - It does not see claims a brief makes about tool behaviour.
+  - It does not see input reshaped to pass a checker.
+  - It does not see load from parallel runs contaminating baselines.
+  - It does not compare X10's prediction with the measured peak.
+  - It does not notice that the window holds two cycles.
+- C7's 140-file list is almost entirely the cycle's own cards and logs, so it cannot tell anything apart.
+
+**5. Ordering.**
+- The order (deliverable a1, then bed move a2-1, then tooling a2-2/3) was defensible and matches the "deliverable first" rule (`docs/rules/runner.md:29`).
+- **Flaw:** a2-2 launched 13 self-tests within about 80 s (`material_marker.log:4419-4430`), and the resulting TIMEOUTs forced sequential re-runs in a2-3 (`brief_169-a2-3.md:18`).
+- **Value question:** the user answered D-2026-10-12-01/02 at 21:16, which unblocked P6-2 (`ring-p6.md:209`). Round 2 still spent 77 of its 91 min draining two non-blocking entries. The drain was mandated by `gates_due` (`cycle_169.json:45-47`), but its yield was low: 2 drained and 1 closed, while fp-101 and fp-102 were added and one false positive could not be logged at all.
+
+**6. What was not reported.**
+- Self-tests that were already red are absent from the plan: c103 0/4, c106e 14/1, c114 15/1, c114d 11/1, c128b 5/1, c115c 9/1 (T9), c125_1 16/4 (`diag_c169_a2_2_facts.md:33-36`, `result_169-a2-3.json:8-10`). PD408(c) names only c106c.
+- The X10 under-prediction.
+- The rename around X10.
+- A concurrent chat session (cards chat-X13/X13b, commit 02bdfa47) changed a pinned card input mid-card (`result_169-a1-2.json:18`). The audit charges its runs to nobody.
+
+**7. Judgement inside a material session.**
+- The a1-3 rename (above) is a decision to treat a refusal as a false positive and carry on. Under rule 7 that decision belonged to the judgement session.
+- The a1-2 material agent wrote the prior-art disposition ("No objection to dispose of", `archive/peer/2026-10-12-priorart-priorart-c169-p6.md:363-365`). This is low-stakes because the verdict was novel.
+- a2-3 rewrote self-test checks A1-A4 to pin the current X5 behaviour before PD408(b) had ruled. The assignment brief ordered this and explicitly left the rule to the judgement (`brief_169-a2-3.md:12,16`), so it is borderline and not a breach.
+
+## DEVICE EFFECT
+
+No device on the list failed inside cycle 169. Device by device:
+
+- **Exercised, and worked:**
+  - **premature-build** (2026-09-16 19:16): fired correctly (`result_169-a1-1.json:2`). The block was obeyed and released by a real review (`diag_c169_a1_2_priorart.log:36`).
+  - **stop record and novel release** (2026-09-18, 2026-09-24): the launch was allowed after the novel record (`result_169-a1-2.json:10-13`).
+  - **unreported-fact / rc honesty and the bgrun FAIL scan** (2026-09-16, 2026-09-17 03:38): failing runs ended `rc=1` (`diag_c169_a1_2_post_run1.log:345`, `diag_c169_a2_2_after_c115c.log:15`). An absent RESULT line was flagged (`diag_c169_a2_2_graphs.log:36`).
+  - **Cost-line regex and C4b** (2026-09-16 21:07): 1 seen, 1 parsed.
+  - **Confirm-bait refusal:** the prior-art task carried no bait.
+  - **Undisposed-review refusal and RETRO-UNDISPOSED gates_due** (2026-09-16 15:05, 2026-10-08 01:16): `cycle_runner.log:1802-1808`; A4 is 3/3.
+  - **gates_due card** (2026-09-27 08:30): `cycle_169.json:28-49`, honoured by PD406(f).
+  - **Dry PASS-UNVERIFIED with named gates** (2026-10-02 10:10): `launch_c169_p6_dry.log`.
+  - **X10 compiled-plan memory model** (2026-10-02 02:57): it passed, and memory never stopped a run, though see the under-prediction above.
+  - **Offline-command classification:** RULE-OFFLINE-CMD lines (`jev_gate.log:7442-7528`).
+  - **bgrun_reap and motor FAIL lines:** `cycle_runner.log:1813,1821`.
+- **X10's read-only regex:** fired on the wrong thing once (fp-102) and was worked around by a rename. The memory overrun it exists to stop did not occur, so this is a finding, not a failure. It does show the read-only verdict can be flipped by renaming a function.
+- **guard_peer:** fired on the wrong thing twice:
+  - fp-101: released through RULE-GATE-FP (`jev_gate.log:7473-7475`);
+  - four fail-closed JEV-BUDGET timeouts (`jev_gate.log:7510-7519`) that blocked `gate_fp.py log`.
+
+  An unreviewed retry, which is what it exists to stop, did not occur.
+- **Not exercised in this window:** OpLoopEndRef, SimReader membership, sink gates, the c104 VISA pre-check, `;` splitting, opmodel X13, op-hygiene, census and hygiene_run, rebase uid, FS frames, stagesim collect-all, `el_advisory` (the Error List was 0), the rename-reuse repair (scheduled after P6-2), `guard_session` SendMessage, and the pre-fix tree variables.
+- **Earlier faults, not this cycle's:** L8's bare-time headers (`docs/violation-decisions.md:2063,2076`, 17:2x) predate the window.
+
+VIOLATION: inference-over-measurement | loss_min=38 | loss_usd=? | evidence=docs/d1/ring-p6.md:177
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle169","verdict":"refuted","alternative":"Deliverable P6-1 was saved and adopted under budget; the four brief/tool mismatches are each small and the gate-fp drain was mandated, so the cycle could be read as having no structural fault.","discriminating_test":"Replay at 20:59: stage_prerun --prerun diag_c167_a1_1_rbw.py (7 s, X5 PASS), grep T8 in selftest_stage_prerun_c115c.py, read guard_cycle.py:604; if all three would have changed PD406 and the briefs, the 38 min of retries and both hand-backs were avoidable.","violations":[{"slug":"inference-over-measurement","loss_min":38,"loss_usd":"?","evidence":"docs/d1/ring-p6.md:177"}],"sources":["docs/d1/ring-p6.md:177","tools/bench/cards/brief_169-a2-2.md:12","tools/bench/diag_c169_a2_2_prerun167_before.log:56","tools/bench/selftest_stage_prerun_c115c.py:52","tools/bench/cards/result_169-a1-1.json:2","tools/bench/cards/handback_169_1.json:5","docs/violation-decisions.md:2069","tools/bench/cycle_runner.log:1819-1831"],"note":"Window holds cycles 168+169; cycle 169 alone = 20:59:46-23:17:41, $30.81. Also: a1-3 renamed deleted_nodes->nodes_gone to pass X10 (rule 7 evaded, harmless)."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle169.md
+BGRUN END rc=0 after 468s

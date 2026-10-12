@@ -1,0 +1,86 @@
+{
+ "schema": "task/1",
+ "id": "169-a1-3",
+ "kind": "build",
+ "retry_of_card": "169-a1-2",
+ "goal": "Per brief_169-a1-3.md: fix the post-save script's own DN gate, re-run the post-save reads of the SAVED P6-1 file, Error List --role final, ONE load_by_vi entry.",
+ "why": "Retry of 169-a1-2 (FAIL: script bug in the post script's DN gate, Jev our-script-bug). Purpose item 6, 7 (PD406(e)) and 8 of assignment 169-1. No launch, no save.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_169-a1-3.md", "md5": "047bb31576c7107f9d53a816b4ccfcba"},
+  {"path": "docs/d1/ring-p6.md", "md5": "f3e9dab8dea72dec6ef84f3ef75fe8f5"},
+  {"path": "tools/bench/graph_ring_p5s02e_20261012_173009.json", "md5": "7815af0993bd8aeb1f14c7d3d76b0da1"},
+  {"path": "tools/bench/graph_ring_p6rbwd_20261012_205248.json", "md5": "57f33e7c65ac63bb7d50cd2c72608982"},
+  {"path": "tools/bench/errorlist_D1_ring_p6rbwd_20261012_205248.json", "md5": "f71773bcacfc4e253b8977af6a7d88b0"},
+  {"path": "tools/bench/graph_ring_p6_20261012_212645.json", "md5": "fbc7b7eef540b87f8b935a10df2a02bd"},
+  {"path": "tools/bench/launch_c169_p6.json", "md5": "892f71380622d724e5c335cf0842b687"},
+  {"path": "tools/recipes/stage_d1_ring_p6.py", "md5": "85f2615f192cf17e0bb3dfbb4965b9c1"},
+  {"path": "tools/bench/diag_c169_a1_2_facts.md", "md5": "5b4ec8df7e402e11954eb98a95358de5"},
+  {"path": "tools/bench/diag_c169_a1_2_post.log", "md5": "0512f85f9ca1b478410aa523b135043e"},
+  {"path": "tools/bench/diag_c169_a1_2_post_dry2.log", "md5": "0b1d8e2a23c22342f54008b86c407138"},
+  {"path": "tools/bench/diag_c169_a1_2_post_prerun2.log", "md5": "b256d19ad2684d79c55d7c135b5dea86"},
+  {"path": "tools/bench/diag_c169_a1_2_hash.py", "md5": "fd34e4301a36c47f2c977af96a70041a"},
+  {"path": "tools/bench/prep_c168_a1_2_lib.py", "md5": "93e3bffb15acf272dc80f0ecb430adad"},
+  {"path": "tools/bench/prep_c168_hashlib.py", "md5": "e212fa39839fa8be69becd0d36aceb13"},
+  {"path": "tools/bench/prep_c167_a1_1_graphlib.py", "md5": "1c0f93524a2d08e0e402cc18c0d73a16"},
+  {"path": "tools/stagekit.py", "md5": "22967183e5aee50fa9a43e8b4a7657e7"},
+  {"path": "tools/stagexec.py", "md5": "1d5309f4cc8a5df3bd5bcad2d5c95ca2"},
+  {"path": "tools/stage_prerun.py", "md5": "7605116f1dfe1c6fd4963dbfcf259de1"},
+  {"path": "tools/errorlist_check.py", "md5": "bfa0a3879a137a4058bf4e84e5570569"},
+  {"path": "tools/gscript.py", "md5": "1a80236ed35c1876c67f964c72fe820a"},
+  {"path": "docs/script-writing.md", "md5": "3583b9f34bba43f105f6f414d4756a93"}
+ ],
+ "pass": [
+  "Hashes: card inputs and 7 VIs 75773b0d 7f2582ae 94ffff94 f9ae7751 564d8cbe 6dcd5c3d eb1d0f31 equal before and after (prep_c168_hashlib.check); requires PASS; any drift = RETURN",
+  "Post script DN gate patched in place (file:line quoted): result [11261] by an assert-based self-check on the two stored graphs; rules 10-15; dry + prerun quoted",
+  "Post-save run from the SAVED bytes (byte copy, never saved, deleted): ExecState 1; DN [11261]; e5_check ok; graph + md5; S-5 30 vs 30 both empty; every MEM line <= 675; saved md5 c2d9c13c unchanged",
+  "errorlist_check --vi <saved> --role final: 0 error items, kept as errorlist_expected_D1_ring_p6_20261012_212645.json (name, md5, class counts); saved md5 unchanged after",
+  "ONE load_by_vi entry in memory_model.json keyed by c2d9c13cb40c0a5cab7433896d1df157 (value = this run's MEM-after-load, cite file:line); nothing else changed; only if the two items above PASS",
+  "Hygiene: 7 VIs unchanged; no original opened; refs balanced; no scratch left; tasklist shows NO LabVIEW; no hooks/recipe/STATUS/INDEX/plan edit; diag_c169_a1_3_facts.md has a skipped: line"
+ ],
+ "outputs": [
+  "tools/bench/diag_c169_a1_2_post.py",
+  "tools/bench/diag_c169_a1_3_hash.py",
+  "tools/bench/diag_c169_a1_3_facts.md",
+  "tools/bench/graph_ring_p6_20261012_212645.json",
+  "tools/bench/errorlist_expected_D1_ring_p6_20261012_212645.json",
+  "tools/bench/memory_model.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c169_a1_2_post*",
+   "tools/bench/diag_c169_a1_3*",
+   "tools/bench/graph_ring_p6_*",
+   "tools/bench/errorlist_D1_ring_p6_*",
+   "tools/bench/errorlist_expected_D1_ring_p6_*",
+   "tools/bench/memory_model.json",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_*",
+   "tools/bench/cards/result_169-a1-3.json"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 90
+ },
+ "advances": ["M3", "M8"],
+ "requires": [
+  {"kind": "file", "name": "D1_ring_p6_20261012_212645.vi", "where": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev"},
+  {"kind": "file", "name": "tools/errorlist_check.py"}
+ ],
+ "rules": [
+  "The saved file is read only: no save, no launch, no recipe scratch; read on a byte copy deleted at close",
+  "No edit of stage_d1_ring_p6.py (its prior-art review is bound to its sha) or tools/hooks/**; no bypass variable",
+  "A hook refusal = BLOCKED with its text; a gate_fp is logged with py tools/gate_fp.py log",
+  "memory_model.json: ONE load_by_vi entry only; no plan, STATUS, INDEX, stage-tool or hook edit",
+  "docs/script-writing.md rules 10-15 apply to the patch; the post script calls shared functions"
+ ]
+}

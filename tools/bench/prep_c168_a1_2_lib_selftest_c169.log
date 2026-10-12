@@ -1,0 +1,17 @@
+BGRUN START 2026-10-12 21:11:36 limit 3.0 min: py -u tools/bench/prep_c168_a1_2_lib.py --selftest
+BGRUN PID 10964
+GATE PASS | T1 class_counts(stored items) == stored class_counts | {'buildarraybuildarraycontainsunwiredorbadterminal': 1}
+GATE PASS | T2 frame_cdiff(7815af09) 31 rows == p6_closure cdiff rows | (31, 31, [])
+GATE PASS | T3 inputs_of(7815af09, #2626) == diag_c168_a1_1_facts.md:20 | [(2832, [30300]), (4160, [30119]), (4165, [30216]), (4168, [4594])]
+GATE PASS | T4 closure_rd_diff(7815af09): R/DISP cdiff sinks all in the diff (rd rows 32) | {'diff_rows': 31, 'rd_rows': 32, 'only_diff': 2, 'only_closure_cdiff': 0, 'only_closure_no_cdiff': 3}
+METER a k 1 private 600.0 MB
+METER b k 2 private 612.3 MB
+METER c k 3 private 580.0 MB
+GATE PASS | T5 Meter lines + peak | [('a', 600.0), ('b', 612.3), ('c', 580.0)]
+GATE PASS | T6 gone_and_count: absent+2066 -> ok; present -> not ok | ((True, {'present': False, 'wires': 2066}), (False, {'present': True, 'wires': 2066}))
+GATE PASS | T7 fs3_check(7815af09, 57f33e7c, #2626) PASS == recorded F-S3 True; #11261 (unwired in 7815af09) not ok | #2626 inputs got (term, wire, src owners) [(2832, 30418, [30300]), (4160, 30270, [30119]), (4165, 30274, [30216]), (4168, 30522, [4594])] vs base (term, src owners) [(2832, [30300]), (4160, [30119]), (4165, [30216]), (4168, [4594])]
+GATE PASS | T8 fs4_check(168 tunnels, stored 7f2582ae) PASS == recorded F-S4 True; IndexMode altered -> not ok; {} -> not ok | #uid (IndexMode, canon, sig) read vs stored 7f2582ae (diag_c166_a1_1_tun.json tunnels.p5s01): {'5204': (0, 'I32', '00134003000d66696c652070726f6772657373', 0, 'I32', '00134003000d66696c652070726f6772657373'), '10404': (0, 'I32', '001f4003001966696c65206e756d62657220746f20617070656e64206f7574', 0, 'I
+GATE PASS | T9 cdiff_rowset_diff(57f33e7c, 57f33e7c): 30 rows (= recorded fs5.diff_rows 30), both differences empty | {'rows_a': 30, 'rows_b': 30}
+GATE PASS | T10 cdiff_rowset_diff(57f33e7c, 7815af09): not ok; 57f33e7c-only sinks include t8323's row; 7815af09-only include #11261's | {'sinks_only_a': ['8323|ControlTerminal|Force (pN) vs Extension (nm) |0'], 'sinks_only_b': ['11261|Terminal|array|0', '11261|Terminal|element|0'], 'rows': (30, 31)}
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":10,"fail":0},"first_fail":null,"artefacts":[],"card":"169-a1-1","labview":"build"}
+BGRUN END rc=0 after 4s

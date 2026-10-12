@@ -199,6 +199,13 @@ def graph_shape_error(d):
 
 
 FIND_SKIPPED = []                       # (path, reason) of md5-matching graph files find_graph refused, last call
+# gate-fp fp-100 (card 169-a2-2): a graph read from an EDITED in-memory copy is stamped with the bed's md5 by its writer
+# (diag_c167_a1_1_rbw.py:112-113 `gr["md5"] = BEDM` + `gr["note"] = "graph of the IN-MEMORY copy after ..."`), so its
+# header matches the bed while its contents are post-edit (graph_ring_p6rbw_*: 2066 Wire objs vs the bed's 2091 in
+# graph_ring_p5s02e_20261012_173009.json). The glob search never returns such a file for that md5.
+# shortcut: recognised by that note wording only (a post-edit graph written without it is still a header match),
+# upgrade to a field the graph writer sets (e.g. `post_edit: true`) when a second writer stamps the input md5.
+POST_EDIT_NOTE_RE = re.compile(r"\bIN-MEMORY copy after\b", re.I)
 
 
 def plan_base_graphs(recipe):
@@ -264,9 +271,12 @@ def find_graph(input_md5, plan_graphs=()):
         m = re.search(r'"md5"\s*:\s*"([0-9a-f]{32})"', head)
         if m and m.group(1) == input_md5:
             try:
-                why = graph_shape_error(json.load(open(p, encoding="utf-8")))
+                d = json.load(open(p, encoding="utf-8"))
+                why = graph_shape_error(d)
             except ValueError as e:
                 why = "not JSON: {0}".format(e)
+            if not why and POST_EDIT_NOTE_RE.search(str(d.get("note") or "")):
+                why = "post-edit copy stamped with the input md5 (note: {0})".format(str(d["note"])[:60])
             if why:
                 FIND_SKIPPED.append((rel(p), why))
                 continue

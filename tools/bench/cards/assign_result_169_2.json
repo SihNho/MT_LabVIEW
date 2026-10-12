@@ -1,0 +1,22 @@
+{
+ "schema": "assign-result/1",
+ "cycle": 169,
+ "round": 2,
+ "status": "HANDBACK",
+ "cards": ["169-a1-3", "169-a2-1", "169-a2-2", "169-a2-3"],
+ "pass_evidence": [
+  {"item": 0, "met": true, "evidence": ["tools/bench/diag_c169_a1_3_hash_before.log", "tools/bench/diag_c169_a1_3_facts.md:8"]},
+  {"item": 1, "met": true, "evidence": ["tools/bench/diag_c169_a1_2_post.py:47-55", "tools/bench/diag_c169_a1_3_facts.md:10-12", "tools/bench/diag_c169_a1_3_post_dry3.log:40", "tools/bench/diag_c169_a1_3_post_prerun3.log:59"]},
+  {"item": 2, "met": true, "evidence": ["tools/bench/diag_c169_a1_2_post.log:657", "tools/bench/diag_c169_a1_2_post.log:663", "tools/bench/diag_c169_a1_2_post.log:667", "tools/bench/diag_c169_a1_2_post.log:687", "tools/bench/diag_c169_a1_3_facts.md:21-26"]},
+  {"item": 3, "met": true, "evidence": ["tools/bench/errorlist_expected_D1_ring_p6_20261012_212645.json", "tools/bench/diag_c169_a1_3_errorlist.log:35-37", "tools/bench/diag_c169_a1_3_facts.md:27-30"]},
+  {"item": 4, "met": true, "evidence": ["tools/bench/memory_model.json", "tools/bench/diag_c169_a1_2_post.log:373", "tools/bench/diag_c169_a1_3_facts.md:31"]},
+  {"item": 5, "met": true, "evidence": ["tools/bench/cards/result_169-a2-1.json", "STATUS.md:126-129", "docs/d1/INDEX.md:26", "tools/bench/diag_c169_a2_1_facts.md"]},
+  {"item": 6, "met": true, "evidence": ["tools/bench/diag_c169_a1_3_facts.md:32-35", "tools/bench/diag_c169_a1_3_hash_after.log"]},
+  {"item": 7, "met": false, "evidence": ["tools/bench/cards/result_169-a2-3.json", "tools/bench/diag_c169_a2_2_facts.md:6-14", "tools/bench/diag_c169_a2_3_facts.md", "tools/bench/gate_fp_queue.jsonl:99-100"]}
+ ],
+ "handback": {
+  "reason": "pass item 7 half met: fp-99 and fp-100 drained with self-tests; fp-98 left open because its X5 fix breaks the pinned test c115c T8 (an unplanned remove_bad_wires must FAIL X5) - a rule choice for the judgement session",
+  "question": null
+ },
+ "note": "Items 0-6 are met. Card 169-a1-3 shows FAIL only because the log it was ordered to rewrite (diag_c169_a1_2_post.log) was a pinned input; old bytes kept as diag_c169_a1_2_post_run1.log, 7 VI pins equal. Its hash-after Jev row (jev_gate.log:7509 new-problem p=0.916, review owed) and the refused gate_fp log for it are open for the chat. fp-98: 167 script passes X5 today through its label rbw_method410 (diag_c169_a2_2_prerun167_before.log:56,67); options are count RBW against plan RBW rows, change T8, or close fp-98 as by-design. Also open: fp-101 (hook), fp-102 (X10 regex matches 'delete', stage_prerun.py:2192), and selftest_stage_prerun_c106c is 3/3 (was 6/0 at cycle 152, EXECUTOR-STOP UNROUTABLE, diag_c169_a2_3_c106c.log:8), failing before this round's edits. P6-2 is next per D-2026-10-12-01/02."
+}
