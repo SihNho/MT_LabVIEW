@@ -124,8 +124,11 @@ def ack():
     log, ev = events()
     prev = [h for h in (_ack_data().get("reported", []) or [])]
     merged = prev + [h for h, _ in ev if h not in set(prev)]   # fp-31: union, no hash lost
+    # readable mark for the read-only runner-cycle-report task, which cannot hash lines (2026-10-12 duplicate report)
+    hb = [l.split("|")[1].strip() for _, l in ev if l.startswith("HEARTBEAT |")]
+    last_hb = max(hb) if hb else _ack_data().get("last_heartbeat_reported", "")
     with open(ACK, "w", encoding="utf-8") as f:
-        json.dump({"log": log, "reported": merged}, f, indent=1)
+        json.dump({"log": log, "last_heartbeat_reported": last_hb, "reported": merged}, f, indent=1)
     print("report_gate: acknowledged %d event(s) from %s" % (len(ev), log))
 
 
