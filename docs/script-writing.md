@@ -65,13 +65,15 @@ review; a diff-only review never re-reads copied lines) and nobody's job was to 
 These never override rule 1a: the original's computation is never "simplified", shortened or deleted.
 
 10. **Ask whether it needs to exist before writing it.** No option, flag, parameter or "for later" branch the card did
-    not ask for. Name what you skipped in ONE line of the result card's `facts` ("skipped: …").
+    not ask for. (A "skipped: …" fact was required here first; the A/B, tools/bench/xs_write_less/report_x13.md, found it
+    written in 1 of 6 scripts, so it was dropped on 2026-10-12 - the rule itself cut unasked options 1 -> 0.)
 11. **Standard library or an installed package before new code.** Never add a dependency for a few lines.
 12. **Code moved into a shared module keeps its error handling and validation unchanged** (rule 4's extraction is a
     move, not a rewrite).
 13. **A shortcut with a known limit says so in place:** `# shortcut: <limit>, <when to upgrade>`.
-14. **New non-trivial logic in ANY script (a branch, a parser, a comparison) leaves at least one `assert`-based
-    self-check** that runs with the script - not only the shared functions of rule 7.
+14. **New DECISION logic in any script leaves ONE `assert`-based self-check** that runs with the script - a branch that
+    decides pass/fail, a parser of a new format, a comparison. One per such piece, on a small known case; plain reading
+    and printing needs none (the A/B put 21 asserts into 6 scripts and +40 % lines - 2026-10-12 narrowing).
 15. **Between options of the same size, take the one that is correct at the edges** (empty input, one row, missing
     file). A one-liner that needs decoding is not short.
 
