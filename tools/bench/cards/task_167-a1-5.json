@@ -1,0 +1,69 @@
+{
+ "schema": "task/1",
+ "id": "167-a1-5",
+ "kind": "build",
+ "goal": "Per brief_167-a1-5.md (offline): elcls + JSON-rewrite helpers into the shared module with self-test; re-pin 3 selftests; move STATUS NEXT history older than cycle 164 verbatim to archive.",
+ "why": "Purpose items 9 and 10 of assignment 167-1 (PD404 notes 2, 6, 7): shared helpers instead of inline copies, green pins, and a short STATUS.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_167-a1-5.md", "md5": "a24cc5d1524831a7ccb7df9333853510"},
+  {"path": "docs/d1/ring-p6.md", "md5": "a4a27b0e3e95cc3be34521c5ebe9acf1"},
+  {"path": "tools/stagekit.py", "md5": "b40155edad5ecb998b20131ac5d33213"},
+  {"path": "tools/errorlist_check.py", "md5": "bfa0a3879a137a4058bf4e84e5570569"},
+  {"path": "tools/bench/selftest_c147_b1_2.py", "md5": "6bdde02b18ba81701a7dc0d46edc8597"},
+  {"path": "tools/bench/diag_c166_a1_2_facts.md", "md5": "ecc2e17c711ce0d80fbc106933ffb185"},
+  {"path": "tools/bench/diag_c166_a1_1_facts.md", "md5": "7b8578eb64590588ea2314dbb93ae415"},
+  {"path": "docs/script-writing.md", "md5": "0165fb24dc476b0b6fd863c96a346728"}
+ ],
+ "pass": [
+  "Inputs and the seven VIs hashed before and after, equal (hashlib log); drift = RETURN",
+  "Shared elcls (existing one reused or one added) and rewrite_json in the owning module; self-test replays the 47 recorded items, class counts equal stored; cycle-166 inline copies replaced; quoted",
+  "Remaining older inline copies listed file:line, not edited; edited cycle-166 scripts re-run offline with output md5 equal to the stored output",
+  "selftest_c165_innerface, selftest_c165_prime, selftest_c147_b1_2 P0: only the pin value changed; the failing pin gate before and the pass line after quoted; a non-pin failure = RETURN",
+  "STATUS NEXT history older than cycle 164 relocated verbatim to archive/2026-10-12-status-cycle167-relocate.md; byte compare, line counts, diff and bed-key parse quoted",
+  "git diff --name-only -- tools/hooks empty; no LabVIEW started; edited tools/*.py self-test lines quoted; facts file written"
+ ],
+ "outputs": [
+  "archive/2026-10-12-status-cycle167-relocate.md",
+  "tools/bench/diag_c167_a1_5_relocate.py",
+  "tools/bench/diag_c167_a1_5_facts.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagekit.py",
+   "tools/errorlist_check.py",
+   "tools/bench/selftest_c165_innerface.py",
+   "tools/bench/selftest_c165_prime.py",
+   "tools/bench/selftest_c147_b1_2.py",
+   "tools/bench/diag_c166_a1_1_lib.py",
+   "tools/bench/diag_c166_a1_1_lib_selftest*",
+   "tools/bench/diag_c166_a1_2_elexp.py",
+   "tools/bench/diag_c167_a1_5*",
+   "tools/bench/prep_c167_a1_5*",
+   "archive/2026-10-12-status-cycle167-relocate.md",
+   "STATUS.md",
+   "docs/fn_descriptions.json",
+   "docs/toolkit-capabilities.md",
+   "tools/bench/gate_fp_queue.jsonl",
+   "tools/bench/jev_*",
+   "tools/bench/cards/result_167-a1-5.json"
+  ],
+  "status_edit": true,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "advances": ["M3", "R5", "R1"],
+ "rules": [
+  "No LabVIEW, motor or camera; no VI opened or saved",
+  "No tools/hooks/** edit; no bypass of any gate (a refusal is obeyed or logged as a false positive)",
+  "Rule 1a: no computation of any VI changes; only tooling is edited",
+  "STATUS.md: only the NEXT history relocation; machine keys (rig-state, labview-lock, HARDWARE, STOP) untouched"
+ ]
+}

@@ -1,0 +1,29 @@
+{
+ "schema": "verdict/1",
+ "id": "retrospective-cycle167",
+ "verdict": "refuted",
+ "alternative": "The cycle met its purpose (11/11, 68 min, $26.48) and neither fault was costly; this is refuted only because two devices failed: Error List reuse keyed by file name (10 min) and a launch-gate refusal worked around by turning gates into rows (1 min).",
+ "discriminating_test": "Call errorlist_check.find_reusable on D1_ring_p5 at md5 75773b0d: it returns 'no saved read' although the p5s02e read is complete at that md5. Replay rbw.py sha 0bf608c2 against the launch gate: refused; sha 89c56b7f passes only because A0/R1 became rows.",
+ "violations": [
+  {
+   "slug": "device-failed",
+   "loss_min": 10,
+   "loss_usd": null,
+   "evidence": "tools/bench/cycle_runner_main_20261012_1719.log:22"
+  },
+  {
+   "slug": "device-failed",
+   "loss_min": 1,
+   "loss_usd": null,
+   "evidence": "tools/hooks/material_marker.log:4394"
+  }
+ ],
+ "sources": [
+  "tools/bench/errorlist_check_cycle167.log:85",
+  "tools/errorlist_check.py:186",
+  "tools/bench/prerun_records.jsonl:1153",
+  "tools/bench/diag_c167_a1_1_facts.md:33",
+  "tools/bench/cycle_runner_main_20261012_1719.log:11"
+ ],
+ "note": "Window also holds cycle 166 and ~47 h of chat; cycle 166 got no retrospective (the runner accepted cycle 165's file, cycle_runner_main:11). Before P6-1, measure offline which Build Array (#2626 or #11261) the one remaining Error List item is."
+}

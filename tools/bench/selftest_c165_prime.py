@@ -114,7 +114,7 @@ for lab, rows in (("SelectorTunnel", wired("SelectorTunnel")),
     r0 = rows[0] if rows else None
     gate("N4 wired {0} inner sink {1} -> None".format(lab, r0 and (r0["term_uid"], r0["owner_class"], r0["owner_uid"], r0["wire_uid"])),
          r0 is not None and unit(r0) is None, len(rows))
-gate("P graph 2a5fa0c4, stagesim 95a162ba, stagekit dd57c1ca unchanged", md5(GRAPH).startswith("2a5fa0c4") and md5(SS.__file__).startswith("95a162ba")
-     and md5(FL.K.__file__).startswith("dd57c1ca"), (md5(GRAPH)[:8], md5(SS.__file__)[:8]))
+gate("P graph 2a5fa0c4, stagesim 95a162ba, stagekit 22967183 unchanged", md5(GRAPH).startswith("2a5fa0c4") and md5(SS.__file__).startswith("95a162ba")
+     and md5(FL.K.__file__).startswith("22967183"), (md5(GRAPH)[:8], md5(SS.__file__)[:8]))
 print("FACT md5 stagexec {0}".format(md5(SX.__file__)), flush=True)
 sys.exit(gate.result())

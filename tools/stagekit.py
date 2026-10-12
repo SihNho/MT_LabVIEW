@@ -3197,6 +3197,79 @@ def row_uid_reused(base, real):
     a, b = roles(base), roles(real)
     return [{"uid": u, "base": sorted(map(list, a[u]), key=str), "real": sorted(map(list, b[u]), key=str)}
             for u in sorted(set(a) & set(b), key=str) if a[u] != b[u]]
+
+
+# ---------------------------------------------------------------------------------------------- JSON rewrite in the file's own layout
+# Moved here by card 167-a1-5 (PD404 note (2)) from tools/bench/diag_c166_a1_1_lib.py:16-47 (which now calls these); the serialisation
+# rule is the one of tools/bench/prep_c164_a3_7_write.py:53-59 `dumps` (a closed script, left as the record of what ran).
+def json_text_like(obj, old_text):
+    """The json.dumps text of `obj` in the byte layout of `old_text` (indent 1, ascii or not, trailing newline or not; '\\n' newlines),
+    or None when no candidate round-trips old_text exactly. Self-test: rewrite_json_selftest / tools/bench/diag_c167_a1_5_selftest.py."""
+    t = old_text.replace("\r\n", "\n")
+    for kw in ({"indent": 1}, {"indent": 1, "ensure_ascii": False}):
+        for tail in ("", "\n"):
+            if json.dumps(json.loads(t), **kw) + tail == t:
+                return json.dumps(obj, **kw) + tail
+    return None
+
+
+def json_newline_of(path):
+    """The line ending of the file at `path`: '\\r\\n' when its bytes hold one, else '\\n'. Self-test: rewrite_json_selftest."""
+    return "\r\n" if b"\r\n" in open(path, "rb").read() else "\n"
+
+
+def rewrite_json(path, obj, backup):
+    """Copy `path` to `backup`, then write `obj` in the old file's layout and line ending; returns (written, old_obj), and writes
+    nothing (written False) when the layout cannot be reproduced. Self-test: rewrite_json_selftest / tools/bench/diag_c167_a1_5_selftest.py."""
+    old = open(path, encoding="utf-8", newline="").read()
+    nl = json_newline_of(path)
+    t = json_text_like(obj, old)
+    if t is None:
+        return False, json.loads(old)
+    shutil.copyfile(path, backup)
+    with open(path, "w", encoding="utf-8", newline=nl) as f:
+        f.write(t)
+    return True, json.loads(old)
+
+
+def json_changed_keys(a, b):
+    """Top-level keys whose values differ between two dicts, sorted. Self-test: rewrite_json_selftest."""
+    return sorted(k for k in set(a) | set(b) if a.get(k) != b.get(k))
+
+
+def rewrite_json_selftest(paths, tmpdir):
+    """Two cases on RECORDED json files (the paths given): (1) every file round-trips byte-exactly through json_text_like with its own
+    newline, nothing written; (2) the first file is copied to `tmpdir`, one new top-level key is written through rewrite_json: the backup
+    is byte-equal to the copy, json_changed_keys names ONLY that key, every other key compares equal, the new file keeps the old layout.
+    Prints one SELFTEST line per check and returns the list of failed labels (empty = PASS)."""
+    bad = []
+    for p in paths:
+        raw = open(p, "rb").read()
+        old = raw.decode("utf-8")
+        t = json_text_like(json.loads(old), old)
+        ok = t is not None and t.replace("\n", json_newline_of(p)).encode("utf-8") == raw
+        print("SELFTEST {0} round-trip {1} (newline {2!r})".format(os.path.basename(p), "OK" if ok else "FAIL", json_newline_of(p)), flush=True)
+        ok or bad.append("round-trip " + os.path.basename(p))                                  # noqa: E701
+    src = os.path.join(tmpdir, "rewrite_json_selftest_src.json")
+    bak = os.path.join(tmpdir, "rewrite_json_selftest_bak.json")
+    shutil.copyfile(paths[0], src)
+    raw = open(src, "rb").read()
+    obj = json.loads(raw.decode("utf-8"))
+    new = dict(obj, rewrite_json_selftest_key=1)
+    written, old_obj = rewrite_json(src, new, bak)
+    back = json.loads(open(src, encoding="utf-8").read())
+    ck = json_changed_keys(old_obj, back)
+    relaid = json_text_like(back, raw.decode("utf-8"))
+    checks = [("written", written), ("backup byte-equal", open(bak, "rb").read() == raw),
+              ("changed keys == ['rewrite_json_selftest_key']", ck == ["rewrite_json_selftest_key"]),
+              ("every other key equal ({0})".format(len(old_obj)), all(back.get(k) == v for k, v in old_obj.items())),
+              ("layout kept", relaid is not None and relaid.replace("\n", json_newline_of(paths[0])).encode("utf-8") == open(src, "rb").read())]
+    for label, ok in checks:
+        print("SELFTEST rewrite {0}: {1}".format(label, "OK" if ok else "FAIL"), flush=True)
+        ok or bad.append("rewrite " + label)                                                   # noqa: E701
+    for p in (src, bak):
+        os.path.exists(p) and os.remove(p)                                                     # noqa: E701
+    return bad
 # ---
 # labview: build
 # hardware: none

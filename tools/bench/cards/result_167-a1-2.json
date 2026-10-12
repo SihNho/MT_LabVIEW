@@ -1,0 +1,22 @@
+{"schema": "result/1", "id": "167-a1-2", "status": "PASS", "gates": {"pass": 10, "fail": 0}, "first_fail": null, "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/bench/p6_crows.md", "md5": "a0188541b461c2a9d93729daac709692"},
+  {"path": "tools/bench/p6_crows.json", "md5": "abfc108153cd79ff5ac07f0692b694a7"},
+  {"path": "tools/bench/diag_c167_a1_2_facts.md", "md5": "4a894a937f597f311c80ebdbe0e3f3e3"},
+  {"path": "tools/bench/diag_c167_a1_2_crows.py", "md5": "b5963505d3b9ed6e416ebe59e359ae6d"}],
+ "facts": [
+  "10/0 gates; 10 inputs + 7 VIs hashed equal before and after, no LabVIEW before or after (diag_c167_a1_2_crows.log:97-123)",
+  "#1114 #2136 on d639 (1.1 body), #12045 in FS #16543 frame d16565 on d639: every 1.1 iteration, no case in chain, same in S1 (p6_crows.md:14-15,17)",
+  "#29411 only in case #22694 frame d27219 'False' (stage_d1_ring_p3a.json:187), selector #27185 t27182 <- #26879 'x = y?' t27144; absent in S1 (p6_crows.md:16)",
+  "#3162 only in case #3191 frame d3292 (frame name unread), selector #3302 t3307 <- #3057 'x = 0?' t3067; same uids in S1 (p6_crows.md:18)",
+  "#1628 on d686 (FS #681 frame) outside every While, both graphs (p6_crows.md:19)",
+  "#30240 #29240 #10068 on d23166 = 1.2 body every 1.2 iteration in P5; #30240 absent in S1; #29240 #10068 on d639 (1.1) in S1 (p6_crows.md:20-22)",
+  "P3a counter = LSR #27258 inner t27278 on d639 -> wires 27378,27331,27350,27337 -> #27373 'x', #27311 'x' on d27219; no consumer's sink wire is a counter wire (diag_c167_a1_2_crows.log:102)",
+  "Repeated BufNum, original S1 copy: 4 real A legs steps_le0 = 0 (t0_legs/c104_disp_20260927_173323/leg1_A_p15_a1/leg.json:456 etc); col 0 = BufNum not read (diag_c104_leg.py:193)",
+  "P1 C-API bench (not the VI): Last 1 ms at 90 Hz 2022 duplicates of 2382 calls (p1_bufmode_121.json:101); 0 ms 100088 of 100448 (:83)",
+  "Duplicate logic: diag_c166_a1_5_census.py:139-153 diagram_chain and :58-61 lv_running rewritten in diag_c167_a1_2_crows.py, census runs at import (facts.md:22)"],
+ "open": [
+  "Move diagram_chain (FS-aware owner chain) and lv_running into a shared module with a self-test (outside this card's write globs): copies now in diag_c166_a1_5_census.py:139-153 and diag_c167_a1_2_crows.py",
+  "S1 has no stored owners map: S1 structure uid/class come from the P5 owners map, with each S1 diagram link shown by an S1 tunnel/SR row. Is that enough, or should a LabVIEW read of S1 owners be done?"],
+ "cost": {"usd": null, "minutes": 14, "labview_runs": 0},
+ "note": "Offline only. S1 chains use P5 owners map for structure ids (S1 json has none). The 1.2 rows answer 'when it runs' with the 1.2 loop because they are not in 1.1 in P5. Prep scripts prep_c167_a1_2_shape/explore.py are read-only probes."}

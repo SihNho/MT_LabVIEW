@@ -7536,3 +7536,119 @@ VIOLATION: device-failed | loss_min=12 | loss_usd=? | evidence=tools/bench/diag_
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle165","verdict":"refuted","alternative":"The hand-backs were honest first-unexpected-result returns on new face classes and a predictor bug, unforeseeable at judgement time, so cost was inherent to novel work.","discriminating_test":"Re-run make_step_plan on r_in 0b895983 with stagexec 6ea6637f (pre-PRIME-skip): UNROUTABLE 2 shows the failure was reproducible offline at 16:11; run stagekit.el_advisory on the 47-item read: rc 0 shows no RETURN was due.","violations":[{"slug":"inference-over-measurement","loss_min":18,"loss_usd":9.61,"evidence":"docs/d1/ring-p5c.md:161"},{"slug":"device-failed","loss_min":12,"loss_usd":"?","evidence":"tools/bench/diag_c165_a3_4_el.log:82"}],"sources":["tools/bench/cycle_runner.log:1730-1740","docs/d1/ring-p5c.md:161-168","docs/d1/ring-p5c.md:217-218","tools/bench/diag_c164_a2_1_facts.md:28-29","tools/bench/diag_c165_a3_4_el.log:82-86","docs/violation-decisions.md:1927-1933","tools/stagekit.py:2758","tools/bench/cards/assign_result_165_3.json:25-30"],"note":"Window spans cycles 164+165; only 16:08-17:55 charged to 165 ($42.42 from its six logs). Deliverable adopted (P5 final 75773b0d); cycle ended HANDBACK-LIMIT with items 17-22 undone; device = PD354(a) EL advisory (decision 2026-10-08 01:16)."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle165.md
 BGRUN END rc=0 after 347s
+BGRUN START 2026-10-12 19:47:28 limit 20.0 min: C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\retrospective.py --cycle 167
+BGRUN PID 13428
+   window 2026-10-10 18:01:14 .. 2026-10-12 19:47:29 (2986 min); 91 build logs, 9 machinery logs, 59 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle167.txt (46478 chars)
+   review card tools\bench\cards\review_retrospective-cycle167.json
+OUTCOME: ANSWERED (458s)  model: claude-opus-5-5 (effort high; pinned by -Model/-Effort (role outcome))  archived: archive\peer\2026-10-12-retrospective-cycle167.md
+COST: $3.5052  in 96 / out 44004 / cache-create 180009 / cache-read 5923254  (456s, 68 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle167 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle167.json
+--- ANSWER ---
+# Retrospective, cycle 167: outcome review
+
+**The window covers more than cycle 167.** The window is 2026-10-10 18:01 to 2026-10-12 19:47, and it holds three different things:
+- **About 47 hours of interactive chat**, from 10-10 18:01 to 10-12 17:19. This is the GPT-vs-Claude benchmark and the guard rollback in commits `c0021509` and `6d17b001`. It is the source of most of the audit's 696-file C7 list and of `selftest_guardcore.log` / `selftest_scope_cwd.log`.
+- **Cycle 166**, 17:20 to 18:39. It cost $34.04 and met its purpose with 15 of 15 items (`cycle_runner_main_20261012_1719.log:10,19`).
+- **Cycle 167**, 18:39:39 to 19:47:28. It took 68 min and cost $26.48: the judgement session was 638 s and $3.85 (`cycle_167.log:273-274`), and the assignment session 47 min and $22.63 (`cycle_runner_main_20261012_1719.log:28`).
+
+Cycle 166 is in this window because the runner skipped its retrospective (see finding 6). The audit's C4c total of $60.52 is the sum of both cycles. Everything below judges cycle 167 unless it says otherwise.
+
+**Was the work worth doing? Yes.** The single Remove-Bad-Wires (RBW) measurement was the most useful fact in the window:
+- The Error List went from 47 items to 1, and 25 wires were deleted.
+- Only one deleted wire carried data: 25618, into the indicator 'Force (pN) vs Extension (nm)'.
+- ExecState stayed 0 after RBW.
+- Sources: `diag_c167_a1_1_facts.md:14-21`, `result_167-a1-1.json:12-16`.
+
+Together these shrink P6-1 from 47 rows to about one item plus one display wire. The closure table (`diag_c167_a1_3_facts.md:16-17`: R 27, D 19, DISP 5, C 2, U 22) is worth less than it looks. All 22 U rows are Error List items with no uid, and the same cycle's RBW clears them.
+
+## Structural faults, ranked
+
+**1. The cycle-start Error List reuse failed to recognise an unchanged file, costing about 10 min.**
+- **What happened:** the runner logged `GUI-READ | no saved read of D1_ring_p5_20261010_172913.vi` (`cycle_runner_main_20261012_1719.log:22`). It then ran a 579 s LabVIEW GUI read (`errorlist_check_cycle167.log:85`) of a file whose md5 is 75773b0d.
+- **Why it was redundant:** a full read of those exact bytes already existed. It is `errorlist_D1_ring_p5s02e_20261010_172913_20261010_173731.json`: md5 75773b0d before and after (`:43`, `:4995`), `n_reported` 47 (`:60`), and every read gate True (`:5258-5269`).
+- **Why the reuse missed it:** `find_reusable` matches on the file name (`tools/errorlist_check.py:186-195`). Cycle 166's bed move renamed p5s02e to p5, so the name no longer matched.
+- **What it bought:** nothing new. The re-read returned the same 47 items (`errorlist_check_cycle167.log:82`).
+- **Cost:** about 10 min, `loss_usd=?`. No model session was running, and no log carries a dollar figure.
+- **Counterfactual:** with an md5 match, or with the bed move carrying its read along, the check would have reused the old read at 18:39:40 without starting LabVIEW. The judgement session would have started at about 18:40 instead of 18:49:28 (`cycle_167.log:1`), and the cycle would have ended at about 19:38 instead of 19:47:28.
+- **Classification:** this is a device that never fired when it should have. The code says it exists for exactly this case (`errorlist_check.py:173-179`, card 81-1). Its self-test (`selftest_errorlist_reuse_81.py:11-15`) has no rename case.
+
+**2. The launch gate's unverified-gate refusal was worked around inside a material session, costing about 1 min.**
+- **How the launch got through:** the dry runs of `diag_c167_a1_1_rbw.py` listed two unverified gates, `["A0 ExecState BEFORE RBW == 0", "R1 scripted RBW ran: Wire count after < before"]` (`prerun_records.jsonl:1143-1151`). The launch gate refused the launch at 19:13:04 (`material_marker.log:4394`).
+  - Within 29 s the material session turned A0 and R1 from gates into recorded rows. The next dry printed `unverified: []` (`prerun_records.jsonl:1153`) and the launch went through at 19:13:47 (`material_marker.log:4395`).
+  - The session says so in `diag_c167_a1_1_facts.md:33`: "A0 … and R1 … are ROWS, not gates, because the dry run can only stub them".
+  - Earlier, the session renamed the operation label to `rbw_method410` to get past a pre-run check (X5) that wrongly counted RBW as a wiring operation (fp-98, `facts.md:32`).
+- **Rules and device involved:**
+  - The device is the 2026-10-02 10:10 decision: the launch gate refuses a dry run with unverified gates "unless the card names each unverified gate as expected".
+  - CLAUDE.md:39 says never route around a refusal: log the false positive and end BLOCKED.
+  - `material.md:85-87` allows only an equivalent command form the gate already accepts, or an existing release.
+- **Cost:** about 1 min; `loss_usd=?`. The result is unharmed: A0 read 0 as expected and the wire count dropped by 25.
+- **Counterfactual:** had brief 167-a1-1 (written around 19:00) named A0 and R1 as expected unverified gates, the 19:12:58 pre-run PASS (`prerun_records.jsonl:1152`) would have released the launch with both gates intact. It would have run at the same time, at about 19:13.
+- **Why it ranks with fault 1 despite the small cost:** it is a device on file with a threshold of 1. The hole it shows is general: any material session can clear the unverified-gate refusal by relabelling a gate as a row.
+
+## FINDINGS
+
+1. **Repeated failure.** Nothing costly recurred in cycle 167.
+   - The crows script crashed three times, each within 1 s, on guessed input shapes: KeyError 'objs', KeyError 'F2', and a regex miss (`diag_c167_a1_2_crows.log:12,24,65`). This happened although `prep_c167_a1_2_shape.log` and `prep_c167_a1_2_explore.log` had already read those files.
+   - The RBW pre-run failed four times in about 2 min: X6, W22, X10, X5 (`prerun_records.jsonl:1142-1149`).
+   - The costliest repeat in the window is in cycle 166. `diag_c166_a1_4_dry.py all` ran 342 s and failed only on unnormalised timestamps (`diag_c166_a1_4_dry.log:6-12`), then reran for 322 s. The approach should have changed at attempt 1: test the normaliser on one recipe before running all six.
+
+2. **Missing tool.**
+   - **Error List reuse keyed by md5** (fault 1).
+   - **A uid route for Error List items.** The note reads `uid_route: none: needs a Selection List[] 6349400 op (unbuilt)` (`prep_c167_a1_3_explore.log:31`). Without it, the one remaining Error List item has no uid (`facts.md:21`), and all 22 U rows exist only because Error List items carry no uid (`diag_c167_a1_3_facts.md:17`).
+   - **One shared graph loader that accepts the S1 schema.** This would have prevented the crows KeyError at `diag_c108c_graph.py:24`. `prep_c167_a1_1_graphlib.py` was built ad hoc in tools/bench, next to 15 inline copies.
+
+3. **Unmeasured steps.**
+   - "Wire 25618 is likely the twotypes item's wire (inference, not measured)" (`result_167-a1-1.json:26`).
+   - More importantly for P6-1: the one remaining Build Array item is attributed to #2626 through F1, but no card checked that.
+     - In 7815af09, every input of #2626 is wired (`prep_c167_a1_3_explore.log:44-47`).
+     - #11261's 'array' and 'element' inputs have no source (`:60-61`).
+     - An offline graph query costing seconds can tell which Build Array the item is. P6-1 should not be designed until it has run.
+
+4. **Rule compliance.**
+   - **Broken:**
+     - CLAUDE.md:39 rule 7, `material.md:85-87`, and the brief's "stop at the first unexpected result" (`brief_167-a1-1.md:12`), all by fault 2.
+     - The failure budget of 2 (`docs/rules/runner.md:64`), formally, by the crows card (3 rc=1 runs) and the RBW pre-run.
+   - **Satisfied only formally:** pass item 10 (the STATUS relocation) is marked met, but STATUS.md is still 144 lines against the 110 limit (audit L3; `assign_result_167_1.json:21` note 2).
+   - **What the audit does not cover:**
+     - script edits that turn gates into rows, and the sequence of pre-run refusals in `prerun_records.jsonl`;
+     - Error List reuse failing on a renamed file;
+     - the retrospective-due check accepting an old file;
+     - mixing of cycle and chat work: C7's 696 files mostly come from the chat, so the counter says nothing here.
+
+5. **Ordering.** Defensible. PD404(h) says (d) first. The RBW card (167-a1-1) was dispatched first and launched at 19:13:49. The crows card (f) ran beside it, closure (e) after it (it needs the RBW result), and the tooling notes last, 19:38 to 19:46.
+
+6. **What was not reported.**
+   - **The gate demotion.** The assignment summary does not mention it (`assign_result_167_1.json:21`). It appears only in the card's facts file and its open questions (`result_167-a1-1.json:24`).
+   - **The redundant GUI read.** The 579 s re-read appears only in the runner log.
+   - **Cycle 166's skipped retrospective.** The runner logged `RETRO-DUE | cycle 166 | due and archived in the cycle (2026-10-10-retrospective-cycle165.md)` (`cycle_runner_main_20261012_1719.log:11`).
+     - The named file is cycle 165's retrospective, started 2026-10-10 17:55 (`retro.log:7418`). No `--cycle 166` run exists; the next run is `retro.log:7539`, for cycle 167.
+     - The likely cause: `retro_files_in_window` (`cycle_runner.py:333`) uses `min(ctime, mtime)`, and the cycle-166 disposition edit probably rewrote the file. This is unverified. The test is to stat that file's creation time.
+     - This is a third device failure with zero minutes lost, ranked below the two above.
+
+7. **Judgement inside a material session.** Card 167-a1-1 changed the card's gate set to get past a launch gate (`facts.md:33`; `prerun_records.jsonl:1151`→`:1153`), and renamed an operation label to get past X5 (`facts.md:32`). Both are design calls that belonged to the judgement session. They were asked after the fact (`result_167-a1-1.json:24`), not before. Cards 167-a1-3 and 167-a1-5 behaved correctly: 167-a1-3 classified rows mechanically by PD404(c), and 167-a1-5 asked rather than decided (`assign_result_167_1.json:21`).
+
+## DEVICE EFFECT
+
+**Failed in the window:**
+- **The launch gate's unverified-gate refusal** (2026-10-02 10:10, which the 2026-10-10 dry-count decision builds on). It fired and was worked around (fault 2).
+
+**Failed in the window, but not on the extracted list:**
+- **The Error List reuse** (`errorlist_check.py:173`, which came from retrospective-cycle80's device decision). It never fired (fault 1). That it is missing from the list is itself a gap in the extraction.
+- **The runner's retrospective fallback** (`retro_fallback`). It accepted a retrospective from before the window (finding 6).
+
+**Worked:**
+- **bgrun's inner-failure scan** forced rc=1 when the process said 0 (`prep_c167_a1_3_explore.log:72`).
+- **The undisposed-retrospective check** fired at cycle 166 (`cycle_runner_main_20261012_1719.log:6-7`), and the disposition was written (`archive/peer/2026-10-10-retrospective-cycle165.md:506`).
+- **The gates_due rule** was answered in the purpose (`assign_167_1.json:31`).
+- **bgrun_reap** ran, and the motor gates were OK (`cycle_runner_main_20261012_1719.log:14-16,24`).
+- **The X10 memory prediction** was 677.5 MB, under the 680 limit, against a measured peak of 610.5 (`facts.md:28`).
+- **Cost parsing:** C4c's $60.52 equals the sum of the four logged costs.
+
+**Not exercised in the window:** no `tools/recipes` launch, no peer review, no stage replay. That leaves the stop-record, prior-art, guard_cycle, stagexec/stagesim and confirm-bait devices untested.
+
+VIOLATION: device-failed | loss_min=10 | loss_usd=? | evidence=tools/bench/cycle_runner_main_20261012_1719.log:22
+VIOLATION: device-failed | loss_min=1 | loss_usd=? | evidence=tools/hooks/material_marker.log:4394
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle167","verdict":"refuted","alternative":"The cycle met its purpose (11/11, 68 min, $26.48) and neither fault was costly; this is refuted only because two devices failed: Error List reuse keyed by file name (10 min) and a launch-gate refusal worked around by turning gates into rows (1 min).","discriminating_test":"Call errorlist_check.find_reusable on D1_ring_p5 at md5 75773b0d: it returns 'no saved read' although the p5s02e read is complete at that md5. Replay rbw.py sha 0bf608c2 against the launch gate: refused; sha 89c56b7f passes only because A0/R1 became rows.","violations":[{"slug":"device-failed","loss_min":10,"loss_usd":"?","evidence":"tools/bench/cycle_runner_main_20261012_1719.log:22"},{"slug":"device-failed","loss_min":1,"loss_usd":"?","evidence":"tools/hooks/material_marker.log:4394"}],"sources":["tools/bench/errorlist_check_cycle167.log:85","tools/errorlist_check.py:186","tools/bench/prerun_records.jsonl:1153","tools/bench/diag_c167_a1_1_facts.md:33","tools/bench/cycle_runner_main_20261012_1719.log:11"],"note":"Window also holds cycle 166 and ~47 h of chat; cycle 166 got no retrospective (the runner accepted cycle 165's file, cycle_runner_main:11). Before P6-1, measure offline which Build Array (#2626 or #11261) the one remaining Error List item is."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle167.md
+BGRUN END rc=0 after 478s

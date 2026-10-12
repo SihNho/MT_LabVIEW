@@ -247,7 +247,7 @@ for stg in ("p5s01a", "p5s01b", "p5s02a", "p5s02b", "p5s02c", "p5s02d"):
         stg, d1.get("status", d1.get("exc")), len(d1.get("rows") or []), hashlib.md5(j0.encode()).hexdigest()[:8],
         hashlib.md5(j1.encode()).hexdigest()[:8]), j0 == j1, (str(d0.get("first_fail", d0.get("exc")))[:200], str(d1.get("first_fail", d1.get("exc")))[:200]))
 
-PINS = {GP: "2a5fa0c4", os.path.join(ROOT, "tools", "stagesim.py"): "95a162ba", os.path.join(ROOT, "tools", "stagekit.py"): "dd57c1ca"}
+PINS = {GP: "2a5fa0c4", os.path.join(ROOT, "tools", "stagesim.py"): "95a162ba", os.path.join(ROOT, "tools", "stagekit.py"): "22967183"}
 got = dict((os.path.basename(p), md5(p)[:8]) for p in PINS)
 gate("P pins unchanged", all(md5(p).startswith(v) for p, v in PINS.items()), got)
 print("FACT md5 stagexec {0} (pre {2}), r_in {1}".format(md5(os.path.join(ROOT, "tools", "stagexec.py")), md5(RIN), PRE_PIN), flush=True)

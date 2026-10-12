@@ -26,8 +26,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 BENCH = os.path.join(ROOT, "tools", "bench")
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 J = lambda *p: json.load(open(os.path.join(*p), encoding="utf-8"))               # noqa: E731
-PINS = {"tools/stagexec.py": "1bab9cf9", "tools/gscript.py": "1a80236e", "tools/elrule.py": "a5ee7d5c", "tools/bench/memory_model.json": "88eeb037",
-        "tools/bench/plan_ring_p4_s06v18.json": "cfbd9823", "tools/bench/plan_ring_p4_s06v18_pred.json": "c4a6a35a",
+PINS = {"tools/stagexec.py": "1d5309f4", "tools/gscript.py": "1a80236e", "tools/elrule.py": "a5ee7d5c", "tools/bench/memory_model.json": "d12bcd3b",
+        "tools/bench/plan_ring_p4_s06v18.json": "cfbd9823", "tools/bench/plan_ring_p4_s06v18_pred.json": "c1bd6b3e",
         "tools/bench/plan_ring_p4_s06v18_licence.json": "7f70bbf9", "tools/bench/plan_ring_p4_s06v18_in.json": "db72d8af",
         "tools/recipes/stage_d1_ring_p4_s06v18.py": "d947df5d", "tools/recipes/stage_d1_ring_p4_s06v18_scratch.py": "31009bfc"}
 FIX = os.path.join(BENCH, "fixtures", "t6_s06_a1_8_end.json")
