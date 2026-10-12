@@ -1,0 +1,30 @@
+{
+ "schema": "result/1",
+ "id": "chat-X10b",
+ "status": "BLOCKED",
+ "gates": {"pass": 7, "fail": 4},
+ "first_fail": "step 0.2 live: codex exec in gpt_cell left <cell>/.matbench/calls.jsonl EMPTY (0 lines) and the main-tree write RAN - the cell hook did not run",
+ "blocked_by": {"device": "codex-hook-trust", "message": "step0-live FAIL 0/4 'calls.jsonl empty - the hook did not run'; GPT: '2 ran apply_patch completed without reporting a block'. config.toml has no hooks.state for gpt_cell\\.codex\\hooks.json; only matbench.config.toml (profile) is trusted."},
+ "artefacts": [
+  {"path": "tools/bench/matbench/codex_arm.py", "md5": "fe0abd5fc8b548506d7616adefb20a00"},
+  {"path": "tools/bench/matbench/gpt_cell_hooks.json", "md5": "649fae9009c7d32221901bbebfa2e767"},
+  {"path": "tools/bench/matbench/x10/step0_offline.json", "md5": "4cb60ee36b4ddf473ea3417c5e975222"},
+  {"path": "tools/bench/matbench/x10/step0_live.json", "md5": "3c013720a2ce3ffa939f463d5bea7b4c"}
+ ],
+ "facts": [
+  "step0-offline 6/6 as predicted (x10/step0_offline.log): shell read, read_file, in-cell patch ALLOW; main-tree patch, sentinel_lv.py, unknown tool DENY",
+  "offline sentinel deny came from guardcore->guard_bash 'treated as a JUDGEMENT session... never runs tools/bench/*.py' (step0_offline.log:6): GPT tasks would hit this",
+  "step0-live (x10/step0_live.log, 21 s): hooks.json sha256 3B8CADE3690E98E8... installed, calls.jsonl 0 lines, x10b_live_probe.txt WRITTEN in main tree",
+  "codex events x10/step0_live_codex.jsonl:5,7: shell exit 0 and file_change status completed - no hook deny anywhere in the run",
+  "~/.codex/config.toml:94-104 hooks.state lists only V6_ParallelLoop\\.codex\\hooks.json; no gpt_cell entry (grep rc 1)",
+  "~/.codex/matbench.config.toml (12:12): same hook command, trusted_hash d64742ed..., header 'Select explicitly with codex --profile matbench'",
+  "the probe the unguarded GPT wrote ('probe') was moved to tools/bench/matbench/x10/x10b_live_probe_written_unguarded.txt",
+  "no task cell started (Claude or GPT); matbench.py unchanged; LabVIEW 0 processes; GPT 5h limit 15% / weekly 3% during the probe (rollout)",
+  "codex_arm.py selftest 8/0 (x10/codex_arm_selftest.log): cell checkout, hooks rewrite+sha check, AGENTS.md, exec wrapper, event+rollout parse ready"
+ ],
+ "open": [
+  "Launch the GPT arm with `--profile matbench` (the hook source the user actually trusted 12:12), or should the user trust the cell's .codex/hooks.json path via /hooks inside the cell? Either needs a fresh step 0."
+ ],
+ "cost": {"usd": null, "minutes": 8, "labview_runs": 0},
+ "note": "Stopped at step 0 per brief: the hook did not run in the cell. One codex exec spent (70k input tokens). The cell's hooks.json bytes were never changed (re-written byte-identical, sha checked)."
+}

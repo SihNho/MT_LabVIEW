@@ -1,0 +1,18 @@
+{
+ "schema": "task/1", "id": "chat-X10b", "kind": "measure",
+ "goal": "GPT vs Claude on matbench T1,T2,T3,T5,T6 with the GPT arm in the fixed trusted cell (hook proven to run first)",
+ "why": "User 2026-10-12 '훅 설정 했음' after trusting the GPT cell hook. Detail: brief_chat-X10b.md (+ brief_chat-X10.md)",
+ "inputs": [{"path": "tools/bench/cards/brief_chat-X10b.md", "md5": "7cc74a83ccfcfee11e39e4887238fbf7"},
+            {"path": "tools/bench/cards/brief_chat-X10.md", "md5": "5476480c320ae75034d2d0b774e00fcd"}],
+ "pass": [
+  "step 0: offline hook outputs quoted; live codex exec in the cell logged to calls.jsonl and the main-tree write denied",
+  "per task: cell checked out, hooks.json sha256 prefix 3B8CADE3690E98E8 checked, AGENTS.md = CLAUDE.md + material.md of that commit",
+  "every task x arm run (x2 if time) under bgrun <= 20 min; blind A/B scoring with recorded mapping",
+  "report returned as text; driver changes, raw outputs, logs committed under tools/bench/matbench/"
+ ],
+ "outputs": ["tools/bench/matbench/"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+  "write": ["tools/bench/matbench/**"], "status_edit": false, "git_commit": true, "peers": []},
+ "budget": {"failures": 2, "minutes": 300}, "unblocks": "M3",
+ "rules": ["never change the cell's .codex/hooks.json bytes; never pass a hook-trust bypass", "if the hook does not run in the cell: STOP BLOCKED, no unguarded GPT run", "hook refusals are data: quote them, never work around", "report as text; the chat writes report_x10.md"]
+}
