@@ -1,0 +1,2 @@
+# The user's standing notes for the lean runner's REVIEW and PLAN steps (written by the chat on the user's word)
+- 사용자 2026-10-13 23:1x ("넣어주자"): 큰 P6 VI 안을 직접 고치지 말 것 (노드 이동/삽입은 상관없는 배선을 다시 이어 ExecState 0 을 반복해서 만듦 - p6fix 빌드 1~3차, P6-3 `lean_report_p63.md:110-112`). P6-3 에서 통한 방식처럼 작은 subVI 사본을 만들고 그 호출 대상만 바꾸는 방식(callee swap)으로 갈 것. Do not edit inside the big P6 VI; use the P6-3 route: copy a small subVI and swap only the call's callee.

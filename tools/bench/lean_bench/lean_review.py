@@ -117,6 +117,16 @@ def queue_listing(lb):
     return out or ["(empty)"]
 
 
+def user_notes(lb):
+    """The user's standing notes from the chat (user_notes.md, one per line, written by the chat on the user's word);
+    they go into every review topic and plan prompt. -> list of lines."""
+    try:
+        return [t.strip() for t in open(os.path.join(lb, "user_notes.md"), encoding="utf-8").read().splitlines()
+                if t.strip() and not t.startswith("#")]
+    except OSError:
+        return []
+
+
 def question(lb, tag, text):
     with open(os.path.join(lb, "questions_for_user.md"), "a", encoding="utf-8") as f:
         f.write("- %s | `%s` | %s\n" % (time.strftime("%Y-%m-%d %H:%M"), tag, text))
@@ -154,6 +164,9 @@ def review_topic(tag, task, rc, own, lb):
     parts += ["", "## 세션 로그의 마지막 줄들"]
     parts += _tail(os.path.join(lb, "session_%s.log" % tag), 8)
     parts += ["", "## 지금 큐에 있는 작업 (실행 순서)"] + queue_listing(lb)
+    notes = user_notes(lb)
+    if notes:
+        parts += ["", "## 사용자 의견 (채팅에서, 사용자 승인 - 방향을 정할 때 따를 것)"] + notes
     parts += ["", REVIEW_RULE, "", REVIEW_FORMAT, ""]
     return "\n".join(parts)
 
@@ -181,7 +194,9 @@ def plan_prompt(tag, task, verdict, k, given_up, review_md, lb):
         "`../V6_ParallelLoop/docs/d1/ring-p6b.md` (PD414) and `../V6_ParallelLoop/docs/user-rules.md`; "
         "`tools/bench/lean_bench/questions_for_user.md`." % (_rel(task), _rel(review_md), verdict),
         "Queue now, in run order:",
-    ] + ["- " + x for x in queue_listing(lb)] + [
+    ] + ["- " + x for x in queue_listing(lb)] + (
+        ["", "The user's notes from the chat (follow them in the task you write):"] + ["- " + x for x in user_notes(lb)]
+        if user_notes(lb) else []) + [
         "",
         what,
         "",
