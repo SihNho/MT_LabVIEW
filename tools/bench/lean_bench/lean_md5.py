@@ -13,7 +13,8 @@ FILES = [os.path.join(CD, p) for p in (
     "RingPickSlot_v0.vi", "RingSeqCheck_v0.vi",
     r"replay\D1_s1_replay_20260925_075422.vi", r"replay\replay_get_buff_image.vi", r"replay\replay_get_image_cal.vi",
     r"replay\replay_imaqdx_get_image_buf.vi", r"replay\replay_imaqdx_get_image_buf_paced60.vi",
-    r"replay\replay_get_buff_image_paced60.vi")] + [
+    r"replay\replay_get_buff_image_paced60.vi",
+    r"bench\lean\D1_ring_p6_replay_20261013_135743.vi")] + [                     # P6-3 (2026-10-13): the P6 replay copy, read-only input
     os.path.join(os.path.dirname(ROOT), "Min_Track N beads V6_ParallelLoop.vi"),
     r"G:\m8_replay_frames\frames_manifest.json",
     os.path.join(BENCH, "p6_replay_frames_manifest.txt"), os.path.join(BENCH, "motor_limits.json"),

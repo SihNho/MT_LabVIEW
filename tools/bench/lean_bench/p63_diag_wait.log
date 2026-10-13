@@ -1,0 +1,48 @@
+BGRUN START 2026-10-13 16:11:20 limit 30.0 min: py -u tools/bench/lean_bench/p63_diag_wait.py
+BGRUN PID 25076
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 354 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 09a23608c223a9a31ea6ca3638c1241c  got 09a23608c223a9a31ea6ca3638c1241c
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33963
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  scratch_p63_diag_wait_20261013_161121.vi
+  FACT  ExecState [after open] scratch_p63_diag_wait_20261013_161121.vi = 1
+  FACT  ExecState [open] scratch_p63_diag_wait_20261013_161121.vi = 1
+  FACT  D0 ExecState 1
+  FACT  D1 read twice, no edit: equal True (+0 -0)
+  OBSERVED uid 31350 -> owner 'Diagram' uid 23166 | self 'Function'#31350 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  ExecState [wait now] scratch_p63_diag_wait_20261013_161121.vi = 0
+  FACT  D2 Wait #31350; ExecState now 0
+  FACT  ExecState [wait +5] scratch_p63_diag_wait_20261013_161121.vi = 0
+  FACT  D2 ExecState +5 s 0
+  FACT  ExecState [wait +20] scratch_p63_diag_wait_20261013_161121.vi = 0
+  FACT  D2 ExecState +20 s 0
+  FACT  D2 edge diff after Wait only: +[(20255, 'New Image', 20930, 'New Image'), (22574, '', 22681, 'y'), (22634, 'Cosine bandpass for Hilbert', 22805, 'Cosine bandpass for Hilbert'), (25723, '2-sided cal image', 26446, 'cal image array')] -[(20143, 'New Image', 20143, 'New Image'), (20143, 'New Image', 20930, 'New Image'), (20436, 'New Image', 20143, 'New Image'), (22448, 'Cosine bandpass for Hilbert', 22569, 'Cosine bandpass for Hilbert'), (22532, '', 22554, ''), (22554, '', 22681, 'y'), (22569, 'Cosine bandpass for Hilbert', 22805, 'Cosine bandpass for Hilbert'), (25667, '2-sided cal image', 25667, '2-sided cal image'), (25667, '2-sided cal image', 26446, 'cal image array'), (25675, 'Low bandpass', 25675, 'Low bandpass'), (25683, 'High bandpass', 25683, 'High bandpass'), (25691, 'forget radius', 25691, 'forget radius'), (25865, 'Low bandpass', 25675, 'Low bandpass'), (25869, 'High bandpass', 25683, 'High bandpass'), (25873, 'forget radius', 25691, 'forget radius'), (25877, '2-sided cal image', 25667, '2-sided cal image')]
+  FACT  EL n_reported None errors ["KeyError: 'gui_acts_outer'"]
+
+---------- [H] HYGIENE
+  FACT  close_panel(scratch_p63_diag_wait_20261013_161121.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 9, 'closed': 9, 'live': 0, 'cached_op_vis': 4}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 9, 'closed': 9, 'live': 0, 'cached_op_vis': 4}
+  FACT  LabVIEW handle count AFTER the work: 54636
+  PASS  H4 scratch deleted: scratch_p63_diag_wait_20261013_161121.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\bench\lean\scratch_p63_diag_wait_20261013_161121.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 09a23608c223a9a31ea6ca3638c1241c / after 09a23608c223a9a31ea6ca3638c1241c
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33952
+  PASS  H9 LabVIEW gone
+
+====================================================================================================
+=== GATES: 9 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_lean\tools\bench\lean_bench\p63_diag_wait.json   elapsed 218.6 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":9,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 220s

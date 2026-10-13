@@ -1,0 +1,75 @@
+BGRUN START 2026-10-13 16:15:13 limit 55.0 min: py -u tools/bench/lean_bench/p63_build.py
+BGRUN PID 1884
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 354 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 09a23608c223a9a31ea6ca3638c1241c  got 09a23608c223a9a31ea6ca3638c1241c
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE P6 replay copy   09a23608c223a9a31ea6ca3638c1241c  (want 09a23608c223a9a31ea6ca3638c1241c) OK
+  FACT  PIN BEFORE paced get-buff   59ec66b61f3518b049a3c532a8e65482  (want 59ec66b61f3518b049a3c532a8e65482) OK
+  FACT  PIN BEFORE paced buf stand-in e40ec86722948812d155d6e4047a3ef9  (want e40ec86722948812d155d6e4047a3ef9) OK
+  FACT  PIN BEFORE P6 bed           c2d9c13cb40c0a5cab7433896d1df157  (want c2d9c13cb40c0a5cab7433896d1df157) OK
+  FACT  PIN BEFORE S1 replay copy   126f84975fca9f6124432a7e4decd0c8  (want 126f84975fca9f6124432a7e4decd0c8) OK
+  FACT  PIN BEFORE RingSeqCheck_v0  0295a8d349a3b61151cd87797119b9b1  (want 0295a8d349a3b61151cd87797119b9b1) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33957
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  D1_ring_p6_replay_w100_20261013_161514.vi
+  FACT  ExecState [after open] D1_ring_p6_replay_w100_20261013_161514.vi = 1
+
+---------- [L] W=100 subVI RingSeqCheck_w100_20261013_161514.vi
+  PASS  L0 W100 RingSeqCheck copy md5 == 0295a8d3
+  FACT  ExecState [rsc w100 before] RingSeqCheck_w100_20261013_161514.vi = 1
+  PASS  L1 W100 subVI ExecState 1 before
+  PASS  L2 W100 one top-level diagram uid  [3]
+  OBSERVED uid 251 -> owner 'TopLevelDiagram' uid 3 | self 'Function'#251 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  PASS  L3 W100 the Wait has one unwired input  [{'term_uid': 271, 'term_name': 'millisecond timer value', 'is_source': True, 'wire_uid': 0, 'owner_uid': 251, 'owner_class': 'Function', 'frame_diagram': 3, 'term_class': 'ParameterTerminal'}, {'term_uid': 274, 'term_name': 'milliseconds to wait', 'is_source': False, 'wire_uid': 0, 'owner_uid': 251, 'owner_class': 'Function', 'frame_diagram': 3, 'term_class': 'ParameterTerminal'}]
+  OBSERVED uid 251 -> owner 'TopLevelDiagram' uid 3 | self 'Function'#251 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  OBSERVED uid 251 -> owner 'TopLevelDiagram' uid 3 | self 'Function'#251 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+STOP {"schema":"stop-line/1","kind":"exception","message":"ValueError: #251 is owned by TopLevelDiagram #3, not by a Diagram","t":"2026-10-13 16:16:12","exc":"ValueError"}
+
+OBSERVED EXC #251 is owned by TopLevelDiagram #3, not by a Diagram
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_lean\tools\stagekit.py", line 1694, in run
+    fn(stage)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_lean\tools\bench\lean_bench\p63_build.py", line 256, in body
+    R["copies"]["w%d" % W_HI] = ring_wait(s, W_HI); s.dump()                            # noqa: E702
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_lean\tools\bench\lean_bench\p63_build.py", line 73, in ring_wait
+    rec = g.create_control_nested(sub, wu, ti, value=w)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_lean\tools\fncontract.py", line 312, in wrapper
+    res = f(*a, **k)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_lean\tools\gscript.py", line 4356, in create_control_nested
+    row = _node_term_row(target, node_uid, terminal_index)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_lean\tools\gscript.py", line 4157, in _node_term_row
+    raise ValueError("#%s is owned by %s #%s, not by a Diagram" % (node_uid, c, o))
+ValueError: #251 is owned by TopLevelDiagram #3, not by a Diagram
+
+  FAIL  the run completed without an unhandled exception  #251 is owned by TopLevelDiagram #3, not by a Diagram
+
+---------- [H] HYGIENE
+  FACT  gscript ref_counts: {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 4}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 4}
+  FACT  LabVIEW handle count AFTER the work: 40910
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 09a23608c223a9a31ea6ca3638c1241c / after 09a23608c223a9a31ea6ca3638c1241c
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  P6 replay copy   09a23608c223a9a31ea6ca3638c1241c  (want 09a23608c223a9a31ea6ca3638c1241c) OK
+  FACT  PIN AFTER  paced get-buff   59ec66b61f3518b049a3c532a8e65482  (want 59ec66b61f3518b049a3c532a8e65482) OK
+  FACT  PIN AFTER  paced buf stand-in e40ec86722948812d155d6e4047a3ef9  (want e40ec86722948812d155d6e4047a3ef9) OK
+  FACT  PIN AFTER  P6 bed           c2d9c13cb40c0a5cab7433896d1df157  (want c2d9c13cb40c0a5cab7433896d1df157) OK
+  FACT  PIN AFTER  S1 replay copy   126f84975fca9f6124432a7e4decd0c8  (want 126f84975fca9f6124432a7e4decd0c8) OK
+  FACT  PIN AFTER  RingSeqCheck_v0  0295a8d349a3b61151cd87797119b9b1  (want 0295a8d349a3b61151cd87797119b9b1) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 34359
+  PASS  H9 LabVIEW gone
+
+====================================================================================================
+=== GATES: 12 pass / 1 fail; failing: the run completed without an unhandled exception
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_lean\tools\bench\lean_bench\p63_build.json   elapsed 64.6 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":12,"fail":1},"first_fail":"ValueError: #251 is owned by TopLevelDiagram #3, not by a Diagram","artefacts":[]}
+BGRUN END rc=1 after 66s
