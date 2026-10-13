@@ -48,6 +48,8 @@ REVIEW_RULE = ("요약을 믿지 말고 원문을 읽을 것: 보고서의 숫�
                "로그)을 직접 열어 받아들임 숫자를 다시 계산하세요. 주장마다 file:line 을 붙이세요. 이 토론은 lean 작업 큐가 매 사이클 "
                "실행 뒤에 자동으로 연 리뷰입니다. 읽기만 하고 아무것도 실행하거나 고치지 마세요(LabVIEW, 모터, 파일 수정 모두 금지). "
                "사용자가 채팅으로 끼어들 수 있습니다.")
+BASE_NOTE = ("경로 기준: 아래의 모든 상대 경로는 lean worktree `%s` (branch bench/lean-20261013) 기준입니다. GPT 작업 폴더 "
+             "V6_debate(master)에는 lean_bench 의 보고서와 원본 출력이 없으니 이 절대 경로로 여세요." % ROOT)
 REVIEW_FORMAT = ("결론 형식: STATE 의 agreed 첫 줄은 반드시 `VERDICT: PASS` 또는 `VERDICT: FAIL` 하나. PASS 는 (1) 원본에서 다시 "
                  "계산한 받아들임 숫자가 작업의 기준을 모두 만족하고 (2) 안전 기록(사이클 시작/끝 모터 리밋 읽기 값, LabVIEW 종료, "
                  "입력 md5 변화 없음, 원본 VI 미수정)이 모두 맞을 때만. 나머지 agreed 줄: 다음 단계의 방향 - FAIL 이면 원인과 같은 "
@@ -136,6 +138,8 @@ def review_topic(tag, task, rc, own, lb):
     """The review discussion's topic; first line = the Google doc title. Facts and paths only."""
     parts = [
         "lean 사이클 리뷰: %s (%s)" % (tag, time.strftime("%Y-%m-%d %H:%M")),
+        "",
+        BASE_NOTE,
         "",
         "lean 작업 큐가 작업 `%s` 를 실행했습니다 (launch_lean.ps1 rc=%s, 세션이 스스로 쓴 결과: %s). 이 리뷰가 사이클의 "
         "판정을 내리고, 그 다음에 플랜 세션이 다음 작업을 씁니다." % (tag, rc, own),
@@ -430,6 +434,8 @@ def eval_topic(lb, start, n):
               if os.path.getmtime(p) >= t0 - 1]
     parts = [
         "lean 러너 평가: 실행 → 리뷰(토론) → 플랜, 사이클 %d개 (%s 시작)" % (n, start),
+        "",
+        BASE_NOTE,
         "",
         "사용자 원문 (2026-10-13): \"한 5 사이클정도 돌려보고 평가 토론 한번 해보도록 하자\". 이 러너의 설계도 사용자 원문: "
         "\"실행 에이전트 --> 리뷰 에이전트 (토론) --> 플랜 방법으로 한 싸이클을 잡으면\", \"실패한 사이클은 멈춰버리지 말고 "
