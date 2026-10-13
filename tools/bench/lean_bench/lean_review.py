@@ -244,6 +244,11 @@ def cycle(tag, task, rc, lb, run_discussion, run_plan, log):
         log("REVIEW | %s | %s | NOT-STARTED - no review, no plan" % (time.strftime("%Y-%m-%d %H:%M:%S"), tag))
         return 0, out
     res = run_discussion(review_topic(tag, task, rc, own, lb))
+    if (res.get("summary") or {}).get("ended") == "error" or not res.get("ok"):
+        # cycle 3 (2026-10-14 03:24): a Google Docs SSLEOFError ended the review after round 1 - one retry
+        log("REVIEW-RETRY | %s | %s | the discussion ended in an error (%s) - one retry"
+            % (time.strftime("%Y-%m-%d %H:%M:%S"), tag, (res.get("summary") or {}).get("error") or res.get("why")))
+        res = run_discussion(review_topic(tag, task, rc, own, lb))
     s = res.get("summary") or {}
     out["doc"] = res.get("doc") or "-"
     verdict = None
@@ -370,6 +375,16 @@ def selftest():
         k0 = len(seen)
         rc, out = cycle("c", "t.md", 0, lb, disc(["VERDICT: PASS"]), plan(), print)
         check("3 NOT-STARTED -> no review, no plan", out["lean_review"] == "SKIP" and len(seen) == k0)
+        calls = []
+
+        def flaky(t):
+            calls.append(t)
+            if len(calls) == 1:
+                return {"ok": False, "why": "SSLEOFError", "summary": {"rounds": 1, "ended": "error", "error": "SSL"}}
+            return disc(["VERDICT: PASS"])(t)
+        mk("g", "PASS")
+        rc, out = cycle("g", "t.md", 0, lb, flaky, plan(), print)
+        check("4b discussion error -> one retry, verdict from the retry", len(calls) == 2 and out["cycle"] == "PASS")
         mk("d", "PASS")
         rc, out = cycle("d", "t.md", 0, lb, disc(["looks fine"]), plan(), print)
         check("4 no verdict -> PASS-UNREVIEWED + question",
