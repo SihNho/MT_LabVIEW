@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: b607b493-a66f-4081-b122-a7a95d2c2a67
-  modified: 2026-10-13T11:17:45.936Z
+  modified: 2026-10-13T12:08:55.672Z
 ---
 
 2026-10-13, after discussion lean-rules-01 and two lean runs (P6-2 PASS 64 min $6.64; P6-3 gap+load PASS 102 min $17.52,
@@ -18,6 +18,9 @@ which also found P6's column-0 one-ring-lap lag the old acceptance missed):
   predictions before the run and the chat's own re-check of the numbers from raw files before adopting a result.
 - User: "과부하가 걸리더라도 버퍼 넘버의 정확성이 데이터의 정확성을 결정하는듯" - every saved row's buffer number must be its
   own frame's (U7 time axis, U9 mismatched pair = corruption), at normal load, gapped source and overload.
+- User check every 10 cycles ("4번은 10 사이클로 하자"). The auto-mode classifier refused the chat writing/starting an
+  autonomous lean runner even with stop points between cycles ([Create Unsafe Agents]) - never route around it; the user
+  starts the queue or changes the permission mode. Detail: docs/lean-operation-proposal.md, PD414 in docs/d1/ring-p6b.md.
 - GitHub: upload once a day (scheduled task github-daily-push, tools/git_push.py) and on explicit request; never per cycle.
 
 **Why:** the gates cost more than they prevented once the tools existed; a single session kept context and found a real defect.
