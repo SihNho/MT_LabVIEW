@@ -7,8 +7,11 @@ The rule files in docs/rules/ and the plan in docs/d1/ are REFERENCE (facts, pas
 
 ## Kept - these are hard (hooks enforce 1, 3, 4, 6)
 1. **Motors / rig (rule 1b).** Rig state = 조립 (assembled, not in use). Every motion command ONLY through
-   `py tools/motor_gate.py`. Start your LabVIEW work with `py tools/motor_gate.py --session start` (limits SET + read
-   back) and end it with `--session end` (RELEASED + read back), both quoted in your report. The ASI is not special.
+   `py tools/motor_gate.py`. **The queue owns the motor session** (user 2026-10-13): before your session starts it ran
+   `motor_gate --session start` (limits SET, PI reference move, read back; `tools/bench/lean_bench/motor_session_start_<tag>.log`),
+   and after you end it closes LabVIEW and runs `--session end`. You never run `--session start|end` (the hook refuses
+   it). Before any LabVIEW run, check that `tools/bench/motor_session.json` exists; if it does not, stop and report.
+   Quote the start log's last lines in your report. The ASI is not special.
    No experiment is running; if the user's STATUS says 실험중, stop at once.
 2. **Originals (rule 1).** Never modify a pre-existing .vi (the reference VI, `zz_LabView VI\background VIs\`, anything
    opened for inspection). Save only under `C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\bench\lean\`

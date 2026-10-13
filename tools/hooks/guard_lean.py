@@ -26,6 +26,7 @@ import guard_bash as GB                                                      # n
 
 VI_EXT_RE = re.compile(r"\.(vi|ctl|lvlib|lvproj)$", re.I)
 ORIGINALS_RE = re.compile(r"zz_LabView VI[\\/]+(background VIs|AAA_UNIST[\\/]+2\. Tracking[\\/]+[^\\/]+\.vi$)", re.I)
+SESSION_RE = re.compile(r"motor_gate(\.py)?\b.*--session\b", re.I)   # the queue owns the motor session (2026-10-13)
 BYPASS_RE = re.compile(r"\b(PEER_GUARD_OFF|CYCLE_GUARD_OFF|LV_GUARD_OFF|MATERIAL_GUARD_OFF)\b")
 
 
@@ -43,6 +44,11 @@ def decide(data):
     cmd = ti.get("command", "") or ""
     if BYPASS_RE.search(cmd):
         return 2, "BLOCKED by guard_lean: a guard-bypass env var on a command (rule 7)"
+    if SESSION_RE.search(cmd):
+        return 2, ("BLOCKED by guard_lean: the queue opens the motor session at cycle start and closes it at cycle end "
+                   "(lean_cycle_hooks.py, user 2026-10-13); a lean session never runs motor_gate --session start|end. "
+                   "The limits are already set and read back - check tools/bench/motor_session.json; if it is missing, "
+                   "stop and report.")
     if GB.motor_gate_check(cmd):                     # writes its own refusal text to stderr
         return 2, None
     if not GB.LABVIEW_RE.search(cmd) or GB.offline_scripts_only(cmd):
@@ -62,7 +68,10 @@ def _selftest():
     ok = [decide({"tool_name": "Bash", "tool_input": {"command": "git status"}})[0] == 0,
           decide(mv)[0] == 2,
           decide({"tool_name": "Write", "tool_input": {"file_path": r"C:\x\a.vi"}})[0] == 2,
-          decide({"tool_name": "Bash", "tool_input": {"command": "PEER_GUARD_OFF=1 py x.py"}})[0] == 2]
+          decide({"tool_name": "Bash", "tool_input": {"command": "PEER_GUARD_OFF=1 py x.py"}})[0] == 2,
+          decide({"tool_name": "Bash", "tool_input": {"command": "py tools/motor_gate.py --session end"}})[0] == 2,
+          decide({"tool_name": "PowerShell", "tool_input": {"command": "py tools\\motor_gate.py --session start"}})[0] == 2,
+          decide({"tool_name": "Bash", "tool_input": {"command": "cat tools/bench/motor_session.json"}})[0] == 0]
     assert all(ok), ok
     print("RESULT {\"selftest\": \"PASS\", \"cases\": %d}" % len(ok))
 
