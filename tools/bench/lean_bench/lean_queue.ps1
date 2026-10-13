@@ -27,7 +27,19 @@ $main = Join-Path (Split-Path -Parent $wt) 'V6_ParallelLoop'
 $q = Join-Path $here 'queue'; $nq = Join-Path $q 'next'; $run = Join-Path $q 'running'; $done = Join-Path $q 'done'
 New-Item -ItemType Directory -Force $q, $nq, $run, $done | Out-Null
 $log = Join-Path $here 'queue.log'
-function Say($m) { $l = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + ' | ' + $m; Add-Content -Path $log -Value $l -Encoding UTF8; Write-Output $l }
+function Say($m) {
+    # run 1 (2026-10-13/14): Add-Content lost every line after the first cycle started (the file was also open in other
+    # processes: tail -F watchers, Python appenders), so the run-limit counter read 0. Open with FileShare.ReadWrite and
+    # retry a few times; a line that still cannot be written goes to the console only.
+    $l = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + ' | ' + $m
+    for ($i = 0; $i -lt 5; $i++) {
+        try {
+            $fs = New-Object IO.FileStream($log, [IO.FileMode]::Append, [IO.FileAccess]::Write, [IO.FileShare]::ReadWrite)
+            $b = [Text.Encoding]::UTF8.GetBytes($l + "`r`n"); $fs.Write($b, 0, $b.Length); $fs.Close(); break
+        } catch { Start-Sleep -Milliseconds 200 }
+    }
+    Write-Output $l
+}
 function RigOk {
     $s = Get-Content -Path (Join-Path $main 'STATUS.md') -Encoding UTF8 -TotalCount 400
     $line = $s | Where-Object { $_ -match '^rig-state:' } | Select-Object -First 1
