@@ -4,13 +4,15 @@
 # ---
 # Lean task QUEUE runner (option b, user 2026-10-13). The USER starts this; one start = one RUN of at most -MaxTasks cycles
 # (default 10; user 2026-10-13: 10 cycles per run, the user checks after each run and starts the next). A cycle = one task
-# file through launch_lean.ps1 (one Opus session, <= 185 min, <= $60, lean hooks: motor hook, originals, LabVIEW limits).
-# Order: queue/next/*.md first (retries written by a failure discussion), then queue/*.md oldest first.
-# A FAILED cycle does not stop the run (user 2026-10-13: a failed cycle is discussed to set the direction, not stopped):
-#   - report RESULT is NOT-STARTED (its start condition was not met)  -> logged SKIP, no discussion, next task;
-#   - any other non-PASS (or rc != 0) -> lean_discuss.py: one read-only Claude-GPT discussion (<= 40 min). Agreed actions
-#     -> a retry task with the same tag in queue/next/ (runs next). No agreed action, a question only the user can answer,
-#     or a tag's third failure -> the tag is skipped and the reason goes to questions_for_user.md for the 10-cycle check.
+# file, in three steps (user 2026-10-13: execute agent -> review agent (discussion) -> plan):
+#   1. EXECUTE  launch_lean.ps1: one Opus session, <= 185 min, <= $60, lean hooks (motor hook, originals, LabVIEW limits);
+#   2. REVIEW   lean_review.py: one read-only Claude-GPT discussion (<= 40 min) re-computes the acceptance from the raw
+#               output files and checks the safety records -> VERDICT PASS/FAIL (PASS needs the session's PASS too);
+#   3. PLAN     lean_review.py: one Opus session (read + Write only, <= 25 min, <= $10) writes at most one task into
+#               queue/next/: a same-tag retry after a FAIL (max 2 failures per tag) or the plan's next step.
+# A FAILED cycle does not stop the run; what needs the user goes to questions_for_user.md for the 10-cycle check.
+# A task whose start condition is not met (RESULT NOT-STARTED) gets no review and no plan.
+# Order: queue/next/*.md first (written by the plan step), then queue/*.md oldest first.
 # Every cycle is wrapped by lean_cycle_hooks.py: START = motor limits set + PI reference move + readback (motor_gate
 # --session start); END = LabVIEW closed and verified gone, then limits released + readback (--session end). A failed
 # hook is a safety failure, not a task failure: it writes the STOP file and ends the run (no discussion).
@@ -32,17 +34,6 @@ function RigOk {
     # the assembled state is the Korean word for assembled; compared by its UTF-8 bytes so this file stays ASCII
     $assembled = [System.Text.Encoding]::UTF8.GetString([byte[]](0xEC,0xA1,0xB0,0xEB,0xA6,0xBD))
     return ($line -ne $null) -and ($line -match ('^rig-state:\s*' + $assembled))
-}
-function ResultOf($tag) {
-    # -> 'PASS', 'NOT-STARTED', or 'OTHER' (missing report / no RESULT line / FAIL / INCOMPLETE ...)
-    $rep = Join-Path $here ('lean_report_' + $tag + '.md')
-    if (-not (Test-Path $rep)) { return 'OTHER' }
-    $r = Get-Content -Path $rep -Encoding UTF8 | Where-Object { $_ -match '^\s*`?RESULT\s*\{' } | Select-Object -Last 1
-    if ($r -eq $null) { return 'OTHER' }
-    $k = '"' + [regex]::Escape($tag) + '"\s*:\s*"'
-    if ($r -match ($k + 'PASS"')) { return 'PASS' }
-    if ($r -match ($k + 'NOT-STARTED"')) { return 'NOT-STARTED' }
-    return 'OTHER'
 }
 function NextTask {
     $n = Get-ChildItem -Path $nq -Filter '*.md' -File | Sort-Object LastWriteTime | Select-Object -First 1
@@ -85,13 +76,9 @@ while ($true) {
     }
     $doneName = $tag + '_' + (Get-Date -Format 'yyyyMMdd_HHmmss') + '.md'
     Move-Item -Path $dst -Destination (Join-Path $done $doneName) -Force
-    $res = ResultOf $tag
-    Say "CYCLE $count/$MaxTasks END $tag rc=$rc result=$res"
-    if (($rc -eq 0) -and ($res -eq 'PASS')) { continue }
-    if ($res -eq 'NOT-STARTED') { Say "SKIP ${tag}: start condition not met (no discussion)"; continue }
-    if (Test-Path (Join-Path $here 'STOP')) { Say "RUN STOP: STOP file present (no discussion for $tag)"; break }
-    Say "DISCUSS START $tag (failed cycle; the run goes on after it)"
-    & py (Join-Path $here 'lean_discuss.py') --tag $tag --task ('tools/bench/lean_bench/queue/done/' + $doneName) --rc $rc
-    if ($LASTEXITCODE -eq 0) { Say "DISCUSS END ${tag}: retry queued in queue/next/$tag.md" }
-    else { Say "DISCUSS END ${tag}: skipped (reason in questions_for_user.md)" }
+    Say "CYCLE $count/$MaxTasks EXECUTE END $tag rc=$rc"
+    if (Test-Path (Join-Path $here 'STOP')) { Say "RUN STOP: STOP file present (no review for $tag)"; break }
+    # steps 2 + 3: REVIEW (read-only Claude-GPT discussion, verdict) then PLAN (one session writes the next task)
+    & py (Join-Path $here 'lean_review.py') --tag $tag --task ('tools/bench/lean_bench/queue/done/' + $doneName) --rc $rc
+    Say "CYCLE $count/$MaxTasks END $tag (review+plan rc=$LASTEXITCODE; record lean_review_$tag.md)"
 }
