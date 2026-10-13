@@ -12,6 +12,12 @@ rows -1). The original (S1) stores the row's OWN buffer number. `TransPos` / `Ro
 (P6-2's B4: trans row 0 = 0.0 vs S1 21.6852) - check it in the graph; the replay data alone cannot show it (init-segment
 trans differs between any two runs, S1 vs S1 included, because it is a hardware readback).
 
+## The acceptance that matters most (user 2026-10-13: "과부하가 걸리더라도 버퍼 넘버의 정확성이 데이터의 정확성을 결정하는듯")
+Every saved row's buffer number (column 0) must be the buffer number of the frame whose X/Y/Z are on that row - at normal
+load, with a gapped source AND under overload. Skipped frames are allowed; a row whose number is not its own frame's is
+corruption (U7: the buffer number is the time axis; U9: a mismatched pair is corruption). The same holds for any other
+per-slot value written with the row (TransPos/RotPos). This is the first PASS/FAIL item of the report, per condition.
+
 ## Do
 1. Graph facts first (offline): every per-slot value loop 1.2 reads from the ring besides the image (FrameIdx, TransPos,
    RotPos, anything else), how each is read, and whether it is ordered after the pick and before n2.
@@ -26,11 +32,13 @@ trans differs between any two runs, S1 vs S1 included, because it is a hardware 
 4. Re-run P6-2 on it (replay copy by plan 170's swaps, S1 leg of P6-2 reused as reference, motor sessions with readback,
    LabVIEW gone after each run) and compare with column 0 INCLUDED: X/Y/Z bit-identical per row, column 0 == S1's column 0
    of the matched frame, cal outside the date field, trans/rot post-init; report trans/rot init rows as facts.
-5. Also re-run the W40 load test on the fixed copy (column 0 must be the own number there too).
+5. Re-run the three P6-3 conditions on the fixed copy with the same test routes (gap wrapper; RingSeqCheck W40 / W100
+   copies): column 0 == own buffer number on EVERY row in each (gap: the gapped number 2k+1 of the row's own frame), X/Y/Z
+   bit-identical, rows strictly ordered. Report per condition: rows, own-number rows / total, lost, damaged.
 
 Do NOT edit `tools/hooks/**`, `tools/motor_gate.py`, `tools/bench/motor_limits.json` or `CLAUDE.md`. Do not commit.
 
 ## Report `tools/bench/lean_bench/lean_report_p6fix.md`
 Graph facts, design + predictions (written first), timeline, the fixed VI (path, md5, exact change), re-run numbers vs
 predictions, what failed and how you fixed it, shared scripts edited, motor readback lines, LabVIEW-gone, input md5s start vs
-end, then `RESULT {"p6fix": "PASS|FAIL|INCOMPLETE", "col0_own": "n/N", "xyz": "n/N", "w40": "...", "minutes": N}`.
+end, then `RESULT {"p6fix": "PASS|FAIL|INCOMPLETE", "col0_own": {"p62": "n/N", "gap": "n/N", "w40": "n/N", "w100": "n/N"}, "xyz": "n/N", "minutes": N}`.
