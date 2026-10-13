@@ -186,9 +186,12 @@ def plan_prompt(tag, task, verdict, k, given_up, review_md, lb):
                 "retry it. Tasks in the queue that need its PASS will end NOT-STARTED on their own. Write a task only if "
                 "the plan has a next step that does NOT depend on %s and is not queued yet." % (k, tag, tag))
     else:
-        what = ("The cycle PASSED. If the queue already holds the plan's next step, write nothing. If a step is missing "
-                "before the next queued task, or the queue is empty, write the next step of the plan with a NEW short tag "
-                "(lowercase letters/digits, not used before in queue/done).")
+        what = ("The cycle PASSED. If the queue already holds the plan's next step and the review asks no change to it, "
+                "write nothing. If a step is missing before the next queued task, or the queue is empty, write the next "
+                "step of the plan with a NEW short tag (lowercase letters/digits, not used before in queue/done).")
+    what += (" To CHANGE a task that is already queued (e.g. the review says how it must be done), write the full revised "
+             "task under the SAME file name into queue/next/ (e.g. queue/next/latest.md for queue/latest.md): it runs "
+             "first and the old queued copy is retired automatically.")
     return "\n".join([
         "Lean PLAN step of the cycle `%s`. You ONLY plan: read files and write AT MOST ONE new file, a task file under "
         "`tools/bench/lean_bench/queue/next/`. Write nothing else, run nothing, never touch LabVIEW or a motor." % tag,
@@ -278,6 +281,14 @@ def cycle(tag, task, rc, lb, run_discussion, run_plan, log):
         for p in new[1:]:
             os.replace(p, p + ".extra")
         question(lb, tag, "plan wrote %d task files; kept %s, parked the rest as .extra" % (len(new), _rel(new[0])))
+    if new:   # a revision of a queued task: retire the old queued copy so the task does not run twice
+        old = os.path.join(lb, "queue", os.path.basename(new[0]))
+        if os.path.exists(old):
+            os.makedirs(os.path.join(lb, "queue", "done"), exist_ok=True)
+            os.replace(old, os.path.join(lb, "queue", "done", "%s_superseded_%s.md"
+                                         % (os.path.splitext(os.path.basename(old))[0], time.strftime("%Y%m%d_%H%M%S"))))
+            log("PLAN-REVISED | %s | %s replaces the queued copy (retired to queue/done)"
+                % (time.strftime("%Y-%m-%d %H:%M:%S"), _rel(new[0])))
     out.update(lean_review="DONE", plan=_rel(new[0]) if new else "none (plan rc %s)" % prc)
     log("REVIEW | %s | %s | own %s | verdict %s | cycle %s | plan %s | doc %s"
         % (time.strftime("%Y-%m-%d %H:%M:%S"), tag, own, out["verdict"], effective, out["plan"], out["doc"]))
@@ -340,6 +351,15 @@ def selftest():
         check("1 own PASS + review PASS -> PASS, report kept",
               out["cycle"] == "PASS" and os.path.exists(os.path.join(lb, "lean_report_a.md")))
         check("1 plan ran with the PASS instruction", seen and "The cycle PASSED" in seen[-1])
+        os.makedirs(os.path.join(lb, "queue"), exist_ok=True)
+        open(os.path.join(lb, "queue", "later.md"), "w").write("# old\n")
+        mk("a2", "PASS")
+        rc, out = cycle("a2", "t.md", 0, lb, disc(["VERDICT: PASS", "later: subVI only"]), plan(["later.md"]), print)
+        check("1b revised queued task -> old copy retired, revision kept",
+              not os.path.exists(os.path.join(lb, "queue", "later.md"))
+              and os.path.exists(os.path.join(lb, "queue", "next", "later.md"))
+              and glob.glob(os.path.join(lb, "queue", "done", "later_superseded_*.md")))
+        os.remove(os.path.join(lb, "queue", "next", "later.md"))
         mk("b", "PASS")
         rc, out = cycle("b", "t.md", 0, lb, disc(["VERDICT: FAIL", "col 0 recomputed 2517/2518"]), plan(["b.md"]), print)
         check("2 own PASS + review FAIL -> FAIL, report kept as _fail1",
