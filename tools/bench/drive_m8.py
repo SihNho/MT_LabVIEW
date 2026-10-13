@@ -72,7 +72,8 @@ def main():
     copy = os.path.join(tempfile.gettempdir() if DRY else (os.path.dirname(src) if LEG.startswith("replay") else CD), name)
     shutil.copyfile(src, copy)
     G = {"M1 run copy md5 == source": md5(copy) == smd5 == md5(src)}
-    run_dir = os.path.join(HERE, "m8_out", "%s_%s%s" % (LEG, TS, "_dry" if DRY else ""))
+    run_root = os.environ.get("M8_RUN_ROOT") or os.path.join(HERE, "m8_out")   # lean bench: a leg may keep its run dir out of m8_out
+    run_dir = os.path.join(run_root, "%s_%s%s" % (LEG, TS, "_dry" if DRY else ""))
     for m in (v5, d4, d0):
         m.COPY, m.ORIGINAL, m.ORIGINAL_MD5, m.RUN_DIR = copy, ORIG, ORIG_MD5, run_dir
         m.SHOTS = os.path.join(HERE, "m8_shots")

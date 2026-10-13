@@ -173,7 +173,7 @@ if DRY:                                                                         
     m8_dry.stub = _stub
 T_START = time.time()
 ok = drive_m8.main()
-m8p = os.path.join(HERE, "m8_replay_s1_p%d_r%d%s.json" % (NPICK, int(float(RUN_S)), "_dry" if DRY else ""))
+m8p = os.path.join(os.environ.get("M8_OUT_DIR") or HERE, "m8_replay_s1_p%d_r%d%s.json" % (NPICK, int(float(RUN_S)), "_dry" if DRY else ""))   # drive_m8's OUTD (lean bench)
 m8 = json.load(open(m8p)) if os.path.isfile(m8p) and os.path.getmtime(m8p) >= T_START else {}
 reg, tra = None, {}
 for f in (m8.get("files") or {}):
@@ -207,7 +207,7 @@ def period_proxy(rd):
 
 FACTS["period_proxy_637"] = period_proxy(SAVED_RD if DRY else (m8.get("run_dir") or ""))
 print("[c104 leg] PROXY637 %s" % json.dumps(FACTS["period_proxy_637"]), flush=True)
-cp = os.path.join(HERE, "m8_v5_replay_s1_p%d_r%d_clicks.json" % (NPICK, int(float(RUN_S))))
+cp = os.path.join(os.environ.get("M8_OUT_DIR") or HERE, "m8_v5_replay_s1_p%d_r%d_clicks.json" % (NPICK, int(float(RUN_S))))
 if os.path.isfile(cp) and os.path.getmtime(cp) >= T_START: shutil.copyfile(cp, os.path.join(OUT, "clicks.json"))
 counts = {os.path.basename(p): max(0, len(open(p, "rb").read()) // 8 - 1) for p in sorted(glob.glob(os.path.join(OUT, "t0_site*.bin")))}
 FACTS["stamp_meta"] = {os.path.basename(p): open(p).read().split("\n") for p in glob.glob(os.path.join(OUT, "t0_meta_pid*.txt"))}
