@@ -26,5 +26,5 @@ The rule files in docs/rules/ and the plan in docs/d1/ are REFERENCE (facts, pas
 6. **Never route around a refusal** of the hooks above; never set a *_GUARD_OFF variable. Secrets only in env vars.
 
 ## Your task
-`tools/bench/lean_bench/task.md`. Write your final report to `tools/bench/lean_bench/lean_report.md` and end with one
-line `RESULT {...}`.
+The task file named in your prompt (under `tools/bench/lean_bench/`). Write the report it names and end with one line
+`RESULT {...}`.
