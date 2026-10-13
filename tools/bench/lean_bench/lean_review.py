@@ -367,8 +367,122 @@ def selftest():
             check("8 RESULT line is JSON", True)
         except ValueError:
             check("8 RESULT line is JSON", False)
+        ql = os.path.join(lb, "queue.log")
+        with open(ql, "w", encoding="utf-8-sig") as f:
+            f.write("2026-10-13 20:00:00 | RUN START (old)\n2026-10-13 20:01:00 | CYCLE 1/10 EXECUTE END a rc=0\n"
+                    "2026-10-13 22:22:10 | RUN START (worktree x, max 10 cycles)\n")
+            for i in range(1, 5):
+                f.write("2026-10-13 23:0%d:00 | CYCLE %d/10 EXECUTE END t rc=0\n" % (i, i))
+        open(os.path.join(lb, "run_limit.txt"), "w").write("5\n")
+        evs = []
+        fake_eval = lambda t: (evs.append(t), {"ok": True, "summary": {"rounds": 3, "agreed": ["keep"]}})[1]  # noqa: E731
+        check("9 run window counts only the current run", run_window(ql) == ("2026-10-13 22:22:10", 4))
+        check("9 4 of 5 cycles -> no evaluation, no STOP",
+              maybe_evaluate(lb, ql, print, fake_eval) is None and not os.path.exists(os.path.join(lb, "STOP")))
+        with open(ql, "a", encoding="utf-8") as f:
+            f.write("2026-10-13 23:09:00 | CYCLE 5/10 EXECUTE END t rc=0\n")
+        ev = maybe_evaluate(lb, ql, print, fake_eval)
+        check("10 5 of 5 -> STOP written + one evaluation discussion",
+              ev is not None and os.path.exists(os.path.join(lb, "STOP")) and len(evs) == 1
+              and "사이클 5개" in evs[0] and glob.glob(os.path.join(lb, "lean_eval_*.md")))
+        check("10 STOP present -> no second evaluation", maybe_evaluate(lb, ql, print, fake_eval) is None and len(evs) == 1)
     print("RESULT " + json.dumps({"lean_review_selftest": "PASS" if ok == n else "FAIL", "pass": ok, "fail": n - ok}))
     return 0 if ok == n else 1
+
+
+RUN_START_RE = re.compile(r"^\W*(\d{4}-\d\d-\d\d \d\d:\d\d:\d\d) \| RUN START")
+
+
+def run_window(qlog):
+    """(start time 'YYYY-mm-dd HH:MM:SS' of the current run, cycles whose EXECUTE ended in it) from queue.log."""
+    try:
+        lines = open(qlog, encoding="utf-8-sig", errors="replace").read().splitlines()
+    except OSError:
+        return None, 0
+    start, n = None, 0
+    for t in lines:
+        m = RUN_START_RE.match(t)
+        if m:
+            start, n = m.group(1), 0
+        elif " EXECUTE END " in t:
+            n += 1
+    return start, n
+
+
+def run_limit(lb):
+    """The cycle count after which a run stops for the evaluation discussion (run_limit.txt, written by the chat on the
+    user's word; user 2026-10-13 "한 5 사이클정도 돌려보고 평가 토론 한번 해보도록 하자"). None = no limit file."""
+    try:
+        return int(open(os.path.join(lb, "run_limit.txt"), encoding="utf-8").read().split()[0])
+    except (OSError, ValueError, IndexError):
+        return None
+
+
+def eval_topic(lb, start, n):
+    """The evaluation discussion's topic: the user's words and the run's files (paths only, no chat opinion -
+    docs/debate.md: equal weight, round 1 independent)."""
+    t0 = time.mktime(time.strptime(start, "%Y-%m-%d %H:%M:%S")) if start else 0
+    files = []
+    for pat in ("lean_review_*.md", "lean_report_*.md", "plan_*.log", "session_*.log", "motor_session_*.log",
+                "questions_for_user.md", "user_notes.md", "queue/done/*.md", "queue/next/*.md", "queue/*.md"):
+        files += [p for p in glob.glob(os.path.join(lb, pat)) if os.path.getmtime(p) >= t0 - 1]
+    files += [p for p in glob.glob(os.path.join(BENCH, "debate", "c0-lean-*", "summary.json"))
+              if os.path.getmtime(p) >= t0 - 1]
+    parts = [
+        "lean 러너 평가: 실행 → 리뷰(토론) → 플랜, 사이클 %d개 (%s 시작)" % (n, start),
+        "",
+        "사용자 원문 (2026-10-13): \"한 5 사이클정도 돌려보고 평가 토론 한번 해보도록 하자\". 이 러너의 설계도 사용자 원문: "
+        "\"실행 에이전트 --> 리뷰 에이전트 (토론) --> 플랜 방법으로 한 싸이클을 잡으면\", \"실패한 사이클은 멈춰버리지 말고 "
+        "토론해서 방향 잡도록\", \"모터 움직임 제한을 위한 훅은 사이클 시작 시점에 걸고, 사이클 종료 시점에 풀리도록\". "
+        "사용자는 앞서 '10 사이클마다 멈출 필요도 없겠는데?' 라고 물었습니다.",
+        "",
+        "## 평가할 것",
+        "1. 각 단계가 제 일을 했는가: 실행(작업 결과), 리뷰(원본 출력에서 숫자를 다시 계산했는가, 판정이 맞았는가), "
+        "플랜(쓴 작업이 계획 `../V6_ParallelLoop/docs/d1/ring-p6b.md` PD414 와 사용자 의견에 맞았는가).",
+        "2. 반복된 실패 유형 (예: 큰 VI 편집 후 ExecState 0) 과 리뷰/플랜이 그것을 바로잡았는지.",
+        "3. 사이클당 시간과 비용 (세션 로그의 JSON 결과, 토론 summary 의 claude_usd).",
+        "4. 안전 기록: 사이클 시작/끝 모터 리밋 읽기 값, LabVIEW 종료(queue.log 의 LABVIEW-CLOSE / CYCLE-HOOK), 원본 VI 미수정.",
+        "5. 권고: 계속 / 줄이거나 바꿈 / 판별 실험 - 그리고 사람의 확인 주기(5 또는 10 사이클마다 멈춤)를 없애도 되는가.",
+        "",
+        "## 원문 (요약 금지, 직접 열 것)",
+        "- 큐 로그: `%s`" % _rel(os.path.join(lb, "queue.log")),
+        "- 큐 스크립트와 단계 스크립트: `tools/bench/lean_bench/lean_queue.ps1`, `lean_review.py`, `lean_cycle_hooks.py`, "
+        "`launch_lean.ps1`; lean 규칙 `CLAUDE.md`",
+    ] + ["- `%s`" % _rel(p) for p in sorted(set(files))] + [
+        "",
+        REVIEW_RULE.replace("매 사이클 실행 뒤에 자동으로 연 리뷰", "정해진 사이클 수를 마친 뒤 자동으로 연 평가"),
+        "",
+        "결론 형식: 계속 / 줄이거나 바꿈 / 판별 실험. STATE 의 agreed 에는 러너 구성에 대한 구체적 변경이나 유지 결정을 한 "
+        "줄씩, user_needed 에는 사용자가 정할 질문. 각 합의가 누구의 제안에서 나왔는지 적을 것. 이 결론은 채팅이 사용자에게 "
+        "보고하고, 적용은 사용자가 정합니다.",
+        "",
+    ]
+    return "\n".join(parts)
+
+
+def maybe_evaluate(lb, qlog, log, run_discussion_fn):
+    """After a cycle: when the run has reached run_limit.txt cycles, write STOP (the queue ends the run at its next loop
+    check, BEFORE starting another cycle) and run ONE evaluation discussion. -> summary dict or None."""
+    lim = run_limit(lb)
+    start, n = run_window(qlog)
+    if lim is None or n < lim or os.path.exists(os.path.join(lb, "STOP")):
+        return None
+    with open(os.path.join(lb, "STOP"), "w", encoding="ascii") as f:
+        f.write("%s run limit %d reached (%d cycles since %s) - evaluation discussion, then the user's check\n"
+                % (time.strftime("%Y-%m-%d %H:%M:%S"), lim, n, start))
+    log("RUN-LIMIT | %s | %d cycles (limit %d) - STOP written; evaluation discussion starts"
+        % (time.strftime("%Y-%m-%d %H:%M:%S"), n, lim))
+    res = run_discussion_fn(eval_topic(lb, start, n))
+    s = res.get("summary") or {}
+    p = os.path.join(lb, "lean_eval_%s.md" % time.strftime("%Y%m%d_%H%M"))
+    with open(p, "w", encoding="utf-8") as f:
+        f.write("# Evaluation of the lean run started %s (%d cycles)\n\n- discussion: %s, rounds %s, ended %s, doc %s\n\n"
+                % (start, n, "ok" if res.get("ok") else "FAILED (%s)" % res.get("why"), s.get("rounds"),
+                   s.get("ended"), res.get("doc") or "-"))
+        for name in ("agreed", "open", "experiment", "user_needed"):
+            f.write("## %s\n" % name + "".join("- %s\n" % x for x in (s.get(name) or [])) + "\n")
+    log("EVAL | %s | doc %s | record %s" % (time.strftime("%Y-%m-%d %H:%M:%S"), res.get("doc") or "-", _rel(p)))
+    return s
 
 
 def main(argv=None):
@@ -394,6 +508,9 @@ def main(argv=None):
                                           max_rounds=a.max_rounds)
 
     code, out = cycle(a.tag, a.task, a.rc, HERE, run_discussion, lambda p: plan_session(a.tag, p, log), log)
+    ev = maybe_evaluate(HERE, qlog, log, lambda text: debate_loop.run_discussion(
+        "lean-eval", 0, text, BENCH, log, max_min=60.0, max_rounds=a.max_rounds))
+    out["evaluation"] = "none" if ev is None else "done (%s rounds)" % ev.get("rounds")
     print(result_line(out))
     return code
 
