@@ -215,12 +215,18 @@ if __name__ == "__main__":
             print(P.result_line(P.make_result(0, 1, "usage: --p6 missing", [])), flush=True)
             sys.exit(4)
         G, ts = {}, time.strftime("%Y%m%d_%H%M%S")
-        legdir = os.path.join(HERE, "t0_legs", "c170_p6_replay_%s" % ts)
+        # lean bench 2026-10-13: --out-root <dir> keeps legs, run dirs (M8_RUN_ROOT), m8 jsons (M8_OUT_DIR) and the compare out of
+        # t0_legs / m8_out; --swap-json <json> gives the P6 copy's md5 pin (default stage_replay_swap_170.json)
+        root, swj = arg("--out-root", None), arg("--swap-json", SWAP_JSON)
+        legdir = os.path.join(root, "legs") if root else os.path.join(HERE, "t0_legs", "c170_p6_replay_%s" % ts)
         os.makedirs(legdir, exist_ok=True)
-        out, repp = os.path.join(HERE, "m8b_replay_p6.json"), os.path.join(HERE, "drive_m8_replay_p6.json")
+        if root:
+            os.environ["M8_RUN_ROOT"], os.environ["M8_OUT_DIR"] = os.path.join(root, "run"), os.path.join(root, "m8json")
+        out = os.path.join(root, "m8b_replay_p6.json") if root else os.path.join(HERE, "m8b_replay_p6.json")
+        repp = os.path.join(root, "drive_m8_replay_p6.json") if root else os.path.join(HERE, "drive_m8_replay_p6.json")
         log = lambda s: print(s, flush=True)                                             # noqa: E731
-        rep = chain(p6, s1s, p6s, npk, legdir, out, G, log=log)
-        ma = pins(p6)
+        rep = chain(p6, s1s, p6s, npk, legdir, out, G, log=log, swap_json=swj)
+        ma = pins(p6, swap_json=swj)
         G["P2 pins md5 after == before"] = [ma[k][2] for k in ("S1", "P6")] == [rep["pins"][k][2] for k in ("S1", "P6")]
         G["H LabVIEW gone at end"] = not LG.lv_running()
         rep.update({"card": "170-a3-3 driver", "gates": G, "args": {"p6": p6, "s1_run_s": s1s, "p6_run_s": p6s, "picks": npk},

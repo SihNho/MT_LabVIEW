@@ -1,0 +1,72 @@
+BGRUN START 2026-10-13 16:07:58 limit 55.0 min: py -u tools/bench/lean_bench/p63_build.py
+BGRUN PID 9248
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 354 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 09a23608c223a9a31ea6ca3638c1241c  got 09a23608c223a9a31ea6ca3638c1241c
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE P6 replay copy   09a23608c223a9a31ea6ca3638c1241c  (want 09a23608c223a9a31ea6ca3638c1241c) OK
+  FACT  PIN BEFORE paced get-buff   59ec66b61f3518b049a3c532a8e65482  (want 59ec66b61f3518b049a3c532a8e65482) OK
+  FACT  PIN BEFORE paced buf stand-in e40ec86722948812d155d6e4047a3ef9  (want e40ec86722948812d155d6e4047a3ef9) OK
+  FACT  PIN BEFORE P6 bed           c2d9c13cb40c0a5cab7433896d1df157  (want c2d9c13cb40c0a5cab7433896d1df157) OK
+  FACT  PIN BEFORE S1 replay copy   126f84975fca9f6124432a7e4decd0c8  (want 126f84975fca9f6124432a7e4decd0c8) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33986
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  D1_ring_p6_replay_w100_20261013_160759.vi
+  FACT  ExecState [after open] D1_ring_p6_replay_w100_20261013_160759.vi = 1
+
+---------- [L] W=100 on D1_ring_p6_replay_w100_20261013_160759.vi
+  FACT  ExecState [w100 before] D1_ring_p6_replay_w100_20261013_160759.vi = 1
+  PASS  L0 W100 ExecState 1 before
+  FACT  W100 #5058 obj {'uid': 5058, 'class': 'SubVI', 'pos': (20354, 11788), 'owner': 'Diagram'}; d23166 obj {'uid': 23166, 'class': 'Diagram', 'pos': (15591, 5813), 'owner': 'WhileLoop'}
+  OBSERVED uid 5058 -> owner 'Diagram' uid 23166 | self 'SubVI'#5058 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 23166 -> owner 'WhileLoop' uid 10170 | self 'Diagram'#23166 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  FACT  W100 owner_of #5058 = ('Diagram', 23166); owner_of d23166 = ('WhileLoop', 10170)
+  PASS  L1 W100 tracker #5058 sits on d23166  ('Diagram', 23166)
+  OBSERVED uid 31350 -> owner 'Diagram' uid 23166 | self 'Function'#31350 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  W100 new Wait (ms) node #31350
+  FACT  W100 Wait terminals [('millisecond timer value', True, 0), ('milliseconds to wait', False, 0)]
+  PASS  L2 W100 the Wait has one input terminal, unwired  [{'term_uid': 31384, 'term_name': 'millisecond timer value', 'is_source': True, 'wire_uid': 0, 'owner_uid': 31350, 'owner_class': 'Function', 'frame_diagram': 23166, 'term_class': 'ParameterTerminal'}, {'term_uid': 31395, 'term_name': 'milliseconds to wait', 'is_source': False, 'wire_uid': 0, 'owner_uid': 31350, 'owner_class': 'Function', 'frame_diagram': 23166, 'term_class': 'ParameterTerminal'}]
+  OBSERVED uid 31350 -> owner 'Diagram' uid 23166 | self 'Function'#31350 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 31350 -> owner 'Diagram' uid 23166 | self 'Function'#31350 | 482 says 'Diagram' cast 'Diagram' |  
+  PASS  L2b W100 Wait input terminal index found  1
+  OBSERVED uid 31350 -> owner 'Diagram' uid 23166 | self 'Function'#31350 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  W100 create_control_nested {'echo': 31350, 'created_uid': 20140, 'err': '', 'uid_err': '', 'new_terminals': [22383], 'new_panel': [{'label': 'milliseconds to wait', 'indicator': False, 'uid': 20140, 'is_source': True, 'wire': 25664, 'term_err': 0, 'wire_err': 0}]}
+  PASS  L2c W100 one new panel control, wired, uid echo ok  {'echo': 31350, 'created_uid': 20140, 'err': '', 'uid_err': '', 'new_terminals': [22383], 'new_panel': [{'label': 'milliseconds to wait', 'indicator': False, 'uid': 20140, 'is_source': True, 'wire': 25664, 'term_err': 0, 'wire_err': 0}]}
+  FACT  W100 edges +[(20255, 'New Image', 20930, 'New Image'), (22574, '', 22681, 'y'), (22634, 'Cosine bandpass for Hilbert', 22805, 'Cosine bandpass for Hilbert'), (23166, 'milliseconds to wait', 31350, 'milliseconds to wait'), (25723, '2-sided cal image', 26446, 'cal image array')] -[(20143, 'New Image', 20143, 'New Image'), (20143, 'New Image', 20930, 'New Image'), (20436, 'New Image', 20143, 'New Image'), (22448, 'Cosine bandpass for Hilbert', 22569, 'Cosine bandpass for Hilbert'), (22532, '', 22554, ''), (22554, '', 22681, 'y'), (22569, 'Cosine bandpass for Hilbert', 22805, 'Cosine bandpass for Hilbert'), (25667, '2-sided cal image', 25667, '2-sided cal image'), (25667, '2-sided cal image', 26446, 'cal image array'), (25675, 'Low bandpass', 25675, 'Low bandpass'), (25683, 'High bandpass', 25683, 'High bandpass'), (25691, 'forget radius', 25691, 'forget radius'), (25865, 'Low bandpass', 25675, 'Low bandpass'), (25869, 'High bandpass', 25683, 'High bandpass'), (25873, 'forget radius', 25691, 'forget radius'), (25877, '2-sided cal image', 25667, '2-sided cal image')]
+  FACT  L3 W100 WARM edge diff (recorded, not gated): exactly-one-new-edge-into-the-Wait = False
+  PASS  L3 W100 the warm diff contains the edge const -> Wait input  [(20255, 'New Image', 20930, 'New Image'), (22574, '', 22681, 'y'), (22634, 'Cosine bandpass for Hilbert', 22805, 'Cosine bandpass for Hilbert'), (23166, 'milliseconds to wait', 31350, 'milliseconds to wait'), (25723, '2-sided cal image', 26446, 'cal image array')]
+  PASS  L4 W100 the Wait's output is unwired
+  PASS  L5 W100 callee census unchanged
+  FACT  ExecState [w100 after] D1_ring_p6_replay_w100_20261013_160759.vi = 0
+  FAIL  L6 W100 ExecState 1 after
+STOP {"schema":"stop-line/1","kind":"gate","message":"L6 W100 ExecState 1 after","t":"2026-10-13 16:10:29"}
+  FAIL  STOP at gate: L6 W100 ExecState 1 after
+
+---------- [H] HYGIENE
+  FACT  gscript ref_counts: {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 9}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 9}
+  FACT  LabVIEW handle count AFTER the work: 39786
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 09a23608c223a9a31ea6ca3638c1241c / after 09a23608c223a9a31ea6ca3638c1241c
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  P6 replay copy   09a23608c223a9a31ea6ca3638c1241c  (want 09a23608c223a9a31ea6ca3638c1241c) OK
+  FACT  PIN AFTER  paced get-buff   59ec66b61f3518b049a3c532a8e65482  (want 59ec66b61f3518b049a3c532a8e65482) OK
+  FACT  PIN AFTER  paced buf stand-in e40ec86722948812d155d6e4047a3ef9  (want e40ec86722948812d155d6e4047a3ef9) OK
+  FACT  PIN AFTER  P6 bed           c2d9c13cb40c0a5cab7433896d1df157  (want c2d9c13cb40c0a5cab7433896d1df157) OK
+  FACT  PIN AFTER  S1 replay copy   126f84975fca9f6124432a7e4decd0c8  (want 126f84975fca9f6124432a7e4decd0c8) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 35099
+  PASS  H9 LabVIEW gone
+
+====================================================================================================
+=== GATES: 16 pass / 2 fail; failing: L6 W100 ExecState 1 after, STOP at gate: L6 W100 ExecState 1 after
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_lean\tools\bench\lean_bench\p63_build.json   elapsed 157.0 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":16,"fail":2},"first_fail":"L6 W100 ExecState 1 after","artefacts":[]}
+BGRUN END rc=1 after 158s

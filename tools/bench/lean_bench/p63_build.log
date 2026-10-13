@@ -1,0 +1,185 @@
+BGRUN START 2026-10-13 16:16:38 limit 55.0 min: py -u tools/bench/lean_bench/p63_build.py
+BGRUN PID 25708
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 354 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 09a23608c223a9a31ea6ca3638c1241c  got 09a23608c223a9a31ea6ca3638c1241c
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE P6 replay copy   09a23608c223a9a31ea6ca3638c1241c  (want 09a23608c223a9a31ea6ca3638c1241c) OK
+  FACT  PIN BEFORE paced get-buff   59ec66b61f3518b049a3c532a8e65482  (want 59ec66b61f3518b049a3c532a8e65482) OK
+  FACT  PIN BEFORE paced buf stand-in e40ec86722948812d155d6e4047a3ef9  (want e40ec86722948812d155d6e4047a3ef9) OK
+  FACT  PIN BEFORE P6 bed           c2d9c13cb40c0a5cab7433896d1df157  (want c2d9c13cb40c0a5cab7433896d1df157) OK
+  FACT  PIN BEFORE S1 replay copy   126f84975fca9f6124432a7e4decd0c8  (want 126f84975fca9f6124432a7e4decd0c8) OK
+  FACT  PIN BEFORE RingSeqCheck_v0  0295a8d349a3b61151cd87797119b9b1  (want 0295a8d349a3b61151cd87797119b9b1) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33953
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  D1_ring_p6_replay_w100_20261013_161639.vi
+  FACT  ExecState [after open] D1_ring_p6_replay_w100_20261013_161639.vi = 1
+
+---------- [L] W=100 subVI RingSeqCheck_w100_20261013_161639.vi
+  PASS  L0 W100 RingSeqCheck copy md5 == 0295a8d3
+  FACT  ExecState [rsc w100 before] RingSeqCheck_w100_20261013_161639.vi = 1
+  PASS  L1 W100 subVI ExecState 1 before
+  PASS  L2 W100 one top-level diagram uid  [3]
+  OBSERVED uid 251 -> owner 'TopLevelDiagram' uid 3 | self 'Function'#251 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  PASS  L3 W100 the Wait has one unwired input  [{'term_uid': 271, 'term_name': 'millisecond timer value', 'is_source': True, 'wire_uid': 0, 'owner_uid': 251, 'owner_class': 'Function', 'frame_diagram': 3, 'term_class': 'ParameterTerminal'}, {'term_uid': 274, 'term_name': 'milliseconds to wait', 'is_source': False, 'wire_uid': 0, 'owner_uid': 251, 'owner_class': 'Function', 'frame_diagram': 3, 'term_class': 'ParameterTerminal'}]
+  FACT  W100 create_control {'new': [{'i': 8, 'class': 'ControlTerminal', 'uid': 291, 'pos': (-6, 197), 'owner': 'TopLevelDiagram'}], 'label': 'milliseconds to wait', 'node_index': 7, 'term_index': 1}
+  PASS  L4 W100 one new panel control  {'new': [{'i': 8, 'class': 'ControlTerminal', 'uid': 291, 'pos': (-6, 197), 'owner': 'TopLevelDiagram'}], 'label': 'milliseconds to wait', 'node_index': 7, 'term_index': 1}
+  PASS  L5 W100 subVI edges == before + exactly one edge into the Wait's input  ([(3, 'milliseconds to wait', 251, 'milliseconds to wait')], [])
+  FACT  ExecState [rsc w100 after] RingSeqCheck_w100_20261013_161639.vi = 1
+  PASS  L6 W100 subVI ExecState 1 after
+  FACT  SAVED C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\bench\lean\RingSeqCheck_w100_20261013_161639.vi md5 429cdc5dc55cbc861a609b9249c9347d (control 'milliseconds to wait' default 100)
+  PASS  L7 W100 P6 copy md5 == input
+  PASS  L8 W100 exactly one RingSeqCheck_v0 call in the P6 copy  [29724]
+  OBSERVED uid 29724 -> owner 'Diagram' uid 23166 | self 'SubVI'#29724 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 23166 -> owner 'WhileLoop' uid 10170 | self 'Diagram'#23166 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  FACT  W100 RingSeqCheck call #29724 owner chain [('Diagram', 23166), ('WhileLoop', 10170)]
+  PASS  L9 W100 the call is inside loop 1.2 (While #10170)  [('Diagram', 23166), ('WhileLoop', 10170)]
+  FACT  ExecState [w100 before] D1_ring_p6_replay_w100_20261013_161639.vi = 1
+  PASS  L10 W100 ExecState 1 before
+  FACT  W100 replace_object #29724 -> RingSeqCheck_w100_20261013_161639.vi: {'new_uid': 31381, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  L11 W100 replace: no error, new uid  {'new_uid': 31381, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  L12 W100 callee diff == exactly the RingSeqCheck swap  {29724: ('C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\RingSeqCheck_v0.vi', None), 31381: (None, 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\bench\\lean\\RingSeqCheck_w100_20261013_161639.vi')}
+  PASS  L13 W100 wire-edge diff 0 after remap (2426 edges)  ([], [])
+  FACT  ExecState [w100 after] D1_ring_p6_replay_w100_20261013_161639.vi = 1
+  PASS  L14 W100 ExecState 1 after
+  FACT  SAVED C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\bench\lean\D1_ring_p6_replay_w100_20261013_161639.vi md5 22c05b42347bb85ddbbe6146d4a8be0b
+  FACT  LabVIEW handle count BEFORE the restart: 54472
+  FACT  LabVIEW handle count AFTER the restart: 33954
+
+---------- [L] W=40 subVI RingSeqCheck_w40_20261013_161639.vi
+  PASS  L0 W40 RingSeqCheck copy md5 == 0295a8d3
+  FACT  ExecState [rsc w40 before] RingSeqCheck_w40_20261013_161639.vi = 1
+  PASS  L1 W40 subVI ExecState 1 before
+  PASS  L2 W40 one top-level diagram uid  [3]
+  OBSERVED uid 251 -> owner 'TopLevelDiagram' uid 3 | self 'Function'#251 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  PASS  L3 W40 the Wait has one unwired input  [{'term_uid': 271, 'term_name': 'millisecond timer value', 'is_source': True, 'wire_uid': 0, 'owner_uid': 251, 'owner_class': 'Function', 'frame_diagram': 3, 'term_class': 'ParameterTerminal'}, {'term_uid': 274, 'term_name': 'milliseconds to wait', 'is_source': False, 'wire_uid': 0, 'owner_uid': 251, 'owner_class': 'Function', 'frame_diagram': 3, 'term_class': 'ParameterTerminal'}]
+  FACT  W40 create_control {'new': [{'i': 8, 'class': 'ControlTerminal', 'uid': 291, 'pos': (-6, 197), 'owner': 'TopLevelDiagram'}], 'label': 'milliseconds to wait', 'node_index': 7, 'term_index': 1}
+  PASS  L4 W40 one new panel control  {'new': [{'i': 8, 'class': 'ControlTerminal', 'uid': 291, 'pos': (-6, 197), 'owner': 'TopLevelDiagram'}], 'label': 'milliseconds to wait', 'node_index': 7, 'term_index': 1}
+  PASS  L5 W40 subVI edges == before + exactly one edge into the Wait's input  ([(3, 'milliseconds to wait', 251, 'milliseconds to wait')], [])
+  FACT  ExecState [rsc w40 after] RingSeqCheck_w40_20261013_161639.vi = 1
+  PASS  L6 W40 subVI ExecState 1 after
+  FACT  SAVED C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\bench\lean\RingSeqCheck_w40_20261013_161639.vi md5 581e2953c10b91439eedcaa18656b13f (control 'milliseconds to wait' default 40)
+  PASS  L7 W40 P6 copy md5 == input
+  PASS  L8 W40 exactly one RingSeqCheck_v0 call in the P6 copy  [29724]
+  OBSERVED uid 29724 -> owner 'Diagram' uid 23166 | self 'SubVI'#29724 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 23166 -> owner 'WhileLoop' uid 10170 | self 'Diagram'#23166 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  FACT  W40 RingSeqCheck call #29724 owner chain [('Diagram', 23166), ('WhileLoop', 10170)]
+  PASS  L9 W40 the call is inside loop 1.2 (While #10170)  [('Diagram', 23166), ('WhileLoop', 10170)]
+  FACT  ExecState [w40 before] D1_ring_p6_replay_w40_20261013_161639.vi = 1
+  PASS  L10 W40 ExecState 1 before
+  FACT  W40 replace_object #29724 -> RingSeqCheck_w40_20261013_161639.vi: {'new_uid': 31381, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  L11 W40 replace: no error, new uid  {'new_uid': 31381, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  L12 W40 callee diff == exactly the RingSeqCheck swap  {29724: ('C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\RingSeqCheck_v0.vi', None), 31381: (None, 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\bench\\lean\\RingSeqCheck_w40_20261013_161639.vi')}
+  PASS  L13 W40 wire-edge diff 0 after remap (2426 edges)  ([], [])
+  FACT  ExecState [w40 after] D1_ring_p6_replay_w40_20261013_161639.vi = 1
+  PASS  L14 W40 ExecState 1 after
+  FACT  SAVED C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\bench\lean\D1_ring_p6_replay_w40_20261013_161639.vi md5 29b84557b98cda853539f988fcc4f69f
+  FACT  LabVIEW handle count BEFORE the restart: 54472
+  FACT  LabVIEW handle count AFTER the restart: 33950
+
+---------- [G1] gap wrapper gap_get_buff_image_paced60_20261013_161639.vi
+  PASS  G1.0 gap wrapper copy md5 == 59ec66b6
+  FACT  ExecState [gapw before] gap_get_buff_image_paced60_20261013_161639.vi = 1
+  PASS  G1.1 ExecState 1 before
+  FACT  gapw census {226: 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_imaqdx_get_image_buf_paced60.vi'}
+  PASS  G1.2 exactly one call of the paced buf stand-in  {226: 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_imaqdx_get_image_buf_paced60.vi'}
+  PASS  G1.3 its Buffer Number Out is wired  [{'term_uid': 263, 'term_name': 'Buffer Number Out', 'is_source': True, 'wire_uid': 99, 'owner_uid': 226, 'owner_class': 'SubVI', 'frame_diagram': 3, 'term_class': 'Terminal'}]
+  FACT  gapw BN Out wire w99 sinks [(76, 'Function', 'y', 165), (3, 'TopLevelDiagram', 'current image number', 240)]
+  PASS  G1.4 the wire's sinks = `current image number` + one `y`  [{'term_uid': 165, 'term_name': 'y', 'is_source': False, 'wire_uid': 99, 'owner_uid': 76, 'owner_class': 'Function', 'frame_diagram': 3, 'term_class': 'ParameterTerminal'}, {'term_uid': 240, 'term_name': 'current image number', 'is_source': False, 'wire_uid': 99, 'owner_uid': 3, 'owner_class': 'TopLevelDiagram', 'frame_diagram': 3, 'term_class': 'ControlTerminal'}]
+  FACT  donor Increment candidates in replay_imaqdx_get_image_buf_paced60.vi: [222]
+  PASS  G1.5 exactly one Increment in the donor  [222]
+  OBSERVED uid 210 -> owner 'TopLevelDiagram' uid 3 | self 'Function'#210 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  FACT  gapw new Increment #210 on top diagram #3
+  PASS  G1.6 wire w99 deleted
+  FACT  gapw Increment terminals {'x+1': {'term_uid': 228, 'term_name': 'x+1', 'is_source': True, 'wire_uid': 0, 'owner_uid': 210, 'owner_class': 'Function', 'frame_diagram': 3, 'term_class': 'OverridableParameterTerminal'}, 'x': {'term_uid': 243, 'term_name': 'x', 'is_source': False, 'wire_uid': 0, 'owner_uid': 210, 'owner_class': 'Function', 'frame_diagram': 3, 'term_class': 'ParameterTerminal'}}
+  FACT  gapw connects {'wire_uid': 219, 'broken': False, 'sink_echo': 243, 'src_echo': 263, 'err': '', 'purged': 0, 'invoke_left': []} | {'wire_uid': 249, 'broken': False, 'sink_echo': 240, 'src_echo': 228, 'err': '', 'purged': 0, 'invoke_left': []} | {'wire_uid': 249, 'broken': False, 'sink_echo': 165, 'src_echo': 228, 'err': '', 'purged': 0, 'invoke_left': []}
+  FACT  gapw edges +[(210, 'x+1', 3, 'current image number'), (210, 'x+1', 76, 'y'), (226, 'Buffer Number Out', 210, 'x')] -[(226, 'Buffer Number Out', 3, 'current image number'), (226, 'Buffer Number Out', 76, 'y')]
+  FACT  G1.7 WARM edge diff == the planned one: True (recorded; the gate is CE in [C])
+  PASS  G1.8 no broken wire among the new ones
+  PASS  G1.9 callee census unchanged
+  FACT  ExecState [gapw after] gap_get_buff_image_paced60_20261013_161639.vi = 1
+  PASS  G1.10 ExecState 1 after
+  FACT  SAVED C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\bench\lean\gap_get_buff_image_paced60_20261013_161639.vi md5 a885a8fbc06351ab789d539af460a8d7
+
+---------- [G2] gap P6 copy D1_ring_p6_replay_gap_20261013_161639.vi
+  PASS  G2.0 copy md5 == input
+  PASS  G2.1 #31533 calls replay_get_buff_image_paced60.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\replay\replay_get_buff_image_paced60.vi
+  FACT  ExecState [gapP6 before] D1_ring_p6_replay_gap_20261013_161639.vi = 1
+  PASS  G2.2 ExecState 1 before
+  FACT  replace_object #31533 -> gap wrapper: {'new_uid': 31381, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  G2.3 replace: no error, new uid  {'new_uid': 31381, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  G2.4 callee diff == exactly #31533 -> gap wrapper  {31381: (None, 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\bench\\lean\\gap_get_buff_image_paced60_20261013_161639.vi'), 31533: ('C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_get_buff_image_paced60.vi', None)}
+  PASS  G2.5 wire-edge diff 0 after remap (2426 edges)  ([], [])
+  FACT  ExecState [gapP6 after] D1_ring_p6_replay_gap_20261013_161639.vi = 1
+  PASS  G2.6 ExecState 1 after
+  FACT  SAVED C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\bench\lean\D1_ring_p6_replay_gap_20261013_161639.vi md5 a8ac64ccddd2e835574d669548d7fa76
+  FACT  LabVIEW handle count BEFORE the restart: 54470
+  FACT  LabVIEW handle count AFTER the restart: 33954
+
+---------- [C] COLD reads of the two INPUTS (read-only, nothing saved)
+  FACT  cold input edges: P6 replay copy 2426, paced get-buff 13
+  FACT  LabVIEW handle count BEFORE the restart: 54464
+  FACT  LabVIEW handle count AFTER the restart: 33970
+
+---------- [C] COLD w100
+  PASS  C1 w100 ExecState 1 COLD
+  PASS  CE w100 COLD edges (new uid -> #29724) == cold input edges  ([], [])
+  PASS  CS w100 COLD call #31381 -> RingSeqCheck_w100_20261013_161639.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\bench\lean\RingSeqCheck_w100_20261013_161639.vi
+  PASS  CV w100 COLD subVI control 'milliseconds to wait' value == 100  100
+  PASS  CM w100 subVI md5 unchanged by the cold load
+  PASS  C2 w100 md5 unchanged by the cold load
+  FACT  LabVIEW handle count BEFORE the restart: 54478
+  FACT  LabVIEW handle count AFTER the restart: 33959
+
+---------- [C] COLD w40
+  PASS  C1 w40 ExecState 1 COLD
+  PASS  CE w40 COLD edges (new uid -> #29724) == cold input edges  ([], [])
+  PASS  CS w40 COLD call #31381 -> RingSeqCheck_w40_20261013_161639.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\bench\lean\RingSeqCheck_w40_20261013_161639.vi
+  PASS  CV w40 COLD subVI control 'milliseconds to wait' value == 40  40
+  PASS  CM w40 subVI md5 unchanged by the cold load
+  PASS  C2 w40 md5 unchanged by the cold load
+  FACT  LabVIEW handle count BEFORE the restart: 54470
+  FACT  LabVIEW handle count AFTER the restart: 33964
+
+---------- [C] COLD gap_wrapper
+  PASS  C1 gap_wrapper ExecState 1 COLD
+  PASS  CE gap_wrapper COLD edges == cold paced get-buff - BN Out's 2 edges + the 3 Increment edges  ([(210, 'x+1', 3, 'current image number'), (210, 'x+1', 76, 'y'), (226, 'Buffer Number Out', 210, 'x')], [(226, 'Buffer Number Out', 3, 'current image number'), (226, 'Buffer Number Out', 76, 'y')])
+  PASS  C2 gap_wrapper md5 unchanged by the cold load
+  FACT  LabVIEW handle count BEFORE the restart: 34206
+  FACT  LabVIEW handle count AFTER the restart: 34008
+
+---------- [C] COLD gap_p6
+  PASS  C1 gap_p6 ExecState 1 COLD
+  PASS  CE gap_p6 COLD edges (new uid -> #31533) == cold input edges  ([], [])
+  PASS  C2 gap_p6 md5 unchanged by the cold load
+
+---------- [H] HYGIENE
+  FACT  close_panel(D1_ring_p6_replay_w100_20261013_161639.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 50, 'closed': 50, 'live': 0, 'cached_op_vis': 0}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 50, 'closed': 50, 'live': 0, 'cached_op_vis': 0}
+  FACT  LabVIEW handle count AFTER the work: 63329
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 09a23608c223a9a31ea6ca3638c1241c / after 09a23608c223a9a31ea6ca3638c1241c
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  P6 replay copy   09a23608c223a9a31ea6ca3638c1241c  (want 09a23608c223a9a31ea6ca3638c1241c) OK
+  FACT  PIN AFTER  paced get-buff   59ec66b61f3518b049a3c532a8e65482  (want 59ec66b61f3518b049a3c532a8e65482) OK
+  FACT  PIN AFTER  paced buf stand-in e40ec86722948812d155d6e4047a3ef9  (want e40ec86722948812d155d6e4047a3ef9) OK
+  FACT  PIN AFTER  P6 bed           c2d9c13cb40c0a5cab7433896d1df157  (want c2d9c13cb40c0a5cab7433896d1df157) OK
+  FACT  PIN AFTER  S1 replay copy   126f84975fca9f6124432a7e4decd0c8  (want 126f84975fca9f6124432a7e4decd0c8) OK
+  FACT  PIN AFTER  RingSeqCheck_v0  0295a8d349a3b61151cd87797119b9b1  (want 0295a8d349a3b61151cd87797119b9b1) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 63331
+  PASS  H9 LabVIEW gone
+
+====================================================================================================
+=== GATES: 73 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_lean\tools\bench\lean_bench\p63_build.json   elapsed 824.8 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":73,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 826s

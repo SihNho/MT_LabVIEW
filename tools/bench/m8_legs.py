@@ -104,7 +104,7 @@ def keep_leg_files(out, picks, run_s, t0, log=print):
     '_p<N>_r<S>' part removed). Returns {kept name: source}. An older file (not this leg's) is never copied."""
     tag = "_p%d_r%d" % (picks, int(float(run_s)))
     kept = {}
-    for p in sorted(glob.glob(os.path.join(HERE, "m8*_replay_s1%s*.json" % tag))):
+    for p in sorted(glob.glob(os.path.join(os.environ.get("M8_OUT_DIR") or HERE, "m8*_replay_s1%s*.json" % tag))):   # drive_m8's OUTD
         if p.endswith("_dry.json") or os.path.getmtime(p) < t0:
             continue
         name = os.path.basename(p).replace(tag, "")
