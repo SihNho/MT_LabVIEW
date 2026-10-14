@@ -21,7 +21,8 @@ import diag_replay_lib as L                                                     
 K, g = L.K, L.g
 PLANS = {"78": "plans/plan_replay_swap_78.json", "95": "plans/plan_replay_swap_95.json",
          "110": "plans/plan_replay_swap_110.json",                                     # card 110-6: the display-loop VI
-         "170": "plans/plan_replay_swap_170.json"}                                     # card 170-a3-2: the P6 replay copy (paced get-buff)
+         "170": "plans/plan_replay_swap_170.json",                                     # card 170-a3-2: the P6 replay copy (paced get-buff)
+         "lean": "plans/plan_replay_swap_lean.json"}                                   # lean bench 2026-10-13: plan 170, saved under bench\lean
 PLAN_TAG = sys.argv[sys.argv.index("--plan") + 1] if "--plan" in sys.argv else (os.environ.get("REPLAY_SWAP_PLAN") or "78")
 P = json.load(open(os.path.join(K.BENCH, PLANS[PLAN_TAG]), encoding="utf-8"))
 cd = lambda rel: os.path.join(K.CLAUDEDEV, rel)                                          # noqa: E731
@@ -89,7 +90,9 @@ class St(K.Stage):
 if __name__ == "__main__":
     pins = tuple(K.DEFAULT_PINS[:1]) + ((P.get("input_pin", "S3"), IN, IN_MD5),) + ((("S1", S2, S2_MD5),) if S2 else ()) + tuple(
         (os.path.basename(n), n, m) for _u, _o, n, m in SW) + tuple((a, cd(b), c) for a, b, c in P["extra_pins"])
-    st = St(IN, IN_MD5, P.get("stage_name", "stage_replay_swap_78"), preload=False, deadline_min=40, work_dir=L.RP,
+    wd = cd(P["work_dir"]) if "work_dir" in P else L.RP                                 # optional plan key; default claudeDev\replay
+    os.makedirs(wd, exist_ok=True)
+    st = St(IN, IN_MD5, P.get("stage_name", "stage_replay_swap_78"), preload=False, deadline_min=40, work_dir=wd,
             work_name=os.path.basename(P["copies"][TAG1]).format(ts=TS), pins=pins,
             task=P.get("task", "78-3"), out_json=os.path.join(K.BENCH, P.get("out_json", "stage_replay_swap_78.json")))
     sys.exit(K.run(body, st))

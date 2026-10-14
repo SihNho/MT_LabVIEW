@@ -4470,3 +4470,22 @@
 2026-10-13 02:12:16	MARKED	cd "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop" && py tools/bgrun.py --material --max-min 10 --log tools/bench/diag_c171_a2_2_c130_5.log -- py -u tools/bench/sel
 2026-10-13 02:14:18	REFUSED	STOPPED-RECIPE cd "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop" && diff <(sed -n '3,9p' tools/bench/diag_c171_a2_1_c130_5_unpatched.log) <(sed -n '3,9p' tools/ben
 2026-10-13 02:23:47	REFUSED	MOTOR powershell -File tools/motor_send_pi.ps1 -Cmd 'MOV 1 5'
+2026-10-13 02:31:42	REFUSED	MOTOR echo motor_send_pi.ps1 MOV 1 5
+2026-10-13 13:47:35	REFUSED	MOTOR py tools/hw_rotor_signed_test.py --steps 100
+2026-10-13 13:47:35	REFUSED	MOTOR py -u tools/bench/drive_original_copy.py --run-s 60
+2026-10-13 13:47:35	REFUSED	MOTOR py tools/build_rawcmd.py
+2026-10-13 13:47:35	REFUSED	MOTOR & .\tools\motor_send_pi.ps1 -Cmd 'MOV 1 5'
+2026-10-13 13:47:35	REFUSED	MOTOR & .\tools\motor_asi_io.ps1 -Cmd 'MOVE X=1'
+2026-10-13 13:47:35	REFUSED	MOTOR $p = New-Object System.IO.Ports.SerialPort COM3; $p.Open()
+2026-10-13 13:47:35	REFUSED	MOTOR py -c "import serial; s=serial.Serial('COM3')"
+2026-10-13 13:47:35	REFUSED	MOTOR py -c "from x import y; serial.Serial('COM4')"
+2026-10-13 13:47:35	REFUSED	MOTOR py tools/some_tool.py --raw 'MOVREL X=0.1'
+2026-10-13 13:47:35	REFUSED	MOTOR py tools/x.py --cmd 'MOV 1 10'
+2026-10-13 13:47:35	REFUSED	MOTOR py tools/x.py --cmd 'MVR 1 0.5'
+2026-10-13 13:47:35	REFUSED	MOTOR py tools/x.py --cmd GOH
+2026-10-13 13:47:35	REFUSED	MOTOR py tools/x.py RAWCMD_rotor
+2026-10-13 13:48:58	REFUSED	MOTOR powershell -c "$sp = New-Object System.IO.Ports.SerialPort COM3,115200"
+2026-10-13 13:48:58	REFUSED	MOTOR powershell -File tools/motor_send_pi.ps1 -Command "MOV 1 5" -TokenFile t.tok
+2026-10-13 13:48:58	REFUSED	MOTOR powershell -File tools/motor_asi_io.ps1 -Mode send
+2026-10-13 13:48:58	REFUSED	MOTOR echo MOV 1 40 > COM3
+2026-10-13 13:48:59	MARKED	MATERIAL=1 py tools/bgrun.py --max-min 5 --log tools/bench/selftest_motor_gate2.log -- py -u tools/bench/selftest_motor_gate2.py
