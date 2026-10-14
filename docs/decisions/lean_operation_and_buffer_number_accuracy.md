@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: b607b493-a66f-4081-b122-a7a95d2c2a67
-  modified: 2026-10-14T01:54:25.926Z
+  modified: 2026-10-14T16:35:42.607Z
 ---
 
 2026-10-13, after discussion lean-rules-01 and two lean runs (P6-2 PASS 64 min $6.64; P6-3 gap+load PASS 102 min $17.52,
@@ -45,6 +45,11 @@ which also found P6's column-0 one-ring-lap lag the old acceptance missed):
   consistency, image/number pairing rests on the replay evidence). Sample = non-paramagnetic polystyrene REFERENCE beads
   ("아무리 당겨도 로스는 없을 것"); the user prepares them and SAYS WHEN - no bead/rig-day task before that.
   Preparation tasks p64p1 (BOBS90 observer copy), p64p2 (150 Hz copies + 30 s camera-only check), p64p3 (drivers, dry) queued.
+- 2026-10-14/15 answers: sample R for now; no minimum bead count (repeat clicks on real beads allowed); evaluation changes
+  1-6 applied (lean 581c127f). Bead-selection automation by Jev/Laya (criteria: pulled? rotation radius, circular
+  rotation trace, pulled as much as expected - computed from tracking data, so text-only Jev can judge) is DEFERRED
+  until the coding is done (user 2026-10-15 "당장은 프로그램이잖아. 나중에 코딩 마치면 그 때 Jev 통한 자동화 생각해보면
+  되지"); no pull tests now.
 - GitHub: upload once a day (scheduled task github-daily-push, tools/git_push.py) and on explicit request; never per cycle.
 
 **Why:** the gates cost more than they prevented once the tools existed; a single session kept context and found a real defect.
