@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: b607b493-a66f-4081-b122-a7a95d2c2a67
-  modified: 2026-10-14T19:04:29.813Z
+  modified: 2026-10-14T23:51:30.701Z
 ---
 
 2026-10-13, after discussion lean-rules-01 and two lean runs (P6-2 PASS 64 min $6.64; P6-3 gap+load PASS 102 min $17.52,
@@ -66,6 +66,13 @@ which also found P6's column-0 one-ring-lap lag the old acceptance missed):
   레퍼런스 표기 해야함"; docs/REFERENCES.md R1 LV-Scripting MIT, R2 NI examples). Licence (MIT recommended) and
   copyright holder are OPEN - the user asks their PI; request filed in Obsidian-비서 Knowledge/Ingest Queue. Packaging
   (Op VI dependency list needs LabVIEW) after fr90.
+- ASI limit window is RELATIVE since 2026-10-15 (user "그냥 실행 당시 위치를 기준으로 하자", after the fr150 review found
+  the joystick-set ASI X -5.29 mm outside the fixed 2026-09-18 window): motor_gate session start reads ASI X/Y read-only
+  and sets SL/SU = position +- 2.0 mm (motor_limits.json asi.mode=relative, half_width_mm), recorded in
+  motor_session.json; cycle-start hook checks against it (master 817def14). The chat's direct ASI move was refused by
+  the auto-mode classifier [Real-World Transactions] - never route around; the user moves the stage or runs the gate.
+  Frame-rate results 2026-10-15: 90 Hz (Auto-Reset OFF) A 224/522 vs B 17/4 lost; 150 Hz A ~5.9k vs B ~5.5k, B's
+  camera loop keeps up but its tracking/saving path tops out ~100 rows/s -> measure loop 1.2 vs 1.7 next (GPU if 1.2).
 - GitHub: upload once a day (scheduled task github-daily-push, tools/git_push.py) and on explicit request; never per cycle.
 
 **Why:** the gates cost more than they prevented once the tools existed; a single session kept context and found a real defect.
