@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: b607b493-a66f-4081-b122-a7a95d2c2a67
-  modified: 2026-10-14T00:57:24.992Z
+  modified: 2026-10-14T01:54:25.926Z
 ---
 
 2026-10-13, after discussion lean-rules-01 and two lean runs (P6-2 PASS 64 min $6.64; P6-3 gap+load PASS 102 min $17.52,
@@ -39,6 +39,12 @@ which also found P6's column-0 one-ring-lap lag the old acceptance missed):
   runner changes applied (lean 68cdcd79: no verdict twice -> HOLD, never PASS-UNREVIEWED; cycles counted by REVIEW
   lines; HOLD:/ASSUME: questions; mock queue 14/0). Keep the regular human check until a real run shows the auto-STOP
   working (evaluation condition). The chat's own tail -F monitor had broken the queue's logging in run 1.
+- P6-4 (2026-10-14 10:4x, user "전부 동의함"): all questions of V6_lean/tools/bench/lean_bench/p64_plan.md section 10
+  agreed as written (ABBA A-B-B-A at 90/150 Hz, B both legs >= 25 % of A's mean below the lower A leg + 15 picks;
+  150 Hz by a rate wrapper on copies of A and B; bead map from a snapshot checked by the user; live check = buffer-number
+  consistency, image/number pairing rests on the replay evidence). Sample = non-paramagnetic polystyrene REFERENCE beads
+  ("아무리 당겨도 로스는 없을 것"); the user prepares them and SAYS WHEN - no bead/rig-day task before that.
+  Preparation tasks p64p1 (BOBS90 observer copy), p64p2 (150 Hz copies + 30 s camera-only check), p64p3 (drivers, dry) queued.
 - GitHub: upload once a day (scheduled task github-daily-push, tools/git_push.py) and on explicit request; never per cycle.
 
 **Why:** the gates cost more than they prevented once the tools existed; a single session kept context and found a real defect.
