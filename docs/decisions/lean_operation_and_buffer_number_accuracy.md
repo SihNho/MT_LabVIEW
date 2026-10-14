@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: b607b493-a66f-4081-b122-a7a95d2c2a67
-  modified: 2026-10-14T16:35:42.607Z
+  modified: 2026-10-14T17:10:58.470Z
 ---
 
 2026-10-13, after discussion lean-rules-01 and two lean runs (P6-2 PASS 64 min $6.64; P6-3 gap+load PASS 102 min $17.52,
@@ -50,6 +50,9 @@ which also found P6's column-0 one-ring-lap lag the old acceptance missed):
   rotation trace, pulled as much as expected - computed from tracking data, so text-only Jev can judge) is DEFERRED
   until the coding is done (user 2026-10-15 "당장은 프로그램이잖아. 나중에 코딩 마치면 그 때 Jev 통한 자동화 생각해보면
   되지"); no pull tests now.
+- GitHub repo github.com/SihNho/MT_LabVIEW is PUBLIC on purpose (user 2026-10-15 "퍼블릭으로 둘거임") - do not ask
+  again; keep the secret-shape scan before every push. gh CLI installed 2026-10-15 (C:\Program Files\GitHub CLI\gh.exe),
+  logged in as SihNho via the user's own `gh auth login` (keyring, https).
 - GitHub: upload once a day (scheduled task github-daily-push, tools/git_push.py) and on explicit request; never per cycle.
 
 **Why:** the gates cost more than they prevented once the tools existed; a single session kept context and found a real defect.
