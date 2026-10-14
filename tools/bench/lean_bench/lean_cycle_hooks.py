@@ -1,8 +1,10 @@
 # ---
-# labview: close-only (end: quits / force-closes LabVIEW.exe through cycle_runner.labview_close_hook; never opens it)
-# hardware: motors (PI + ASI limits only, through tools/motor_gate.py --session start|end; no motion except the gate's
-#           own PI reference move at session start)
+# labview: read
+# hardware: motor
 # ---
+# labview = close-only: quits / force-closes LabVIEW.exe through cycle_runner.labview_close_hook; never opens or edits it.
+# hardware = PI + ASI limits only, through tools/motor_gate.py --session start|end; no motion except the gate's own PI
+# reference move at session start. `selftest` reads recorded logs only (no LabVIEW, no motor).
 """The lean queue's cycle boundary hooks (user 2026-10-13: "모터 움직임 제한을 위한 훅은 사이클 시작 시점에 걸고, 사이클
 종료 시점에 풀리도록"; CLAUDE.md rule 1b: limits SET at every cycle start and RELEASED at every cycle end, each verified by
 readback, after a real PI reference move; every cycle ends with LabVIEW CLOSED and verified gone).
@@ -90,6 +92,32 @@ def check_positions(p):
     return (not why), ("; ".join(why) or "unchanged")
 
 
+ASI_UNIT_MM = 1e-4      # motor_gate.py:29 "ASI motion commands are in 0.1 um => 1.0 mm = 10 000 units"
+LIMITS_JSON = os.path.join(TOOLS, "bench", "motor_limits.json")
+
+
+def start_in_window(start_log, limits=None):
+    """Evaluation 2026-10-14 change 1, second half (fr150 review 2026-10-15): the cycle must START with PI and ASI inside
+    the limit window motor_limits.json sets. ASI X/Y from the start log's `position after` (0.1 um units -> mm) against
+    sl..su (absolute mm); PI from the last VERIFY readback against lo..hi. -> (ok, why)."""
+    try:
+        lim = limits or json.load(open(LIMITS_JSON, encoding="utf-8"))
+    except (OSError, ValueError) as e:
+        return False, "limits unreadable (%s)" % e
+    p = positions(start_log, "")
+    if p["pi_start"] is None or p["asi_start"] is None:
+        return False, "start positions unreadable"
+    why = []
+    if not (lim["pi"]["lo_mm"] - PI_TOL_MM <= p["pi_start"] <= lim["pi"]["hi_mm"] + PI_TOL_MM):
+        why.append("PI %.4f mm outside %s..%s" % (p["pi_start"], lim["pi"]["lo_mm"], lim["pi"]["hi_mm"]))
+    for i, ax in enumerate(("X", "Y")):
+        mm = p["asi_start"][i] * ASI_UNIT_MM
+        lo, hi = lim["asi"]["sl"][ax], lim["asi"]["su"][ax]
+        if not (lo - 0.001 <= mm <= hi + 0.001):
+            why.append("ASI %s %d units = %.4f mm outside %.4f..%.4f mm" % (ax, p["asi_start"][i], mm, lo, hi))
+    return (not why), ("; ".join(why) or "inside the window")
+
+
 def selftest():
     """Offline, on the recorded logs: p64p3 (13:03-13:07, nothing moved) -> ok; p64p2 (13:13-15:18, the user moved the
     ASI by joystick) -> STOP; a synthetic PI left at 30 mm -> STOP; a missing log -> STOP."""
@@ -105,6 +133,22 @@ def selftest():
         n += 1
         ok += got == want
         print("%s  %s (%s)" % ("PASS" if got == want else "FAIL", name, why))
+    # start-window cases (fr150 review): the real fr150 start log (ASI X -52899 = -5.29 mm, outside -3.8475..0.1525)
+    fr150 = newest("motor_session_start_fr150_*.log")
+    lim = {"pi": {"lo_mm": 0.0, "hi_mm": 39.0}, "asi": {"sl": {"X": -3.8475, "Y": -4.7744}, "su": {"X": 0.1525, "Y": -0.7744}}}
+    for name, log_path, want in (("fr150 start (ASI X -5.29 mm) -> stop", fr150, False),
+                                 ("missing start log -> stop", os.path.join(HERE, "nope.log"), False)):
+        got, why = start_in_window(log_path or "", lim)
+        n += 1
+        ok += got == want
+        print("%s  %s (%s)" % ("PASS" if got == want else "FAIL", name, why))
+    syn = os.path.join(HERE, "selftest_start_inside.tmp.log")
+    open(syn, "w").write("VERIFY: commanded=0 readback=0 delta=0 err=0 -> OK\nposition after (must be unchanged): X=284 Y=-30522\n")
+    got, why = start_in_window(syn, lim)
+    os.remove(syn)
+    n += 1
+    ok += got is True
+    print("%s  inside start (X 0.0284 mm, Y -3.0522 mm) -> ok (%s)" % ("PASS" if got else "FAIL", why))
     p = positions(os.path.join(HERE, cases[0][1]), os.path.join(HERE, cases[0][2]))
     p["pi_end"] = 30.0
     got, why = check_positions(p)
@@ -146,6 +190,13 @@ def main(argv):
     rc, out, tail = gate(which, tag)
     res.update(gate_rc=rc, gate_log=os.path.relpath(out, ROOT).replace("\\", "/"), gate_tail=tail)
     ok = rc == 0 and any(("SESSION %s OK" % which.upper()) in t for t in tail)
+    if which == "start" and ok:   # the cycle must start inside the limit window (fr150 review 2026-10-15)
+        wok, wwhy = start_in_window(out)
+        res["start_window"] = wwhy
+        if not wok:
+            ok = False
+            log("START-RANGE | %s | %s | %s - the run stops before the task; the queue releases the limits"
+                % (stamp, tag, wwhy))
     if which == "end":   # after the release: the cycle's start vs end positions (evaluation change 1)
         start_log = newest("motor_session_start_%s_*.log" % tag)
         pok, pwhy = check_positions(positions(start_log or "", out))
