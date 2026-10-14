@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: b607b493-a66f-4081-b122-a7a95d2c2a67
-  modified: 2026-10-13T13:19:48.154Z
+  modified: 2026-10-14T00:57:24.992Z
 ---
 
 2026-10-13, after discussion lean-rules-01 and two lean runs (P6-2 PASS 64 min $6.64; P6-3 gap+load PASS 102 min $17.52,
@@ -31,6 +31,14 @@ which also found P6's column-0 one-ring-lap lag the old acceptance missed):
   refused) - so do not blame "unattended" for the classifier refusals; the lean design had less structure and fewer hooks. Motor limits SET at cycle start and RELEASED at cycle end by the queue (lean_cycle_hooks.py:
   LabVIEW closed + verified first, then --session end); a lean session may not run motor_gate --session (guard_lean).
   A failed cycle hook (motor/LabVIEW) DOES stop the run - safety, not a task failure.
+- Run 1 (2026-10-13 22:22 -> 10-14 05:00, 5 cycles, user "한 5 사이클정도 돌려보고 평가 토론"): p6fix, latest (x3), p6close
+  all ended PASS; final P6 VI claudeDev\bench\lean\D1_ring_p6latest_20261014_010104.vi 15c664e3. The review overturned one
+  self-reported PASS (per-pick lag was inferred, not measured). Evaluation discussion: keep execute -> review -> plan.
+  User 2026-10-14 05:1x "동의" to all three: (1) v5 G0's per-leg motor_gate --session start + PI reference is ALLOWED;
+  (2) P6-4 PREPARATION starts (read + plan; the bead run still waits for the user at the rig); (3) the evaluation's
+  runner changes applied (lean 68cdcd79: no verdict twice -> HOLD, never PASS-UNREVIEWED; cycles counted by REVIEW
+  lines; HOLD:/ASSUME: questions; mock queue 14/0). Keep the regular human check until a real run shows the auto-STOP
+  working (evaluation condition). The chat's own tail -F monitor had broken the queue's logging in run 1.
 - GitHub: upload once a day (scheduled task github-daily-push, tools/git_push.py) and on explicit request; never per cycle.
 
 **Why:** the gates cost more than they prevented once the tools existed; a single session kept context and found a real defect.
