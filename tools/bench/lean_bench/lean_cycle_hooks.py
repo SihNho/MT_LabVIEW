@@ -102,8 +102,13 @@ def start_in_window(start_log, limits=None):
     sl..su (absolute mm); PI from the last VERIFY readback against lo..hi. -> (ok, why)."""
     try:
         lim = limits or json.load(open(LIMITS_JSON, encoding="utf-8"))
-    except (OSError, ValueError) as e:
-        return False, "limits unreadable (%s)" % e
+        if lim["asi"].get("mode") == "relative":
+            # user 2026-10-15: the ASI window is the start position +- half width, recorded by the gate in the session
+            # file - check against THAT window (the absolute sl/su in the limits file are only the fallback)
+            sess = json.load(open(os.path.join(TOOLS, "bench", "motor_session.json"), encoding="utf-8"))
+            lim = dict(lim, asi=dict(lim["asi"], **sess["limits_file"]["asi"]))
+    except (OSError, ValueError, KeyError) as e:
+        return False, "limits / session window unreadable (%s)" % e
     p = positions(start_log, "")
     if p["pi_start"] is None or p["asi_start"] is None:
         return False, "start positions unreadable"
