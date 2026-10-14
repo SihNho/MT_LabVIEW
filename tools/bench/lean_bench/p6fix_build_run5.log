@@ -1,0 +1,220 @@
+BGRUN START 2026-10-13 23:19:09 limit 60.0 min: py -u tools/bench/lean_bench/p6fix_build.py
+BGRUN PID 14224
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 354 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == c2d9c13cb40c0a5cab7433896d1df157  got c2d9c13cb40c0a5cab7433896d1df157
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE P6 bed           c2d9c13cb40c0a5cab7433896d1df157  (want c2d9c13cb40c0a5cab7433896d1df157) OK
+  FACT  PIN BEFORE paced get-buff   59ec66b61f3518b049a3c532a8e65482  (want 59ec66b61f3518b049a3c532a8e65482) OK
+  FACT  PIN BEFORE replay cal       afce0d04346fc58234d28bcc0fc42e55  (want afce0d04346fc58234d28bcc0fc42e55) OK
+  FACT  PIN BEFORE gap wrapper      a885a8fbc06351ab789d539af460a8d7  (want a885a8fbc06351ab789d539af460a8d7) OK
+  FACT  PIN BEFORE RSC w40          581e2953c10b91439eedcaa18656b13f  (want 581e2953c10b91439eedcaa18656b13f) OK
+  FACT  PIN BEFORE RSC w100         429cdc5dc55cbc861a609b9249c9347d  (want 429cdc5dc55cbc861a609b9249c9347d) OK
+  FACT  PIN BEFORE S1 replay copy   126f84975fca9f6124432a7e4decd0c8  (want 126f84975fca9f6124432a7e4decd0c8) OK
+  FACT  PIN BEFORE RingSeqCheck_v0  0295a8d349a3b61151cd87797119b9b1  (want 0295a8d349a3b61151cd87797119b9b1) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33992
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  D1_ring_p6fix_20261013_231910.vi
+  FACT  ExecState [after open] D1_ring_p6fix_20261013_231910.vi = 1
+  PASS  P0 reused test file gap_get_buff_image_paced60_20261013_161639.vi md5 == a885a8fb
+  PASS  P0 reused test file RingSeqCheck_w40_20261013_161639.vi md5 == 581e2953
+  PASS  P0 reused test file RingSeqCheck_w100_20261013_161639.vi md5 == 429cdc5d
+
+---------- [F] fixed P6: new frame 0 in Flat Sequence #29721 + move the 4 per-slot reads into it
+  FACT  ExecState [fix before] D1_ring_p6fix_20261013_231910.vi = 1
+  PASS  F1 ExecState 1 before
+  FACT  before: 2426 edges, 1862 owners, 101 callees
+  FACT  member edges before (14): [(30116, 'TransPos', 30119, 'array'), (30119, 'element', 2626, 'element'), (30119, 'element', 9503, ''), (30179, 'min slot', 30119, 'index'), (30179, 'min slot', 30216, 'index'), (30179, 'min slot', 30240, 'index'), (30179, 'min slot', 30300, 'index'), (30215, 'RotPos', 30216, 'array'), (30216, 'element', 2626, 'element'), (30239, 'FrameIdx', 30240, 'array'), (30240, 'element', 10068, 'x'), (30240, 'element', 29240, 'x'), (30294, 'BufDiff', 30300, 'array'), (30300, 'element', 2626, 'element')]
+  PASS  F2 member edges = 4 Local->array + 4 index + 6 element sinks = 14  [(30116, 'TransPos', 30119, 'array'), (30119, 'element', 2626, 'element'), (30119, 'element', 9503, ''), (30179, 'min slot', 30119, 'index'), (30179, 'min slot', 30216, 'index'), (30179, 'min slot', 30240, 'index'), (30179, 'min slot', 30300, 'index'), (30215, 'RotPos', 30216, 'array'), (30216, 'element', 2626, 'element'), (30239, 'FrameIdx', 30240, 'array'), (30240, 'element', 10068, 'x'), (30240, 'element', 29240, 'x'), (30294, 'BufDiff', 30300, 'array'), (30300, 'element', 2626, 'element')]
+  PASS  F3 FS #29721 has ONE frame d29869  {'frames': [29869], 'echo': 29721, 'err': 'error 1055: Property Node in OpFsDiagrams_v0.vi'}
+  FACT  fs_add_frame {'echo': 29721, 'err': '', 'frames_before': [29869], 'purged': 0, 'invoke_left': [], 'frames_after': [31550, 29869], 'new_frame': 31550}
+  PASS  F4 frames after == [new d31550, d29869] (new frame FIRST)  {'echo': 29721, 'err': '', 'frames_before': [29869], 'purged': 0, 'invoke_left': [], 'frames_after': [31550, 29869], 'new_frame': 31550}
+  FACT  ExecState [fix +frame] D1_ring_p6fix_20261013_231910.vi = 1
+  PASS  F5 ExecState 1 after the empty frame
+  FACT  new frame d31550 pos (0, 0)
+  OBSERVED uid 30294 -> owner 'Diagram' uid 31550 | self 'Local'#30294 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  move_in #30294 (BufDiff) -> returned uid 0, owner ('Diagram', 31550)
+  PASS  F6 #30294 moved, owner = new frame d31550 (uid-addressed re-read)  (0, ('Diagram', 31550))
+  OBSERVED uid 30300 -> owner 'Diagram' uid 31550 | self 'IndexArray'#30300 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  move_in #30300 (IndexArray) -> returned uid 30294, owner ('Diagram', 31550)
+  PASS  F6 #30300 moved, owner = new frame d31550 (uid-addressed re-read)  (30294, ('Diagram', 31550))
+  OBSERVED uid 30116 -> owner 'Diagram' uid 31550 | self 'Local'#30116 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  move_in #30116 (TransPos) -> returned uid 30294, owner ('Diagram', 31550)
+  PASS  F6 #30116 moved, owner = new frame d31550 (uid-addressed re-read)  (30294, ('Diagram', 31550))
+  OBSERVED uid 30119 -> owner 'Diagram' uid 31550 | self 'IndexArray'#30119 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  move_in #30119 (IndexArray) -> returned uid 30294, owner ('Diagram', 31550)
+  PASS  F6 #30119 moved, owner = new frame d31550 (uid-addressed re-read)  (30294, ('Diagram', 31550))
+  OBSERVED uid 30215 -> owner 'Diagram' uid 31550 | self 'Local'#30215 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  move_in #30215 (RotPos) -> returned uid 30294, owner ('Diagram', 31550)
+  PASS  F6 #30215 moved, owner = new frame d31550 (uid-addressed re-read)  (30294, ('Diagram', 31550))
+  OBSERVED uid 30216 -> owner 'Diagram' uid 31550 | self 'IndexArray'#30216 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  move_in #30216 (IndexArray) -> returned uid 30294, owner ('Diagram', 31550)
+  PASS  F6 #30216 moved, owner = new frame d31550 (uid-addressed re-read)  (30294, ('Diagram', 31550))
+  OBSERVED uid 30239 -> owner 'Diagram' uid 31550 | self 'Local'#30239 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  move_in #30239 (FrameIdx) -> returned uid 30294, owner ('Diagram', 31550)
+  PASS  F6 #30239 moved, owner = new frame d31550 (uid-addressed re-read)  (30294, ('Diagram', 31550))
+  OBSERVED uid 30240 -> owner 'Diagram' uid 31550 | self 'IndexArray'#30240 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  move_in #30240 (IndexArray) -> returned uid 30294, owner ('Diagram', 31550)
+  PASS  F6 #30240 moved, owner = new frame d31550 (uid-addressed re-read)  (30294, ('Diagram', 31550))
+  FACT  junk Invokes left by the 8 moves: purged 8, left []
+  PASS  F6b every junk Invoke the moves left is deleted  (8, [])
+  FACT  Remove Bad Wires after the moves: wires 2057, ExecState 0
+  FACT  after moves+RBW: edges lost vs before (non-member) [(9503, '', 28083, 'Magnet position')]
+  PASS  F7 every NON-member edge lost by the moves + RBW starts at a tunnel fed by a member  [(9503, '', 28083, 'Magnet position')]
+  PASS  F7b lost edge (9503, '', 28083, 'Magnet position') maps to exactly one terminal pair  [({'term_uid': 9505, 'term_name': '', 'is_source': True, 'wire_uid': 28684, 'owner_uid': 9503, 'owner_class': 'LoopTunnel', 'frame_diagram': 7911, 'term_class': 'InnerTerminal'}, {'term_uid': 28095, 'term_name': 'Magnet position', 'is_source': False, 'wire_uid': 28684, 'owner_uid': 28083, 'owner_class': 'SubVI', 'frame_diagram': 7911, 'term_class': 'Terminal'})]
+  PASS  F8 the 4 index sources are the pick loop tunnel #30179  [(30179, 'min slot', 30119, 'index'), (30179, 'min slot', 30216, 'index'), (30179, 'min slot', 30240, 'index'), (30179, 'min slot', 30300, 'index')]
+  FACT  index wire w7875 source(s) after the first connect: [{'term_uid': 30236, 'term_name': 'min slot', 'is_source': True, 'wire_uid': 7875, 'owner_uid': 28684, 'owner_class': 'FlatSequenceOuterTunnel', 'frame_diagram': 31550, 'term_class': 'Terminal'}]
+  PASS  F9 the first index wire is fed by a new tunnel inside the new frame  [{'term_uid': 30236, 'term_name': 'min slot', 'is_source': True, 'wire_uid': 7875, 'owner_uid': 28684, 'owner_class': 'FlatSequenceOuterTunnel', 'frame_diagram': 31550, 'term_class': 'Terminal'}]
+  FACT  #30300 element sinks before: [(2626, 'element', 2832)]
+  FACT  element #30300 -> #2626 'element': sink wire w4821 source(s) [{'term_uid': 31527, 'term_name': 'Index of closest\ncal image slice, bead 2', 'is_source': True, 'wire_uid': 4821, 'owner_uid': 30270, 'owner_class': 'FlatSequenceOuterTunnel', 'frame_diagram': 23166, 'term_class': 'Terminal'}]
+  PASS  F10 #30300 element reaches #2626 through a new out tunnel of the new frame  [{'term_uid': 31527, 'term_name': 'Index of closest\ncal image slice, bead 2', 'is_source': True, 'wire_uid': 4821, 'owner_uid': 30270, 'owner_class': 'FlatSequenceOuterTunnel', 'frame_diagram': 23166, 'term_class': 'Terminal'}]
+  FACT  #30119 element sinks before: [(2626, 'element', 4160), (9503, '', 9508)]
+  FACT  element #30119 -> #2626 'element': sink wire w9511 source(s) [{'term_uid': 31595, 'term_name': '', 'is_source': True, 'wire_uid': 9511, 'owner_uid': 31529, 'owner_class': 'FlatSequenceOuterTunnel', 'frame_diagram': 23166, 'term_class': 'Terminal'}]
+  PASS  F10 #30119 element reaches #2626 through a new out tunnel of the new frame  [{'term_uid': 31595, 'term_name': '', 'is_source': True, 'wire_uid': 9511, 'owner_uid': 31529, 'owner_class': 'FlatSequenceOuterTunnel', 'frame_diagram': 23166, 'term_class': 'Terminal'}]
+  FACT  sink #9508 of #9503 (LoopTunnel) not free: owner terminals now []
+  FACT  tunnel #9503 GONE; wiring its inner sinks instead: [(28083, 'Magnet position', 28095)]
+  FACT  #30216 element sinks before: [(2626, 'element', 4165)]
+  FACT  element #30216 -> #2626 'element': sink wire w9511 source(s) [{'term_uid': 31676, 'term_name': '', 'is_source': True, 'wire_uid': 9511, 'owner_uid': 31634, 'owner_class': 'FlatSequenceOuterTunnel', 'frame_diagram': 23166, 'term_class': 'Terminal'}]
+  PASS  F10 #30216 element reaches #2626 through a new out tunnel of the new frame  [{'term_uid': 31676, 'term_name': '', 'is_source': True, 'wire_uid': 9511, 'owner_uid': 31634, 'owner_class': 'FlatSequenceOuterTunnel', 'frame_diagram': 23166, 'term_class': 'Terminal'}]
+  FACT  #30240 element sinks before: [(29240, 'x', 29256), (10068, 'x', 10083)]
+  FACT  element #30240 -> #29240 'x': sink wire w31579 source(s) [{'term_uid': 31719, 'term_name': 'Index of closest\ncal image slice, bead 2', 'is_source': True, 'wire_uid': 31579, 'owner_uid': 31692, 'owner_class': 'FlatSequenceOuterTunnel', 'frame_diagram': 23166, 'term_class': 'Terminal'}]
+  PASS  F10 #30240 element reaches #29240 through a new out tunnel of the new frame  [{'term_uid': 31719, 'term_name': 'Index of closest\ncal image slice, bead 2', 'is_source': True, 'wire_uid': 31579, 'owner_uid': 31692, 'owner_class': 'FlatSequenceOuterTunnel', 'frame_diagram': 23166, 'term_class': 'Terminal'}]
+  FACT  connects: [('array', 30294, 30300, {'wire_uid': 4824, 'broken': False, 'err': ''}), ('array', 30116, 30119, {'wire_uid': 4840, 'broken': False, 'err': ''}), ('array', 30215, 30216, {'wire_uid': 4843, 'broken': False, 'err': ''}), ('array', 30239, 30240, {'wire_uid': 4847, 'broken': False, 'err': ''}), ('index', 30179, 30300, {'wire_uid': 7875, 'broken': False, 'err': ''}), ('index', 28684, 30119, {'wire_uid': 7875, 'broken': False, 'err': ''}), ('index', 28684, 30216, {'wire_uid': 7875, 'broken': False, 'err': ''}), ('index', 28684, 30240, {'wire_uid': 7875, 'broken': False, 'err': ''}), ('element', 30300, 2626, {'wire_uid': 4821, 'broken': False, 'err': ''}), ('element', 30119, 2626, {'wire_uid': 9511, 'broken': False, 'err': ''}), ('element', 31529, 28083, {'wire_uid': 30763, 'broken': False, 'err': ''}), ('element', 30216, 2626, {'wire_uid': 9511, 'broken': False, 'err': ''}), ('element', 30240, 29240, {'wire_uid': 31579, 'broken': False, 'err': ''}), ('element', 31692, 10068, {'wire_uid': 31579, 'broken': False, 'err': ''})]
+  PASS  F11 every connect: no error, not broken
+  FACT  ExecState [fix after] D1_ring_p6fix_20261013_231910.vi = 1
+  FACT  new tunnels [28684, 30270, 31529, 31600, 31634, 31692]; gone tunnels [9503]; warm edges +[] -[]
+  FACT  new owners: [(28684, 'FlatSequenceOuterTunnel'), (30270, 'FlatSequenceOuterTunnel'), (31529, 'FlatSequenceOuterTunnel'), (31600, 'LoopTunnel'), (31634, 'FlatSequenceOuterTunnel'), (31692, 'FlatSequenceOuterTunnel')]
+  PASS  F12 ExecState 1 after the fix (warm)
+  PASS  F12b no new object besides the frame's tunnels and the new For Loop tunnel  [28684, 30270, 31529, 31600, 31634, 31692]
+  PASS  F13 callee census unchanged
+  PASS  F14 WARM edge set with the new tunnels (and gone tunnels [9503]) collapsed == before (2425 edges)  ([], [])
+  FACT  new owners (frame tunnels etc.): [(28684, 'FlatSequenceOuterTunnel'), (30270, 'FlatSequenceOuterTunnel'), (31529, 'FlatSequenceOuterTunnel'), (31600, 'LoopTunnel'), (31634, 'FlatSequenceOuterTunnel'), (31692, 'FlatSequenceOuterTunnel')]
+  FACT  SAVED C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\bench\lean\D1_ring_p6fix_20261013_231910.vi md5 3e847397eb120860adb2e868792345f7
+  FACT  LabVIEW handle count BEFORE the restart: 54472
+  FACT  LabVIEW handle count AFTER the restart: 34000
+
+---------- [R] D1_ring_p6fix_replay_20261013_231910.vi
+  PASS  R.0 copy md5 == source 3e847397
+  FACT  ExecState [R before] D1_ring_p6fix_replay_20261013_231910.vi = 1
+  PASS  R.1 ExecState 1 before
+  PASS  R.2 #6810 is a callee  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\background VIs\get buff image-lost frames.vi
+  FACT  R replace_object #6810 -> replay_get_buff_image_paced60.vi: {'new_uid': 31710, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  R.3 replace #6810: no error, new uid  {'new_uid': 31710, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  R.2 #22692 is a callee  C:\Program Files\NI\LVAddons\niimaqdx\1\vi.lib\vision\driver\IMAQdx.llb\IMAQdx Get Image.vi
+  FACT  R replace_object #22692 -> replay_get_image_cal.vi: {'new_uid': 6829, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  R.3 replace #22692: no error, new uid  {'new_uid': 6829, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  R.4 callee diff == exactly the swap(s)  {6810: ('G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\background VIs\\get buff image-lost frames.vi', None), 22692: ('C:\\Program Files\\NI\\LVAddons\\niimaqdx\\1\\vi.lib\\vision\\driver\\IMAQdx.llb\\IMAQdx Get Image.vi', None), 6829: (None, 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_get_image_cal.vi'), 31710: (None, 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_get_buff_image_paced60.vi')}
+  PASS  R.5 wire-edge diff 0 after remap (2431 edges)  ([], [])
+  FACT  ExecState [R after] D1_ring_p6fix_replay_20261013_231910.vi = 1
+  PASS  R.6 ExecState 1 after
+  FACT  SAVED C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\bench\lean\D1_ring_p6fix_replay_20261013_231910.vi md5 ae83d1aa088ba4546c65e039c6b4d16d
+  FACT  LabVIEW handle count BEFORE the restart: 54512
+  FACT  LabVIEW handle count AFTER the restart: 33959
+
+---------- [G] D1_ring_p6fix_replay_gap_20261013_231910.vi
+  PASS  G.0 copy md5 == source ae83d1aa
+  FACT  ExecState [G before] D1_ring_p6fix_replay_gap_20261013_231910.vi = 1
+  PASS  G.1 ExecState 1 before
+  PASS  G.2 #31710 is a callee  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\replay\replay_get_buff_image_paced60.vi
+  FACT  G replace_object #31710 -> gap_get_buff_image_paced60_20261013_161639.vi: {'new_uid': 31503, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  G.3 replace #31710: no error, new uid  {'new_uid': 31503, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  G.4 callee diff == exactly the swap(s)  {31503: (None, 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\bench\\lean\\gap_get_buff_image_paced60_20261013_161639.vi'), 31710: ('C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_get_buff_image_paced60.vi', None)}
+  PASS  G.5 wire-edge diff 0 after remap (2431 edges)  ([], [])
+  FACT  ExecState [G after] D1_ring_p6fix_replay_gap_20261013_231910.vi = 1
+  PASS  G.6 ExecState 1 after
+  FACT  SAVED C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\bench\lean\D1_ring_p6fix_replay_gap_20261013_231910.vi md5 2c499c7ba1a38c813d784efe7eacee76
+  FACT  LabVIEW handle count BEFORE the restart: 54475
+  FACT  LabVIEW handle count AFTER the restart: 33964
+
+---------- [W40] D1_ring_p6fix_replay_w40_20261013_231910.vi
+  PASS  W40.0 copy md5 == source ae83d1aa
+  FACT  ExecState [W40 before] D1_ring_p6fix_replay_w40_20261013_231910.vi = 1
+  PASS  W40.1 ExecState 1 before
+  PASS  W40.2 #29724 is a callee  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\RingSeqCheck_v0.vi
+  FACT  W40 replace_object #29724 -> RingSeqCheck_w40_20261013_161639.vi: {'new_uid': 31503, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  W40.3 replace #29724: no error, new uid  {'new_uid': 31503, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  W40.4 callee diff == exactly the swap(s)  {29724: ('C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\RingSeqCheck_v0.vi', None), 31503: (None, 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\bench\\lean\\RingSeqCheck_w40_20261013_161639.vi')}
+  PASS  W40.5 wire-edge diff 0 after remap (2431 edges)  ([], [])
+  FACT  ExecState [W40 after] D1_ring_p6fix_replay_w40_20261013_231910.vi = 1
+  PASS  W40.6 ExecState 1 after
+  FACT  SAVED C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\bench\lean\D1_ring_p6fix_replay_w40_20261013_231910.vi md5 db5e2e958201df1f1de928558aeff3ac
+  FACT  LabVIEW handle count BEFORE the restart: 54477
+  FACT  LabVIEW handle count AFTER the restart: 33991
+
+---------- [W100] D1_ring_p6fix_replay_w100_20261013_231910.vi
+  PASS  W100.0 copy md5 == source ae83d1aa
+  FACT  ExecState [W100 before] D1_ring_p6fix_replay_w100_20261013_231910.vi = 1
+  PASS  W100.1 ExecState 1 before
+  PASS  W100.2 #29724 is a callee  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\RingSeqCheck_v0.vi
+  FACT  W100 replace_object #29724 -> RingSeqCheck_w100_20261013_161639.vi: {'new_uid': 31503, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  W100.3 replace #29724: no error, new uid  {'new_uid': 31503, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  W100.4 callee diff == exactly the swap(s)  {29724: ('C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\RingSeqCheck_v0.vi', None), 31503: (None, 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\bench\\lean\\RingSeqCheck_w100_20261013_161639.vi')}
+  PASS  W100.5 wire-edge diff 0 after remap (2431 edges)  ([], [])
+  FACT  ExecState [W100 after] D1_ring_p6fix_replay_w100_20261013_231910.vi = 1
+  PASS  W100.6 ExecState 1 after
+  FACT  SAVED C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\bench\lean\D1_ring_p6fix_replay_w100_20261013_231910.vi md5 ae8474bc8b33506c3659af407c2e7696
+  FACT  LabVIEW handle count BEFORE the restart: 54503
+  FACT  LabVIEW handle count AFTER the restart: 33955
+
+---------- [C] COLD reads: the bed (read-only) and every saved file
+  FACT  cold bed edges 2426
+  FACT  LabVIEW handle count BEFORE the restart: 54441
+  FACT  LabVIEW handle count AFTER the restart: 33970
+  PASS  C1 fix ExecState 1 COLD
+  PASS  CE fix COLD edges, new tunnels [28684, 30270, 31529, 31600, 31634, 31692] (bed: gone [9503]) collapsed == cold bed edges (2425)  ([], [])
+  PASS  CO fix COLD the 8 moved nodes are in the new frame d31550
+  PASS  CF fix COLD FS #29721 frames == [d31550, d29869]  [31550, 29869]
+  PASS  C2 fix md5 unchanged by the cold load
+  FACT  LabVIEW handle count BEFORE the restart: 54454
+  FACT  LabVIEW handle count AFTER the restart: 34003
+  PASS  C1 replay ExecState 1 COLD
+  PASS  CE replay COLD edges (remapped) == cold source edges  ([], [])
+  PASS  C2 replay md5 unchanged by the cold load
+  FACT  LabVIEW handle count BEFORE the restart: 54515
+  FACT  LabVIEW handle count AFTER the restart: 33954
+  PASS  C1 gap ExecState 1 COLD
+  PASS  CE gap COLD edges (remapped) == cold source edges  ([], [])
+  PASS  C2 gap md5 unchanged by the cold load
+  FACT  LabVIEW handle count BEFORE the restart: 54463
+  FACT  LabVIEW handle count AFTER the restart: 33974
+  PASS  C1 w40 ExecState 1 COLD
+  PASS  CE w40 COLD edges (remapped) == cold source edges  ([], [])
+  PASS  C2 w40 md5 unchanged by the cold load
+  FACT  LabVIEW handle count BEFORE the restart: 54482
+  FACT  LabVIEW handle count AFTER the restart: 33951
+  PASS  C1 w100 ExecState 1 COLD
+  PASS  CE w100 COLD edges (remapped) == cold source edges  ([], [])
+  PASS  C2 w100 md5 unchanged by the cold load
+
+---------- [H] HYGIENE
+  FACT  close_panel(D1_ring_p6fix_20261013_231910.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 40, 'closed': 40, 'live': 0, 'cached_op_vis': 0}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 40, 'closed': 40, 'live': 0, 'cached_op_vis': 0}
+  FACT  LabVIEW handle count AFTER the work: 63310
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before c2d9c13cb40c0a5cab7433896d1df157 / after c2d9c13cb40c0a5cab7433896d1df157
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  P6 bed           c2d9c13cb40c0a5cab7433896d1df157  (want c2d9c13cb40c0a5cab7433896d1df157) OK
+  FACT  PIN AFTER  paced get-buff   59ec66b61f3518b049a3c532a8e65482  (want 59ec66b61f3518b049a3c532a8e65482) OK
+  FACT  PIN AFTER  replay cal       afce0d04346fc58234d28bcc0fc42e55  (want afce0d04346fc58234d28bcc0fc42e55) OK
+  FACT  PIN AFTER  gap wrapper      a885a8fbc06351ab789d539af460a8d7  (want a885a8fbc06351ab789d539af460a8d7) OK
+  FACT  PIN AFTER  RSC w40          581e2953c10b91439eedcaa18656b13f  (want 581e2953c10b91439eedcaa18656b13f) OK
+  FACT  PIN AFTER  RSC w100         429cdc5dc55cbc861a609b9249c9347d  (want 429cdc5dc55cbc861a609b9249c9347d) OK
+  FACT  PIN AFTER  S1 replay copy   126f84975fca9f6124432a7e4decd0c8  (want 126f84975fca9f6124432a7e4decd0c8) OK
+  FACT  PIN AFTER  RingSeqCheck_v0  0295a8d349a3b61151cd87797119b9b1  (want 0295a8d349a3b61151cd87797119b9b1) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 63310
+  PASS  H9 LabVIEW gone
+
+====================================================================================================
+=== GATES: 85 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_lean\tools\bench\lean_bench\p6fix_build.json   elapsed 1867.6 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":85,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1869s

@@ -5061,7 +5061,9 @@ def struct_copy_nested(target, diagram_uid, cls, donor, pos=(40, 40)):
         _c97_paths()
         import build_d1_v0 as B
         own = B.owner_of(target, new[0], strict=False)
-        if tuple(own) != ("Diagram", int(diagram_uid)):
+        # lean latest retry (2026-10-14, latestobs_build run 1): the same top-level rule as create_primitive_nested (card 124-4):
+        # the VI's top-level diagram reads back as 'TopLevelDiagram'; accepted ONLY when its uid IS diagram_uid.
+        if tuple(own) not in (("Diagram", int(diagram_uid)), ("TopLevelDiagram", int(diagram_uid))):
             probs.append("new %s #%s is owned by %r, not Diagram #%s" % (cls, new[0], own, diagram_uid))
     if probs:
         raise RuntimeError("struct_copy_nested(%s on #%s): %s" % (cls, diagram_uid, " | ".join(probs)))

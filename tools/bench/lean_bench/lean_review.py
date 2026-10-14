@@ -406,6 +406,8 @@ def cycle(tag, task, rc, lb, run_discussion, run_plan, log):
                 % (time.strftime("%Y-%m-%d %H:%M:%S"), _rel(new[0]), where))
     # change 4: the review's NEXT: line vs the queue's actual next task
     want = [m.group(1) for m in (NEXT_RE.match(x) for x in agreed) if m]
+    # "NEXT: none / nothing / empty" = the review expects an empty queue (run 4 c2 logged a false mismatch on it)
+    want = [None if w.lower() in ("none", "nothing", "empty", "-") else w for w in want]
     nxt = next_task(lb)
     out["next_check"] = "no NEXT line" if not want else ("ok" if nxt == want[0] else "MISMATCH")
     if want and nxt != want[0]:
@@ -498,6 +500,12 @@ def selftest():
               out["next_check"] == "MISMATCH" and "review said NEXT other" in open(os.path.join(lb, "questions_for_user.md"),
                                                                                   encoding="utf-8").read())
         os.remove(os.path.join(lb, "queue", "zz.md"))
+        mk("a5", "PASS")
+        for d in (os.path.join(lb, "queue"), os.path.join(lb, "queue", "next")):
+            for p in glob.glob(os.path.join(d, "*.md")):
+                os.remove(p)
+        rc, out = cycle("a5", "t.md", 0, lb, disc(["VERDICT: PASS", "NEXT: none"]), plan(), print)
+        check("1d2 NEXT: none with an empty queue -> ok (no false mismatch)", out["next_check"] == "ok")
         mk("pb", "INCOMPLETE")
         rc, out = cycle("pb", "t.md", 0, lb, disc(["VERDICT: PASS-BY-REVIEW source: user '동의' user_notes.md:7"]),
                         plan(), print)

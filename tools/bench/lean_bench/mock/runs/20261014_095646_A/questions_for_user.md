@@ -1,0 +1,4 @@
+- 2026-10-14 09:56 | `t2` | HOLD: cycle 20261014_095646-c2 - the review gave no VERDICT twice (no verdict line); the task is on hold, not passed - check the review record
+- 2026-10-14 09:56 | `t3` | HOLD: cycle 20261014_095646-c3 - the review step crashed (RuntimeError: fake review crash); the task is on hold
+- 2026-10-14 09:56 | `t4` | HOLD: need an exception to the retry limit
+- 2026-10-14 09:56 | `t4` | ASSUME: 90 Hz leg first

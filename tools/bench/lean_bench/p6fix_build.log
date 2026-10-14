@@ -1,0 +1,95 @@
+BGRUN START 2026-10-13 22:35:19 limit 60.0 min: py -u tools/bench/lean_bench/p6fix_build.py
+BGRUN PID 15848
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 354 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == c2d9c13cb40c0a5cab7433896d1df157  got c2d9c13cb40c0a5cab7433896d1df157
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE P6 bed           c2d9c13cb40c0a5cab7433896d1df157  (want c2d9c13cb40c0a5cab7433896d1df157) OK
+  FACT  PIN BEFORE paced get-buff   59ec66b61f3518b049a3c532a8e65482  (want 59ec66b61f3518b049a3c532a8e65482) OK
+  FACT  PIN BEFORE replay cal       afce0d04346fc58234d28bcc0fc42e55  (want afce0d04346fc58234d28bcc0fc42e55) OK
+  FACT  PIN BEFORE gap wrapper      a885a8fbc06351ab789d539af460a8d7  (want a885a8fbc06351ab789d539af460a8d7) OK
+  FACT  PIN BEFORE RSC w40          581e2953c10b91439eedcaa18656b13f  (want 581e2953c10b91439eedcaa18656b13f) OK
+  FACT  PIN BEFORE RSC w100         429cdc5dc55cbc861a609b9249c9347d  (want 429cdc5dc55cbc861a609b9249c9347d) OK
+  FACT  PIN BEFORE S1 replay copy   126f84975fca9f6124432a7e4decd0c8  (want 126f84975fca9f6124432a7e4decd0c8) OK
+  FACT  PIN BEFORE RingSeqCheck_v0  0295a8d349a3b61151cd87797119b9b1  (want 0295a8d349a3b61151cd87797119b9b1) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 34317
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  D1_ring_p6fix_20261013_223519.vi
+  FACT  ExecState [after open] D1_ring_p6fix_20261013_223519.vi = 1
+  PASS  P0 reused test file gap_get_buff_image_paced60_20261013_161639.vi md5 == a885a8fb
+  PASS  P0 reused test file RingSeqCheck_w40_20261013_161639.vi md5 == 581e2953
+  PASS  P0 reused test file RingSeqCheck_w100_20261013_161639.vi md5 == 429cdc5d
+
+---------- [F] fixed P6: new frame 0 in Flat Sequence #29721 + move the 4 per-slot reads into it
+  FACT  ExecState [fix before] D1_ring_p6fix_20261013_223519.vi = 1
+  PASS  F1 ExecState 1 before
+  FACT  before: 2426 edges, 1862 owners, 101 callees
+  FACT  member edges before (14): [(30116, 'TransPos', 30119, 'array'), (30119, 'element', 2626, 'element'), (30119, 'element', 9503, ''), (30179, 'min slot', 30119, 'index'), (30179, 'min slot', 30216, 'index'), (30179, 'min slot', 30240, 'index'), (30179, 'min slot', 30300, 'index'), (30215, 'RotPos', 30216, 'array'), (30216, 'element', 2626, 'element'), (30239, 'FrameIdx', 30240, 'array'), (30240, 'element', 10068, 'x'), (30240, 'element', 29240, 'x'), (30294, 'BufDiff', 30300, 'array'), (30300, 'element', 2626, 'element')]
+  PASS  F2 member edges = 4 Local->array + 4 index + 6 element sinks = 14  [(30116, 'TransPos', 30119, 'array'), (30119, 'element', 2626, 'element'), (30119, 'element', 9503, ''), (30179, 'min slot', 30119, 'index'), (30179, 'min slot', 30216, 'index'), (30179, 'min slot', 30240, 'index'), (30179, 'min slot', 30300, 'index'), (30215, 'RotPos', 30216, 'array'), (30216, 'element', 2626, 'element'), (30239, 'FrameIdx', 30240, 'array'), (30240, 'element', 10068, 'x'), (30240, 'element', 29240, 'x'), (30294, 'BufDiff', 30300, 'array'), (30300, 'element', 2626, 'element')]
+  PASS  F3 FS #29721 has ONE frame d29869  {'frames': [29869], 'echo': 29721, 'err': 'error 1055: Property Node in OpFsDiagrams_v0.vi'}
+  FACT  fs_add_frame {'echo': 29721, 'err': '', 'frames_before': [29869], 'purged': 0, 'invoke_left': [], 'frames_after': [31550, 29869], 'new_frame': 31550}
+  PASS  F4 frames after == [new d31550, d29869] (new frame FIRST)  {'echo': 29721, 'err': '', 'frames_before': [29869], 'purged': 0, 'invoke_left': [], 'frames_after': [31550, 29869], 'new_frame': 31550}
+  FACT  ExecState [fix +frame] D1_ring_p6fix_20261013_223519.vi = 1
+  PASS  F5 ExecState 1 after the empty frame
+  FACT  new frame d31550 pos (0, 0)
+  OBSERVED uid 30294 -> owner 'Diagram' uid 31550 | self 'Local'#30294 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  move_in #30294 (BufDiff) -> returned uid 0, owner ('Diagram', 31550)
+  PASS  F6 #30294 moved, owner = new frame d31550 (uid-addressed re-read)  (0, ('Diagram', 31550))
+  OBSERVED uid 30300 -> owner 'Diagram' uid 31550 | self 'IndexArray'#30300 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  move_in #30300 (IndexArray) -> returned uid 30294, owner ('Diagram', 31550)
+  PASS  F6 #30300 moved, owner = new frame d31550 (uid-addressed re-read)  (30294, ('Diagram', 31550))
+  OBSERVED uid 30116 -> owner 'Diagram' uid 31550 | self 'Local'#30116 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  move_in #30116 (TransPos) -> returned uid 30294, owner ('Diagram', 31550)
+  PASS  F6 #30116 moved, owner = new frame d31550 (uid-addressed re-read)  (30294, ('Diagram', 31550))
+  OBSERVED uid 30119 -> owner 'Diagram' uid 31550 | self 'IndexArray'#30119 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  move_in #30119 (IndexArray) -> returned uid 30294, owner ('Diagram', 31550)
+  PASS  F6 #30119 moved, owner = new frame d31550 (uid-addressed re-read)  (30294, ('Diagram', 31550))
+  OBSERVED uid 30215 -> owner 'Diagram' uid 31550 | self 'Local'#30215 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  move_in #30215 (RotPos) -> returned uid 30294, owner ('Diagram', 31550)
+  PASS  F6 #30215 moved, owner = new frame d31550 (uid-addressed re-read)  (30294, ('Diagram', 31550))
+  OBSERVED uid 30216 -> owner 'Diagram' uid 31550 | self 'IndexArray'#30216 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  move_in #30216 (IndexArray) -> returned uid 30294, owner ('Diagram', 31550)
+  PASS  F6 #30216 moved, owner = new frame d31550 (uid-addressed re-read)  (30294, ('Diagram', 31550))
+  OBSERVED uid 30239 -> owner 'Diagram' uid 31550 | self 'Local'#30239 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  move_in #30239 (FrameIdx) -> returned uid 30294, owner ('Diagram', 31550)
+  PASS  F6 #30239 moved, owner = new frame d31550 (uid-addressed re-read)  (30294, ('Diagram', 31550))
+  OBSERVED uid 30240 -> owner 'Diagram' uid 31550 | self 'IndexArray'#30240 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  move_in #30240 (IndexArray) -> returned uid 30294, owner ('Diagram', 31550)
+  PASS  F6 #30240 moved, owner = new frame d31550 (uid-addressed re-read)  (30294, ('Diagram', 31550))
+  FACT  Remove Bad Wires after the moves: wires 2057, ExecState 0
+  FACT  after moves+RBW: edges lost vs before (non-member) [(9503, '', 28083, 'Magnet position')]
+  FAIL  F7 no NON-member edge lost by the moves + RBW  [(9503, '', 28083, 'Magnet position')]
+STOP {"schema":"stop-line/1","kind":"gate","message":"F7 no NON-member edge lost by the moves + RBW","t":"2026-10-13 22:37:55"}
+  FAIL  STOP at gate: F7 no NON-member edge lost by the moves + RBW
+
+---------- [H] HYGIENE
+  FACT  gscript ref_counts: {'opened': 6, 'closed': 6, 'live': 0, 'cached_op_vis': 9}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 6, 'closed': 6, 'live': 0, 'cached_op_vis': 9}
+  FACT  LabVIEW handle count AFTER the work: 40763
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before c2d9c13cb40c0a5cab7433896d1df157 / after c2d9c13cb40c0a5cab7433896d1df157
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  P6 bed           c2d9c13cb40c0a5cab7433896d1df157  (want c2d9c13cb40c0a5cab7433896d1df157) OK
+  FACT  PIN AFTER  paced get-buff   59ec66b61f3518b049a3c532a8e65482  (want 59ec66b61f3518b049a3c532a8e65482) OK
+  FACT  PIN AFTER  replay cal       afce0d04346fc58234d28bcc0fc42e55  (want afce0d04346fc58234d28bcc0fc42e55) OK
+  FACT  PIN AFTER  gap wrapper      a885a8fbc06351ab789d539af460a8d7  (want a885a8fbc06351ab789d539af460a8d7) OK
+  FACT  PIN AFTER  RSC w40          581e2953c10b91439eedcaa18656b13f  (want 581e2953c10b91439eedcaa18656b13f) OK
+  FACT  PIN AFTER  RSC w100         429cdc5dc55cbc861a609b9249c9347d  (want 429cdc5dc55cbc861a609b9249c9347d) OK
+  FACT  PIN AFTER  S1 replay copy   126f84975fca9f6124432a7e4decd0c8  (want 126f84975fca9f6124432a7e4decd0c8) OK
+  FACT  PIN AFTER  RingSeqCheck_v0  0295a8d349a3b61151cd87797119b9b1  (want 0295a8d349a3b61151cd87797119b9b1) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 35945
+  PASS  H9 LabVIEW gone
+
+====================================================================================================
+=== GATES: 24 pass / 2 fail; failing: F7 no NON-member edge lost by the moves + RBW, STOP at gate: F7 no NON-member edge lost by the moves + RBW
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_lean\tools\bench\lean_bench\p6fix_build.json   elapsed 161.9 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":24,"fail":2},"first_fail":"F7 no NON-member edge lost by the moves + RBW","artefacts":[]}
+BGRUN END rc=1 after 163s

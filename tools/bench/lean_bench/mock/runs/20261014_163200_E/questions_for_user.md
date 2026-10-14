@@ -1,0 +1,1 @@
+- 2026-10-14 16:32 | `e2` | HOLD: cycle 20261014_163201-c2 - the review says PASS but the session's own result is OTHER and no approved source was given; the task is on hold (no automatic retry)
