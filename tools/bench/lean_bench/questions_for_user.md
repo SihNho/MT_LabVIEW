@@ -26,3 +26,27 @@ HOLD: 실시간 번호 일관성과 리플레이 이미지·번호 짝 증거를
 HOLD: HOLD-1 합격 기준(:19), HOLD-2 150 Hz(:11), HOLD-3 비드·리그(:12), HOLD-4 픽 방법(:13)에 답해 주십시오. 각 답에 의존하는 작업만 보류합니다.
 - 2026-10-14 plan | `p64prep` | HOLD: p64prep 는 PASS 로 끝났고 큐는 비어 있습니다. 남은 단계(p64_plan.md 11절)는 모두 답을 기다리므로 새 작업을 넣지 않았습니다. 가장 먼저 필요한 답은 HOLD-5(:17) 하나입니다 - "예"면 다음 사이클에 P-1(관찰용 사본 callee swap 빌드 + #6810 감싸기, LabVIEW 만·모터·카메라 없음)과 P-3(드라이버 사본 + 모의 실행)을 넣습니다. 실제 비드 실행은 HOLD-1·2·3·4·6 답과 현장 확인 뒤입니다.
 - 2026-10-14 10:4x | ANSWERED by the user ("전부 동의함"): HOLD-1..6 and ASSUME-1..3 of p64_plan.md section 10 all agreed as written (HOLD-4 = option 2, bead map from a snapshot, user checks it; HOLD-5 = P-1/P-2/P-3 allowed). HOLD-3: the sample will be non-paramagnetic polystyrene REFERENCE beads ("아무리 당겨도 로스는 없을 것"); the user prepares them and says when - no bead/rig-day task before that word.
+- 2026-10-14 12:15 | `p64p1` | ASSUME: GetBuffFirst 가 'VI 를 올릴 때마다' 한 번 기록하는 방식을 받아들이고, P-3 드라이버의 레그 전 거부(LabVIEW 0개, 기록 파일 없음)로 보장함 - 진짜 First Call? 이 필요하면 사용자가 말할 것
+- 2026-10-14 12:3x | `p64p3` | ASSUME (비드 15개 미만): 사진에서 찾은 비드 수 N 이 15보다 적으면, 나머지 픽은 이전 ABBA 의 고정 위치(drive_m8 의 15곳) 중 비드에서 떨어진 빈 자리로 채워 언제나 15픽으로 돌립니다(추적 부하가 이전 ABBA 와 같음). A·B·확인 레그 모두 같은 15픽을 쓰고, 레그마다 실제 비드 수 N 을 보고합니다. 두 장의 사진 사이에 3 px 넘게 움직인 비드(떠다니는 비드)는 픽하지 않습니다. 합격 기준의 "15픽 등록"은 15픽 그대로 보고, 실제로 비드를 따라간 칸은 N 개뿐이라고 적습니다. 다르게 원하시면 알려 주세요. (lean_report_p64p3.md 6절)
+- 2026-10-14 12:3x | `p64p3` | HOLD: 실제 비드 수 N 에 최소값을 둘까요(예: N 이 몇 개 미만이면 그날 실행을 멈춤), 아니면 15픽보다 적은 픽으로 돌릴까요? 답이 없으면 N 은 보고만 하고 15픽으로 진행합니다(위 ASSUME). 이 답에 기대는 것은 실제 비드 실행(p64run90)뿐입니다.
+- 2026-10-14 12:3x | `p64p3` | HOLD: 샘플 방식을 R(기준 비드, 빈 자리로 15픽 채움) / M(자성 비드, 자석 0 mm 고정 - 모든 레그 사본의 패널 기본값을 바꾸는 빌드 작업이 새로 필요) / J(사진에서 찾은 후보의 숫자를 Jev 에 보내 비드인지 판별 - 이미지는 못 보냄) 중 무엇으로 할까요? 추천: R (준비 중인 샘플 그대로, 새 VI 빌드 없음, 도구 준비 완료; J 는 나중에 비드 찾기 보조로 더할 수 있음). 비교: lean_report_p64p3.md 7절.
+- 2026-10-14 12:45 | `p64p3` | HOLD: 샘플 방식 R / M / J 중 무엇? (추천 R, questions_for_user.md:32) - 실제 비드 실행만 보류, 준비 완료도 사용자가 알려야 함
+ASSUME: 비드 수 N < 15 이면 빈 자리 고정 위치로 15픽을 채우고 실제 N 을 보고함; 최소 N 이나 픽 수 변경은 사용자가 말할 때까지 도입하지 않음 (questions_for_user.md:30-31)
+- 2026-10-14 12:45 | `p64p3` | HOLD: 실제 비드 실행 전 샘플 방식 R/M/J 선택과 준비 완료 통보가 필요하다. 추천 R.
+ASSUME: 기존대로 15픽 채움·실제 N 보고를 유지하며 최소 N이나 픽 수 변경은 도입하지 않는다.
+- 2026-10-14 12:54 | `p64p3` retry 1 | HOLD: Jev 가 이미지를 받는지 웹 확인이 권한으로 막힘 - 웹 검색 한 번을 허용하시거나 직접 확인해 주세요 (J 방식에만 필요)
+- 2026-10-14 13:02 | `p64p3` | HOLD: 실제 비드 실행 전 샘플 방식 R/M/J 선택과 준비 완료 통보 필요 (추천 R, questions_for_user.md:32-33) - p64run90/150 만 보류
+- 2026-10-14 13:02 | `p64p3` | HOLD: 실제 비드 실행 전 R/M/J 샘플 선택과 준비 완료 통보 필요; 실제 비드 작업만 보류.
+- 2026-10-14 13:05 | ANSWERED by the chat/user note (13:0x): questions_for_user.md:37 Jev 이미지 입력 = 아니오로 봄 (2차 자료 Dealroom 뉴스 노트, 공식 문서 미확인) - J 방식은 숫자만 보냄; 추천 R 유지
+- 2026-10-14 13:11 | `p64p3` | HOLD: 실제 비드 실행 전 샘플 방식 R/M/J 선택과 기준 비드 준비 완료 통보 (추천 R) - p64run90/150 만 보류, p64p2 는 진행
+- 2026-10-14 13:11 | `p64p3` | HOLD: 실제 비드 실행 전 샘플 방식 R/M/J 선택과 준비 완료 통보가 필요함. p64p2 준비는 진행 가능.
+- 2026-10-14 15:33 | `p64p2` | HOLD: 사이클 p64p2 동안(13:14-15:18) ASI XY 가 X=4559 Y=-37898 에서 X=284 Y=-30522 로 바뀜(이전 모든 사이클은 4559/-37898) - 리그에서 직접 옮기셨나요? 아니라면 원인을 찾을 때까지 리그·비드 작업만 보류
+HOLD: 실제 비드 실행은 사용자의 R/M/J 선택과 기준 비드 준비 통보까지 보류
+- 2026-10-14 15:33 | `p64p2` | HOLD: 실제 리그 작업 전 ASI XY 위치 변화가 사용자 조작이었는지 확인한다. 사용자 조작이 아니면 원인을 조사하며 리그 작업만 보류한다.
+HOLD: 실제 비드 실행은 사용자의 R/M/J 선택과 샘플 준비 완료 통보까지 보류한다.
+- 2026-10-15 02:55 | `p64p2` | HOLD: before any rig/bead run - say when the reference beads are ready, and confirm the ASI XY X=-52899 Y=-41518 (third position, set between runs; unchanged during this cycle) was your joystick. Offline p64ready is not held.
+- 2026-10-15 02:55 | `p64p2` | HOLD: 실제 리그/비드 실행 전 기준비드 준비 통보와 ASI 위치 X=-52899/Y=-41518이 사용자 조작 결과인지 확인 필요; 오프라인 작업에는 적용하지 않음.
+- 2026-10-15 03:04 | `p64ready` | HOLD: 리그 날(p64run90/p64run150) - 기준 비드 준비 완료와 ASI XY X=-52899 Y=-41518 확인을 사용자가 말할 때까지 그 작업만 보류 (questions_for_user.md:47-48)
+- 2026-10-15 03:04 | `p64ready` | HOLD: 실제 리그·비드 실행 전 기준비드 준비 완료와 ASI X=-52899/Y=-41518이 사용자 조작 결과인지 확인 필요(questions_for_user.md:47-48).
+- 2026-10-15 plan | `p64ready` | HOLD: p64ready 는 PASS(150 Hz 사본 4개 md5 일치, 1~4번 자리 시작 가능, 5번 자리는 이전 pick log 때문에 거부 - 리그 날 옮김)이고 큐는 비어 있어 새 작업을 넣지 않았습니다. 계획(ring-p6b.md PD414(f))에서 남은 단계는 리그 날 p64run90 → p64run150 뿐이고 비드·리그 없이 할 프로그램 작업은 계획에 남아 있지 않습니다. 둘 중 하나를 알려 주세요: (1) 기준 비드 준비 완료 + ASI XY X=-52899 Y=-41518 이 사용자 조작인지 확인 → p64run90 을 넣음, 또는 (2) "프로그램 먼저"에 따라 비드 날 전에 할 다른 코딩 작업이 있으면 그 내용.
+- 2026-10-15 03:04 | `p64ready` | ASSUME: cycle 20261015_014711-c2 - the review said NEXT none but the queue runs (nothing) next; the queue order is kept - say if it should change

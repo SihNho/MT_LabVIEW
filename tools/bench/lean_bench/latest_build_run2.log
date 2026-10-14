@@ -1,0 +1,259 @@
+BGRUN START 2026-10-14 01:01:03 limit 70.0 min: py -u tools/bench/lean_bench/latest_build.py
+BGRUN PID 4316
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 354 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 6fcf153f7b8fecda727f5dcf944faab9  got 6fcf153f7b8fecda727f5dcf944faab9
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE P6 bed           c2d9c13cb40c0a5cab7433896d1df157  (want c2d9c13cb40c0a5cab7433896d1df157) OK
+  FACT  PIN BEFORE p6fix fix        3e847397eb120860adb2e868792345f7  (want 3e847397eb120860adb2e868792345f7) OK
+  FACT  PIN BEFORE p6fix replay     ae83d1aa088ba4546c65e039c6b4d16d  (want ae83d1aa088ba4546c65e039c6b4d16d) OK
+  FACT  PIN BEFORE p6fix gap        2c499c7ba1a38c813d784efe7eacee76  (want 2c499c7ba1a38c813d784efe7eacee76) OK
+  FACT  PIN BEFORE p6fix w40        db5e2e958201df1f1de928558aeff3ac  (want db5e2e958201df1f1de928558aeff3ac) OK
+  FACT  PIN BEFORE p6fix w100       ae8474bc8b33506c3659af407c2e7696  (want ae8474bc8b33506c3659af407c2e7696) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33959
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  RingPickSlot_latest_20261014_010104.vi
+  FACT  ExecState [after open] RingPickSlot_latest_20261014_010104.vi = 1
+  PASS  P0 source D1_ring_p6fix_20261013_231910.vi md5 == 3e847397
+  PASS  P0 source D1_ring_p6fix_replay_20261013_231910.vi md5 == ae83d1aa
+  PASS  P0 source D1_ring_p6fix_replay_gap_20261013_231910.vi md5 == 2c499c7b
+  PASS  P0 source D1_ring_p6fix_replay_w40_20261013_231910.vi md5 == db5e2e95
+  PASS  P0 source D1_ring_p6fix_replay_w100_20261013_231910.vi md5 == ae8474bc
+
+---------- [S] RingPickSlot_latest_20261014_010104.vi
+  PASS  S0 work copy md5 == RingPickSlot_v0 6fcf153f
+  FACT  ExecState [sub before] RingPickSlot_latest_20261014_010104.vi = 1
+  PASS  S1 ExecState 1 before
+  PASS  S1b pane before == v0's
+  FACT  sub BEFORE edges [(3, 'Num', 156, 'x'), (3, 'Num', 235, 'Num'), (3, 'last', 156, 'y'), (45, 's? t:f', 199, ''), (52, '', 198, 'y'), (99, '', 45, 's'), (103, '', 45, 'f'), (117, 'min index (indices)', 3, 'min slot'), (117, 'min value', 3, 'min Num'), (117, 'min value', 198, 'x'), (156, 'x > y?', 99, ''), (198, 'x < y?', 3, 'found'), (199, '', 117, 'array'), (235, '', 45, 't')]
+  PASS  S2 one source each for SW.f (KMX1), LT.y (KMX2), GT.y (last)  ([(103, '', 45, 'f')], [(52, '', 198, 'y')], [(3, 'last', 156, 'y')])
+  FACT  nodes GT #156 SW #45 AMM #117 LT #198 KMX1 #103 (DigitalNumericConstant) KMX2 #52 (DigitalNumericConstant) last (3, 'last')
+  PASS  S3 KMX1 / KMX2 are constants of value 2147483647
+  FACT  AMM outputs ['max index (indices)', 'max value', 'min index (indices)', 'min value']
+  PASS  S4 AMM has one max value / max index / min index terminal  ['max index (indices)', 'max value', 'min index (indices)', 'min value']
+  PASS  S5 removed set = KMX1->SW.f, KMX2->LT.y, AMM.min value->{min Num, LT.x}, AMM.min index->min slot (5 edges)  [(52, '', 198, 'y'), (103, '', 45, 'f'), (117, 'min index (indices)', 3, 'min slot'), (117, 'min value', 3, 'min Num'), (117, 'min value', 198, 'x')]
+  PASS  S6 wire w255 deleted
+  PASS  S6 wire w271 deleted
+  PASS  S7 constant #103 deleted
+  PASS  S7 constant #52 deleted
+  FACT  RBW (8, 0)
+  PASS  S8 no Constant left
+  FACT  terminal uids before -> after deletes: [(76, 76), (218, 218), (215, 215), (84, 84), (127, 127), (130, 130), (238, 238), (260, 260)]
+  PASS  S8b the 5 sinks are unwired, the AMM max outputs unwired  [('f', 0), ('x', 0), ('y', 0), ('last', 64), ('max value', 0), ('max index (indices)', 0), ('min Num', 0), ('min slot', 0)]
+  FACT  CONNECT SW.f <- last: {'wire_uid': 91, 'broken': False, 'sink_echo': 76, 'src_echo': 84, 'err': '', 'purged': 0, 'invoke_left': []}
+  PASS  S9 wire SW.f <- last: err '' and not broken  {'wire_uid': 91, 'broken': False, 'sink_echo': 76, 'src_echo': 84, 'err': '', 'purged': 0, 'invoke_left': []}
+  FACT  CONNECT LT.x <- last: {'wire_uid': 162, 'broken': False, 'sink_echo': 218, 'src_echo': 84, 'err': '', 'purged': 0, 'invoke_left': []}
+  PASS  S9 wire LT.x <- last: err '' and not broken  {'wire_uid': 162, 'broken': False, 'sink_echo': 218, 'src_echo': 84, 'err': '', 'purged': 0, 'invoke_left': []}
+  FACT  CONNECT LT.y <- AMM.max value: {'wire_uid': 64, 'broken': False, 'sink_echo': 215, 'src_echo': 127, 'err': '', 'purged': 0, 'invoke_left': []}
+  PASS  S9 wire LT.y <- AMM.max value: err '' and not broken  {'wire_uid': 64, 'broken': False, 'sink_echo': 215, 'src_echo': 127, 'err': '', 'purged': 0, 'invoke_left': []}
+  FACT  CONNECT min Num <- AMM.max value: {'wire_uid': 64, 'broken': False, 'sink_echo': 238, 'src_echo': 127, 'err': '', 'purged': 0, 'invoke_left': []}
+  PASS  S9 wire min Num <- AMM.max value: err '' and not broken  {'wire_uid': 64, 'broken': False, 'sink_echo': 238, 'src_echo': 127, 'err': '', 'purged': 0, 'invoke_left': []}
+  FACT  CONNECT min slot <- AMM.max index: {'wire_uid': 101, 'broken': False, 'sink_echo': 260, 'src_echo': 130, 'err': '', 'purged': 0, 'invoke_left': []}
+  PASS  S9 wire min slot <- AMM.max index: err '' and not broken  {'wire_uid': 101, 'broken': False, 'sink_echo': 260, 'src_echo': 130, 'err': '', 'purged': 0, 'invoke_left': []}
+  FACT  sub AFTER: new tunnels [102], gone owners [52, 103], edges [(3, 'Num', 156, 'x'), (3, 'Num', 235, 'Num'), (3, 'last', 102, 'last'), (3, 'last', 156, 'y'), (3, 'last', 198, 'x'), (45, 's? t:f', 199, 'last'), (99, '', 45, 's'), (102, 'last', 45, 'f'), (117, 'max index (indices)', 3, 'min slot'), (117, 'max value', 3, 'min Num'), (117, 'max value', 198, 'y'), (156, 'x > y?', 99, ''), (198, 'x < y?', 3, 'found'), (199, '', 117, 'array'), (235, '', 45, 't')]
+  FACT  S10 raw diff (tunnel names kept): -[(45, 's? t:f', 199, '')] +[(45, 's? t:f', 199, 'last')]
+  PASS  S10 edge diff (new tunnels collapsed, tunnel terminal names ignored) == exactly -5 planned / +5 planned  ([(52, '', 198, 'y'), (103, '', 45, 'f'), (117, 'min index (indices)', 3, 'min slot'), (117, 'min value', 3, 'min Num'), (117, 'min value', 198, 'x')], [(3, 'last', 45, 'f'), (3, 'last', 198, 'x'), (117, 'max index (indices)', 3, 'min slot'), (117, 'max value', 3, 'min Num'), (117, 'max value', 198, 'y')])
+  PASS  S11 gone owners == {KMX1, KMX2}; at most one new tunnel (last into the For loop)  ([52, 103], [102])
+  FACT  ExecState [sub after] RingPickSlot_latest_20261014_010104.vi = 1
+  PASS  S12 ExecState 1 after
+  PASS  S13 pane after == v0's
+  FACT  SAVED C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\bench\lean\RingPickSlot_latest_20261014_010104.vi md5 8fc2ec267b3919402124f23a40f9ffae
+  PASS  V warm vector 1 last=-1 -> [-1, 0, False] (got [-1, 0, False])
+  PASS  V warm vector 2 last=4 -> [19, 19, True] (got [19, 19, True])
+  PASS  V warm vector 3 last=5 -> [22, 2, True] (got [22, 2, True])
+  PASS  V warm vector 4 last=19 -> [22, 2, True] (got [22, 2, True])
+  PASS  V warm vector 5 last=20 -> [22, 2, True] (got [22, 2, True])
+  PASS  V warm vector 6 last=22 -> [22, 0, False] (got [22, 0, False])
+  PASS  V warm vector 7 last=19 -> [19, 0, False] (got [19, 0, False])
+  PASS  V warm vector 8 last=21 -> [22, 2, True] (got [22, 2, True])
+  PASS  V warm vector 9 last=-1 -> [7, 0, True] (got [7, 0, True])
+  PASS  V warm vector 10 last=24 -> [44, 3, True] (got [44, 3, True])
+  PASS  S14 md5 unchanged by the vector runs
+  FACT  LabVIEW handle count BEFORE the restart: 30709
+  FACT  LabVIEW handle count AFTER the restart: 33963
+
+---------- [P fix] D1_ring_p6latest_20261014_010104.vi
+  PASS  fix.0 copy md5 == source 3e847397
+  FACT  ExecState [fix before] D1_ring_p6latest_20261014_010104.vi = 1
+  PASS  fix.1 ExecState 1 before
+  PASS  fix.2 exactly one RingPickSlot_v0 call, #29719  [29719]
+  FACT  fix replace_object #29719 -> RingPickSlot_latest_20261014_010104.vi: {'new_uid': 31710, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  fix.3 replace: no error, new uid  {'new_uid': 31710, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  fix.4 callee diff == exactly #29719 -> RingPickSlot_latest_20261014_010104.vi  {29719: ('C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\RingPickSlot_v0.vi', None), 31710: (None, 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\bench\\lean\\RingPickSlot_latest_20261014_010104.vi')}
+  PASS  fix.5 wire-edge diff 0 after remap (2431 edges)  ([], [])
+  FACT  ExecState [fix after] D1_ring_p6latest_20261014_010104.vi = 1
+  PASS  fix.6 ExecState 1 after
+  FACT  SAVED C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\bench\lean\D1_ring_p6latest_20261014_010104.vi md5 15c664e3eed1c580e05b13e42c86566f
+  FACT  LabVIEW handle count BEFORE the restart: 54448
+  FACT  LabVIEW handle count AFTER the restart: 33963
+
+---------- [P replay] D1_ring_p6latest_replay_20261014_010104.vi
+  PASS  replay.0 copy md5 == source ae83d1aa
+  FACT  ExecState [replay before] D1_ring_p6latest_replay_20261014_010104.vi = 1
+  PASS  replay.1 ExecState 1 before
+  PASS  replay.2 exactly one RingPickSlot_v0 call, #29719  [29719]
+  FACT  replay replace_object #29719 -> RingPickSlot_latest_20261014_010104.vi: {'new_uid': 31503, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  replay.3 replace: no error, new uid  {'new_uid': 31503, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  replay.4 callee diff == exactly #29719 -> RingPickSlot_latest_20261014_010104.vi  {29719: ('C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\RingPickSlot_v0.vi', None), 31503: (None, 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\bench\\lean\\RingPickSlot_latest_20261014_010104.vi')}
+  PASS  replay.5 wire-edge diff 0 after remap (2431 edges)  ([], [])
+  FACT  ExecState [replay after] D1_ring_p6latest_replay_20261014_010104.vi = 1
+  PASS  replay.6 ExecState 1 after
+  FACT  SAVED C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\bench\lean\D1_ring_p6latest_replay_20261014_010104.vi md5 d615e096075c74c5ac0c63c05a722217
+  FACT  LabVIEW handle count BEFORE the restart: 54473
+  FACT  LabVIEW handle count AFTER the restart: 33955
+
+---------- [P gap] D1_ring_p6latest_replay_gap_20261014_010104.vi
+  PASS  gap.0 copy md5 == source 2c499c7b
+  FACT  ExecState [gap before] D1_ring_p6latest_replay_gap_20261014_010104.vi = 1
+  PASS  gap.1 ExecState 1 before
+  PASS  gap.2 exactly one RingPickSlot_v0 call, #29719  [29719]
+  FACT  gap replace_object #29719 -> RingPickSlot_latest_20261014_010104.vi: {'new_uid': 31507, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  gap.3 replace: no error, new uid  {'new_uid': 31507, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  gap.4 callee diff == exactly #29719 -> RingPickSlot_latest_20261014_010104.vi  {29719: ('C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\RingPickSlot_v0.vi', None), 31507: (None, 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\bench\\lean\\RingPickSlot_latest_20261014_010104.vi')}
+  PASS  gap.5 wire-edge diff 0 after remap (2431 edges)  ([], [])
+  FACT  ExecState [gap after] D1_ring_p6latest_replay_gap_20261014_010104.vi = 1
+  PASS  gap.6 ExecState 1 after
+  FACT  SAVED C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\bench\lean\D1_ring_p6latest_replay_gap_20261014_010104.vi md5 f656620329ffaf8c675fe050192ff9d3
+  FACT  LabVIEW handle count BEFORE the restart: 54471
+  FACT  LabVIEW handle count AFTER the restart: 33950
+
+---------- [P w40] D1_ring_p6latest_replay_w40_20261014_010104.vi
+  PASS  w40.0 copy md5 == source db5e2e95
+  FACT  ExecState [w40 before] D1_ring_p6latest_replay_w40_20261014_010104.vi = 1
+  PASS  w40.1 ExecState 1 before
+  PASS  w40.2 exactly one RingPickSlot_v0 call, #29719  [29719]
+  FACT  w40 replace_object #29719 -> RingPickSlot_latest_20261014_010104.vi: {'new_uid': 31367, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  w40.3 replace: no error, new uid  {'new_uid': 31367, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  w40.4 callee diff == exactly #29719 -> RingPickSlot_latest_20261014_010104.vi  {29719: ('C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\RingPickSlot_v0.vi', None), 31367: (None, 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\bench\\lean\\RingPickSlot_latest_20261014_010104.vi')}
+  PASS  w40.5 wire-edge diff 0 after remap (2431 edges)  ([], [])
+  FACT  ExecState [w40 after] D1_ring_p6latest_replay_w40_20261014_010104.vi = 1
+  PASS  w40.6 ExecState 1 after
+  FACT  SAVED C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\bench\lean\D1_ring_p6latest_replay_w40_20261014_010104.vi md5 0eb42f736d6874e1af58781c82e81e37
+  FACT  LabVIEW handle count BEFORE the restart: 54468
+  FACT  LabVIEW handle count AFTER the restart: 33953
+
+---------- [P w100] D1_ring_p6latest_replay_w100_20261014_010104.vi
+  PASS  w100.0 copy md5 == source ae8474bc
+  FACT  ExecState [w100 before] D1_ring_p6latest_replay_w100_20261014_010104.vi = 1
+  PASS  w100.1 ExecState 1 before
+  PASS  w100.2 exactly one RingPickSlot_v0 call, #29719  [29719]
+  FACT  w100 replace_object #29719 -> RingPickSlot_latest_20261014_010104.vi: {'new_uid': 31367, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  w100.3 replace: no error, new uid  {'new_uid': 31367, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  w100.4 callee diff == exactly #29719 -> RingPickSlot_latest_20261014_010104.vi  {29719: ('C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\RingPickSlot_v0.vi', None), 31367: (None, 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\bench\\lean\\RingPickSlot_latest_20261014_010104.vi')}
+  PASS  w100.5 wire-edge diff 0 after remap (2431 edges)  ([], [])
+  FACT  ExecState [w100 after] D1_ring_p6latest_replay_w100_20261014_010104.vi = 1
+  PASS  w100.6 ExecState 1 after
+  FACT  SAVED C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\bench\lean\D1_ring_p6latest_replay_w100_20261014_010104.vi md5 04e5400646af36b7afc3876d6fe3b6a7
+  FACT  LabVIEW handle count BEFORE the restart: 54464
+  FACT  LabVIEW handle count AFTER the restart: 33966
+
+---------- [C] COLD subVI
+  PASS  C1 sub ExecState 1 COLD
+  PASS  C1b sub pane COLD == v0's
+  PASS  V cold vector 1 last=-1 -> [-1, 0, False] (got [-1, 0, False])
+  PASS  V cold vector 2 last=4 -> [19, 19, True] (got [19, 19, True])
+  PASS  V cold vector 3 last=5 -> [22, 2, True] (got [22, 2, True])
+  PASS  V cold vector 4 last=19 -> [22, 2, True] (got [22, 2, True])
+  PASS  V cold vector 5 last=20 -> [22, 2, True] (got [22, 2, True])
+  PASS  V cold vector 6 last=22 -> [22, 0, False] (got [22, 0, False])
+  PASS  V cold vector 7 last=19 -> [19, 0, False] (got [19, 0, False])
+  PASS  V cold vector 8 last=21 -> [22, 2, True] (got [22, 2, True])
+  PASS  V cold vector 9 last=-1 -> [7, 0, True] (got [7, 0, True])
+  PASS  V cold vector 10 last=24 -> [44, 3, True] (got [44, 3, True])
+  PASS  C2 sub md5 unchanged by the cold load + runs
+  FACT  LabVIEW handle count BEFORE the restart: 30726
+  FACT  LabVIEW handle count AFTER the restart: 33959
+
+---------- [C] COLD fix source (read-only)
+  FACT  LabVIEW handle count BEFORE the restart: 54441
+  FACT  LabVIEW handle count AFTER the restart: 33955
+
+---------- [C] COLD fix
+  PASS  C3 fix ExecState 1 COLD
+  PASS  C4 fix COLD edges (new uid -> #29719) == cold source edges (2431)  ([], [])
+  PASS  C5 fix COLD call #31710 -> RingPickSlot_latest_20261014_010104.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\bench\lean\RingPickSlot_latest_20261014_010104.vi
+  PASS  C6 fix md5 unchanged by the cold load
+  PASS  C7 fix source md5 unchanged
+  FACT  LabVIEW handle count BEFORE the restart: 54434
+  FACT  LabVIEW handle count AFTER the restart: 33957
+
+---------- [C] COLD replay source (read-only)
+  FACT  LabVIEW handle count BEFORE the restart: 54465
+  FACT  LabVIEW handle count AFTER the restart: 33959
+
+---------- [C] COLD replay
+  PASS  C3 replay ExecState 1 COLD
+  PASS  C4 replay COLD edges (new uid -> #29719) == cold source edges (2431)  ([], [])
+  PASS  C5 replay COLD call #31503 -> RingPickSlot_latest_20261014_010104.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\bench\lean\RingPickSlot_latest_20261014_010104.vi
+  PASS  C6 replay md5 unchanged by the cold load
+  PASS  C7 replay source md5 unchanged
+  FACT  LabVIEW handle count BEFORE the restart: 54463
+  FACT  LabVIEW handle count AFTER the restart: 33962
+
+---------- [C] COLD gap source (read-only)
+  FACT  LabVIEW handle count BEFORE the restart: 54472
+  FACT  LabVIEW handle count AFTER the restart: 33972
+
+---------- [C] COLD gap
+  PASS  C3 gap ExecState 1 COLD
+  PASS  C4 gap COLD edges (new uid -> #29719) == cold source edges (2431)  ([], [])
+  PASS  C5 gap COLD call #31507 -> RingPickSlot_latest_20261014_010104.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\bench\lean\RingPickSlot_latest_20261014_010104.vi
+  PASS  C6 gap md5 unchanged by the cold load
+  PASS  C7 gap source md5 unchanged
+  FACT  LabVIEW handle count BEFORE the restart: 54477
+  FACT  LabVIEW handle count AFTER the restart: 34005
+
+---------- [C] COLD w40 source (read-only)
+  FACT  LabVIEW handle count BEFORE the restart: 54511
+  FACT  LabVIEW handle count AFTER the restart: 33957
+
+---------- [C] COLD w40
+  PASS  C3 w40 ExecState 1 COLD
+  PASS  C4 w40 COLD edges (new uid -> #29719) == cold source edges (2431)  ([], [])
+  PASS  C5 w40 COLD call #31367 -> RingPickSlot_latest_20261014_010104.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\bench\lean\RingPickSlot_latest_20261014_010104.vi
+  PASS  C6 w40 md5 unchanged by the cold load
+  PASS  C7 w40 source md5 unchanged
+  FACT  LabVIEW handle count BEFORE the restart: 54462
+  FACT  LabVIEW handle count AFTER the restart: 33972
+
+---------- [C] COLD w100 source (read-only)
+  FACT  LabVIEW handle count BEFORE the restart: 54480
+  FACT  LabVIEW handle count AFTER the restart: 33957
+
+---------- [C] COLD w100
+  PASS  C3 w100 ExecState 1 COLD
+  PASS  C4 w100 COLD edges (new uid -> #29719) == cold source edges (2431)  ([], [])
+  PASS  C5 w100 COLD call #31367 -> RingPickSlot_latest_20261014_010104.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\bench\lean\RingPickSlot_latest_20261014_010104.vi
+  PASS  C6 w100 md5 unchanged by the cold load
+  PASS  C7 w100 source md5 unchanged
+
+---------- [H] HYGIENE
+  FACT  close_panel(RingPickSlot_latest_20261014_010104.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 51, 'closed': 51, 'live': 0, 'cached_op_vis': 0}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 51, 'closed': 51, 'live': 0, 'cached_op_vis': 0}
+  FACT  LabVIEW handle count AFTER the work: 54463
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 6fcf153f7b8fecda727f5dcf944faab9 / after 6fcf153f7b8fecda727f5dcf944faab9
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  P6 bed           c2d9c13cb40c0a5cab7433896d1df157  (want c2d9c13cb40c0a5cab7433896d1df157) OK
+  FACT  PIN AFTER  p6fix fix        3e847397eb120860adb2e868792345f7  (want 3e847397eb120860adb2e868792345f7) OK
+  FACT  PIN AFTER  p6fix replay     ae83d1aa088ba4546c65e039c6b4d16d  (want ae83d1aa088ba4546c65e039c6b4d16d) OK
+  FACT  PIN AFTER  p6fix gap        2c499c7ba1a38c813d784efe7eacee76  (want 2c499c7ba1a38c813d784efe7eacee76) OK
+  FACT  PIN AFTER  p6fix w40        db5e2e958201df1f1de928558aeff3ac  (want db5e2e958201df1f1de928558aeff3ac) OK
+  FACT  PIN AFTER  p6fix w100       ae8474bc8b33506c3659af407c2e7696  (want ae8474bc8b33506c3659af407c2e7696) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 54463
+  PASS  H9 LabVIEW gone
+
+====================================================================================================
+=== GATES: 119 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_lean\tools\bench\lean_bench\latest_build.json   elapsed 1846.3 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":119,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1847s

@@ -1,0 +1,9 @@
+RUN W100 p6close {"rows": 1472, "first": 0, "last": 2539, "lost": 1068, "strictly_increasing": true, "steps": {"1": 403, "2": 1068}, "dims": [1472, 48], "parsed": true, "cols_eq_3_3N": true}
+RUN W100OBS latest {"rows": 1474, "first": 0, "last": 2541, "lost": 1068, "strictly_increasing": true, "steps": {"1": 405, "2": 1068}, "dims": [1474, 48], "parsed": true, "cols_eq_3_3N": true}
+RUN P62 p6close {"rows": 2540, "first": 0, "last": 2539, "lost": 0, "strictly_increasing": true, "steps": {"1": 2539}, "dims": [2540, 48], "parsed": true, "cols_eq_3_3N": true}
+ABBA toy {"lost_by_arm": {"A": [3000, 3400], "B": [200, 300]}, "criterion": "every B < min(A) - 0.25 * mean(A) (PD217(f) gain form, plan 9.1)", "limit": 2200.0, "met": true} | {"lost_by_arm": {"B": [2600, 300], "A": [3000, 3400]}, "criterion": "every B < min(A) - 0.25 * mean(A) (PD217(f) gain form, plan 9.1)", "limit": 2200.0, "met": false}
+GATE D W100 p6close == {'rows': 1472, 'first': 0, 'last': 2539, 'lost': 1068, 'steps': {1: 403, 2: 1068}} PASS
+GATE D W100OBS latest == {'rows': 1474, 'first': 0, 'last': 2541, 'lost': 1068, 'steps': {1: 405, 2: 1068}} PASS
+GATE D P62 p6close == {'rows': 2540, 'first': 0, 'last': 2539, 'lost': 0, 'steps': {1: 2539}}   PASS
+GATE D toy ABBA: met True, then False with B 2600                                               PASS
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":4,"fail":0},"first_fail":null,"artefacts":[]}
