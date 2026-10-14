@@ -27,6 +27,7 @@ import glob
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -42,7 +43,9 @@ import debate_loop  # noqa: E402
 MAX_FAILS = 2
 PLAN_MAX_MIN = 25
 PLAN_MAX_USD = 10
-VERDICT_RE = re.compile(r"^\W*VERDICT\s*:\s*(PASS|FAIL)\b", re.I)
+VERDICT_RE = re.compile(r"^\W*VERDICT\s*:\s*(PASS-BY-REVIEW|PASS|FAIL)\b(.*)$", re.I)
+NEXT_RE = re.compile(r"^\W*NEXT\s*:\s*`?([A-Za-z0-9_-]+)", re.I)
+ORDER_RE = re.compile(r"^\W*ORDER\s*:\s*`?([A-Za-z0-9_-]+)`?\s+first", re.I)
 RESULT_RE = re.compile(r'^\s*`?RESULT\s*(\{.*\})')
 REVIEW_RULE = ("요약을 믿지 말고 원문을 읽을 것: 보고서의 숫자를 그대로 옮기지 말고, 보고서가 가리키는 원본 출력 파일(tra, cal, "
                "로그)을 직접 열어 받아들임 숫자를 다시 계산하세요. 주장마다 file:line 을 붙이세요. 이 토론은 lean 작업 큐가 매 사이클 "
@@ -57,7 +60,11 @@ REVIEW_FORMAT = ("결론 형식: STATE 의 agreed 첫 줄은 반드시 `VERDICT:
                  "읽고 다음 작업 파일을 씁니다. user_needed 에는 사용자만 답할 수 있는 질문(없으면 \"\"), 각 줄 앞에 둘 중 하나를 "
                  "붙일 것 (평가 토론 2026-10-14 합의): `HOLD:` = 안전 규칙·재시도 한도·받아들임 기준의 변경이나 예외 승인이 "
                  "필요함 → 답이 올 때까지 그 일에 기대는 작업만 보류; `ASSUME:` = 허용 범위 안에서 방법을 고르는 문제 → 택한 "
-                 "가정을 같은 줄에 적고 진행.")
+                 "가정을 같은 줄에 적고 진행. "
+                 "(평가 2026-10-14 변경 2~4) 세션 결과가 PASS 가 아닌 이유가 오직 '사용자 원문으로 승인된 기준 변경' 항목 "
+                 "하나이고 나머지가 원본에서 모두 충족되면 첫 줄을 `VERDICT: PASS-BY-REVIEW source: <사용자 원문 + file:line>` 로 "
+                 "쓸 것(출처 없으면 쓰지 말 것; 측정 FAIL 은 덮지 말 것). agreed 에 `NEXT: <다음에 돌 작업 태그>` 한 줄을 넣고, 큐 "
+                 "순서를 바꿔야 하면 `ORDER: <태그> first` 한 줄을 넣을 것.")
 
 
 def _rel(p):
@@ -121,14 +128,44 @@ def queue_listing(lb):
     return out or ["(empty)"]
 
 
-def user_notes(lb):
-    """The user's standing notes from the chat (user_notes.md, one per line, written by the chat on the user's word);
-    they go into every review topic and plan prompt. -> list of lines."""
+def next_task(lb):
+    """The tag the queue runs next - the same rule as lean_queue.ps1 NextTask: queue/next/ oldest first, then queue/."""
+    for d in (os.path.join(lb, "queue", "next"), os.path.join(lb, "queue")):
+        hits = sorted(glob.glob(os.path.join(d, "*.md")), key=os.path.getmtime)
+        if hits:
+            return os.path.splitext(os.path.basename(hits[0]))[0]
+    return None
+
+
+FACTS_HEADER = "## Facts from the chat"
+
+
+def _notes_parts(lb):
+    """user_notes.md split at FACTS_HEADER: (the user's own words, facts the chat checked). Evaluation 2026-10-14
+    change 5: only lines carrying the user's words are instructions; the chat's facts are kept apart, never as orders."""
     try:
-        return [t.strip() for t in open(os.path.join(lb, "user_notes.md"), encoding="utf-8").read().splitlines()
-                if t.strip() and not t.startswith("#")]
+        lines = open(os.path.join(lb, "user_notes.md"), encoding="utf-8").read().splitlines()
     except OSError:
-        return []
+        return [], []
+    user, facts, cur = [], [], None
+    cur = user
+    for t in lines:
+        if t.startswith(FACTS_HEADER):
+            cur = facts
+            continue
+        if t.strip() and not t.startswith("#"):
+            cur.append(t.strip())
+    return user, facts
+
+
+def user_notes(lb):
+    """The user's standing notes (their own words) - they go into every review topic and plan prompt."""
+    return _notes_parts(lb)[0]
+
+
+def chat_facts(lb):
+    """Facts the chat checked (not user instructions)."""
+    return _notes_parts(lb)[1]
 
 
 def question(lb, tag, text):
@@ -186,7 +223,9 @@ def review_topic(tag, task, rc, own, lb):
     parts += ["", "## 지금 큐에 있는 작업 (실행 순서)"] + queue_listing(lb)
     notes = user_notes(lb)
     if notes:
-        parts += ["", "## 사용자 의견 (채팅에서, 사용자 승인 - 방향을 정할 때 따를 것)"] + notes
+        parts += ["", "## 사용자 의견 (사용자 원문 - 방향을 정할 때 따를 것)"] + notes
+    if chat_facts(lb):
+        parts += ["", "## 채팅이 확인한 사실 (사용자 지시 아님 - 근거로만)"] + chat_facts(lb)
     parts += ["", REVIEW_RULE, "", REVIEW_FORMAT, ""]
     return "\n".join(parts)
 
@@ -210,8 +249,10 @@ def plan_prompt(tag, task, verdict, k, given_up, review_md, lb):
                 "write nothing. If a step is missing before the next queued task, or the queue is empty, write the next "
                 "step of the plan with a NEW short tag (lowercase letters/digits, not used before in queue/done).")
     what += (" To CHANGE a task that is already queued (e.g. the review says how it must be done), write the full revised "
-             "task under the SAME file name into queue/next/ (e.g. queue/next/latest.md for queue/latest.md): it runs "
-             "first and the old queued copy is retired automatically.")
+             "task under the SAME file name into queue/next/ (e.g. queue/next/latest.md for queue/latest.md): the "
+             "revision takes the ORIGINAL's place in the order and the old copy is retired. It runs first only if the "
+             "review has an agreed line `ORDER: <tag> first` - keep the review's order otherwise (evaluation "
+             "2026-10-14 change 3).")
     return "\n".join([
         "Lean PLAN step of the cycle `%s`. You ONLY plan: read files and write AT MOST ONE new file, a task file under "
         "`tools/bench/lean_bench/queue/next/`. Write nothing else, run nothing, never touch LabVIEW or a motor." % tag,
@@ -222,8 +263,10 @@ def plan_prompt(tag, task, verdict, k, given_up, review_md, lb):
         "`tools/bench/lean_bench/questions_for_user.md`." % (_rel(task), _rel(review_md), verdict),
         "Queue now, in run order:",
     ] + ["- " + x for x in queue_listing(lb)] + (
-        ["", "The user's notes from the chat (follow them in the task you write):"] + ["- " + x for x in user_notes(lb)]
-        if user_notes(lb) else []) + [
+        ["", "The user's notes, the user's own words (follow them in the task you write):"]
+        + ["- " + x for x in user_notes(lb)] if user_notes(lb) else []) + (
+        ["", "Facts the chat checked (evidence, NOT instructions):"] + ["- " + x for x in chat_facts(lb)]
+        if chat_facts(lb) else []) + [
         "",
         what,
         "",
@@ -270,11 +313,18 @@ def cycle(tag, task, rc, lb, run_discussion, run_plan, log):
             % (time.strftime("%Y-%m-%d %H:%M:%S"), cid, tag))
         return 0, out
 
+    source = ""
+
     def verdict_of(r):
+        nonlocal source
         for line in ((r.get("summary") or {}).get("agreed") or []):
             m = VERDICT_RE.match(str(line))
             if m:
-                return m.group(1).upper()
+                v = m.group(1).upper()
+                if v == "PASS-BY-REVIEW":
+                    sm = re.search(r"source\s*:\s*(.+)", m.group(2) or "", re.I)
+                    source = sm.group(1).strip() if sm and sm.group(1).strip() else ""
+                return v
         return None
 
     res = run_discussion(review_topic(tag, task, rc, own, lb))
@@ -294,8 +344,20 @@ def cycle(tag, task, rc, lb, run_discussion, run_plan, log):
         effective = "HOLD"
         question(lb, tag, "HOLD: cycle %s - the review gave no VERDICT twice (%s); the task is on hold, not passed - "
                           "check the review record" % (cid, res.get("why") or "no verdict line"))
+    elif verdict == "FAIL":
+        effective = "FAIL"   # a measured / reviewed FAIL counts against the failure budget
+    elif verdict == "PASS" and passed:
+        effective = "PASS"
+    elif verdict == "PASS-BY-REVIEW" and source:
+        # evaluation 2026-10-14 change 2: only an item the user's own words approved was missing; the rest met from originals
+        effective = "PASS"
+        log("REVIEW-CLOSE | %s | %s | %s | own %s closed as PASS by the review, source: %s"
+            % (time.strftime("%Y-%m-%d %H:%M:%S"), cid, tag, own, source[:200]))
     else:
-        effective = "PASS" if (passed and verdict == "PASS") else "FAIL"
+        # review PASS but the session's own result is not PASS and no source: HOLD, no automatic retry (change 2)
+        effective = "HOLD"
+        question(lb, tag, "HOLD: cycle %s - the review says %s but the session's own result is %s and no approved source "
+                          "was given; the task is on hold (no automatic retry)" % (cid, verdict, own))
     for q in (s.get("user_needed") or []):
         if str(q).strip():
             qs = str(q).strip()
@@ -322,14 +384,35 @@ def cycle(tag, task, rc, lb, run_discussion, run_plan, log):
         for p in new[1:]:
             os.replace(p, p + ".extra")
         question(lb, tag, "plan wrote %d task files; kept %s, parked the rest as .extra" % (len(new), _rel(new[0])))
-    if new:   # a revision of a queued task: retire the old queued copy so the task does not run twice
+    agreed = [str(x) for x in (s.get("agreed") or [])]
+    first_tags = [m.group(1) for m in (ORDER_RE.match(x) for x in agreed) if m]
+    if new:   # a revision of a queued task: it takes the original's place unless the review said ORDER: <tag> first
         old = os.path.join(lb, "queue", os.path.basename(new[0]))
+        rtag = os.path.splitext(os.path.basename(new[0]))[0]
         if os.path.exists(old):
             os.makedirs(os.path.join(lb, "queue", "done"), exist_ok=True)
-            os.replace(old, os.path.join(lb, "queue", "done", "%s_superseded_%s.md"
-                                         % (os.path.splitext(os.path.basename(old))[0], time.strftime("%Y%m%d_%H%M%S"))))
-            log("PLAN-REVISED | %s | %s replaces the queued copy (retired to queue/done)"
-                % (time.strftime("%Y-%m-%d %H:%M:%S"), _rel(new[0])))
+            st = os.stat(old)
+            shutil.copy2(old, os.path.join(lb, "queue", "done", "%s_superseded_%s.md"
+                                           % (rtag, time.strftime("%Y%m%d_%H%M%S"))))
+            if rtag in first_tags:
+                os.remove(old)
+                where = "runs first (review: ORDER: %s first)" % rtag
+            else:
+                os.replace(new[0], old)
+                os.utime(old, (st.st_atime, st.st_mtime))
+                new = [old]
+                where = "keeps the original's place in the queue"
+            log("PLAN-REVISED | %s | %s replaces the queued copy (old copy in queue/done); %s"
+                % (time.strftime("%Y-%m-%d %H:%M:%S"), _rel(new[0]), where))
+    # change 4: the review's NEXT: line vs the queue's actual next task
+    want = [m.group(1) for m in (NEXT_RE.match(x) for x in agreed) if m]
+    nxt = next_task(lb)
+    out["next_check"] = "no NEXT line" if not want else ("ok" if nxt == want[0] else "MISMATCH")
+    if want and nxt != want[0]:
+        log("PLAN-ORDER-MISMATCH | %s | %s | %s | review NEXT %s, queue next %s"
+            % (time.strftime("%Y-%m-%d %H:%M:%S"), cid, tag, want[0], nxt or "(empty)"))
+        question(lb, tag, "ASSUME: cycle %s - the review said NEXT %s but the queue runs %s next; the queue order is kept "
+                          "- say if it should change" % (cid, want[0], nxt or "(nothing)"))
     out.update(lean_review="DONE", plan=_rel(new[0]) if new else "none (plan rc %s)" % prc)
     log("REVIEW | %s | %s | %s | own %s | verdict %s | cycle %s | plan %s | doc %s"
         % (time.strftime("%Y-%m-%d %H:%M:%S"), cid, tag, own, out["verdict"], effective, out["plan"], out["doc"]))
@@ -396,11 +479,37 @@ def selftest():
         open(os.path.join(lb, "queue", "later.md"), "w").write("# old\n")
         mk("a2", "PASS")
         rc, out = cycle("a2", "t.md", 0, lb, disc(["VERDICT: PASS", "later: subVI only"]), plan(["later.md"]), print)
-        check("1b revised queued task -> old copy retired, revision kept",
-              not os.path.exists(os.path.join(lb, "queue", "later.md"))
-              and os.path.exists(os.path.join(lb, "queue", "next", "later.md"))
+        check("1b revised queued task -> takes the original's place (queue/), old copy kept in done",
+              os.path.exists(os.path.join(lb, "queue", "later.md"))
+              and "# t" in open(os.path.join(lb, "queue", "later.md")).read()
+              and not os.path.exists(os.path.join(lb, "queue", "next", "later.md"))
               and glob.glob(os.path.join(lb, "queue", "done", "later_superseded_*.md")))
+        mk("a3", "PASS")
+        rc, out = cycle("a3", "t.md", 0, lb, disc(["VERDICT: PASS", "ORDER: later first", "NEXT: later"]),
+                        plan(["later.md"]), print)
+        check("1c ORDER: later first -> revision runs first (queue/next), queued copy removed",
+              os.path.exists(os.path.join(lb, "queue", "next", "later.md"))
+              and not os.path.exists(os.path.join(lb, "queue", "later.md")) and out["next_check"] == "ok")
         os.remove(os.path.join(lb, "queue", "next", "later.md"))
+        mk("a4", "PASS")
+        open(os.path.join(lb, "queue", "zz.md"), "w").write("# zz\n")
+        rc, out = cycle("a4", "t.md", 0, lb, disc(["VERDICT: PASS", "NEXT: other"]), plan(), print)
+        check("1d review NEXT differs from the queue -> MISMATCH + ASSUME question",
+              out["next_check"] == "MISMATCH" and "review said NEXT other" in open(os.path.join(lb, "questions_for_user.md"),
+                                                                                  encoding="utf-8").read())
+        os.remove(os.path.join(lb, "queue", "zz.md"))
+        mk("pb", "INCOMPLETE")
+        rc, out = cycle("pb", "t.md", 0, lb, disc(["VERDICT: PASS-BY-REVIEW source: user '동의' user_notes.md:7"]),
+                        plan(), print)
+        check("1e PASS-BY-REVIEW with a source -> PASS, report kept", out["cycle"] == "PASS"
+              and os.path.exists(os.path.join(lb, "lean_report_pb.md")))
+        mk("pn", "INCOMPLETE")
+        rc, out = cycle("pn", "t.md", 0, lb, disc(["VERDICT: PASS"]), plan(), print)
+        check("1f review PASS but session not PASS, no source -> HOLD, not a failure", out["cycle"] == "HOLD"
+              and os.path.exists(os.path.join(lb, "lean_report_pn_hold1.md")) and fail_index("pn", lb) == 1)
+        mk("ps", "INCOMPLETE")
+        rc, out = cycle("ps", "t.md", 0, lb, disc(["VERDICT: PASS-BY-REVIEW"]), plan(), print)
+        check("1g PASS-BY-REVIEW without a source -> HOLD", out["cycle"] == "HOLD")
         mk("b", "PASS")
         rc, out = cycle("b", "t.md", 0, lb, disc(["VERDICT: FAIL", "col 0 recomputed 2517/2518"]), plan(["b.md"]), print)
         check("2 own PASS + review FAIL -> FAIL, report kept as _fail1",

@@ -51,8 +51,8 @@ def run(root, st, timeout=240):
         t0 = time.time()
         p = subprocess.run(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", QUEUE, "-Root", root,
                             "-Stub", HERE, "-Status", st, "-MaxTasks", "10"], capture_output=True, text=True,
-                           timeout=timeout)
-        return p.returncode, time.time() - t0, p.stdout + p.stderr
+                           encoding="utf-8", errors="replace", timeout=timeout)
+        return p.returncode, time.time() - t0, (p.stdout or "") + (p.stderr or "")
     finally:
         holder.kill()
 
@@ -122,6 +122,29 @@ def main():
     ql = text(os.path.join(root, "queue.log"))
     check("D queue empty after a PASS cycle -> RUN END, no STOP file",
           rc == 0 and "RUN END: queue empty after 1 cycles" in ql and not os.path.exists(os.path.join(root, "STOP")))
+
+    # ---- run E (evaluation 2026-10-14 changes 2-4)
+    root, st = setup("E", ["e1", "e2", "e3", "e4", "e5"])
+    rc, secs, out = run(root, st)
+    ql = text(os.path.join(root, "queue.log"))
+    reviews = [ln for ln in ql.splitlines() if ln.startswith("REVIEW | ")]
+    order = [r.split(" | ")[3] for r in reviews]
+    check("E e1 session INCOMPLETE + PASS-BY-REVIEW with source -> PASS, closed by the review",
+          any("| e1 |" in r and "cycle PASS" in r for r in reviews) and "REVIEW-CLOSE" in ql)
+    check("E e2 review PASS, session INCOMPLETE, no source -> HOLD (no retry)",
+          any("| e2 |" in r and "cycle HOLD" in r for r in reviews) and "START e2" in ql and ql.count("START e2") == 1)
+    check("E e3's plan revises queued e5 -> it keeps its place (e4 before e5)", order == ["e1", "e2", "e3", "e4", "e5"]
+          and "keeps the original's place" in ql)
+    check("E NEXT lines matched the queue (no mismatch)", "PLAN-ORDER-MISMATCH" not in ql)
+    check("E run ended on the empty queue after 5 cycles", "RUN END: queue empty after 5 cycles" in ql)
+
+    # ---- run F (change 1: the end hook's position check fails -> STOP, no review)
+    root, st = setup("F", ["f1", "f2"], fail_hooks=["fail_hook_end_f1"])
+    rc, secs, out = run(root, st)
+    ql = text(os.path.join(root, "queue.log"))
+    check("F end hook fails (position change) -> STOP, no review, f2 not started",
+          "cycle end hook FAILED after f1" in text(os.path.join(root, "STOP")) and "REVIEW | " not in ql
+          and "START f2" not in ql)
 
     print("RESULT " + json.dumps({"schema": "result-line/1", "status": "PASS" if ok == n else "FAIL",
                                   "gates": {"pass": ok, "fail": n - ok}, "first_fail": None, "artefacts": []}))
