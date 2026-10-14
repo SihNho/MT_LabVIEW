@@ -54,8 +54,10 @@ REVIEW_FORMAT = ("결론 형식: STATE 의 agreed 첫 줄은 반드시 `VERDICT:
                  "계산한 받아들임 숫자가 작업의 기준을 모두 만족하고 (2) 안전 기록(사이클 시작/끝 모터 리밋 읽기 값, LabVIEW 종료, "
                  "입력 md5 변화 없음, 원본 VI 미수정)이 모두 맞을 때만. 나머지 agreed 줄: 다음 단계의 방향 - FAIL 이면 원인과 같은 "
                  "작업을 어떻게 다시 할지, PASS 면 계획상 다음 단계가 무엇인지(큐에 이미 있는 작업이 맞는지). 플랜 세션이 이 줄들을 "
-                 "읽고 다음 작업 파일을 씁니다. user_needed 에는 사용자만 답할 수 있는 질문 하나(없으면 \"\") - 비드, 리그에서의 사용자 "
-                 "작업, 규칙 변경, 사용자 결정이 필요한 일은 여기로.")
+                 "읽고 다음 작업 파일을 씁니다. user_needed 에는 사용자만 답할 수 있는 질문(없으면 \"\"), 각 줄 앞에 둘 중 하나를 "
+                 "붙일 것 (평가 토론 2026-10-14 합의): `HOLD:` = 안전 규칙·재시도 한도·받아들임 기준의 변경이나 예외 승인이 "
+                 "필요함 → 답이 올 때까지 그 일에 기대는 작업만 보류; `ASSUME:` = 허용 범위 안에서 방법을 고르는 문제 → 택한 "
+                 "가정을 같은 줄에 적고 진행.")
 
 
 def _rel(p):
@@ -95,11 +97,11 @@ def fail_index(tag, lb):
     return k
 
 
-def keep_failed(tag, k, lb):
-    """Rename this run's report and session log to their _fail<k> names. -> (report, log) after the rename."""
+def keep_failed(tag, k, lb, kind="fail"):
+    """Rename this run's report and session log to their _<kind><k> names (kind fail | hold). -> (report, log)."""
     out = []
     for base, ext in (("lean_report_%s" % tag, ".md"), ("session_%s" % tag, ".log")):
-        src, dst = os.path.join(lb, base + ext), os.path.join(lb, "%s_fail%d%s" % (base, k, ext))
+        src, dst = os.path.join(lb, base + ext), os.path.join(lb, "%s_%s%d%s" % (base, kind, k, ext))
         if os.path.exists(src):
             os.replace(src, dst)
         out.append(dst)
@@ -134,6 +136,20 @@ def question(lb, tag, text):
         f.write("- %s | `%s` | %s\n" % (time.strftime("%Y-%m-%d %H:%M"), tag, text))
 
 
+def newest(lb, pattern):
+    """The newest file matching pattern in lb, or the pattern's literal path when none exists."""
+    hits = glob.glob(os.path.join(lb, pattern))
+    return max(hits, key=os.path.getmtime) if hits else os.path.join(lb, pattern)
+
+
+def cycle_id(lb):
+    """`<run start yyyymmdd_HHMMSS>-c<n>`: n = 1 + the cycles already completed in this run (REVIEW lines), so every
+    record of a cycle carries the same id and a retried tag never overwrites the earlier record (eval 2026-10-14)."""
+    start, n = run_window(os.path.join(lb, "queue.log"))
+    st = start.replace("-", "").replace(":", "").replace(" ", "_") if start else time.strftime("%Y%m%d_%H%M%S")
+    return "%s-c%d" % (st, n + 1)
+
+
 def review_topic(tag, task, rc, own, lb):
     """The review discussion's topic; first line = the Google doc title. Facts and paths only."""
     parts = [
@@ -153,8 +169,8 @@ def review_topic(tag, task, rc, own, lb):
         "- 작업 지시: `%s`" % _rel(task),
         "- 보고서: `%s`" % _rel(os.path.join(lb, "lean_report_%s.md" % tag)),
         "- 세션 로그: `%s`" % _rel(os.path.join(lb, "session_%s.log" % tag)),
-        "- 사이클 시작/끝 모터 세션: `%s`, `%s`" % (_rel(os.path.join(lb, "motor_session_start_%s.log" % tag)),
-                                          _rel(os.path.join(lb, "motor_session_end_%s.log" % tag))),
+        "- 사이클 시작/끝 모터 세션 (가장 최근 것): `%s`, `%s`" % (_rel(newest(lb, "motor_session_start_%s*.log" % tag)),
+                                                    _rel(newest(lb, "motor_session_end_%s*.log" % tag))),
         "- 큐 로그: `%s` (LabVIEW 종료 줄 CYCLE-HOOK / LABVIEW-CLOSE)" % _rel(os.path.join(lb, "queue.log")),
         "- lean 규칙: `%s`" % _rel(os.path.join(ROOT, "CLAUDE.md")),
         "- 계획과 결정: 주 체크아웃 `../V6_ParallelLoop/docs/d1/ring-p6b.md` PD414, `../V6_ParallelLoop/docs/user-rules.md`, "
@@ -177,7 +193,11 @@ def review_topic(tag, task, rc, own, lb):
 
 def plan_prompt(tag, task, verdict, k, given_up, review_md, lb):
     """The plan session's prompt (English; the session reads the Korean review itself)."""
-    if verdict == "FAIL" and not given_up:
+    if verdict == "HOLD":
+        what = ("The cycle is ON HOLD: the review gave no verdict even after one retry (the reason is in "
+                "questions_for_user.md). Do NOT retry or replace tag %s and do not queue anything that needs its result; "
+                "write a task only for a plan step that does not depend on it and is not queued yet." % tag)
+    elif verdict == "FAIL" and not given_up:
         what = ("The cycle FAILED (failure %d of %d allowed for this tag). Write a RETRY with the SAME tag: "
                 "`tools/bench/lean_bench/queue/next/%s.md`. Keep the original task's start condition, acceptance and "
                 "report format; change how to get there, from the review." % (k, MAX_FAILS, tag))
@@ -207,10 +227,13 @@ def plan_prompt(tag, task, verdict, k, given_up, review_md, lb):
         "",
         what,
         "",
-        "Never queue: anything that needs beads or the user at the rig, an open user decision, a change to rules, hooks, "
-        "`tools/motor_gate.py` or `tools/bench/motor_limits.json`, or a commit. If the next step needs one of these, write "
-        "no task and append ONE line to `tools/bench/lean_bench/questions_for_user.md` instead (that file is the one "
-        "other file you may write).",
+        "Never queue: anything that needs beads or the user at the rig, a change to rules, hooks, "
+        "`tools/motor_gate.py` or `tools/bench/motor_limits.json`, or a commit. Open user questions (evaluation "
+        "2026-10-14): a `HOLD:` question (safety rule, retry limit, acceptance change or an exception approval) blocks "
+        "ONLY the work that depends on its answer - queue other work; an `ASSUME:` question (a method choice inside the "
+        "rules) does not block - take the stated assumption and write it into the task. If the next step needs the user, "
+        "write no task and append ONE line starting `HOLD:` or `ASSUME:` to "
+        "`tools/bench/lean_bench/questions_for_user.md` instead (that file is the one other file you may write).",
         "Task file format: like the files in `tools/bench/lean_bench/queue/done/` - title, one-session budget line "
         "(<= 180 min, <= $60), what to read, a start condition (which earlier report must say PASS), Do steps with "
         "predictions written BEFORE any LabVIEW run, the prohibitions, and the report "
@@ -221,11 +244,11 @@ def plan_prompt(tag, task, verdict, k, given_up, review_md, lb):
     ])
 
 
-def write_review(lb, tag, own, verdict, effective, res):
+def write_review(lb, tag, own, verdict, effective, res, cid):
     s = res.get("summary") or {}
-    p = os.path.join(lb, "lean_review_%s.md" % tag)
+    p = os.path.join(lb, "lean_review_%s_%s.md" % (tag, cid))
     with open(p, "w", encoding="utf-8") as f:
-        f.write("# Review of %s (%s)\n\n" % (tag, time.strftime("%Y-%m-%d %H:%M")))
+        f.write("# Review of %s, cycle %s (%s)\n\n" % (tag, cid, time.strftime("%Y-%m-%d %H:%M")))
         f.write("- session's own result: %s\n- review verdict: %s\n- cycle counts as: %s\n" % (own, verdict, effective))
         f.write("- discussion: %s, rounds %s, ended %s, doc %s\n- summary: `%s`\n\n"
                 % ("ok" if res.get("ok") else "FAILED (%s)" % res.get("why"), s.get("rounds"), s.get("ended"),
@@ -238,49 +261,62 @@ def write_review(lb, tag, own, verdict, effective, res):
 def cycle(tag, task, rc, lb, run_discussion, run_plan, log):
     """REVIEW then PLAN for one finished cycle. -> (exit code, result dict). Never stops the run (exit 0)."""
     own = report_result(tag, lb)
-    out = {"lean_review": "", "tag": tag, "own": own, "verdict": "-", "cycle": "-", "plan": "-", "doc": "-"}
+    cid = cycle_id(lb)
+    out = {"lean_review": "", "tag": tag, "cycle_id": cid, "own": own, "verdict": "-", "cycle": "-", "plan": "-",
+           "doc": "-"}
     if own == "NOT-STARTED":
         out.update(lean_review="SKIP", cycle="NOT-STARTED")
-        log("REVIEW | %s | %s | NOT-STARTED - no review, no plan" % (time.strftime("%Y-%m-%d %H:%M:%S"), tag))
+        log("REVIEW | %s | %s | %s | own NOT-STARTED | cycle NOT-STARTED - no review, no plan"
+            % (time.strftime("%Y-%m-%d %H:%M:%S"), cid, tag))
         return 0, out
+
+    def verdict_of(r):
+        for line in ((r.get("summary") or {}).get("agreed") or []):
+            m = VERDICT_RE.match(str(line))
+            if m:
+                return m.group(1).upper()
+        return None
+
     res = run_discussion(review_topic(tag, task, rc, own, lb))
-    if (res.get("summary") or {}).get("ended") == "error" or not res.get("ok"):
-        # cycle 3 (2026-10-14 03:24): a Google Docs SSLEOFError ended the review after round 1 - one retry
-        log("REVIEW-RETRY | %s | %s | the discussion ended in an error (%s) - one retry"
-            % (time.strftime("%Y-%m-%d %H:%M:%S"), tag, (res.get("summary") or {}).get("error") or res.get("why")))
+    verdict = verdict_of(res)
+    if verdict is None:
+        # cycle 3 (2026-10-14 03:24): a Google Docs SSLEOFError ended the review after round 1. Evaluation 2026-10-14:
+        # an error OR a missing verdict -> one retry; still no verdict -> HOLD (never PASS-UNREVIEWED)
+        log("REVIEW-RETRY | %s | %s | %s | no verdict (%s) - one retry"
+            % (time.strftime("%Y-%m-%d %H:%M:%S"), cid, tag,
+               (res.get("summary") or {}).get("error") or res.get("why") or "no VERDICT line"))
         res = run_discussion(review_topic(tag, task, rc, own, lb))
+        verdict = verdict_of(res)
     s = res.get("summary") or {}
     out["doc"] = res.get("doc") or "-"
-    verdict = None
-    for line in (s.get("agreed") or []):
-        m = VERDICT_RE.match(str(line))
-        if m:
-            verdict = m.group(1).upper()
-            break
     passed = own == "PASS" and str(rc) == "0"
     if verdict is None:
-        effective = "PASS-UNREVIEWED" if passed else "FAIL"
-        question(lb, tag, "review gave no VERDICT (%s); the cycle counted as %s from the session's own result - check "
-                          "the review record" % (res.get("why") or "no verdict line", effective))
+        effective = "HOLD"
+        question(lb, tag, "HOLD: cycle %s - the review gave no VERDICT twice (%s); the task is on hold, not passed - "
+                          "check the review record" % (cid, res.get("why") or "no verdict line"))
     else:
         effective = "PASS" if (passed and verdict == "PASS") else "FAIL"
     for q in (s.get("user_needed") or []):
         if str(q).strip():
-            question(lb, tag, "review asks: %s" % q)
+            qs = str(q).strip()
+            question(lb, tag, qs if qs.upper().startswith(("HOLD:", "ASSUME:")) else "HOLD: (unmarked) %s" % qs)
     out.update(verdict=verdict or "none", cycle=effective)
     k, given_up = 0, False
     if effective == "FAIL":
         k = fail_index(tag, lb)
         given_up = k > MAX_FAILS
         if given_up:
-            question(lb, tag, "failed %d times (budget %d) - given up, not retried" % (k, MAX_FAILS))
-    review_md = write_review(lb, tag, own, verdict or "none", effective, res)
+            question(lb, tag, "HOLD: failed %d times (budget %d) - given up, not retried" % (k, MAX_FAILS))
+    review_md = write_review(lb, tag, own, verdict or "none", effective, res, cid)
     if effective == "FAIL":
         keep_failed(tag, k, lb)
+    elif effective == "HOLD":
+        keep_failed(tag, fail_index(tag, lb), lb, kind="hold")
     nd = os.path.join(lb, "queue", "next")
     os.makedirs(nd, exist_ok=True)
     before = set(glob.glob(os.path.join(nd, "*.md")))
-    prc = run_plan(plan_prompt(tag, task, "FAIL" if effective == "FAIL" else "PASS", k, given_up, review_md, lb))
+    prc = run_plan(plan_prompt(tag, task, effective if effective in ("FAIL", "HOLD") else "PASS", k, given_up,
+                               review_md, lb))
     new = sorted(set(glob.glob(os.path.join(nd, "*.md"))) - before)
     if len(new) > 1:   # the plan may write at most one task: keep the first, park the rest for the user
         for p in new[1:]:
@@ -295,8 +331,8 @@ def cycle(tag, task, rc, lb, run_discussion, run_plan, log):
             log("PLAN-REVISED | %s | %s replaces the queued copy (retired to queue/done)"
                 % (time.strftime("%Y-%m-%d %H:%M:%S"), _rel(new[0])))
     out.update(lean_review="DONE", plan=_rel(new[0]) if new else "none (plan rc %s)" % prc)
-    log("REVIEW | %s | %s | own %s | verdict %s | cycle %s | plan %s | doc %s"
-        % (time.strftime("%Y-%m-%d %H:%M:%S"), tag, own, out["verdict"], effective, out["plan"], out["doc"]))
+    log("REVIEW | %s | %s | %s | own %s | verdict %s | cycle %s | plan %s | doc %s"
+        % (time.strftime("%Y-%m-%d %H:%M:%S"), cid, tag, own, out["verdict"], effective, out["plan"], out["doc"]))
     return 0, out
 
 
@@ -386,9 +422,18 @@ def selftest():
         rc, out = cycle("g", "t.md", 0, lb, flaky, plan(), print)
         check("4b discussion error -> one retry, verdict from the retry", len(calls) == 2 and out["cycle"] == "PASS")
         mk("d", "PASS")
+        nd0 = len(seen)
         rc, out = cycle("d", "t.md", 0, lb, disc(["looks fine"]), plan(), print)
-        check("4 no verdict -> PASS-UNREVIEWED + question",
-              out["cycle"] == "PASS-UNREVIEWED" and "no VERDICT" in open(q, encoding="utf-8").read())
+        check("4 no verdict twice -> HOLD (not PASS) + HOLD question + report kept as _hold1",
+              out["cycle"] == "HOLD" and "HOLD: cycle" in open(q, encoding="utf-8").read()
+              and os.path.exists(os.path.join(lb, "lean_report_d_hold1.md"))
+              and not os.path.exists(os.path.join(lb, "lean_report_d.md")))
+        check("4 plan told the task is on hold", len(seen) == nd0 + 1 and "ON HOLD" in seen[-1])
+        mk("u", "PASS")
+        rc, out = cycle("u", "t.md", 0, lb, disc(["VERDICT: PASS"], ["ASSUME: 90 Hz first", "beads when?"]), plan(), print)
+        qt = open(q, encoding="utf-8").read()
+        check("4c ASSUME kept, unmarked question recorded as HOLD", "ASSUME: 90 Hz first" in qt
+              and "HOLD: (unmarked) beads when?" in qt and out["cycle"] == "PASS")
         for i in range(3):
             mk("e", "FAIL")
             rc, out = cycle("e", "t.md", 1, lb, disc(["VERDICT: FAIL"]), plan(), print)
@@ -408,10 +453,12 @@ def selftest():
             check("8 RESULT line is JSON", False)
         ql = os.path.join(lb, "queue.log")
         with open(ql, "w", encoding="utf-8-sig") as f:
-            f.write("2026-10-13 20:00:00 | RUN START (old)\n2026-10-13 20:01:00 | CYCLE 1/10 EXECUTE END a rc=0\n"
+            f.write("2026-10-13 20:00:00 | RUN START (old)\nREVIEW | 2026-10-13 20:01:00 | x-c1 | a | own PASS\n"
                     "2026-10-13 22:22:10 | RUN START (worktree x, max 10 cycles)\n")
-            for i in range(1, 5):
+            for i in range(1, 5):   # queue lines are NOT counted; only this script's REVIEW lines (incl. NOT-STARTED)
                 f.write("2026-10-13 23:0%d:00 | CYCLE %d/10 EXECUTE END t rc=0\n" % (i, i))
+                f.write("REVIEW-RETRY | 2026-10-13 23:0%d:30 | x | t | no verdict - one retry\n" % i)
+                f.write("REVIEW | 2026-10-13 23:0%d:59 | x-c%d | t | own %s\n" % (i, i, "NOT-STARTED" if i == 2 else "PASS"))
         open(os.path.join(lb, "run_limit.txt"), "w").write("5\n")
         evs = []
         fake_eval = lambda t: (evs.append(t), {"ok": True, "summary": {"rounds": 3, "agreed": ["keep"]}})[1]  # noqa: E731
@@ -419,7 +466,7 @@ def selftest():
         check("9 4 of 5 cycles -> no evaluation, no STOP",
               maybe_evaluate(lb, ql, print, fake_eval) is None and not os.path.exists(os.path.join(lb, "STOP")))
         with open(ql, "a", encoding="utf-8") as f:
-            f.write("2026-10-13 23:09:00 | CYCLE 5/10 EXECUTE END t rc=0\n")
+            f.write("REVIEW | 2026-10-13 23:09:00 | x-c5 | t | own PASS\n")
         ev = maybe_evaluate(lb, ql, print, fake_eval)
         check("10 5 of 5 -> STOP written + one evaluation discussion",
               ev is not None and os.path.exists(os.path.join(lb, "STOP")) and len(evs) == 1
@@ -433,7 +480,9 @@ RUN_START_RE = re.compile(r"^\W*(\d{4}-\d\d-\d\d \d\d:\d\d:\d\d) \| RUN START")
 
 
 def run_window(qlog):
-    """(start time 'YYYY-mm-dd HH:MM:SS' of the current run, cycles whose EXECUTE ended in it) from queue.log."""
+    """(start time 'YYYY-mm-dd HH:MM:SS' of the current run, cycles completed in it) from queue.log. A cycle is counted by
+    its `REVIEW |` line, which this script writes itself for every outcome (PASS / FAIL / HOLD / NOT-STARTED) - not by
+    the queue's own lines, which run 1 lost (evaluation 2026-10-14)."""
     try:
         lines = open(qlog, encoding="utf-8-sig", errors="replace").read().splitlines()
     except OSError:
@@ -443,7 +492,7 @@ def run_window(qlog):
         m = RUN_START_RE.match(t)
         if m:
             start, n = m.group(1), 0
-        elif " EXECUTE END " in t:
+        elif t.startswith("REVIEW | "):
             n += 1
     return start, n
 
@@ -536,24 +585,77 @@ def main(argv=None):
     ap.add_argument("--rc", default="?")
     ap.add_argument("--max-min", type=float, default=40.0)
     ap.add_argument("--max-rounds", type=int, default=6)
+    ap.add_argument("--root", default=HERE, help="the lean_bench folder (queue, logs, STOP); the mock queue uses a temp one")
+    ap.add_argument("--fake", default="", help="mock queue only: JSON scenario replacing the discussions and the plan")
     a = ap.parse_args(argv)
-    qlog = os.path.join(HERE, "queue.log")
+    lb = a.root
+    qlog = os.path.join(lb, "queue.log")
 
     def log(line):
         with open(qlog, "a", encoding="utf-8") as f:
             f.write("%s\n" % line)
         print(line, flush=True)
 
-    def run_discussion(text):
-        return debate_loop.run_discussion("lean-%s-review" % a.tag, 0, text, BENCH, log, max_min=a.max_min,
-                                          max_rounds=a.max_rounds)
+    if a.fake:
+        run_discussion, run_plan, run_eval = fake_steps(a.fake, a.tag, lb)
+    else:
+        def run_discussion(text):
+            return debate_loop.run_discussion("lean-%s-review" % a.tag, 0, text, BENCH, log, max_min=a.max_min,
+                                              max_rounds=a.max_rounds)
 
-    code, out = cycle(a.tag, a.task, a.rc, HERE, run_discussion, lambda p: plan_session(a.tag, p, log), log)
-    ev = maybe_evaluate(HERE, qlog, log, lambda text: debate_loop.run_discussion(
-        "lean-eval", 0, text, BENCH, log, max_min=60.0, max_rounds=a.max_rounds))
+        def run_plan(p):
+            return plan_session(a.tag, p, log)
+
+        def run_eval(text):
+            return debate_loop.run_discussion("lean-eval", 0, text, BENCH, log, max_min=60.0, max_rounds=a.max_rounds)
+    try:
+        code, out = cycle(a.tag, a.task, a.rc, lb, run_discussion, run_plan, log)
+    except Exception as e:  # noqa: BLE001 - the review step crashed: the cycle is recorded as HOLD, never lost
+        cid = cycle_id(lb)
+        why = "%s: %s" % (type(e).__name__, str(e)[:200])
+        question(lb, a.tag, "HOLD: cycle %s - the review step crashed (%s); the task is on hold" % (cid, why))
+        log("REVIEW | %s | %s | %s | own %s | verdict none | cycle HOLD (review crashed: %s) | plan none | doc -"
+            % (time.strftime("%Y-%m-%d %H:%M:%S"), cid, a.tag, report_result(a.tag, lb), why))
+        code, out = 1, {"lean_review": "CRASH", "tag": a.tag, "cycle_id": cid, "cycle": "HOLD", "why": why}
+    ev = maybe_evaluate(lb, qlog, log, run_eval)
     out["evaluation"] = "none" if ev is None else "done (%s rounds)" % ev.get("rounds")
     print(result_line(out))
     return code
+
+
+def fake_steps(path, tag, lb):
+    """Mock queue only: (run_discussion, run_plan, run_eval) from a JSON scenario
+    {"<tag>": {"discussions": [<item>, ...], "plans": [[<file name>, ...], ...]}, "_eval": <item>}, where an item is
+    "error" (the discussion ended in an error), "crash" (raises) or a summary dict. Each call consumes the next entry
+    (state in <lb>/fake_state.json, since every cycle is a new process)."""
+    sc = json.load(open(path, encoding="utf-8"))
+    sp = os.path.join(lb, "fake_state.json")
+
+    def take(key, kind, default):
+        st = json.load(open(sp, encoding="utf-8")) if os.path.exists(sp) else {}
+        i = st.get("%s/%s" % (key, kind), 0)
+        st["%s/%s" % (key, kind)] = i + 1
+        json.dump(st, open(sp, "w", encoding="utf-8"))
+        seq = (sc.get(key) or {}).get(kind) if key != "_eval" else [sc.get("_eval")]
+        return seq[i] if seq and i < len(seq) else default
+
+    def item(x):
+        if x == "crash":
+            raise RuntimeError("fake review crash")
+        if x == "die":   # the review process dies without recording anything (hard kill stand-in)
+            os._exit(5)
+        if x == "error" or x is None:
+            return {"ok": False, "why": "fake error", "summary": {"rounds": 1, "ended": "error", "error": "fake"}}
+        return {"ok": True, "doc": "fake-doc", "summary_path": "-", "summary": dict(x, rounds=x.get("rounds", 2),
+                                                                                   ended=x.get("ended", "converged"))}
+
+    def run_plan(_prompt):
+        for name in take(tag, "plans", []):
+            open(os.path.join(lb, "queue", "next", name), "w", encoding="utf-8").write("# fake task %s\n" % name)
+        return 0
+
+    return (lambda _t: item(take(tag, "discussions", None)), run_plan,
+            lambda _t: item(take("_eval", "x", {"agreed": ["fake eval"]})))
 
 
 if __name__ == "__main__":

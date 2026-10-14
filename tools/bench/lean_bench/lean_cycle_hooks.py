@@ -41,8 +41,9 @@ def log(line):
 
 
 def gate(which, tag):
-    """motor_gate --session start|end against the MAIN STATUS; its output goes to motor_session_<which>_<tag>.log."""
-    out = os.path.join(HERE, "motor_session_%s_%s.log" % (which, tag))
+    """motor_gate --session start|end against the MAIN STATUS; its output goes to motor_session_<which>_<tag>_<time>.log
+    (time-stamped so a retried tag never overwrites an earlier cycle's record - evaluation 2026-10-14)."""
+    out = os.path.join(HERE, "motor_session_%s_%s_%s.log" % (which, tag, time.strftime("%Y%m%d_%H%M%S")))
     with open(out, "w", encoding="utf-8") as f:
         rc = subprocess.call([sys.executable, os.path.join(TOOLS, "motor_gate.py"), "--session", which,
                               "--status", MAIN_STATUS], cwd=ROOT, stdout=f, stderr=subprocess.STDOUT, timeout=600)

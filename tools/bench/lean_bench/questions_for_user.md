@@ -1,0 +1,9 @@
+- 2026-10-14 00:49 | `p6fix` | review asks: 현재 레그 도구 G0 은 레그마다 리밋을 다시 설정하고 PI 기준점 이동을 합니다. 이것을 큐 소유 규칙의 예외로 계속 허용할까요, 아니면 안전 확인은 유지하면서 기준점 이동이 없는 확인 방식으로 바꿀까요?
+- 2026-10-14 00:49 | `p6fix` | review asks: 현재 G0의 레그별 리밋 재설정·PI 기준점 이동을 계속 허용할까요, 아니면 안전 확인을 유지하면서 기준점 이동 없는 확인 방식으로 바꾸도록 할까요?
+- 2026-10-14 plan | `p6fix` | 큐에 다음 작업 `queue/latest.md` 가 이미 있어서 새 작업은 쓰지 않았습니다. 다만 리뷰는 latest.md 3단계를 "큰 P6 VI 안은 고치지 말고, ring subVI 사본 + 호출 대상 바꾸기(callee swap)만 허용"으로 고쳐 쓰고, 모터 도구(G0)는 손대지 말라고 적어 두었습니다. 실행 세션은 user_notes.md 를 받지 않고, 플랜 세션은 latest.md 를 고칠 수 없습니다. latest 가 돌기 전에 채팅에서 latest.md 를 고쳐 주실까요?
+- 2026-10-14 02:33 | `latest` | review asks: latest 작업의 각 pick 지연 요구를 선택 규칙 시험과 종료 지연 추정으로 충족한 것으로 인정할까요, 아니면 W100에서 선택별 지연을 먼저 확인할까요?
+- 2026-10-14 03:24 | `latest` | review asks: latest 작업은 재시도 1/1 을 이미 썼습니다 - 레그만 다시 돌리는 2차 재시도를 허락하시나요?
+- 2026-10-14 04:59 | `p6close` | review asks: P6-4(실제 비드 ABBA, 90/150 Hz) 준비 계획을 시작해도 됩니까? 시작한다면 레그마다 v5 G0가 리밋을 다시 쓰고 PI 기준 이동을 하는 것을 허용하는지(questions_for_user.md 2026-10-14 00:49), 그리고 기계 클릭 픽으로 충분한지도 알려 주세요.
+- 2026-10-14 04:59 | `p6close` | review asks: P6-4 실제 비드 시험의 준비 계획을 시작해도 됩니까?
+- 2026-10-14 plan | `p6close` | 리플레이로 확인하는 P6 단계는 모두 PASS 로 끝났고, 계획의 다음 단계는 P6-4(실제 비드 ABBA, 90/150 Hz; ring-p6b.md:69 "user first")뿐이라 큐에 새 작업을 넣지 않았습니다. 준비 사실은 `lean_report_p6close.md` 14절에 있습니다. P6-4 를 시작할지, 시작한다면 (1) 레그마다 G0 가 리밋을 다시 쓰고 PI 기준 이동을 하는 것을 허용할지(00:49 질문), (2) 기계 클릭 픽으로 충분한지, (3) 비드 준비와 기기 상태를 언제 바꿔 주실지 알려 주세요.
+- 2026-10-14 05:1x | ANSWERED by the user ("동의"): (1) v5 G0 per-leg session start + PI reference ALLOWED (user_notes.md); (2) P6-4 PREPARATION started (task p64prep; the bead run still waits for the user at the rig); (3) the evaluation's runner changes + mock queue applied (mock 14/0).
