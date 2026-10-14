@@ -2,7 +2,8 @@
 # labview: none
 # hardware: none
 # ---
-"""git_push.py - upload master to origin (github.com/SihNho/MT_LabVIEW, private; shared with a lab colleague).
+"""git_push.py - upload master to origin (github.com/SihNho/MT_LabVIEW - PUBLIC on purpose, user 2026-10-15
+"퍼블릭으로 둘거임"; anyone can read what is pushed, so the secret scan below is the last line before the internet).
 
 User 2026-10-13: "Github은 (b) 조건 및 명시적인 요청" - once a day by a scheduled task, and whenever the user asks.
 Never at every cycle (the runner does not push). Before pushing, the lines the push would ADD are scanned for secret
@@ -19,7 +20,9 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_RES = [("api-key", re.compile(r"(?<![\w-])sk-(?:ant-)?[A-Za-z0-9_-]{20,}|AIza[0-9A-Za-z_-]{30,}")),
-              ("github-token", re.compile(r"ghp_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{20,}")),
+              # every GitHub token prefix: ghp_ (classic PAT), gho_ (OAuth - what `gh auth login` issued 2026-10-15),
+              # ghu_ / ghs_ / ghr_ (app user / server / refresh), github_pat_ (fine-grained PAT)
+              ("github-token", re.compile(r"gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{20,}")),
               ("private-key", re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY")),
               ("oauth-secret", re.compile(r"(?:client_secret|refresh_token)\"?\s*[:=]\s*\"[^\"\s]{8,}"))]
 
@@ -31,6 +34,7 @@ def secret_hits(diff_text):
 
 
 assert (secret_hits("+x = 'ghp_" + "a" * 36 + "'\n-old") == ["github-token"] and secret_hits("+plain text") == []
+        and secret_hits("+t = 'gho_" + "B" * 36 + "'") == ["github-token"] and secret_hits("+ghost gho_short") == []
         and secret_hits("+name: ask-the-user-about-rig-domain-meaning") == [])
 
 
