@@ -1,0 +1,30 @@
+BGRUN START 2026-10-15 04:06:46 limit 25.0 min: py -u tools/bench/lean_bench/fr90_abba.py --b-src C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\bench\lean\D1_ring_fr90B_20261015_034347.vi --b-md5 b96b91e2f93989f915ff9a19f40ca965 --hz 90 --run-s 60 --order B --out-root tools/bench/lean_bench/out_p64/fr90/s0 --live
+BGRUN PID 24168
+  PRECHECK {"ok": true, "bypassed": false, "dry": false, "names": ["Rotor", "ASRL5::INSTR"], "trials": [{"name": "Rotor", "status": 0, "hex": "0x00000000", "text": "\u00c0\u00db\u00be\u00f7\u00c0\u00cc \u00bc\u00ba\u00b0\u00f8\u00c0\u00fb\u00c0\u00b8\u00b7\u00ce \u00bf\u00cf\u00b7\u00e1\u00b5\u00c7\u00be\u00fa\u00bd\u00c0\u00b4\u00cf\u00b4\u00d9.", "close": 0, "ms": 22.8}, {"name": "ASRL5::INSTR", "status": 0, "hex": "0x00000000", "text": "\u00c0\u00db\u00be\u00f7\u00c0\u00cc \u00bc\u00ba\u00b0\u00f8\u00c0\u00fb\u00c0\u00b8\u00b7\u00ce \u00bf\u00cf\u00b7\u00e1\u00b5\u00c7\u00be\u00fa\u00bd\u00c0\u00b4\u00cf\u00b4\u00d9.", "close": 0, "ms": 3.4}], "t": "04:06:47", "rm_status": 0}
+=== LEG leg1 B start (D1_ring_fr90B_20261015_034347.vi)
+  FACTS {"run_dir": "tools/bench/lean_bench/out_p64/fr90/s0\\run\\replay_s1_20261015_040648", "lost_col0": null, "rows": null, "steps": null, "lost_indicator": null, "frames_delta": 0, "measured_hz": null, "picks_registered_tra": null, "picks_clicked": 0, "bandpass_answered": null, "v5_failing": ["run1.L2", "run2"], "recorded_only": {"U2 tra exact for target N (reported; sequencer reruns)": false, "D1 plot read before stop recorded (no ERR)": true}, "tmx_after": 39.0, "frame_at_stop": null}
+  GATE L-1 leg child rc 0                                           FAIL
+  GATE L0 leg.json read                                             PASS
+  GATE L1 drive_m8 M-gates                                          FAIL
+  GATE L2 leg PM gates H1 H2 U1 P1                                  FAIL
+  GATE L3 picks registered == panels closed == 15                   FAIL
+  GATE L4 tra cols 3+3N, column 0 strictly increasing               FAIL
+  GATE L5 v5 steps all pass except run1.L8                          FAIL
+  GATE L6 0 TIFFs                                                   PASS
+  GATE L7 TMX 39 after                                              PASS
+  RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":3,"fail":6},"first_fail":"L-1 leg child rc 0","artefacts":[]}
+  FACTS {"auto_reset_end": 0, "auto_reset_why": "after-stop cleanup read 0 (Auto-Reset control False)"}
+  GATE L8 # of Auto-Reset == 0 at the end                           PASS
+KEPT {"m8_replay_s1.json": "tools\\bench\\lean_bench\\out_p64\\fr90\\s0\\m8json\\m8_replay_s1_p15_r60.json", "m8_v5_replay_s1.json": "tools\\bench\\lean_bench\\out_p64\\fr90\\s0\\m8json\\m8_v5_replay_s1_p15_r60.json", "m8_v5_replay_s1_clicks.json": "tools\\bench\\lean_bench\\out_p64\\fr90\\s0\\m8json\\m8_v5_replay_s1_p15_r60_clicks.json"}
+ROW {"leg": "leg1 B", "arm": "B", "slot": 1, "attempt": 1, "rc": 1, "refused": false, "launched": true, "dir": "tools/bench/lean_bench/out_p64/fr90/s0\\legs\\leg1_B_a1", "secs": 424, "picks_registered_tra": null, "picks_clicked": 0, "registered_ok": false, "lost_col0": null, "lost_indicator": null, "rows": null, "measured_hz": null, "frame_at_stop": null, "run_dir": "tools/bench/lean_bench/out_p64/fr90/s0\\run\\replay_s1_20261015_040648"}
+  crashed leg (no tra) -> harness fault, no rerun
+SUMMARY {"lost_by_arm": {}, "criterion": "every B < min(A) - 0.25 * mean(A) (PD217(f) gain form, plan 9.1)", "limit": null, "met": null, "why": "needs 2 A and 2 B counted legs, have 0 / 0"}
+GATE Q leg1 B leg-start checks clear                                                  PASS
+GATE T6 leg1 B LabVIEW gone after                                                     PASS
+GATE P2 leg1 B md5 unchanged by the leg                                               PASS
+GATE T1 leg1 B rc 0                                                                   FAIL
+GATE L leg1 B leg gates (p64_leg) all pass                                            FAIL
+GATE T5 leg1 B fps within 15% of 90.0 Hz                                              FAIL
+GATE T12 slot1 B registered == 15 (<= 1 rerun)                                        FAIL
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":3,"fail":4},"first_fail":"T1 leg1 B rc 0","artefacts":[{"path":"tools\\bench\\lean_bench\\out_p64\\fr90\\s0\\p64_abba.json","md5":"1c3e7d3f04106abf2957a9ee5f6f420e"}]}
+BGRUN END rc=1 after 426s
