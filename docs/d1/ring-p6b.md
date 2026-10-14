@@ -33,3 +33,37 @@ tags: [d1, ring-buffer, p6, replay, dry-taint, fp-103, pre-decided]
        `replay_get_buff_image.vi` (`ring-p6.md:313-315`), not drift.
      - **(e) Then PD412(c)-(d) unchanged:** prior-art review on the patch (peers priorart), drain fp-103 naming
        `selftest_c171_a1_1_taint.py` + c134_1; then P6 replay copy → S1 leg → P6 leg → compare with D = 20 → fp-102 last.
+
+414. **(chat, 2026-10-13 — lean-rules bench and two lean tasks; cycle 171 stopped mid-cycle for the bench; PD413 not run)**
+     USER-RULES: U1 (relied on: no per-bead maths changed; test copies only change timing / the frame source), U7 + U9 (the
+     col-0 finding CONTRADICTS them in P6 as built - see (c)), U8 + U13 (P6 as built does not do latest-wins - see (d)), U2
+     (motor sessions with readback on every run); the user's new statement "과부하가 걸리더라도 버퍼 넘버의 정확성이 데이터의
+     정확성을 결정하는듯" (2026-10-13) is added as an acceptance in (c).
+     - **(a) P6-2 replay, by a lean session** (branch bench/lean-20261013, report `tools/bench/lean_bench/lean_report.md`, 64 min,
+       $6.64): P6 replay copy `claudeDev\bench\lean\D1_ring_p6_replay_20261013_135743.vi` 09a23608 (plan 170's two swaps, gates
+       19/0); S1 leg 6321 rows lost 0, P6 leg 2538 rows; X/Y/Z bit-identical 2538/2538, DISTINCT 2538/2538 (D = 20), cal 0 bytes
+       outside the date field, trans/rot 2437/2437 post-init; inputs md5 18/18 unchanged. Re-checked by the chat from the raw
+       tra files. **PD409(b) items PASS - but column 0 was excluded, and (c) shows it is wrong.**
+     - **(b) P6-3, by a lean session** (`lean_report_p63.md`, 102 min, $17.52; predictions written before the runs): T-gap (a
+       get-buff wrapper that adds 1 to the buffer number: every frame skips one number) P6 2537/2537 rows bit-identical, 0 lost,
+       0 damaged; the original (S1 copy with the same wrapper) does the same, same Total Lost Frames formula. T-load (a copy of
+       RingSeqCheck_v0 with a Wait (ms) swapped into loop 1.2): W40 2540/2540, 0 lost; W100 1431 rows, 0 damaged, strictly
+       ordered, 1090 lost = 311 x 1 + 41 x 19 (counted from X/Y/Z and from column 0 alike); the discard path fired 41 times.
+       Copying a node INTO the P6 VI re-sourced calibration wires and broke it (ExecState 0); a callee swap of a small subVI copy
+       does not. All numbers re-computed by the chat (scratch verify_p63.py): equal.
+     - **(c) DEFECT - column 0 is one ring lap old.** In loop 1.2 the `FrameIdx` local read (#30239 → IndexArray #30240, wire
+       30267) has no input wire: not ordered after the pick, outside the n1 → track → n2 seqlock. When 1.2 keeps up, every row
+       stores the buffer number of frame k-20 (P6-2 2518/2518 rows with index >= 20, W40 2520/2520; first 20 rows -1); the
+       original stores the row's own number. Under U7 (the buffer number is the time axis) and U9 (a mismatched pair is
+       corruption) every such row is corrupt. TransPos/RotPos very likely share the read form (P6-2 B4) - the replay data cannot
+       show it (init trans differs between any two runs). **Acceptance from now on: every saved row's buffer number (and each
+       per-slot value written with it) is its own frame's, at normal load, gapped source and overload.** Task: lean task p6fix
+       (`V6_lean/tools/bench/lean_bench/task_p6fix.md`, queued).
+     - **(d) Overload as built is not latest-wins.** Under W100 1.2 trails at the oldest slot (~19 frames), skips single frames
+       uncounted, and jumps to the newest only after a seqlock discard. U8/U13 say drop the backlog, take the newest. User
+       2026-10-13 "수정하고 다음 작업 시작": fix it after p6fix (lean task `task_latest.md`, queued; starts only if p6fix PASSes).
+     - **(e) Operation:** lean rules adopted by the user (discussion lean-rules-01; `docs/lean-operation-proposal.md`; decision
+       `docs/decisions/lean_operation_and_buffer_number_accuracy.md`). The chat cannot start or write an autonomous lean runner
+       (auto-mode classifier [Create Unsafe Agents], also with stop points between cycles); the user starts
+       `V6_lean/tools/bench/lean_bench/lean_queue.ps1` or changes the permission mode. User check every 10 cycles (2026-10-13).
+     - **(f) Next:** p6fix → latest-wins → P6-2 re-accepted with column 0 included → P6-3 re-run → P6-4 (beads; user first).

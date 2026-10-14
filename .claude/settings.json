@@ -36,27 +36,114 @@
     ]
   },
   "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash|PowerShell|Write|Edit|MultiEdit|NotebookEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "py \"G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_lean/tools/hooks/guard_lean.py\"",
-            "timeout": 15
-          }
-        ]
-      }
-    ],
     "PostToolUse": [
       {
         "matcher": "Bash|PowerShell",
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_lean\\tools\\lv_stallcheck.ps1\"",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\lv_stallcheck.ps1\"",
             "timeout": 90,
             "statusMessage": "checking for stalled LabVIEW clients"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py \"G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/hooks/guard_write.py\"",
+            "timeout": 30,
+            "statusMessage": "write-check: scope header, compile, honesty, schema, stale pins (card chat-E3)"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py \"G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/hooks/guard_bash.py\"",
+            "timeout": 15,
+            "statusMessage": "guard: LabVIEW commands must be short or backgrounded"
+          },
+          {
+            "type": "command",
+            "command": "py \"G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/hooks/guard_peer.py\"",
+            "timeout": 15,
+            "statusMessage": "guard: a failed prediction must be peer-reviewed before the next build"
+          },
+          {
+            "type": "command",
+            "command": "py \"G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/hooks/guard_cycle.py\"",
+            "timeout": 180,
+            "statusMessage": "guard: the previous cycle must have a retrospective before a new build starts"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|NotebookEdit|MultiEdit|Read|Glob|Grep|WebFetch|WebSearch|Agent|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py \"G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/hooks/guard_card.py\"",
+            "timeout": 10,
+            "statusMessage": "guard: session protocol card flags (bound sub-agents only)"
+          }
+        ]
+      },
+      {
+        "matcher": "Agent|Task|SendMessage|Workflow",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py \"G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/hooks/guard_session.py\"",
+            "timeout": 15,
+            "statusMessage": "guard: runner session = one cycle (dispatch cap, closed after the retrospective); chat = context limit"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py \"G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/hooks/answer_first.py\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "py \"G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/hooks/report_gate.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py \"G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/hooks/report_gate.py\"",
+            "timeout": 10,
+            "statusMessage": "gate: unreported runner events must be reported before the turn ends"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "^material",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py \"G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/hooks/guard_agent_exit.py\"",
+            "timeout": 15,
+            "statusMessage": "guard: a sub-agent may not end while its bgrun run is alive"
           }
         ]
       }

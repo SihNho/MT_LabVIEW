@@ -1243,7 +1243,7 @@ A file is SHARED when at least one OTHER file under tools/ imports it (import gr
 | [`tools/hooks/adapt_claude.py`](#tools-hooks-adapt-claude-py) | hook - reference | 1 | 3 | 0 | 1 |
 | [`tools/hooks/adapt_codex.py`](#tools-hooks-adapt-codex-py) | hook - reference | 1 | 5 | 0 | 1 |
 | [`tools/hooks/guard_assign.py`](#tools-hooks-guard-assign-py) | hook - reference | 6 | 17 | 0 | 8 |
-| [`tools/hooks/guard_bash.py`](#tools-hooks-guard-bash-py) | hook - reference | 13 | 13 | 0 | 0 |
+| [`tools/hooks/guard_bash.py`](#tools-hooks-guard-bash-py) | hook - reference | 14 | 13 | 0 | 0 |
 | [`tools/hooks/guard_card.py`](#tools-hooks-guard-card-py) | hook - reference | 4 | 4 | 0 | 2 |
 | [`tools/hooks/guard_cycle.py`](#tools-hooks-guard-cycle-py) | hook - reference | 29 | 14 | 0 | 3 |
 | [`tools/hooks/guard_peer.py`](#tools-hooks-guard-peer-py) | hook - reference | 27 | 27 | 0 | 4 |
@@ -5311,7 +5311,7 @@ hook - reference; imported by 6 file(s): `tools/bench/prep_c162_check_outside.py
 
 ### tools/hooks/guard_bash.py
 
-hook - reference; imported by 13 file(s): `tools/bench/diag_c106d_jevrc2.py`, `tools/bench/diag_c130_2_baseline.py`, `tools/bench/diag_c144_a2_3_stoprec.py`, `tools/bench/selftest_c103d_hooks.py`, `tools/bench/selftest_c110_launchgate.py`, `tools/bench/selftest_c121_3_gatefp.py` ...
+hook - reference; imported by 14 file(s): `tools/bench/diag_c106d_jevrc2.py`, `tools/bench/diag_c130_2_baseline.py`, `tools/bench/diag_c144_a2_3_stoprec.py`, `tools/bench/selftest_c103d_hooks.py`, `tools/bench/selftest_c110_launchgate.py`, `tools/bench/selftest_c121_3_gatefp.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
