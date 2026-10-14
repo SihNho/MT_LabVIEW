@@ -149,8 +149,47 @@ def load_limits(path=None):
         float(lim["asi"]["release"]["sl"]), float(lim["asi"]["release"]["su"])
     except (KeyError, TypeError, ValueError):
         return None
+    if lim["asi"].get("mode", "absolute") not in ("absolute", "relative"):
+        return None
+    if lim["asi"].get("mode") == "relative":
+        try:
+            hw = lim["asi"]["half_width_mm"]
+            if not (0 < float(hw["X"]) <= 5 and 0 < float(hw["Y"]) <= 5):
+                return None
+        except (KeyError, TypeError, ValueError):
+            return None
     lim.setdefault("tolerance", DEFAULT_TOL)
     return lim
+
+
+ASI_UNIT_MM = 1e-4   # see UNITS above: ASI positions are 0.1 um
+
+
+def parse_asi_fresh(text):
+    """'FRESH X=<units> Y=<units>' (motor_asi_io.ps1 -Mode read) -> (x_units, y_units) or None."""
+    m = re.search(r"FRESH\s+X=(-?[\d.]+)\s+Y=(-?[\d.]+)", text or "")
+    return (float(m.group(1)), float(m.group(2))) if m else None
+
+
+def relative_window(limits, x_units, y_units):
+    """User 2026-10-15 ("그냥 실행 당시 위치를 기준으로 하자"): the ASI window is the stage position at session start
+    +- half_width_mm per axis (absolute mm, as SL/SU take). -> (sl, su)."""
+    hw = limits["asi"]["half_width_mm"]
+    cx, cy = x_units * ASI_UNIT_MM, y_units * ASI_UNIT_MM
+    sl = {"X": round(cx - float(hw["X"]), 6), "Y": round(cy - float(hw["Y"]), 6)}
+    su = {"X": round(cx + float(hw["X"]), 6), "Y": round(cy + float(hw["Y"]), 6)}
+    return sl, su
+
+
+def asi_window(limits, sess=None):
+    """The ASI SL/SU in force: the file's absolute window, or (relative mode) the one the open session recorded."""
+    if limits["asi"].get("mode") == "relative":
+        sess = sess if sess is not None else session_info()
+        if not sess:
+            return None, None
+        w = sess.get("limits_file", {}).get("asi", {})
+        return w.get("sl"), w.get("su")
+    return limits["asi"]["sl"], limits["asi"]["su"]
 
 
 def session_info(path=None):
@@ -371,11 +410,17 @@ def _asi_limits_call(mode, sl, su):
                             "-ExpectSuX", "%g" % float(su["X"]), "-ExpectSuY", "%g" % float(su["Y"])])
 
 
-def session_start(limits, pi_call=None, asi_call=None, session_path=None, out=print):
+def _asi_read_call():
+    return _run_ps(ASI_IO, ["-Mode", "read"])
+
+
+def session_start(limits, pi_call=None, asi_call=None, session_path=None, out=print, asi_read=None):
     """Write the file's limits into BOTH controllers and verify by readback. rc 0 = both verified, else 3.
-    `pi_call`/`asi_call` are injected by the self-test: (mode, ...) -> (rc, text)."""
+    `pi_call`/`asi_call`/`asi_read` are injected by the self-test: (mode, ...) -> (rc, text).
+    ASI relative mode (user 2026-10-15): the window is the stage position read at session start +- half_width_mm."""
     pi_call = pi_call or (lambda mode, lo, hi: _pi_limits_call(mode, lo, hi))
     asi_call = asi_call or (lambda mode, sl, su: _asi_limits_call(mode, sl, su))
+    asi_read = asi_read or _asi_read_call
     tol = float(limits.get("tolerance", DEFAULT_TOL))
     lo, hi = float(limits["pi"]["lo_mm"]), float(limits["pi"]["hi_mm"])
     sl, su = limits["asi"]["sl"], limits["asi"]["su"]
@@ -407,6 +452,20 @@ def session_start(limits, pi_call=None, asi_call=None, session_path=None, out=pr
         out("ASI : not contacted - PI refused after %d attempts" % REF_ATTEMPTS)
         out("SESSION START REFUSED - no session file written, --execute stays closed")
         return 3
+    window = {"mode": "absolute"}
+    if limits["asi"].get("mode") == "relative":
+        rcr, textr = asi_read()
+        out(textr.strip())
+        pos = parse_asi_fresh(textr)
+        if rcr != 0 or pos is None:
+            out("ASI : position read FAILED (rc %s) - the relative window cannot be computed" % rcr)
+            out("SESSION START REFUSED - no session file written, --execute stays closed")
+            return 3
+        sl, su = relative_window(limits, pos[0], pos[1])
+        window = {"mode": "relative", "center_units": {"X": pos[0], "Y": pos[1]},
+                  "half_width_mm": limits["asi"]["half_width_mm"]}
+        out("ASI : relative window around X=%d Y=%d units (%.4f / %.4f mm) +- %s mm -> SL %s / SU %s"
+            % (pos[0], pos[1], pos[0] * ASI_UNIT_MM, pos[1] * ASI_UNIT_MM, limits["asi"]["half_width_mm"], sl, su))
     rc2, text2 = asi_call("limits-set", sl, su)
     out(text2.strip())
     asi_rb = parse_asi_limits(text2)
@@ -419,6 +478,7 @@ def session_start(limits, pi_call=None, asi_call=None, session_path=None, out=pr
            "pi_reference": pi_ref, "pi_reference_attempts": attempt, "pi_verify": "OK",
            "limits_readback": {"pi": pi_rb, "asi": asi_rb},
            "limits_file": {"pi": {"lo_mm": lo, "hi_mm": hi}, "asi": {"sl": sl, "su": su}},
+           "asi_window": window,
            "tolerance": tol}
     with open(session_path or SESSION_PATH, "w", encoding="utf-8") as f:
         json.dump(rec, f, indent=2, sort_keys=True)
@@ -487,7 +547,10 @@ def transmit(device, command, d, limits):
             return 5
         axis, val = list(pairs.items())[0]
         canon = "M %s=%d" % (axis, int(round(val)))
-        sl, su = limits["asi"]["sl"], limits["asi"]["su"]
+        sl, su = asi_window(limits)
+        if sl is None or su is None:
+            sys.stderr.write("REFUSED: ASI relative window - no open session records it\n")
+            return 3
         tok = _token_file(canon)
         try:
             rc, text = _run_ps(ASI_IO, ["-Mode", "send", "-Command", canon, "-TokenFile", tok,

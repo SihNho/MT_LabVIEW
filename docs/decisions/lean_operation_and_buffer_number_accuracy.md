@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: b607b493-a66f-4081-b122-a7a95d2c2a67
-  modified: 2026-10-14T17:17:00.631Z
+  modified: 2026-10-14T19:04:29.813Z
 ---
 
 2026-10-13, after discussion lean-rules-01 and two lean runs (P6-2 PASS 64 min $6.64; P6-3 gap+load PASS 102 min $17.52,
@@ -58,6 +58,14 @@ which also found P6's column-0 one-ring-lap lag the old acceptance missed):
   merge 48f23831). The lean worktree's branch bench/lean-20261013 differs from master only by its session rules
   (CLAUDE.md / AGENTS.md / .claude/settings.json, kept per branch by .gitattributes merge=ours + `git config
   merge.ours.driver true`); merge lean -> master after each run (and master -> lean only while no run is going).
+  GOTCHA (2026-10-15, master->lean put master's rules into the lean worktree): merge=ours is NOT consulted when only
+  one side changed a file. Always merge with `--no-commit`, then `git checkout HEAD -- CLAUDE.md AGENTS.md
+  .claude/settings.json` (the receiving branch's own), then commit; verify `head -1 CLAUDE.md` on each side.
+- VI repository (user 2026-10-15): separate PRIVATE repo github.com/SihNho/LabVIEW-OpVIs (created, empty) for the Op*.vi
+  set (153 in claudeDev, 90 used by the Python tools) + the Python code that drives them, WITH references ("무엇보다
+  레퍼런스 표기 해야함"; docs/REFERENCES.md R1 LV-Scripting MIT, R2 NI examples). Licence (MIT recommended) and
+  copyright holder are OPEN - the user asks their PI; request filed in Obsidian-비서 Knowledge/Ingest Queue. Packaging
+  (Op VI dependency list needs LabVIEW) after fr90.
 - GitHub: upload once a day (scheduled task github-daily-push, tools/git_push.py) and on explicit request; never per cycle.
 
 **Why:** the gates cost more than they prevented once the tools existed; a single session kept context and found a real defect.
