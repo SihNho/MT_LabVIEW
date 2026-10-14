@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: b607b493-a66f-4081-b122-a7a95d2c2a67
-  modified: 2026-10-14T17:10:58.470Z
+  modified: 2026-10-14T17:17:00.631Z
 ---
 
 2026-10-13, after discussion lean-rules-01 and two lean runs (P6-2 PASS 64 min $6.64; P6-3 gap+load PASS 102 min $17.52,
@@ -53,6 +53,11 @@ which also found P6's column-0 one-ring-lap lag the old acceptance missed):
 - GitHub repo github.com/SihNho/MT_LabVIEW is PUBLIC on purpose (user 2026-10-15 "퍼블릭으로 둘거임") - do not ask
   again; keep the secret-shape scan before every push. gh CLI installed 2026-10-15 (C:\Program Files\GitHub CLI\gh.exe),
   logged in as SihNho via the user's own `gh auth login` (keyring, https).
+- Branch policy (user 2026-10-15 "현재 진행코드를 항상 마스터로 두고, 브랜치가 생길 경우 이전 기록을 브랜치에"): the
+  current code lives on master; an old state goes to a branch (archive/full-harness-20261015 = master before the lean
+  merge 48f23831). The lean worktree's branch bench/lean-20261013 differs from master only by its session rules
+  (CLAUDE.md / AGENTS.md / .claude/settings.json, kept per branch by .gitattributes merge=ours + `git config
+  merge.ours.driver true`); merge lean -> master after each run (and master -> lean only while no run is going).
 - GitHub: upload once a day (scheduled task github-daily-push, tools/git_push.py) and on explicit request; never per cycle.
 
 **Why:** the gates cost more than they prevented once the tools existed; a single session kept context and found a real defect.
