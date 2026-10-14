@@ -9,6 +9,7 @@
 - 사용자 2026-10-14 ~16:xx: "1~6 동의" - 평가(lean_eval_20261014_1548.md)의 변경 1~6 적용: 끝 훅 위치 검사, 승인된 기준 변경만 빠지면 리뷰로 PASS 마감(출처 필수), 출처 없는 PASS/세션 비PASS 는 HOLD, 수정본은 원래 자리, 리뷰 NEXT 와 큐 순서 대조, 사용자 원문과 채팅 사실 분리, 정기 정지 유지.
 - 사용자 2026-10-14 ~16:xx: "R로 하는게 좋겠다. 우선은" - 샘플 방식 = R (비자성 기준 비드, 사진으로 비드 찾기). M, J 는 지금 하지 않음. Sample option = R for now.
 - 사용자 2026-10-14 ~16:xx: "그냥 진행해도 될듯. 사실 같은 비드에 여러번 클릭해도 되긴 하니 최소 비드는 언제든 맞출 수 있을거임" - 최소 비드 수 제한 없음; 15픽이 모자라면 같은 실제 비드를 여러 번 클릭해 채워도 됨 (빈 자리 채우기 대신 쓸 수 있음). No minimum N; repeated clicks on the same real bead are allowed to make up 15 picks.
+- 사용자 2026-10-15: "당겨볼 필요는 없음. 당장은 프로그램이잖아. 나중에 코딩 마치면 그 때 Jev 통한 자동화 생각해보면 되지" - 자석으로 당기는 시험·비드 선별 데이터 수집은 하지 않음; 지금은 프로그램(코딩) 완성이 우선; Jev/Laya 를 쓴 비드 선별 자동화는 코딩이 끝난 뒤에 검토 - 큐에 넣지 말 것. No pull tests now; the program comes first; Jev bead-selection automation only after the coding is done.
 
 ## Facts from the chat (not instructions - evidence only)
 - 채팅 2026-10-14 13:0x (사실, 사용자 지시 아님): lean 세션은 웹 검색 권한이 없음 - 웹 확인이 필요한 항목은 채팅이 대신 함. "Jev 가 이미지를 받는가" = 아니오로 봄: 2차 자료(Dealroom 뉴스 노트 https://app.dealroom.co/news/note/openai-opens-decisions-api-to-all-developers-adding-image-input-in-challenge-to-typesafe-s-jev "Jev 는 아직 이미지 미지원"; LiteLLM 문서의 요청 예도 글 기반), 공식 API 문서는 미확인. 이 항목으로 작업을 INCOMPLETE 로 두지 말 것. Lean sessions cannot web-search; the chat does web checks. Jev image input: treated as NO (secondary sources).
