@@ -67,3 +67,24 @@ tags: [d1, ring-buffer, p6, replay, dry-taint, fp-103, pre-decided]
        (auto-mode classifier [Create Unsafe Agents], also with stop points between cycles); the user starts
        `V6_lean/tools/bench/lean_bench/lean_queue.ps1` or changes the permission mode. User check every 10 cycles (2026-10-13).
      - **(f) Next:** p6fix → latest-wins → P6-2 re-accepted with column 0 included → P6-3 re-run → P6-4 (beads; user first).
+
+415. **(chat ingest, 2026-10-15 — lean runs 1-5 on branch bench/lean-20261013, merged to master; reports in
+     `tools/bench/lean_bench/`, each re-checked by a Claude-GPT review from the raw files)**
+     USER-RULES: U1 (every fix changes order / which frame is picked, never per-bead maths; edits only by callee swap of a
+     small subVI copy - user note 2026-10-13 "큰 VI 안을 직접 고치지 말 것"), U7/U9 (acceptance #1 below), U8/U13 (latest-wins).
+     - **(a) P6 is functionally DONE.** p6fix: column 0 = the row's own buffer number in every condition (P6-2 2537/2537,
+       gap 2537/2537, W40 2540/2540, W100 1432/1432; X/Y/Z 9046 rows bit-identical - the review corrected the report's 10046).
+       latest (3 tries): pick = newest valid slot (RingPickSlot callee swap only), W100 lag at the pick 0 on 1475/1475 picks,
+       1-2 frames to the next pick. Final VI `claudeDev\bench\lean\D1_ring_p6latest_20261014_010104.vi` **15c664e3**;
+       p6close re-ran P6-2 / gap / W40 / W100 on it: own number and X/Y/Z on every row (2540 / 2539 / 2538 / 1472).
+     - **(b) P6-4 preparation done** (`p64_plan.md`, all section-10 questions agreed by the user 2026-10-14 "전부 동의함"):
+       BOBS90 257fb852, 150 Hz rate wrapper + A150 / B150 / BOBS150 (readback 150, 149.947 fps, 0 gaps; fresh open returns to
+       90.0009 Hz), ABBA drivers with a strict own-number check (p64p3, 25/0). Sample R (reference beads) "for now"; no minimum
+       bead count (repeat clicks on real beads allowed). The real-bead run waits for the user (reference beads not stuck well).
+     - **(c) Frame rate, Auto-Reset OFF in every leg copy** (user 2026-10-15: bead renewal costs frames; decision 2026-09-16
+       "오토리셋 끄고 봐야할듯"; the saved default of `Auto-Reset` was TRUE in all sources), fixed 15 picks, no beads:
+       **90 Hz (fr90)**: lost A 224 / 522, B 17 / 4, fps ~88.9, GAIN met; the earlier 3359 / 5860 for A was reseed load.
+       **150 Hz (fr150)**: lost A 6182 / 5565, B 5536 / 5534, GAIN NOT met; B's camera loop keeps up (`Total Lost Frames`
+       26 / 27) but only ~2 of 3 frames are saved. Own-number check PASS at both rates (11081 / 12321 rows). → PD416.
+     - **(d) Sample / later:** bead-selection automation by Jev / Laya (pulled?, rotation radius, circular trace, expected
+       extension - all from tracking data, so text-only Jev can judge) is DEFERRED until the coding is done (user 2026-10-15).

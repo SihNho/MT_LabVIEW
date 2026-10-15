@@ -58,3 +58,26 @@ tools in `docs/d1/tooling.md` (at its 400-line cap). How to add: see the 5-line 
        in 1.2: no loss at normal load, exact loss count and 0 damaged rows under overload; discard never seen = 'not
        verified'); the new-skeleton comparison is a candidate after P6.
      USER-RULES: U1 unchanged (no computation change), hardware rules unchanged.
+
+417. **(chat ingest, 2026-10-15 — the lean runner as it now runs; decision record
+     `docs/decisions/lean_operation_and_buffer_number_accuracy.md`)**
+     - **(a) Cycle = EXECUTE → REVIEW → PLAN** (user 2026-10-13 "실행 에이전트 --> 리뷰 에이전트 (토론) --> 플랜"):
+       `V6_lean/tools/bench/lean_bench/lean_queue.ps1` (user-started; the chat may launch it on the user's word through WMI),
+       one Opus execute session per task, a read-only Claude-GPT review that re-computes the acceptance from raw files
+       (VERDICT; PASS needs the session's PASS too; PASS-BY-REVIEW only with the user's approved source; no verdict twice →
+       HOLD), a plan session that writes at most one task (same-tag retry ≤ 2 failures, or the plan's next step; a revision
+       keeps the original's queue place unless the review says `ORDER: <tag> first`). Failed cycles do not stop the run.
+       The run stops at run_limit.txt (5) with an evaluation discussion, on an empty queue, on STOP, or on a failed hook.
+     - **(b) Cycle hooks** (user 2026-10-13 "모터 움직임 제한을 위한 훅은 사이클 시작 시점에 걸고, 사이클 종료 시점에
+       풀리도록"): start = motor_gate session (PI reference + limits + readback) and the START-WINDOW check; end = LabVIEW
+       closed and verified, limits released + readback, and the start-vs-end POSITION check (PI 0.001 mm, ASI 2 units).
+       A lean session never runs `--session` itself (guard_lean); v5 G0's per-leg session start is approved (2026-10-14).
+     - **(c) ASI window is RELATIVE** (user 2026-10-15 "그냥 실행 당시 위치를 기준으로 하자", after the joystick-set X
+       -5.29 mm was found outside the fixed 2026-09-18 window): session start reads ASI X/Y (read-only) and sets SL/SU =
+       position ± 2.0 mm, recorded in motor_session.json (motor_gate 817def14; first live use 2026-10-15 09:41, readback OK).
+     - **(d) Bead-less frame-rate legs run with Auto-Reset OFF** in every leg copy (2026-09-16 decision, re-applied 2026-10-15).
+     - **(e) Notes for sessions:** the user's own words live in `lean_bench/user_notes.md` (chat-checked facts in a separate
+       section); lean sessions cannot web-search - the chat does web checks; never end a `claude -p` reply while a background
+       job runs; the chat's direct ASI move was refused by the auto-mode classifier [Real-World Transactions] - the user moves
+       the stage. Branches: current code on master; the lean worktree branch differs only by its session rules (merge with
+       `--no-commit`, then restore CLAUDE.md / AGENTS.md / .claude/settings.json from HEAD).
