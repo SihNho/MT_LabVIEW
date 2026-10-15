@@ -27,6 +27,9 @@ tags: [d1, performance, loop-1.2, 150hz, bottleneck, gpu, pre-decided]
        3-state clamp's control path?). With 15 real beads tracking grows by a linear estimate of ~6 ms (0.41 ms per bead, not
        measured) - then the GPU kernel (`docs/gpu-backend.md`: 1.1-2.1 ms for 5 beads) matters too; on the bead-less bench it
        would change nothing.
-     - **(e) Open (task bn12rest retry, running 2026-10-15 14:09):** time FIR #28233 with exactly 6 swaps; read #29009's input
-       length per pick and whether it GROWS with run time (a growing history would slow long experiments); why For #1359 runs
-       14 times for 15 picks.
+     - **(e) Answered by the bn12rest retry (2026-10-15 15:30, review PASS):** #29009's input is a FIXED 20,000-sample row
+       (`# FD points`, a pre-initialised ring) - it does NOT grow with run time; a rank-1 (3-point) median over all 20,000 samples
+       per pick per frame (#30306: 2,000 samples -> the 10x ratio). FIR #28233: 0.044 ms per call, 0.64 ms per iteration. The
+       For #1359 group = ~4.81 ms per iteration (~50 % of 1.2's 9.6 ms). For #1359 / #29874 run 14 times because no N is wired
+       (auto-indexing count). Next (task bn12iface, read-only, offline, started 15:39): every consumer of the For #1359 /
+       #29874 outputs, frame correspondence, when it is used (display / save / clamp path) - the interface-contract facts.
