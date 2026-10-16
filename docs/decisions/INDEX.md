@@ -88,8 +88,9 @@ session, not a silent override.
 - [verify_wiring_by_scripting_not_screenshots](verify_wiring_by_scripting_not_screenshots.md) (2026-08-27) - Verification of generated LabVIEW code (wiring, broken state, instance counts) must be done programmatically, not by screenshot inspection — the user's standing correcti…
 - [watchdog_long_running_processes](watchdog_long_running_processes.md) (2026-08-28) - Any single blocking process must be supervised - past a time threshold, actively verify (dialog check, screenshot) instead of waiting
 
-## Runner, cycles and sessions (26)
+## Runner, cycles and sessions (27)
 
+- [measure_before_more_structure_checks](measure_before_more_structure_checks.md) (2026-10-17) - after a big-VI edit, one clean structural comparison, then measure (rule 1a is numeric); offer "measure now" when reviews loop on structure
 - [fast_decision_cycles_are_the_goal](fast_decision_cycles_are_the_goal.md) (2026-10-16) - several batch + decision cycles a day (lean runner) is exactly the operating mode the user wanted; keep tasks one-question, rules pre-registered, one-word approvals
 - [acceleration_items_2026_09_28](acceleration_items_2026_09_28.md) (2026-09-28) - The user's 2026-09-28 approval of four ways to speed up the loop-splitting project — pipeline the next step's offline prep beside the LabVIEW build, less review on a pro…
 - [agent_vs_session_terminology](agent_vs_session_terminology.md) (2026-09-29) - The user's 2026-09-29 terminology — "에이전트/agent" is a Claude instance spawned by the runner or the chat (judgement agent, material agent, log-reader, peer); "세션/session"…
