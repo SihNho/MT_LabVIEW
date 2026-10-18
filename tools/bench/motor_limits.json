@@ -12,5 +12,12 @@
     "su": {"X": 0.1525, "Y": -0.7744},
     "release": {"sl": -500, "su": 500}
   },
+  "rotor": {
+    "_comment": "2026-10-19 user ('-5바퀴 에서 + 5바퀴', '기계 리턴은 펄스로 주는지라 각도로 환산해야함'): Autonics PMC-2HS X axis, COM5 9600 8N1, native unit pulses, 0.72 deg/pulse (500 pulses = 1 turn). mode 'relative' = the session-start hook reads POS (read-only) and every PAB/PIC target must lie in start +- half_width_pulses (2500 = 5 turns; the gate refuses a wider value). Enforced by motor_gate.py + motor_rotor_io.ps1, NOT by the controller (its EEPROM soft limit is not installed - docs/rotor-protocol.md). max_speed = SPD argument cap (the main VI's 'Rot Speed' default 100; actual pps = SPD x speed multiplier).",
+    "mode": "relative",
+    "half_width_pulses": 2500,
+    "deg_per_pulse": 0.72,
+    "max_speed": 100
+  },
   "tolerance": 0.001
 }

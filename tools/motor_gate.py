@@ -17,8 +17,14 @@ hardware now enforces was only a place for the two to disagree. What this file s
   1. RIG STATE from STATUS.md (`rig-state:`): 실험중 => refuse everything; unreadable => refuse (default-deny).
   2. COMMAND CLASS default-deny. Refused for good: every ASI home/origin/zero/save/reset command and every PI
      home/reference/define command - **because a controller limit is ABSOLUTE, so shifting the coordinate zero
-     would move the fence without changing a number in this file**. The rotor is refused entirely (no envelope
-     has ever been declared for it). Read-only queries pass.
+     would move the fence without changing a number in this file**. Read-only queries pass.
+     ROTOR (user 2026-10-19, "-5바퀴 에서 + 5바퀴", "기계 리턴은 펄스로 주는지라 각도로 환산해야함"): a RELATIVE
+     envelope enforced by THIS script (docs/rotor-protocol.md "Envelope design" says why not the controller's own
+     EEPROM soft limit yet): `--session start` reads the rotor POS (read-only) and records start_pos; a move is
+     allowed only if start_pos - half_width <= target <= start_pos + half_width pulses (2500 = 5 turns at
+     0.72 deg/pulse), relative targets from a FRESH POS read inside the same port open as the transmit
+     (tools/motor_rotor_io.ps1). X axis only; speed <= rotor.max_speed; counter clear / home / EEPROM write /
+     program / jog / reset refused (they would move or bypass the fence).
   3. THE SESSION CONTRACT. `--session start` writes the limits from tools/bench/motor_limits.json into both
      controllers and verifies them by readback; `--session end` releases them (PI 0..52, ASI +-500). `--execute`
      refuses unless a session file exists AND a FRESH readback of the controller limits, taken inside the same
@@ -29,7 +35,8 @@ UNITS - stated explicitly because getting this wrong is the whole risk:
   ASI  motion commands are in 0.1 um  =>  1.0 mm = 10 000 units, `M X=8000` is +0.8 mm.
        ASI SL/SU limits are in **mm, absolute**.
   PI   native unit = mm (M-126.PD1 through GCS `POS?`/`MOV`); SPA 0x15/0x30 are mm as well.
-  rotor native unit = pulses, 0.72 deg/pulse (no envelope declared by the user => motion always refused).
+  rotor native unit = pulses, 0.72 deg/pulse (500 pulses = 1 turn); PAB/PIC/SPD arguments are signed DECIMAL,
+       the POS reply is 8 HEX digits per axis, two's complement ('FFFFFFF6' = -10 pulses = -7.2 deg).
 
   py tools/motor_gate.py --session start | end
   py tools/motor_gate.py --device asi --command "M X=8000" [--dry-run | --execute]
@@ -52,6 +59,7 @@ LOG_PATH = os.path.join(ROOT, "tools", "bench", "motor_gate.log")
 STATUS_PATH = os.path.join(ROOT, "STATUS.md")
 PI_SENDER = os.path.join(HERE, "motor_send_pi.ps1")
 ASI_IO = os.path.join(HERE, "motor_asi_io.ps1")
+ROTOR_IO = os.path.join(HERE, "motor_rotor_io.ps1")
 
 DEFAULT_TOL = 0.001
 REF_ATTEMPTS = 3   # user 2026-09-23: reference + verify at session start, retried; refuse only after all attempts
@@ -90,7 +98,32 @@ PI_HOME = {"GOH": "go to home", "FRF": "reference move", "FNL": "negative-limit 
            "SPA": "set a stage parameter, incl. the soft limits themselves (session hook only)",
            "WPA": "write parameters to non-volatile memory - NEVER (the controller limits are RAM by design)"}
 
-ROTOR_QUERIES = {"POS"}          # Autonics PMC-2HS read; everything else refused (no envelope declared)
+# Autonics PMC-2HS serial commands (manual DRW170814AB ch. 8, pp. 67-78; docs/rotor-protocol.md). The rotor is the
+# X axis of a TWO-axis controller; nothing is known about Y, so any Y component is refused.
+# Read-only queries, with the exact argument form each one takes (None = no argument):
+ROTOR_QUERIES = {"POS": None, "SPD": None, "VER": None, "SCI": None,
+                 "ERD": r"^X$", "INR": r"^X$", "IDC": r"^X$",
+                 "IHR": r"^X[0-9A-F]{1,2}$", "IXR": r"^X[0-9A-F]{1,2}$"}
+ROTOR_ABS = {"PAB"}
+ROTOR_REL = {"PIC"}
+ROTOR_SPEED = {"SPD"}            # with an argument it is a WRITE of the drive speed (capped by rotor.max_speed)
+# Named so the refusal says WHY (default-deny would catch them anyway). The envelope is measured in the controller's
+# position counter, so anything that clears/redefines that counter or homes the axis MOVES THE FENCE.
+ROTOR_FENCE = {"CLL": "clear the active position counter - shifts the coordinate the envelope is measured in",
+               "CLR": "clear the actual position counter - shifts the coordinate the envelope is measured in",
+               "HOM": "home search - drives to the home sensor, ignores the soft limit, may clear the counter",
+               "OGE": "force-end a home search",
+               "RST": "reset the motion-control IC (counter state not documented)",
+               "IHS": "EEPROM write (2-byte parameters: mode bits incl. soft-limit enable, speed multiplier ...)",
+               "IXS": "EEPROM write (4-byte parameters: soft limits, home offset, position data)",
+               "PRG": "run a stored program - its moves are not bounded by this gate",
+               "PST": "step a stored program", "PRS": "restart a stored program",
+               "EDP": "force-end a program", "PSP": "pause a program/drive",
+               "JOG": "continuous drive with no end point - cannot be bounded",
+               "SSM": "select stored drive speed 1-4 - bypasses the speed cap",
+               "OUT": "drive output bits",
+               "STO": "stop - not transmittable through this gate (default-deny; a stop needs no envelope but the "
+                      "gate implements only the bounded move path)"}
 
 AXES = ("X", "Y", "Z")
 
@@ -158,8 +191,79 @@ def load_limits(path=None):
                 return None
         except (KeyError, TypeError, ValueError):
             return None
+    if "rotor" in lim and not rotor_block_ok(lim["rotor"]):
+        return None
     lim.setdefault("tolerance", DEFAULT_TOL)
     return lim
+
+
+ROTOR_DEG_PER_PULSE = 0.72        # measured 2026-09-14 (docs/rotor-sign-diagnosis.md:115): 500 pulses per turn
+ROTOR_MAX_HALF_WIDTH = 2500       # user 2026-10-19: -5 .. +5 turns = +-2500 pulses; the file may narrow, never widen
+ROTOR_MAX_SPEED = 100             # the main VI's 'Rot \nSpeed' default, sent unscaled by SetCommand.vi's SetSpeed
+
+
+def rotor_block_ok(r):
+    """The optional "rotor" block of motor_limits.json. Anything malformed -> the whole file is refused."""
+    try:
+        return (r.get("mode") == "relative"
+                and type(r.get("half_width_pulses")) is int and 0 < r["half_width_pulses"] <= ROTOR_MAX_HALF_WIDTH
+                and abs(float(r["deg_per_pulse"]) - ROTOR_DEG_PER_PULSE) < 1e-9
+                and type(r.get("max_speed")) is int and 0 < r["max_speed"] <= ROTOR_MAX_SPEED)
+    except (AttributeError, KeyError, TypeError, ValueError):
+        return False
+
+
+def rotor_hex_to_pulses(h):
+    """One 8-hex-digit POS field -> signed pulses (two's complement, 32 bit). 'FFFFFFF6' -> -10. None if malformed:
+    the manual (p. 70) and the 2026-09-14 hardware reads both give exactly 8 digits per axis."""
+    if not re.match(r"^[0-9A-Fa-f]{8}$", h or ""):
+        return None
+    v = int(h, 16)
+    return v - (1 << 32) if v & 0x80000000 else v
+
+
+def parse_rotor_pos_reply(text):
+    """'POS hhhhhhhh,hhhhhhhh' (2-axis PMC-2HS) or 'POS hhhhhhhh' -> X pulses (signed), or None."""
+    m = re.search(r"POS\s+([0-9A-Fa-f]{8})(?:\s*,\s*[0-9A-Fa-f]{8})?\s*$", (text or "").strip())
+    return rotor_hex_to_pulses(m.group(1)) if m else None
+
+
+def parse_rotor_fresh(text):
+    """The sender's 'FRESH RAW=<reply> POS=<int>' line -> pulses, ONLY if the gate's own parse of the raw reply
+    agrees with the sender's number (the sign conversion is checked twice, in two languages). Last line wins."""
+    ms = list(re.finditer(r"(?m)^FRESH RAW='([^']*)' POS=(-?\d+)\s*$", text or ""))
+    if not ms:
+        return None
+    raw, pos = ms[-1].group(1), int(ms[-1].group(2))
+    mine = parse_rotor_pos_reply(raw)
+    return pos if mine is not None and mine == pos else None
+
+
+def rotor_window_from_pos(limits, pos):
+    hw = int(limits["rotor"]["half_width_pulses"])
+    return {"mode": "relative", "center_pulses": int(pos), "lo_pulses": int(pos) - hw, "hi_pulses": int(pos) + hw,
+            "half_width_pulses": hw, "deg_per_pulse": float(limits["rotor"]["deg_per_pulse"])}
+
+
+def rotor_target_check(window, kind, value, fresh_pos=None):
+    """(ok, target_pulses, message). kind 'abs' (PAB value) or 'rel' (PIC value, needs fresh_pos)."""
+    if not window or window.get("mode") != "relative":
+        return False, None, "no rotor window recorded by an open session"
+    lo, hi = int(window["lo_pulses"]), int(window["hi_pulses"])
+    if kind == "abs":
+        target = int(value)
+    else:
+        if fresh_pos is None:
+            return False, None, "relative rotor move needs a FRESH position read"
+        target = int(fresh_pos) + int(value)
+    k = float(window.get("deg_per_pulse", ROTOR_DEG_PER_PULSE))
+    if lo <= target <= hi:
+        return True, target, ("rotor target %d pulses (%.2f deg) inside the session window %d..%d"
+                              % (target, target * k, lo, hi))
+    return False, target, ("rotor target %d pulses (%.2f deg) OUTSIDE the session window %d..%d pulses "
+                           "(start %d +- %d = +-%g turns)" % (target, target * k, lo, hi, window["center_pulses"],
+                                                              window["half_width_pulses"],
+                                                              window["half_width_pulses"] * k / 360.0))
 
 
 ASI_UNIT_MM = 1e-4   # see UNITS above: ASI positions are 0.1 um
@@ -277,22 +381,75 @@ def decide_pi(cmd, args, raw):
                     {"kind": "move", "targets_mm": nums, "relative": relative})
 
 
-def decide_rotor(cmd, args, raw):
+_ROTOR_X_ONLY = re.compile(r"^([+-]?\d{1,8})\s*,?\s*$")
+
+
+def decide_rotor(cmd, args, raw, limits=None, session=None, fresh_pos=None):
+    """Rotor = PMC-2HS X axis. Unlike PI/ASI the NUMERIC envelope is decided here (and again by the sender inside
+    the transmit's port open), because the controller's own soft limit is not installed (docs/rotor-protocol.md).
+    `limits`/`session` are loaded from disk when None; `fresh_pos` (pulses) lets a caller decide a PIC fully."""
     if cmd is None:
         return Decision(False, "empty command")
-    if cmd in ROTOR_QUERIES:
+    if cmd in ROTOR_FENCE:
+        return Decision(False, "rotor %r (%s) - never permitted through this gate" % (cmd, ROTOR_FENCE[cmd]))
+    if cmd in ROTOR_QUERIES and not args:
         return Decision(True, "rotor read-only query %r" % cmd, {"kind": "query"})
-    return Decision(False, "rotor command %r refused: no envelope has ever been declared for the rotor and its "
-                           "controller carries no soft limit we have verified (default-deny)" % cmd)
+    if cmd in ROTOR_QUERIES and ROTOR_QUERIES[cmd] and len(args) == 1 \
+            and re.match(ROTOR_QUERIES[cmd], args[0].strip().upper()):
+        return Decision(True, "rotor read-only query %r %s" % (cmd, args[0]), {"kind": "query"})
+    if cmd not in ROTOR_ABS and cmd not in ROTOR_REL and cmd not in ROTOR_SPEED:
+        return Decision(False, "rotor command %r (args %r) is not on the allow-list (default-deny)" % (cmd, args))
+    m = _ROTOR_X_ONLY.match(" ".join(args).strip())
+    if not m:
+        return Decision(False, "rotor %r: exactly one signed decimal X value expected (the rotor is the X axis; a Y "
+                               "component or any other form is refused), got %r" % (cmd, " ".join(args)))
+    value = int(m.group(1))
+    limits = limits if limits is not None else load_limits()
+    if not limits or "rotor" not in limits:
+        return Decision(False, "rotor %r refused: tools/bench/motor_limits.json has no valid \"rotor\" block" % cmd)
+    rot = limits["rotor"]
+    if cmd in ROTOR_SPEED:
+        if 1 <= value <= int(rot["max_speed"]):
+            return Decision(True, "rotor drive speed SPD %d (cap %d)" % (value, rot["max_speed"]),
+                            {"kind": "speed", "speed": value})
+        return Decision(False, "rotor SPD %d outside 1..%d (the cap is the main VI's default 'Rot Speed'; "
+                               "docs/rotor-protocol.md)" % (value, rot["max_speed"]))
+    session = session if session is not None else session_info()
+    window = (session or {}).get("rotor_window")
+    if not window:
+        return Decision(False, "rotor %r refused: no open session with a rotor window - run `py tools/motor_gate.py "
+                               "--session start` (it reads the rotor POS and records start +- %d pulses)"
+                        % (cmd, rot["half_width_pulses"]))
+    if int(window.get("half_width_pulses", -1)) != int(rot["half_width_pulses"]):
+        return Decision(False, "rotor %r refused: the session window half width %r does not match the limits file "
+                               "%r - restart the session" % (cmd, window.get("half_width_pulses"),
+                                                             rot["half_width_pulses"]))
+    relative = cmd in ROTOR_REL
+    detail = {"kind": "move", "relative": relative, "value_pulses": value,
+              "value_deg": round(value * ROTOR_DEG_PER_PULSE, 6), "window": window}
+    if not relative or fresh_pos is not None:
+        ok, target, msg = rotor_target_check(window, "rel" if relative else "abs", value, fresh_pos)
+        detail["target_pulses"] = target
+        return Decision(ok, "rotor %s %s" % (cmd, msg), detail)
+    # PIC without a position: only a step that could never fit is refused now; the sender re-decides with a FRESH
+    # POS read inside the transmit's port open (rotor_target_check, tools/motor_rotor_io.ps1).
+    if abs(value) > 2 * int(window["half_width_pulses"]):
+        return Decision(False, "rotor PIC %d: a step larger than the whole window (%d pulses) can never stay inside "
+                               "it" % (value, 2 * int(window["half_width_pulses"])), detail)
+    detail["needs_fresh_pos"] = True
+    return Decision(True, "rotor PIC %d - allowed by class; the target (FRESH POS + %d) is checked against the "
+                          "session window %d..%d inside the transmit's port open"
+                    % (value, value, window["lo_pulses"], window["hi_pulses"]), detail)
 
 
 DEVICES = {"asi": decide_asi, "pi": decide_pi, "rotor": decide_rotor}
 
 
-def decide(device, command, state=None):
+def decide(device, command, state=None, limits=None, session=None, fresh_pos=None):
     """The whole command-class decision, with no I/O to a port. `state` is injected so the self-test can run every
-    case without touching hardware or the live STATUS.md. NUMERIC bounds are NOT decided here any more - the
-    controllers hold them, and --execute proves by readback that they are in force."""
+    case without touching hardware or the live STATUS.md. NUMERIC bounds are NOT decided here for PI/ASI - the
+    controllers hold them, and --execute proves by readback that they are in force. The ROTOR's numeric envelope IS
+    decided here (`limits`/`session`/`fresh_pos` injectable; PI/ASI ignore them)."""
     device = (device or "").lower()
     if device not in DEVICES:
         return Decision(False, "unknown device %r (expected one of %s)" % (device, ", ".join(sorted(DEVICES))))
@@ -310,7 +467,10 @@ def decide(device, command, state=None):
         return Decision(False, "compound command %r (contains ';' or an embedded terminator) - one command per "
                                "decision" % command)
     cmd, args = _tokens(command)
-    d = DEVICES[device](cmd, args, command)
+    if device == "rotor":
+        d = decide_rotor(cmd, args, command, limits=limits, session=session, fresh_pos=fresh_pos)
+    else:
+        d = DEVICES[device](cmd, args, command)
     if d.allowed and state == "assembled" and d.detail.get("kind") == "move":
         d.detail["state_note"] = ("rig assembled: motion allowed by the user's 2026-09-17 ruling, bounded by the "
                                   "CONTROLLER limits this gate installs and re-verifies")
@@ -414,7 +574,12 @@ def _asi_read_call():
     return _run_ps(ASI_IO, ["-Mode", "read"])
 
 
-def session_start(limits, pi_call=None, asi_call=None, session_path=None, out=print, asi_read=None):
+def _rotor_read_call():
+    return _run_ps(ROTOR_IO, ["-Mode", "read"])
+
+
+def session_start(limits, pi_call=None, asi_call=None, session_path=None, out=print, asi_read=None,
+                  rotor_read=None):
     """Write the file's limits into BOTH controllers and verify by readback. rc 0 = both verified, else 3.
     `pi_call`/`asi_call`/`asi_read` are injected by the self-test: (mode, ...) -> (rc, text).
     ASI relative mode (user 2026-10-15): the window is the stage position read at session start +- half_width_mm."""
@@ -480,6 +645,23 @@ def session_start(limits, pi_call=None, asi_call=None, session_path=None, out=pr
            "limits_file": {"pi": {"lo_mm": lo, "hi_mm": hi}, "asi": {"sl": sl, "su": su}},
            "asi_window": window,
            "tolerance": tol}
+    if "rotor" in limits:
+        # ROTOR (user 2026-10-19): read-only POS, no write to the controller. A failed read does NOT refuse the PI/ASI
+        # session - it records no rotor window, so every rotor move stays refused (decide_rotor) until a new start.
+        try:
+            rcr, textr = (rotor_read or _rotor_read_call)()
+        except (OSError, subprocess.SubprocessError) as e:
+            rcr, textr = 6, "ROTOR READ ERROR: %s" % e
+        out(textr.strip())
+        rpos = parse_rotor_fresh(textr)
+        if rcr != 0 or rpos is None:
+            rec["rotor_window"] = None
+            out("ROTOR: position read FAILED (rc %s) - no rotor window recorded; rotor moves stay refused" % rcr)
+        else:
+            rec["rotor_window"] = rotor_window_from_pos(limits, rpos)
+            w = rec["rotor_window"]
+            out("ROTOR: window = start %d pulses (%.2f deg) +- %d -> %d..%d pulses"
+                % (rpos, rpos * w["deg_per_pulse"], w["half_width_pulses"], w["lo_pulses"], w["hi_pulses"]))
     with open(session_path or SESSION_PATH, "w", encoding="utf-8") as f:
         json.dump(rec, f, indent=2, sort_keys=True)
     out("SESSION START OK -> %s" % (session_path or SESSION_PATH))
@@ -537,6 +719,8 @@ def transmit(device, command, d, limits):
     """Send ONE decided motion command. The SENDER re-reads the controller limits inside the same port open,
     before the transmit, and refuses if they do not match the file (exit 7)."""
     tol = float(limits.get("tolerance", DEFAULT_TOL))
+    if device == "rotor":
+        return transmit_rotor(command, d, limits)
     if device == "asi":
         cmd_tok, cmd_args = _tokens(command)
         pairs = _axis_pairs(cmd_args) or {}
@@ -583,6 +767,46 @@ def transmit(device, command, d, limits):
     print("GATE re-check of the sender's readback: %s" % msg)
     _append_log("PI", rc, text)
     return rc if ok else (rc or 3)
+
+
+def transmit_rotor(command, d, limits, session=None, run=None):
+    """Send ONE rotor PAB/PIC (X only) through tools/motor_rotor_io.ps1. The SENDER, inside one port open: reads POS
+    twice (must be stationary), computes the target (PIC: FRESH POS + step), refuses (exit 7) unless it lies in the
+    session window, sets SPD <= max_speed, transmits, watches the position (STO X if it leaves the window) and reports
+    the final POS. The gate then re-parses the sender's FRESH line and re-checks the target itself."""
+    run = run or _run_ps
+    if d.detail.get("kind") != "move":
+        sys.stderr.write("TRANSMIT NOT IMPLEMENTED for this rotor command (only PAB <int> / PIC <int>, X axis).\n")
+        return 5
+    sess = session if session is not None else session_info()
+    window = (sess or {}).get("rotor_window")
+    if not window:
+        sys.stderr.write("REFUSED: rotor - no open session records a rotor window\n")
+        return 3
+    cmd_tok = "PIC" if d.detail.get("relative") else "PAB"
+    value = int(d.detail["value_pulses"])
+    canon = "%s %d" % (cmd_tok, value)
+    speed = int(limits["rotor"]["max_speed"])
+    tok = _token_file(canon)
+    try:
+        rc, text = run(ROTOR_IO, ["-Mode", "send", "-Command", canon, "-TokenFile", tok,
+                                  "-Lo", "%d" % int(window["lo_pulses"]), "-Hi", "%d" % int(window["hi_pulses"]),
+                                  "-Speed", "%d" % speed], timeout=150)
+    finally:
+        if os.path.exists(tok):
+            os.remove(tok)
+    print(text.strip())
+    # The gate's own re-check: the first FRESH line (before the transmit) must parse identically in Python and must
+    # put the target inside the window. A sender that transmitted anyway is reported as a gate refusal (rc 3).
+    m = re.search(r"(?m)^FRESH RAW='([^']*)' POS=(-?\d+)\s*$", text or "")
+    fresh = parse_rotor_fresh(m.group(0)) if m else None
+    ok, target, msg = rotor_target_check(window, "rel" if cmd_tok == "PIC" else "abs", value, fresh)
+    print("GATE re-check of the sender's fresh read: %s" % (msg if fresh is not None else
+                                                            "NO parseable FRESH line (sign check failed or no read)"))
+    _append_log("ROTOR", rc, text)
+    if fresh is None or not ok:
+        return rc or 3
+    return rc
 
 
 def _append_log(tag, rc, text):
@@ -648,7 +872,7 @@ def main(argv=None):
     if not a.device or not a.command:
         sys.stderr.write("usage: --session start|end, or --device <d> --command <c> [--execute]\n")
         return 4
-    d = decide(a.device, a.command, state=state)
+    d = decide(a.device, a.command, state=state, limits=limits)
     log(a.device, a.command, d, dry=not a.execute)
     if not d.allowed:
         sys.stderr.write("REFUSED (%s): %s\n" % (a.device, d.reason))

@@ -44,7 +44,8 @@ PREDICTION CONTRACT (each numbered line is one case; the run FAILS if any case's
                                                                         the CONTROLLER answers ERR 7 past TMX
   11  ASI M X=-16475 / M Z=5000000 / R X=8000                   ALLOW
   12  queries PI POS?/TMN?/TMX?, ASI '/','W X', rotor POS       ALLOW
-  13  rotor MOVE/PIC -1500/HOME                                 REFUSE  (no envelope ever declared)
+  13  rotor MOVE/PIC -1500/HOME, no open session                REFUSE  (no rotor window; 2026-10-19 envelope
+                                                                        is tested in selftest_motor_gate_rotor.py)
   14  rig-state 실험중 / unknown                                 REFUSE  everything
   15  ASI 'BU Y=3' (query-looking WRITE), compound, unknown cmd REFUSE
   16  limits file missing/broken                                REFUSE  (CLI rc 3)
@@ -308,8 +309,16 @@ def main():
     for dev, c in [("pi", "POS?"), ("pi", "TMN?"), ("pi", "TMX?"), ("asi", "/"), ("asi", "W X"), ("rotor", "POS")]:
         case("12 query %s %r" % (dev, c), dev, c, True)
     # ---- 13 rotor motion ----
-    for c in ["MOVE 100", "PIC -1500", "HOME"]:
-        case("13 rotor %r" % c, "rotor", c, False)
+    # 2026-10-19: the rotor now has a relative envelope (tools/bench/selftest_motor_gate_rotor.py); WITHOUT an open
+    # session recording a rotor window every move is still refused. SESSION_PATH is pointed at a missing file so the
+    # case does not depend on whether a live session happens to be open.
+    real_sess13 = mg.SESSION_PATH
+    mg.SESSION_PATH = os.path.join(tmpdir, "no_such_session_13.json")
+    try:
+        for c in ["MOVE 100", "PIC -1500", "HOME"]:
+            case("13 rotor %r" % c, "rotor", c, False)
+    finally:
+        mg.SESSION_PATH = real_sess13
     # ---- 14 rig state ----
     case("14a experiment refuses a move", "pi", "MOV 1 5", False, state="experiment")
     case("14b experiment refuses a query", "pi", "POS?", False, state="experiment")
