@@ -125,7 +125,7 @@ MOTOR_BLOCKED_RE = re.compile(
     # the arbitrary-serial-command VI built by build_rawcmd.py, driven from any client
     r"RAWCMD_rotor|RAWCMD\b|"
     # the gate's own sender, run by hand (it also refuses without the gate's token)
-    r"motor_send_pi\.ps1|motor_asi_io\.ps1|"
+    r"motor_send_pi\.ps1|motor_asi_io\.ps1|motor_rotor_io\.ps1|"   # rotor sender added 2026-10-19 (user "훅 수정 하고")
     # inline raw serial - the real bypass route, in either shell
     r"System\.IO\.Ports\.SerialPort|\bimport\s+serial\b|\bserial\.Serial\s*\(|"
     # a raw controller motion command typed into a one-liner
