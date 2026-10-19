@@ -43,3 +43,32 @@ Background on the DLL and its interface: `docs/gpu-backend.md`. Rotor protocol: 
        100000 pulses -> window 97500..102500. Open: the tra file's RotPos reads 0 while the controller returns 100000
        (the VI's read path is suspect). The chat's first motion command was refused by the auto-mode classifier; the
        user runs the rotation check.
+
+422. **(chat ingest, 2026-10-19 evening - rotation check, RotPos cause, lean run 17 task rotpos; report
+     `V6_lean/tools/bench/lean_bench/lean_report_rotpos_fail1.md`, review `lean_review_rotpos_20261019_194933-c2.md`)**
+     - **(a) Rotation check (user "지금 회전 확인해보자", chat through motor_gate):** session-start POS 100000 -> PIC 125 ->
+       100125 (+90 deg, 1.1 s) -> PIC -125 -> 100000; session end OK, limits released and read back
+       (`tools/bench/rotor_check_start.log`, `_end.log`).
+     - **(b) RotPos cause (user):** the serial read returned wrong values for negative positions, so the user picked an
+       arbitrary zero and shifted the rotation value linearly; the user wants it fixed. The original `SetCommand.vi` parses
+       the POS hex unsigned; the signed copy `claudeDev\SetCommand_signed.vi` ec87a265 passed injection 16/16 and a
+       hardware negative read (`docs/cycle27-plan.md:3718-3730`).
+     - **(c) The shift, located (rotpos trace):** RotPos = Pos_degree = 0.72 x POS - Baseline Startpoint x 360, Baseline
+       Startpoint = 200 turns (SetCommand panel default, not on the pane) = 0.72 x POS - 72000 deg, i.e. POS 100000 reads 0.
+       This explains PD419(h)'s "RotPos 0 while the controller returns 100000".
+     - **(d) P6R** `claudeDev\bench\lean\D1_ring_P6R_20261019_210453.vi` 333578bf = P6L byte copy + 9 x `replace_object`
+       SetCommand.vi -> SetCommand_signed.vi, shift KEPT (the zero point is the user's choice). Injection 10/10; edges
+       2421/2421, constants 303/303, nodes, tunnels, panel all equal. **Cycle FAIL by locked gate G7:** LabVIEW moved the 5
+       swapped nodes at y = 32710 by 16 px and re-placed 25 objects beyond +-32767 on save (layout only; PD421 explains the
+       coordinate limit); T9 expectation too narrow; scratch copies not deleted (E4). Retry parked in `queue/hold/rotpos.md`;
+       the fix is redone on the tidied copy after PD421.
+     - **(e) Open user choice - zero point:** (a) controller signed POS as is, (b) session-start POS = 0, (c) keep POS
+       100000 = 0. Kept in one constant so any choice is a one-constant edit.
+
+423. **(chat ingest, 2026-10-19 - gpuswap testcopy-16, the cycle stopped by the 01:41 STOP for the rotation check;
+     report `V6_lean/tools/bench/lean_bench/lean_report_gpuswap.md`)** Steps 0-4 PASS (calibration identity byte-equal,
+     CPU loader capture 15/15 bit-equal, CPU reference 5/5 and 75/75 equal to diag10, offline v3d9 reference 5/5).
+     `gpuCall3` built, all gates PASS (`claudeDev\bench\lean\gpuswap_gpuCall3_20261019_013126.vi` b1310225, 28-terminal
+     pane, 3 CLFNs, build peak 517 MB). Harness `gpuCall3H` attempt 1 FAILED gate B9 (`Image Name` default "untitled",
+     locked ""); build fixed, attempt 2 refused by the STOP file. No GPU call, no CPU/GPU number yet; 148 pins unchanged.
+     Next (not queued, user's word): harness attempt 2 (last allowed) -> cold read-back -> 5 calls -> A' judgement.
