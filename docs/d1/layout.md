@@ -15,6 +15,8 @@ User words: `V6_lean/tools/bench/lean_bench/user_notes.md` (2026-10-19 lines).
 ## Pre-decided
 
 421. **(chat ingest, 2026-10-19 - lean runs 16-18, tasks bdtidy, bdtidy retry 1, discussion bd-layout)**
+     USER-RULES: U1 (layout only - the computation never changes; acceptance stays numeric: replay bit-identical + 150 Hz);
+     U4 (moving loops or splitting them later keeps the local-variable control signals).
      - **(a) Problem (user):** "코드 위치가 너무 사방팔방임" - layout only, never the maths; structures too big; others cannot
        read the code. P6L (54f7cd2f) loop Bounds pass +-32767 (#10170 36528 wide); the user's own whole-diagram Clean Up
        froze LabVIEW (~556 MB) - "나도 clean-up diagram 해봤거든? 그런데 안되더라고".

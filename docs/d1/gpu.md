@@ -46,6 +46,9 @@ Background on the DLL and its interface: `docs/gpu-backend.md`. Rotor protocol: 
 
 422. **(chat ingest, 2026-10-19 evening - rotation check, RotPos cause, lean run 17 task rotpos; report
      `V6_lean/tools/bench/lean_bench/lean_report_rotpos_fail1.md`, review `lean_review_rotpos_20261019_194933-c2.md`)**
+     USER-RULES: U2 (rotor moves only through motor_gate inside the declared envelope); U3 (the signed read stays in the
+     motor loop, never on the frame path); U1 does not block the RotPos fix - the user asked for it, and the tracking maths
+     is untouched.
      - **(a) Rotation check (user "지금 회전 확인해보자", chat through motor_gate):** session-start POS 100000 -> PIC 125 ->
        100125 (+90 deg, 1.1 s) -> PIC -125 -> 100000; session end OK, limits released and read back
        (`tools/bench/rotor_check_start.log`, `_end.log`).
@@ -66,7 +69,8 @@ Background on the DLL and its interface: `docs/gpu-backend.md`. Rotor protocol: 
        100000 = 0. Kept in one constant so any choice is a one-constant edit.
 
 423. **(chat ingest, 2026-10-19 - gpuswap testcopy-16, the cycle stopped by the 01:41 STOP for the rotation check;
-     report `V6_lean/tools/bench/lean_bench/lean_report_gpuswap.md`)** Steps 0-4 PASS (calibration identity byte-equal,
+     report `V6_lean/tools/bench/lean_bench/lean_report_gpuswap.md`)** USER-RULES: U1 (the CPU's per-bead maths stays the
+     reference). Steps 0-4 PASS (calibration identity byte-equal,
      CPU loader capture 15/15 bit-equal, CPU reference 5/5 and 75/75 equal to diag10, offline v3d9 reference 5/5).
      `gpuCall3` built, all gates PASS (`claudeDev\bench\lean\gpuswap_gpuCall3_20261019_013126.vi` b1310225, 28-terminal
      pane, 3 CLFNs, build peak 517 MB). Harness `gpuCall3H` attempt 1 FAILED gate B9 (`Image Name` default "untitled",
