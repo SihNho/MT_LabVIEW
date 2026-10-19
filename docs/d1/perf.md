@@ -33,3 +33,19 @@ tags: [d1, performance, loop-1.2, 150hz, bottleneck, gpu, pre-decided]
        For #1359 group = ~4.81 ms per iteration (~50 % of 1.2's 9.6 ms). For #1359 / #29874 run 14 times because no N is wired
        (auto-indexing count). Next (task bn12iface, read-only, offline, started 15:39): every consumer of the For #1359 /
        #29874 outputs, frame correspondence, when it is used (display / save / clamp path) - the interface-contract facts.
+
+418. **(chat ingest, 2026-10-19 — lean runs 7-11, tasks fx150 / bn12iface / fxdisplay; reports in
+     `V6_lean/tools/bench/lean_bench/lean_report_fx*.md`; bead-less bench only)**
+     USER-RULES: U1 (scheduling only, numbers out identical); measure after one clean structural comparison
+     (`docs/decisions/measure_before_more_structure_checks.md`).
+     - **(a) For #1359 outputs are display-only** (bn12iface / bn12ifverify PASS: 0 value readers on the clamp or save
+       path; the filters draw the Force-Extension graph) -> For #1359 moved to a display loop (P6D).
+     - **(b) P-H: the remaining loss was UI-thread contention from the graph redraw** - graph hidden: loss 0.16-0.81 %
+       vs A 2.6-4.9 % (p = 0.014).
+     - **(c) P-L = product candidate `P6L` md5 54f7cd2f:** the 12 per-iteration `Value` property nodes in loops 1.1 / 1.2
+       replaced with Locals + For #1359 in the display loop. LabVIEW tidied 5 duplicate / unused flat-sequence tunnels on
+       the first diagram edit (same source -> same sink proven; user accepted, option A). **150 Hz with the graph drawn:
+       lost 0.113 / 1.490 / 0.102 / 0.092 % (<= 2 %)**; one 2-s stall in leg 2, cause unconfirmed. Replay `P6LR`:
+       X/Y/Z 2542/2542 bit-identical with each row's own buffer number.
+     - **(d) Open:** the P6-4 rig-day copies are still 15c664e3-based (P-L copies BOBS90L / BOBS150L / B150PL not built);
+       Auto-Reset on the bead day (on / off / both) is the user's choice.

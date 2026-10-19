@@ -81,3 +81,20 @@ tools in `docs/d1/tooling.md` (at its 400-line cap). How to add: see the 5-line 
        job runs; the chat's direct ASI move was refused by the auto-mode classifier [Real-World Transactions] - the user moves
        the stage. Branches: current code on master; the lean worktree branch differs only by its session rules (merge with
        `--no-commit`, then restore CLAUDE.md / AGENTS.md / .claude/settings.json from HEAD).
+
+420. **(chat ingest, 2026-10-19 — runner rules added in lean runs 7-15, all user-approved; code
+     `V6_lean/tools/bench/lean_bench/lean_review.py` selftest 55/0, mock queue 20/0; lean commits through ba766fbe)**
+     USER-RULES: hardware rules unchanged; runner cards never edit `tools/hooks/**`.
+     - **(a) Conditions open an evaluation discussion and do NOT stop the run:** budget 10 h / $150 (`run_budget.json`,
+       spend summed per session id), same task FAIL twice (fail2), INCOMPLETE twice (inc2), empty queue, repeated
+       question (both sides yes). Only the 10-cycle ceiling (`run_limit.txt`) writes STOP. `fail_reset.json` restarts
+       the failure count when the user resumes a task.
+     - **(b) Cycle outcomes:** PASS / FAIL / INCOMPLETE / PASS-BY-REVIEW; a task marked `EXPECT: INCOMPLETE` that the
+       review passes is an ANALYSIS cycle (not counted).
+     - **(c) Both reviewers end with `CONFIRM: VERDICT|NEXT|KIND|SCOPE|TARGET|END`;** SCOPE is fixed words compared as a
+       set, TARGET by category, END only recorded. A mismatch gets one re-agreement, then HOLD with only the common steps
+       planned. NEXT is read only from upper-case `NEXT:` lines. `USERQ: yes|no`. A verdict change is logged.
+     - **(d) Gate lock:** `gate_lock.py lock <tag>` freezes `gates/<tag>.json` before execution; the review FAILs the
+       cycle if the gate file changed. The launch prompt forbids hand-set gates and narrowing the scope.
+     - **(e) Plan conflict check:** a planned task that conflicts with a queued one is parked as `.conflict`; HOLDs on
+       the same tag merge into one user question.
