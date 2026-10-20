@@ -34,6 +34,7 @@ session, not a silent override.
 ## Originals, computation and the new VI's design (24)
 
 - [script_port_is_a_separate_project](script_port_is_a_separate_project.md) (2026-10-20) - LabVIEW -> script-language port wanted (maintenance, future Andor iXon) but planned as a SEPARATE project, not inside V6; language and tolerance still open
+- [riglock_v6_wiring_approvals](riglock_v6_wiring_approvals.md) (2026-10-21) - shared rig lock wiring: items 0 (assembled), 3, 5, 7, 10 approved; 9 rejected (mid-cycle experiment still returns the rig to its initial condition); 1, 2, 4, 6, 8, 11 pending
 - [diagram_layout_by_direct_coordinates](diagram_layout_by_direct_coordinates.md) (2026-10-19) - diagram tidy by direct coordinates (not Clean Up / Shrink Wrap); GUI resize only for structure size on scratch + P6L byte copy; future builders keep code inside their loop's zone
 - [gpu_acceptance_by_reference_bead_experiment](gpu_acceptance_by_reference_bead_experiment.md) (2026-10-19) - CPU/GPU identity on identical inputs is a bug screen (tolerance A'); final GPU acceptance = real reference-bead CPU-vs-GPU ABBA + magnet-height scan + rotation alignment
 

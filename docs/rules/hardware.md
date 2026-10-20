@@ -35,6 +35,12 @@ never restated here.
   verified gone** (camera acquisition must not keep running) - `cycle_runner.py` end hook. `docs/rules/CLAUDE-full-2026-10-10.md:69-69`
 - **Only the user announces a state change**; never infer one from silence, quiet or session length. Inside a declared
   state, do not ask per incident. `docs/rules/CLAUDE-full-2026-10-10.md:70-73`
+- **Shared rig lock (user 2026-10-21, item 10 of debate `tools/bench/debate/riglock-v6/`):** when the chat receives a
+  state change from the user (실험중 / 실험 마침 / 조립 / 분해), it ALSO runs
+  `py G:\Codes\rig\riglock.py set-state experiment|assembled|disassembled --by chat --note "<the user's words>"`,
+  besides the existing STOP-file write and the `STATUS.md` line. `G:\Codes\rig\rig_lock.json` was created 2026-10-21
+  01:16 with `assembled` on the user's word "현재: 조립". Wiring of the lock into the runner / hooks / gate is a separate,
+  item-by-item approval, recorded as a PD entry when applied.
 - **While disassembled, hardware measurement is expected work** (VISA/serial latency, motor-read cost, rotor
   negative-angle check) - not deferred. `docs/rules/CLAUDE-full-2026-10-10.md:74-76`
 - **The rotor is SIGNED** - the new VI uses `SetCommand_signed.vi` and follows the hardware number with its sign; the
