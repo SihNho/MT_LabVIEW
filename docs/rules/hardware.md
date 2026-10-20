@@ -39,8 +39,10 @@ never restated here.
   state change from the user (실험중 / 실험 마침 / 조립 / 분해), it ALSO runs
   `py G:\Codes\rig\riglock.py set-state experiment|assembled|disassembled --by chat --note "<the user's words>"`,
   besides the existing STOP-file write and the `STATUS.md` line. `G:\Codes\rig\rig_lock.json` was created 2026-10-21
-  01:16 with `assembled` on the user's word "현재: 조립". Wiring of the lock into the runner / hooks / gate is a separate,
-  item-by-item approval, recorded as a PD entry when applied.
+  01:16 with `assembled` on the user's word "현재: 조립". **Shared rig rules for every project (V6 and LabVIEW2Scr):
+  `G:\Codes\rig\RULES.md`** (user 2026-10-21). In V6 the lock is wired into the lean queue + cycle hooks, `motor_gate.py`
+  (session / reference / execute need the lock; cleanup = ownership), `tools/rig_session.py` (chat / one-off rig jobs)
+  and `tools/rig_recover.py` (dead holder, user's words only) - decision `docs/decisions/riglock_v6_wiring_approvals.md`.
 - **While disassembled, hardware measurement is expected work** (VISA/serial latency, motor-read cost, rotor
   negative-angle check) - not deferred. `docs/rules/CLAUDE-full-2026-10-10.md:74-76`
 - **The rotor is SIGNED** - the new VI uses `SetCommand_signed.vi` and follows the hardware number with its sign; the

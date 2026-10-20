@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 352cf43e-6115-43ef-a77e-e8ccfae2d90c
-  modified: 2026-10-20T16:31:58.421Z
+  modified: 2026-10-20T16:38:24.045Z
 ---
 
 User answers (2026-10-21 ~01:1x) to the 12-item list from debate `tools/bench/debate/riglock-v6/` (7 rounds, converged):
@@ -17,6 +17,8 @@ User answers (2026-10-21 ~01:1x) to the 12-item list from debate `tools/bench/de
 - 10 chat also runs `riglock.py set-state` on every user state word: APPROVED, written into docs/rules/hardware.md.
 - Second answer (~01:3x): 1 APPROVED, 2 APPROVED, 6 APPROVED; asked about 4 (does an experiment stop chat motor requests? what is "all at once"), 8 (does rig_session.py go through motor_gate - yes), 11 (does recovery read the rig state - yes, and it does not start in experiment). Still open: 4, 8, 11.
 - APPLIED 2026-10-21 ~02:xx: 1 (riglock.py, backups *_before_v6.py.bak, self-test 38/0), 6 (motor_gate master 0033aec6 + worktree), 3 + 9-revised (lean_queue.ps1 / lean_cycle_hooks.py, V6_lean c8ed9451), 7 (guard_lean 17/17), 2 (mock 27/27). Effect: motor_gate now refuses session / reference / execute without the lock - chat motor work needs item 8 first; the runner holds the lock per cycle.
+
+- Third answer (~02:xx): 4, 8, 11 APPROVED; "그 규칙들이 LabVIEW2Scr 프로젝트에서도 적용되도록 하면 좋겠음" -> shared rules written to `G:\Codes\rig\RULES.md`; `G:\Codes\LabVIEW2Scr\CLAUDE.md` = `AGENTS.md` created (the folder was empty) pointing to them; until LabVIEW2Scr has its own user-approved gate / wrapper it uses V6 motor_gate.py and rig_session.py. Applied: rig_session.py + rig_recover.py (V6 6d1628d9, selftest 10/0), riglock recovered() (47/0).
 
 **Why:** two programs (V6 and LabVIEW2Scr) share one rig; the user wants a machine-checked lock but approves each wiring step separately.
 **How to apply:** apply only approved items; 3 and 7 use item 1's functions, so they wait for item 1; never let a mid-cycle experiment leave LabVIEW open or limits set. Related: [[lean_operation_and_buffer_number_accuracy]].
