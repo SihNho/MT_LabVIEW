@@ -31,8 +31,9 @@ session, not a silent override.
 - [rotor_follows_signed_hardware_count](rotor_follows_signed_hardware_count.md) (2026-09-16) - The rotor motor is signed by nature; LabVIEW's serial path once lost the sign and the fix is now known — so the new VI must use SetCommand_signed.vi and follow the hardw…
 - [unattended_runs_drive_bead_picking_by_gui](unattended_runs_drive_bead_picking_by_gui.md) (2026-09-16) - The user's 2026-09-17 decision — until the rig is reassembled, test runs of the assembled VI must run WITHOUT the user (overnight, dozens of repeats), so the bead-pickin…
 
-## Originals, computation and the new VI's design (23)
+## Originals, computation and the new VI's design (24)
 
+- [script_port_is_a_separate_project](script_port_is_a_separate_project.md) (2026-10-20) - LabVIEW -> script-language port wanted (maintenance, future Andor iXon) but planned as a SEPARATE project, not inside V6; language and tolerance still open
 - [diagram_layout_by_direct_coordinates](diagram_layout_by_direct_coordinates.md) (2026-10-19) - diagram tidy by direct coordinates (not Clean Up / Shrink Wrap); GUI resize only for structure size on scratch + P6L byte copy; future builders keep code inside their loop's zone
 - [gpu_acceptance_by_reference_bead_experiment](gpu_acceptance_by_reference_bead_experiment.md) (2026-10-19) - CPU/GPU identity on identical inputs is a bug screen (tolerance A'); final GPU acceptance = real reference-bead CPU-vs-GPU ABBA + magnet-height scan + rotation alignment
 

@@ -1,0 +1,22 @@
+{"schema":"result/1","id":"chat-PI1f","status":"FAIL","gates":{"pass":49,"fail":15},
+"first_fail":"E P6L #10170 echo 10170, errors 'error 1: Write PNG File.vi' (tools/bench/pi_shots_20261019.log:105); 15 P6L shots failed the same way",
+"blocked_by":null,
+"artefacts":[{"path":"tools/bench/pi_shots_20261019.py","md5":"a3706adb3004ea983cdbf31e078947dd"},{"path":"tools/bench/pi_shots_20261019.log","md5":"3f6e20039f44f2bd88eb4ca7c148fb8a"},{"path":"tools/bench/pi_shots_20261016/shots_raw.json","md5":"06ea4a100f8e66bc3d4cb22b99422f84"},{"path":"tools/bench/pi_shots_20261016/pi_shots_20261019.json","md5":"d013538efb4ae6f73bc171d71067e93c"},{"path":"tools/bench/pi_shots_20261016/raw_R_P61_10170.png","md5":"71be2514737f837cb7f4176ec34ea4b4"},{"path":"tools/bench/pi_shots_20261016/raw_L12_P61.png","md5":"71be2514737f837cb7f4176ec34ea4b4"},{"path":"tools/bench/pi_shots_20261016/raw_W_P6L_15173.png","md5":"0b82e7a97232305738f66108b4832d2c"}],
+"facts":[
+"P6-1: Locals #30294/#30116/#30215/#30239 + IndexArrays sit directly on d23166 = body of While #10170; no Case or FS frame on the chain (log:34,42). raw_R_P61_10170 == raw_B (md5 71be2514)",
+"P6-1: 10 raw_N_P61_<uid>.png node images written, sizes == Bounds, with content (log:43-66)",
+"P6L: reader Locals moved to d31550 = frame 0 of FS #29721 (frames [31550, 29869]) on d23166 of While #10170; no Case on the chain (log:96,103). #29719 is not in P6L",
+"P6L: 15 Get Image shots gave 'error 1: Write PNG File.vi' (#10170 x3, the 8 reader nodes, Whiles #23041 #16483 #23032 #637) (log:105-114,280)",
+"P6L: 4 of 5 written PNGs are all white: raw_D_P6L_22694, raw_N_P6L_29724, raw_W_P6L_1175 (3594x32756), raw_W_P6L_25380; only raw_W_P6L_15173 (3308x69) has content (PIL getextrema)",
+"P6L Whiles [1175, 23041, 10170, 16483, 23032, 25380, 637, 15173] with chains and subVI names, e.g. #1175 'fxd_disp_20261015_201025.vi', #10170 7 calls incl. Median Filter (log:120,272-290)",
+"P6L writer: FS #27509 is in the FlatSequence census, frames [27641, 32464, 27722]. Owner chain: Case #22694 (frame d27219) -> d639 -> While #637 (log:295-302)",
+"Visible Frame: no op writes (or reads) MultiFrameStructure.Visible Frame 6363800. No frames were set. No Case is on any reader chain, but Case #22694 sits above the P6L writer",
+"Handles 34311 after restart -> 64876 at the end. refs opened 2 / closed 2 / live 0. LabVIEW killed (nothing saved), gone; copies deleted; source md5s c2d9c13c / 54f7cd2f unchanged (log:310-313)",
+"Jev ladder: pi_shots_20261019.log | no JEV-LADDER row in jev_gate.log | - | returned at first unexpected result | FAIL 49/15"
+],
+"open":[
+"P6L Get Image fails (Write PNG error 1) or gives blank PNGs, while P6-1 in the same LabVIEW session works. Diagnose it (P6L loaded second, fxd_disp subVI path from the copy location, 32756-px-tall While #1175), or image P6L in its own fresh LabVIEW?",
+"The P6L writer FS #27509 sits in a frame of Case #22694 above it. To image it in context, build a Visible Frame 6363800 writer op (needs an op-hygiene record, outside this card's write globs)?"
+],
+"cost":{"usd":null,"minutes":13,"labview_runs":1},
+"note":"New script tools/bench/pi_shots_20261019.py (FS-census bridge over the FlatSequenceFrame owner hop). STATUS lock released, plus one history line. STATUS is about 186 lines; the archive move is outside the write globs. Nothing committed; no hardware; no target VI run."}

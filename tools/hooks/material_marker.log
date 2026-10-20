@@ -4470,22 +4470,43 @@
 2026-10-13 02:12:16	MARKED	cd "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop" && py tools/bgrun.py --material --max-min 10 --log tools/bench/diag_c171_a2_2_c130_5.log -- py -u tools/bench/sel
 2026-10-13 02:14:18	REFUSED	STOPPED-RECIPE cd "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop" && diff <(sed -n '3,9p' tools/bench/diag_c171_a2_1_c130_5_unpatched.log) <(sed -n '3,9p' tools/ben
 2026-10-13 02:23:47	REFUSED	MOTOR powershell -File tools/motor_send_pi.ps1 -Cmd 'MOV 1 5'
-2026-10-13 02:31:42	REFUSED	MOTOR echo motor_send_pi.ps1 MOV 1 5
-2026-10-13 13:47:35	REFUSED	MOTOR py tools/hw_rotor_signed_test.py --steps 100
-2026-10-13 13:47:35	REFUSED	MOTOR py -u tools/bench/drive_original_copy.py --run-s 60
-2026-10-13 13:47:35	REFUSED	MOTOR py tools/build_rawcmd.py
-2026-10-13 13:47:35	REFUSED	MOTOR & .\tools\motor_send_pi.ps1 -Cmd 'MOV 1 5'
-2026-10-13 13:47:35	REFUSED	MOTOR & .\tools\motor_asi_io.ps1 -Cmd 'MOVE X=1'
-2026-10-13 13:47:35	REFUSED	MOTOR $p = New-Object System.IO.Ports.SerialPort COM3; $p.Open()
-2026-10-13 13:47:35	REFUSED	MOTOR py -c "import serial; s=serial.Serial('COM3')"
-2026-10-13 13:47:35	REFUSED	MOTOR py -c "from x import y; serial.Serial('COM4')"
-2026-10-13 13:47:35	REFUSED	MOTOR py tools/some_tool.py --raw 'MOVREL X=0.1'
-2026-10-13 13:47:35	REFUSED	MOTOR py tools/x.py --cmd 'MOV 1 10'
-2026-10-13 13:47:35	REFUSED	MOTOR py tools/x.py --cmd 'MVR 1 0.5'
-2026-10-13 13:47:35	REFUSED	MOTOR py tools/x.py --cmd GOH
-2026-10-13 13:47:35	REFUSED	MOTOR py tools/x.py RAWCMD_rotor
-2026-10-13 13:48:58	REFUSED	MOTOR powershell -c "$sp = New-Object System.IO.Ports.SerialPort COM3,115200"
-2026-10-13 13:48:58	REFUSED	MOTOR powershell -File tools/motor_send_pi.ps1 -Command "MOV 1 5" -TokenFile t.tok
-2026-10-13 13:48:58	REFUSED	MOTOR powershell -File tools/motor_asi_io.ps1 -Mode send
-2026-10-13 13:48:58	REFUSED	MOTOR echo MOV 1 40 > COM3
-2026-10-13 13:48:59	MARKED	MATERIAL=1 py tools/bgrun.py --max-min 5 --log tools/bench/selftest_motor_gate2.log -- py -u tools/bench/selftest_motor_gate2.py
+2026-10-13 19:29:30	REFUSED	STOPPED-RECIPE cd "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop" && git checkout bench/lean-20261013 -- tools/bench/diag_c104_leg.py tools/bench/drive_m8.py tools/
+2026-10-13 19:29:50	REFUSED	cd "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop" && py tools/bgrun.py --max-min 10 --log tools/bench/lean_merge_selftest.log -- py -u tools/bench/drive_m8_replay_
+2026-10-14 15:23:12	REFUSED	MOTOR $p='G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_lean'; $q="$p\tools\bench\lean_bench"; $b=Get-Content -Raw -Encoding UTF8 -LiteralPath "$q\md5_p64p2_end.json"|ConvertFro
+2026-10-14 15:23:12	REFUSED	MOTOR $p='G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_lean'; $q="$p\tools\bench\lean_bench"; $b=Get-Content -Raw -Encoding UTF8 -LiteralPath "$q\md5_p64p2_end.json"|ConvertFro
+2026-10-14 16:28:49	REFUSED	cd "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_lean"; timeout 25 py tools/bench/lean_bench/lean_cycle_hooks.py selftest
+2026-10-15 08:48:15	REFUSED	MOTOR cd "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop"; grep -n -i "param\|Mode\|position\|WHERE\|'W \|\"W \"" tools/motor_asi_io.ps1 | head -30 | cut -c1-180
+2026-10-15 08:50:31	REFUSED	MOTOR powershell -c "$sp = New-Object System.IO.Ports.SerialPort COM3,115200"
+2026-10-15 08:50:32	REFUSED	MOTOR powershell -File tools/motor_send_pi.ps1 -Command "MOV 1 5" -TokenFile t.tok
+2026-10-15 08:50:32	REFUSED	MOTOR powershell -File tools/motor_asi_io.ps1 -Mode send
+2026-10-15 08:50:32	REFUSED	MOTOR echo MOV 1 40 > COM3
+2026-10-15 08:50:32	MARKED	MATERIAL=1 py tools/bgrun.py --max-min 5 --log tools/bench/selftest_motor_gate2.log -- py -u tools/bench/selftest_motor_gate2.py
+2026-10-16 13:47:45	REFUSED	PRERUN-GATE cd "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop" && py tools/bgrun.py --material --max-min 30 --log tools/bench/build_op_getimage_v0.log -- py -u tool
+2026-10-16 13:48:33	REFUSED	PRERUN-GATE cd "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop" && py tools/gate_fp.py log --gate "checker:stage_prerun:is_vi_modifying" --cmd "py tools/bgrun.py --m
+2026-10-16 13:50:20	MARKED	cd "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop" && py tools/bgrun.py --material --max-min 30 --log tools/bench/build_op_getimage_v0.log -- py -u tools/recipes/bu
+2026-10-16 13:50:27	MARKED	cd "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop" && py tools/bgrun.py --material --max-min 30 --log tools/bench/build_op_getimage_v0.log -- py -u tools/recipes/bu
+2026-10-16 14:15:12	REFUSED	STOPPED-RECIPE cd "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop" && py tools/bench/pi_shots_lib.py --selftest && py -m py_compile tools/recipes/build_op_getimage_v
+2026-10-16 14:15:54	REFUSED	cd "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop" && py tools/bench/pi_shots_lib.py --selftest && py -m py_compile tools/recipes/build_op_getimage_v0.py tools/benc
+2026-10-16 14:16:16	MARKED	cd "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop" && py tools/bgrun.py --material --max-min 45 --log tools/bench/build_op_getimage_v0c.log -- py -u tools/recipes/b
+2026-10-16 14:21:59	REFUSED	STOPPED-RECIPE cd "/g/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop" && grep -n -A10 "^labview-lock:" STATUS.md; py tools/bench/pi_shots_lib.py --selftest; py -m py_co
+2026-10-16 14:24:48	MARKED	cd "/g/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop" && py tools/bgrun.py --material --max-min 60 --log tools/bench/build_op_getimage_v0d.log -- py -u tools/recipes/b
+2026-10-16 14:29:53	MARKED	cd "/g/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop" && py -c "import json;json.load(open('docs/vi-server-ids.json',encoding='utf-8'));print('json ok')" && py tools/b
+2026-10-16 14:40:09	REFUSED	cd "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop" && py -m py_compile tools/bench/pi_shots_20261016.py && echo ok; py - <<'EOF' import sys,types sys.argv=['x'] # o
+2026-10-19 01:31:36	REFUSED	MOTOR powershell -c "$sp = New-Object System.IO.Ports.SerialPort COM3,115200"
+2026-10-19 01:31:36	REFUSED	MOTOR powershell -File tools/motor_send_pi.ps1 -Command "MOV 1 5" -TokenFile t.tok
+2026-10-19 01:31:36	REFUSED	MOTOR powershell -File tools/motor_asi_io.ps1 -Mode send
+2026-10-19 01:31:36	REFUSED	MOTOR echo MOV 1 40 > COM3
+2026-10-19 01:31:37	MARKED	MATERIAL=1 py tools/bgrun.py --max-min 5 --log tools/bench/selftest_motor_gate2.log -- py -u tools/bench/selftest_motor_gate2.py
+2026-10-19 01:33:37	REFUSED	MOTOR powershell -c "$sp = New-Object System.IO.Ports.SerialPort COM3,115200"
+2026-10-19 01:33:38	REFUSED	MOTOR powershell -File tools/motor_send_pi.ps1 -Command "MOV 1 5" -TokenFile t.tok
+2026-10-19 01:33:38	REFUSED	MOTOR powershell -File tools/motor_asi_io.ps1 -Mode send
+2026-10-19 01:33:38	REFUSED	MOTOR echo MOV 1 40 > COM3
+2026-10-19 01:33:39	MARKED	MATERIAL=1 py tools/bgrun.py --max-min 5 --log tools/bench/selftest_motor_gate2.log -- py -u tools/bench/selftest_motor_gate2.py
+2026-10-19 01:41:22	REFUSED	MOTOR cd "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop"; git add tools/hooks/guard_bash.py; git commit -q -m "guard_bash: block the rotor sender motor_rotor_io.ps1
+2026-10-19 10:22:13	REFUSED	cd "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop" && py -m py_compile tools/bench/pi_shots_20261019.py && echo OK
+2026-10-19 10:22:19	MARKED	cd "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop" && py tools/bgrun.py --material --max-min 45 --log tools/bench/pi_shots_20261019.log -- py -u tools/bench/pi_shot
+2026-10-19 10:33:05	REFUSED	STOPPED-RECIPE cd "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop" && py tools/bench/pi_shots_lib.py --selftest
+2026-10-19 10:37:24	REFUSED	cd "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop" && py tools/bench/pi_shots_lib.py --selftest
+2026-10-19 10:37:53	MARKED	cd "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop" && py tools/bgrun.py --material --max-min 40 --log tools/bench/build_op_getbdimage_v0.log -- py -u tools/recipes/
+2026-10-19 10:39:39	REFUSED	STOPPED-RECIPE cd "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop" && sed -i '100s/b.ctl(gi, "Image Depth")/b.ctl(gi, SHORT["Image Depth"])/; 112s/b.w(gi, "Image Dat
+2026-10-19 11:05:01	MARKED	cd "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop" && py tools/bgrun.py --material --max-min 30 --log tools/bench/pi_shots_loops.log -- py -u tools/bench/pi_shots_l

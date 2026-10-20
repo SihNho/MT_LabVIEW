@@ -1,0 +1,21 @@
+{"schema":"result/1","id":"chat-PI2b","status":"FAIL","gates":{"pass":40,"fail":1},
+"first_fail":"H handles at end <= start + 1000 (34003 -> 35474) (tools/bench/pi_shots_ops.log:57; gate at tools/bench/pi_shots_ops.py:114)",
+"blocked_by":null,
+"artefacts":[{"path":"C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/OpGetBDImage_v0.vi","md5":"70fbd7e58b1af7ac1110d16baa1118ba"},{"path":"tools/bench/op_hygiene/OpGetBDImage_v0.json","md5":"b909a3817ca6d36e9bda15c63732899b"},{"path":"tools/recipes/build_op_getbdimage_v0.py","md5":"dbee1912e6785dd70eeb5713b300af55"},{"path":"tools/bench/build_op_getbdimage_v0b.log","md5":"c6735a69df1bb7dce66f97dadc3e8f6b"},{"path":"tools/bench/pi_shots_ops.log","md5":"10247d633c8ca695c7e491b56c714ba4"},{"path":"tools/bench/pi_shots_20261016/ops.json","md5":"e2e58e538118ffa861477ce61212278e"},{"path":"docs/vi-server-ids.json","md5":"012a60a9b5d1e5e7850134fca3d3b691"},{"path":"archive/peer/2026-10-19-hypothesis-op-getbdimage.md","md5":"4124b23c7e9a1a1b3a7448f8eec05996"},{"path":"archive/peer/2026-10-19-priorart-op-getbdimage-v2.md","md5":"1eebdd776ea0f8faa66f70a38ecd99f6"},{"path":"tools/bench/pi_shots_loops.py","md5":"41f9b140946b1ba966a182dadd0cfaad"}],
+"facts":[
+"Hypothesis review: method supported; weakest point the loose M1. Applied R1 exact name set, R2 label key, R3 OUT-wire check (archive/peer/2026-10-19-hypothesis-op-getbdimage.md:101-110)",
+"Prior-art v2 (newer than the patched recipe): VERDICT novel, no violations (archive/peer/2026-10-19-priorart-op-getbdimage-v2.md:399)",
+"Build 15/0: M1 PASS on short names, B3 vi-reference wire 467, B4c img data OUT wire 630 = Write PNG image data (tools/bench/build_op_getbdimage_v0b.log:7,14,20)",
+"OpGetBDImage_v0.vi md5 70fbd7e5; B7 cold ES 1; F1 857x321 RGB not blank; hygiene PASS 2000 calls / 0 errors, max_dev_closed 23 (build_op_getbdimage_v0b.log:27,30,51)",
+"42C recorded VERIFIED (short names, terminals, op, hygiene) in docs/vi-server-ids.json, entry after Node.Get Image",
+"Seven op_<name>.png written, RGB, not blank, op error '': OpReport_v3 857x321, OpWireSource_v5 2988x2185, OpMoveIn_v0 1709x957, OpConnectNested_v1 2609x1466 (pi_shots_ops.log:42-49)",
+"...OpCreateLocalRead_v0 1012x670, OpForLoopParSet_v0 2777x2045, OpGetImage_v0 1495x749; ops.json written; Op source md5s unchanged; copies deleted (pi_shots_ops.log:50-60)",
+"ONLY FAIL: my own handle gate end <= start+1000: 34003 -> 35475 after pass 1 -> 35474 end; refs opened 7 / closed 7 / live 0 (pi_shots_ops.log:56-57). LabVIEW killed, gone",
+"Returned at that FAIL (card chat-P2): P6L loop shots NOT run. Ready, unrun: tools/bench/pi_shots_loops.py (P6L copy only, fresh LabVIEW, depth 24->8->new LabVIEW, #1175 fallback)",
+"Jev ladder: pi_shots_ops.log | no JEV-LADDER row in jev_gate.log | - | returned at first FAIL | FAIL 25/1"
+],
+"open":[
+"The +1471 handle rise after loading seven Op copies (refs 7/7 closed, LabVIEW killed after) breaks only my +1000 threshold. Accept the Op PNGs and re-dispatch the P6L loop shots (pi_shots_loops.py)?"
+],
+"cost":{"usd":null,"minutes":16,"labview_runs":2},
+"note":"Gates = build 15/0 + ops 25/1. STATUS lock released + history line; STATUS ~191 lines, archive move outside write globs. Rule slip: the retry section appended to review_priorart-op-getbdimage_plan.md by shell heredoc, not Edit. Nothing committed; no hardware; only op VIs run."}

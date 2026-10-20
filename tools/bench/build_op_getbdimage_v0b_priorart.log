@@ -1,0 +1,57 @@
+BGRUN START 2026-10-19 10:47:45 limit 20.0 min: py -u tools/prior_art_review.py --plan-file tools/bench/cards/review_priorart-op-getbdimage_plan.md --slug op-getbdimage-v2 --recipe tools/recipes/build_op_getbdimage_v0.py --recipe tools/bench/pi_shots_lib.py --recipe tools/bench/pi_shots_ops.py
+BGRUN PID 21768
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_op-getbdimage-v2.txt (116490 chars)
+   review card tools\bench\cards\review_priorart-op-getbdimage-v2.json
+OUTCOME: ANSWERED (100s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-10-19-priorart-op-getbdimage-v2.md
+COST: $1.1170  in 12 / out 5698 / cache-create 110134 / cache-read 609542  (97s, 13 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-op-getbdimage-v2 verdict=novel -> tools\bench\cards\verdict_priorart-op-getbdimage-v2.json
+--- ANSWER ---
+**Verdict: novel.** No earlier work in these files does what this plan does. This retry changes only what the first review's "novel" verdict (`archive/peer/2026-10-19-priorart-op-getbdimage.md:348,371`) already covered, plus a fix for the one failure since then. I took no LabVIEW lock and built, edited and ran nothing.
+
+## PART A: the direction
+
+- **A1, already decided?** No.
+  - The only earlier image decision was for one node per image: `Node.Get Image 6358C01` / OpGetImage_v0 (`docs/vi-server-ids.json:111-117`).
+  - Nothing in `docs/` records VI method 42C, "Get Image Scaled" or "GetDiagramImage". The only matches for "42C" are unrelated hash prefixes (`docs/d1/INDEX.md:70`, `docs/d1/ring-p4c.md:361`).
+  - Within this card, the judgement session accepted the short names. The record is in the hypothesis review (`archive/peer/2026-10-19-hypothesis-op-getbdimage.md:111`). That acceptance belongs to this card's own work, so it is not prior art.
+- **A2, already refuted?** No. No file abandons or argues against a whole-diagram image. The run that failed (`tools/bench/build_op_getbdimage_v0.log:9`) failed on a naming check, not on the method. The method exists and was found (`:8`, Invoke #43 created).
+- **A3, contradicted?** No.
+  - The plan says the inputs are "Image Depth I32, Maximum Width / Maximum Height". Those are the wiki's long names. The measured short names are img depth / max width / max height (`build_op_getbdimage_v0.log:8`). The recipe accepts both forms, as an exact set (`tools/recipes/build_op_getbdimage_v0.py:72-76`), so the plan and the recipe agree.
+  - The branch route claim matches its sources: `build_keystone.log:1738-1740` and `diag_bdloaded_reader.log:13`, both cited at recipe lines 16-18.
+- **A4, unread evidence?** None. The short-name case had already been seen once: LabVIEW gave `BG Color` where the wiki says "Background Color" (`tools/bench/build_op_getimage_v0c.log`, STATUS lock `prev3`). The hypothesis review cites that case (`hypothesis-op-getbdimage.md:29`), and the retry's M1 check is built on it.
+
+## PART B: the artifact
+
+- **B1, already built?** No.
+  - claudeDev holds only `OpGetImage_v0.vi` as an image op (glob `Op*Image*.vi`).
+  - `tools/gscript.py` has no image or PNG function; its only "png" hits are screenshot names for dialogs (lines 620, 659).
+  - `docs/labview/references/com-driving.md:60` lists the ActiveX `GetPanelImage`, but that images the front panel, not the block diagram, so it does not cover this case.
+  - The `get_bd_image` row at `docs/toolkit-capabilities.md:4130` is this card's own wrapper (`tools/bench/pi_shots_lib.py:176-193`).
+- **B2, already failed?** Yes, once: card chat-PI2 failed at gate M1 (`build_op_getbdimage_v0.log:9-15`). The cause was a check that expected long, case-exact names while LabVIEW gave short ones. The retry fixes exactly that:
+  - M1 now requires an exact lower-cased set of short or long names (recipe lines 72-76).
+  - The builder uses the names it reads back (lines 104-107).
+  - It keeps the `Image Depth` key while LabVIEW renames the control label, as happened in v0d where `BG Color` became `Background Color` (`build_op_getimage_v0d.log:53`).
+  - B4c also checks the output side of the image wire (lines 123-127).
+
+  Because the cause is addressed and not repeated, this gets no slug.
+- **B3, a helper hand-rolled?** No.
+  - The recipe imports the shared builder `diag_c100_verbs_build.B` (recipe line 44).
+  - It uses the existing toolkit calls `g.build_invoke`, `g.hygiene_run`, `g.exec_state`, `g.panel_wiring` and `g.op_hygiene_record_path`.
+  - It uses `pi_shots_lib`'s `Rec`, `sweep`, `tl`, `restart` and `kill_and_verify`.
+  - The first review already confirmed `png_stats` is new (`priorart-op-getbdimage.md:359`).
+  - The donor question is unchanged: OpBuildIA_v0 is the precedent for the route, not a better donor (recipe lines 16-21).
+- **B4, already measured?** Only the terminal names of 42C (`build_op_getbdimage_v0.log:8`), and the retry uses that measurement. No whole-diagram PNG has ever been made here.
+
+## PART C: the user's rules
+
+- **C1:** No contradiction. This is an offline op that images the block diagrams of copied Op VIs (the plan's "byte copies `shot_<name>.vi`"). It has no queue, no loop, no serial call, no camera path and no per-bead number (U1–U13 do not apply).
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-op-getbdimage-v2","verdict":"novel","alternative":"ActiveX GetPanelImage (docs/labview/references/com-driving.md:60) images the front panel only, not the diagram; OpGetImage_v0 (docs/vi-server-ids.json:111-117) images one node per call.","discriminating_test":"Retry M1 passes on the exact short/long set and F1 writes a non-blank 24-bit RGB PNG of a whole Op VI diagram.","violations":[],"sources":["tools/bench/build_op_getbdimage_v0.log:8-15","tools/recipes/build_op_getbdimage_v0.py:72-76,104-107,123-127","docs/vi-server-ids.json:111-117","archive/peer/2026-10-19-priorart-op-getbdimage.md:348-371","archive/peer/2026-10-19-hypothesis-op-getbdimage.md:29,104-111","tools/bench/build_op_getimage_v0d.log:53"],"note":"Only prior failure is chat-PI2's M1 name mismatch (short names); the retry fixes that cause and does not repeat it. No 42C record or refusal elsewhere; no user rule touched."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-op-getbdimage-v2.md
+   STOP RECORD: none - 2026-10-19-priorart-op-getbdimage-v2.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/build_op_getbdimage_v0.py sha e8a6d51fe94a -> these bytes are released by this review; editing them again re-arms the gate
+   NOVEL RECORD written: tools/bench/pi_shots_lib.py sha dc689415f4e9 -> these bytes are released by this review; editing them again re-arms the gate
+   NOVEL RECORD written: tools/bench/pi_shots_ops.py sha ed146e6ac5be -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 103s

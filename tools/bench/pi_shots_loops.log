@@ -1,0 +1,242 @@
+BGRUN START 2026-10-19 11:05:02 limit 30.0 min: py -u tools/bench/pi_shots_loops.py
+BGRUN PID 8140
+  PASS  S0 P6L source md5 == pin  54f7cd2f27175b3aa993a2e7630cff40
+
+---------- [0] fresh LabVIEW, only the P6L copy
+  FACT  handles after restart 33995
+  PASS  S1 P6L copy md5 == pin  54f7cd2f27175b3aa993a2e7630cff40
+  FACT  P6L copy loaded: 709 Nodes
+  FACT  HANDLES after load 54554
+
+---------- [1a] While #637 three times in a row (leak check)
+  FACT  HANDLES shot #637 depth 24: 54556 -> 55634 (+1078)  WITH ERROR: error 1: Write PNG File.vi
+  FACT  P6L #637 (camera loop 1.1 + ring writer) try 1 depth 24 -> ok False {'err': 'error 1: Write PNG File.vi', 'echo': 637, 'bounds': (8860, 0), 'size': None, 'mode': None, 'blank': None}
+  FACT  HANDLES shot #637 depth 8: 55634 -> 55633 (-1)  WITH ERROR: error 1: Check Color Table Size.vi<APPEND> | <b>Complete call chain:</b> | Check Color Table Size.vi | Write PNG File.vi | OpGetImage_v0.vi
+  FACT  P6L #637 (camera loop 1.1 + ring writer) try 1 depth 8 -> ok False {'err': 'error 1: Check Color Table Size.vi<APPEND> | <b>Complete call chain:</b> | Check Color Table Size.vi | Write PNG File.vi | OpGetImage_v0.vi', 'echo': 637, 'bounds': (8860, 0), 'size': None, 'mode': None, 'blank': None}
+  FACT  HANDLES after #637 shot 1: 55633
+  FACT  HANDLES shot #637 depth 24: 55633 -> 55633 (+0)  WITH ERROR: error 1: Write PNG File.vi
+  FACT  P6L #637 (camera loop 1.1 + ring writer) try 1 depth 24 -> ok False {'err': 'error 1: Write PNG File.vi', 'echo': 637, 'bounds': (8860, 0), 'size': None, 'mode': None, 'blank': None}
+  FACT  HANDLES shot #637 depth 8: 55633 -> 55633 (+0)  WITH ERROR: error 1: Check Color Table Size.vi<APPEND> | <b>Complete call chain:</b> | Check Color Table Size.vi | Write PNG File.vi | OpGetImage_v0.vi
+  FACT  P6L #637 (camera loop 1.1 + ring writer) try 1 depth 8 -> ok False {'err': 'error 1: Check Color Table Size.vi<APPEND> | <b>Complete call chain:</b> | Check Color Table Size.vi | Write PNG File.vi | OpGetImage_v0.vi', 'echo': 637, 'bounds': (8860, 0), 'size': None, 'mode': None, 'blank': None}
+  FACT  HANDLES after #637 shot 2: 55633
+  FACT  HANDLES shot #637 depth 24: 55635 -> 55633 (-2)  WITH ERROR: error 1: Write PNG File.vi
+  FACT  P6L #637 (camera loop 1.1 + ring writer) try 1 depth 24 -> ok False {'err': 'error 1: Write PNG File.vi', 'echo': 637, 'bounds': (8860, 0), 'size': None, 'mode': None, 'blank': None}
+  FACT  HANDLES shot #637 depth 8: 55633 -> 55634 (+1)  WITH ERROR: error 1: Check Color Table Size.vi<APPEND> | <b>Complete call chain:</b> | Check Color Table Size.vi | Write PNG File.vi | OpGetImage_v0.vi
+  FACT  P6L #637 (camera loop 1.1 + ring writer) try 1 depth 8 -> ok False {'err': 'error 1: Check Color Table Size.vi<APPEND> | <b>Complete call chain:</b> | Check Color Table Size.vi | Write PNG File.vi | OpGetImage_v0.vi', 'echo': 637, 'bounds': (8860, 0), 'size': None, 'mode': None, 'blank': None}
+  FACT  HANDLES after #637 shot 3: 55635
+  PASS  L #637 x3: no steady handle rise per shot (d2 +0, d3 +2, leak if both > 50)  {'after_load': 54554, 'after_shots': [55633, 55633, 55635], 'd2': 0, 'd3': 2, 'ok': [False, False, False]}
+
+---------- [1] While loops, try 1
+  FACT  HANDLES shot #10170 depth 24: 55634 -> 55634 (+0)  WITH ERROR: error 1: Write PNG File.vi
+  FACT  P6L #10170 (tracking loop 1.2) try 1 depth 24 -> ok False {'err': 'error 1: Write PNG File.vi', 'echo': 10170, 'bounds': (36528, 0), 'size': None, 'mode': None, 'blank': None}
+  FACT  HANDLES shot #10170 depth 8: 55634 -> 55634 (+0)  WITH ERROR: error 1: Check Color Table Size.vi<APPEND> | <b>Complete call chain:</b> | Check Color Table Size.vi | Write PNG File.vi | OpGetImage_v0.vi
+  FACT  P6L #10170 (tracking loop 1.2) try 1 depth 8 -> ok False {'err': 'error 1: Check Color Table Size.vi<APPEND> | <b>Complete call chain:</b> | Check Color Table Size.vi | Write PNG File.vi | OpGetImage_v0.vi', 'echo': 10170, 'bounds': (36528, 0), 'size': None, 'mode': None, 'blank': None}
+  FACT  HANDLES shot #23041 depth 24: 55633 -> 55633 (+0)  WITH ERROR: error 1: Write PNG File.vi
+  FACT  P6L #23041 (saving loop 1.7) try 1 depth 24 -> ok False {'err': 'error 1: Write PNG File.vi', 'echo': 23041, 'bounds': (3710, 0), 'size': None, 'mode': None, 'blank': None}
+  FACT  HANDLES shot #23041 depth 8: 55633 -> 55633 (+0)  WITH ERROR: error 1: Check Color Table Size.vi<APPEND> | <b>Complete call chain:</b> | Check Color Table Size.vi | Write PNG File.vi | OpGetImage_v0.vi
+  FACT  P6L #23041 (saving loop 1.7) try 1 depth 8 -> ok False {'err': 'error 1: Check Color Table Size.vi<APPEND> | <b>Complete call chain:</b> | Check Color Table Size.vi | Write PNG File.vi | OpGetImage_v0.vi', 'echo': 23041, 'bounds': (3710, 0), 'size': None, 'mode': None, 'blank': None}
+  FACT  HANDLES shot #23032 depth 24: 55633 -> 55636 (+3)  WITH ERROR: error 1: Write PNG File.vi
+  FACT  P6L #23032 (ASI focus loop) try 1 depth 24 -> ok False {'err': 'error 1: Write PNG File.vi', 'echo': 23032, 'bounds': (35789, 0), 'size': None, 'mode': None, 'blank': None}
+  FACT  HANDLES shot #23032 depth 8: 55633 -> 55633 (+0)  WITH ERROR: error 1: Check Color Table Size.vi<APPEND> | <b>Complete call chain:</b> | Check Color Table Size.vi | Write PNG File.vi | OpGetImage_v0.vi
+  FACT  P6L #23032 (ASI focus loop) try 1 depth 8 -> ok False {'err': 'error 1: Check Color Table Size.vi<APPEND> | <b>Complete call chain:</b> | Check Color Table Size.vi | Write PNG File.vi | OpGetImage_v0.vi', 'echo': 23032, 'bounds': (35789, 0), 'size': None, 'mode': None, 'blank': None}
+  FACT  HANDLES shot #25380 depth 24: 55633 -> 55633 (+0)
+  FACT  P6L #25380 (motor loop) try 1 depth 24 -> ok False {'err': '', 'echo': 25380, 'bounds': (2538, 504), 'size': [2538, 504], 'mode': 'RGB', 'blank': True}
+  FACT  HANDLES shot #25380 depth 8: 55633 -> 55630 (-3)
+  FACT  P6L #25380 (motor loop) try 1 depth 8 -> ok False {'err': '', 'echo': 25380, 'bounds': (2538, 504), 'size': [2538, 504], 'mode': 'P', 'blank': True}
+  FACT  HANDLES shot #1175 depth 24: 55632 -> 55632 (+0)
+C:\Users\KimLab\AppData\Local\Programs\Python\Python310\lib\site-packages\PIL\Image.py:3218: DecompressionBombWarning: Image size (117725064 pixels) exceeds limit of 89478485 pixels, could be decompression bomb DOS attack.
+  warnings.warn(
+  FACT  P6L #1175 (display loop 1.6) try 1 depth 24 -> ok False {'err': '', 'echo': 1175, 'bounds': (3594, 32756), 'size': [3594, 32756], 'mode': 'RGB', 'blank': True}
+  FACT  HANDLES shot #1175 depth 8: 55633 -> 55632 (-1)
+  FACT  P6L #1175 (display loop 1.6) try 1 depth 8 -> ok False {'err': '', 'echo': 1175, 'bounds': (3594, 32756), 'size': [3594, 32756], 'mode': 'P', 'blank': True}
+
+---------- [2] another fresh LabVIEW for [637, 10170, 23041, 23032, 25380, 1175]
+  FACT  handles after restart 34003
+  PASS  S1 P6L copy md5 == pin  54f7cd2f27175b3aa993a2e7630cff40
+  FACT  P6L copy loaded: 709 Nodes
+  FACT  HANDLES after load 54560
+  FACT  HANDLES shot #637 depth 24: 54560 -> 55641 (+1081)  WITH ERROR: error 1: Write PNG File.vi
+  FACT  P6L #637 (camera loop 1.1 + ring writer) try 2 depth 24 -> ok False {'err': 'error 1: Write PNG File.vi', 'echo': 637, 'bounds': (8860, 0), 'size': None, 'mode': None, 'blank': None}
+  FACT  HANDLES shot #637 depth 8: 55639 -> 55639 (+0)  WITH ERROR: error 1: Check Color Table Size.vi<APPEND> | <b>Complete call chain:</b> | Check Color Table Size.vi | Write PNG File.vi | OpGetImage_v0.vi
+  FACT  P6L #637 (camera loop 1.1 + ring writer) try 2 depth 8 -> ok False {'err': 'error 1: Check Color Table Size.vi<APPEND> | <b>Complete call chain:</b> | Check Color Table Size.vi | Write PNG File.vi | OpGetImage_v0.vi', 'echo': 637, 'bounds': (8860, 0), 'size': None, 'mode': None, 'blank': None}
+  FACT  HANDLES shot #10170 depth 24: 55639 -> 55641 (+2)  WITH ERROR: error 1: Write PNG File.vi
+  FACT  P6L #10170 (tracking loop 1.2) try 2 depth 24 -> ok False {'err': 'error 1: Write PNG File.vi', 'echo': 10170, 'bounds': (36528, 0), 'size': None, 'mode': None, 'blank': None}
+  FACT  HANDLES shot #10170 depth 8: 55639 -> 55639 (+0)  WITH ERROR: error 1: Check Color Table Size.vi<APPEND> | <b>Complete call chain:</b> | Check Color Table Size.vi | Write PNG File.vi | OpGetImage_v0.vi
+  FACT  P6L #10170 (tracking loop 1.2) try 2 depth 8 -> ok False {'err': 'error 1: Check Color Table Size.vi<APPEND> | <b>Complete call chain:</b> | Check Color Table Size.vi | Write PNG File.vi | OpGetImage_v0.vi', 'echo': 10170, 'bounds': (36528, 0), 'size': None, 'mode': None, 'blank': None}
+  FACT  HANDLES shot #23041 depth 24: 55639 -> 55639 (+0)  WITH ERROR: error 1: Write PNG File.vi
+  FACT  P6L #23041 (saving loop 1.7) try 2 depth 24 -> ok False {'err': 'error 1: Write PNG File.vi', 'echo': 23041, 'bounds': (3710, 0), 'size': None, 'mode': None, 'blank': None}
+  FACT  HANDLES shot #23041 depth 8: 55639 -> 55642 (+3)  WITH ERROR: error 1: Check Color Table Size.vi<APPEND> | <b>Complete call chain:</b> | Check Color Table Size.vi | Write PNG File.vi | OpGetImage_v0.vi
+  FACT  P6L #23041 (saving loop 1.7) try 2 depth 8 -> ok False {'err': 'error 1: Check Color Table Size.vi<APPEND> | <b>Complete call chain:</b> | Check Color Table Size.vi | Write PNG File.vi | OpGetImage_v0.vi', 'echo': 23041, 'bounds': (3710, 0), 'size': None, 'mode': None, 'blank': None}
+  FACT  HANDLES shot #23032 depth 24: 55640 -> 55640 (+0)  WITH ERROR: error 1: Write PNG File.vi
+  FACT  P6L #23032 (ASI focus loop) try 2 depth 24 -> ok False {'err': 'error 1: Write PNG File.vi', 'echo': 23032, 'bounds': (35789, 0), 'size': None, 'mode': None, 'blank': None}
+  FACT  HANDLES shot #23032 depth 8: 55640 -> 55641 (+1)  WITH ERROR: error 1: Check Color Table Size.vi<APPEND> | <b>Complete call chain:</b> | Check Color Table Size.vi | Write PNG File.vi | OpGetImage_v0.vi
+  FACT  P6L #23032 (ASI focus loop) try 2 depth 8 -> ok False {'err': 'error 1: Check Color Table Size.vi<APPEND> | <b>Complete call chain:</b> | Check Color Table Size.vi | Write PNG File.vi | OpGetImage_v0.vi', 'echo': 23032, 'bounds': (35789, 0), 'size': None, 'mode': None, 'blank': None}
+  FACT  HANDLES shot #25380 depth 24: 55639 -> 55639 (+0)
+  FACT  P6L #25380 (motor loop) try 2 depth 24 -> ok False {'err': '', 'echo': 25380, 'bounds': (2538, 504), 'size': [2538, 504], 'mode': 'RGB', 'blank': True}
+  FACT  HANDLES shot #25380 depth 8: 55639 -> 55639 (+0)
+  FACT  P6L #25380 (motor loop) try 2 depth 8 -> ok False {'err': '', 'echo': 25380, 'bounds': (2538, 504), 'size': [2538, 504], 'mode': 'P', 'blank': True}
+  FACT  HANDLES shot #1175 depth 24: 55639 -> 55637 (-2)
+  FACT  P6L #1175 (display loop 1.6) try 2 depth 24 -> ok False {'err': '', 'echo': 1175, 'bounds': (3594, 32756), 'size': [3594, 32756], 'mode': 'RGB', 'blank': True}
+  FACT  HANDLES shot #1175 depth 8: 55637 -> 55640 (+3)
+  FACT  P6L #1175 (display loop 1.6) try 2 depth 8 -> ok False {'err': '', 'echo': 1175, 'bounds': (3594, 32756), 'size': [3594, 32756], 'mode': 'P', 'blank': True}
+
+---------- [3] #1175 still failing: the largest structure directly inside it
+  OBSERVED uid 3593 -> owner 'Diagram' uid 3628 | self 'Sequence'#3593 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 3628 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#3628 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 3826 -> owner 'Diagram' uid 3667 | self 'CaseStructure'#3826 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 3667 -> owner 'Sequence' uid 3593 | self 'Diagram'#3667 | 482 says 'Sequence' cast 'Sequence' |  
+  OBSERVED uid 27489 -> owner 'Diagram' uid 81548 | self 'ForLoop'#27489 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 81548 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#81548 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 2857 -> owner 'Diagram' uid 124 | self 'CaseStructure'#2857 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 124 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#124 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 1175 -> owner 'Diagram' uid 686 | self 'WhileLoop'#1175 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 686 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#686 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 23041 -> owner 'Diagram' uid 686 | self 'WhileLoop'#23041 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 686 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#686 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 31308 -> owner 'Diagram' uid 23405 | self 'CaseStructure'#31308 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 23405 -> owner 'WhileLoop' uid 23041 | self 'Diagram'#23405 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 10170 -> owner 'Diagram' uid 686 | self 'WhileLoop'#10170 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 686 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#686 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 30726 -> owner 'Diagram' uid 23166 | self 'CaseStructure'#30726 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 23166 -> owner 'WhileLoop' uid 10170 | self 'Diagram'#23166 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 16483 -> owner 'Diagram' uid 23166 | self 'WhileLoop'#16483 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 23166 -> owner 'WhileLoop' uid 10170 | self 'Diagram'#23166 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 29874 -> owner 'Diagram' uid 23166 | self 'ForLoop'#29874 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 23166 -> owner 'WhileLoop' uid 10170 | self 'Diagram'#23166 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 1359 -> owner 'Diagram' uid 23166 | self 'ForLoop'#1359 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 23166 -> owner 'WhileLoop' uid 10170 | self 'Diagram'#23166 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 2222 -> owner 'Diagram' uid 23166 | self 'CaseStructure'#2222 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 23166 -> owner 'WhileLoop' uid 10170 | self 'Diagram'#23166 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 10445 -> owner 'Diagram' uid 23166 | self 'CaseStructure'#10445 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 23166 -> owner 'WhileLoop' uid 10170 | self 'Diagram'#23166 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 5540 -> owner 'Diagram' uid 23166 | self 'CaseStructure'#5540 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 23166 -> owner 'WhileLoop' uid 10170 | self 'Diagram'#23166 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 23032 -> owner 'Diagram' uid 686 | self 'WhileLoop'#23032 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 686 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#686 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 10407 -> owner 'Diagram' uid 23058 | self 'CaseStructure'#10407 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 23058 -> owner 'WhileLoop' uid 23032 | self 'Diagram'#23058 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 25380 -> owner 'Diagram' uid 686 | self 'WhileLoop'#25380 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 686 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#686 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 27905 -> owner 'Diagram' uid 25767 | self 'CaseStructure'#27905 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 25767 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#25767 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 27364 -> owner 'Diagram' uid 25767 | self 'CaseStructure'#27364 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 25767 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#25767 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 26991 -> owner 'Diagram' uid 25767 | self 'CaseStructure'#26991 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 25767 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#25767 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 26441 -> owner 'Diagram' uid 25767 | self 'CaseStructure'#26441 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 25767 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#25767 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 25810 -> owner 'Diagram' uid 25767 | self 'CaseStructure'#25810 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 25767 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#25767 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 28670 -> owner 'Diagram' uid 686 | self 'ForLoop'#28670 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 686 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#686 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 637 -> owner 'Diagram' uid 686 | self 'WhileLoop'#637 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 686 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#686 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 22694 -> owner 'Diagram' uid 639 | self 'CaseStructure'#22694 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 639 -> owner 'WhileLoop' uid 637 | self 'Diagram'#639 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 2457 -> owner 'Diagram' uid 639 | self 'ForLoop'#2457 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 639 -> owner 'WhileLoop' uid 637 | self 'Diagram'#639 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 10153 -> owner 'Diagram' uid 639 | self 'EventStructure'#10153 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 639 -> owner 'WhileLoop' uid 637 | self 'Diagram'#639 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 4810 -> owner 'Diagram' uid 32166 | self 'ForLoop'#4810 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 32166 -> owner 'EventStructure' uid 10153 | self 'Diagram'#32166 | 482 says 'EventStructure' cast 'EventStructure' |  
+  OBSERVED uid 29617 -> owner 'Diagram' uid 639 | self 'ForLoop'#29617 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 639 -> owner 'WhileLoop' uid 637 | self 'Diagram'#639 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 12589 -> owner 'Diagram' uid 639 | self 'CaseStructure'#12589 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 639 -> owner 'WhileLoop' uid 637 | self 'Diagram'#639 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 11869 -> owner 'Diagram' uid 16565 | self 'CaseStructure'#11869 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 16565 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#16565 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 18716 -> owner 'Diagram' uid 639 | self 'CaseStructure'#18716 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 639 -> owner 'WhileLoop' uid 637 | self 'Diagram'#639 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 22082 -> owner 'Diagram' uid 639 | self 'CaseStructure'#22082 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 639 -> owner 'WhileLoop' uid 637 | self 'Diagram'#639 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 20474 -> owner 'Diagram' uid 639 | self 'CaseStructure'#20474 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 639 -> owner 'WhileLoop' uid 637 | self 'Diagram'#639 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 21600 -> owner 'Diagram' uid 20530 | self 'CaseStructure'#21600 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 20530 -> owner 'CaseStructure' uid 20474 | self 'Diagram'#20530 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 21630 -> owner 'Diagram' uid 21624 | self 'CaseStructure'#21630 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 21624 -> owner 'CaseStructure' uid 21600 | self 'Diagram'#21624 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 21726 -> owner 'Diagram' uid 21658 | self 'CaseStructure'#21726 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 21658 -> owner 'CaseStructure' uid 21630 | self 'Diagram'#21658 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 20548 -> owner 'Diagram' uid 20530 | self 'CaseStructure'#20548 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 20530 -> owner 'CaseStructure' uid 20474 | self 'Diagram'#20530 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 3191 -> owner 'Diagram' uid 639 | self 'CaseStructure'#3191 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 639 -> owner 'WhileLoop' uid 637 | self 'Diagram'#639 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 57 -> owner 'Diagram' uid 639 | self 'CaseStructure'#57 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 639 -> owner 'WhileLoop' uid 637 | self 'Diagram'#639 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 195 -> owner 'Diagram' uid 759 | self 'CaseStructure'#195 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 759 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#759 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 23093 -> owner 'Diagram' uid 13236 | self 'ForLoop'#23093 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 13236 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#13236 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 13507 -> owner 'Diagram' uid 13236 | self 'CaseStructure'#13507 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 13236 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#13236 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 13683 -> owner 'Diagram' uid 13589 | self 'ForLoop'#13683 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 13589 -> owner 'CaseStructure' uid 13507 | self 'Diagram'#13589 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 13390 -> owner 'Diagram' uid 13236 | self 'ForLoop'#13390 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 13236 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#13236 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 15173 -> owner 'Diagram' uid 15041 | self 'WhileLoop'#15173 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 15041 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#15041 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 18975 -> owner 'Diagram' uid 16964 | self 'CaseStructure'#18975 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 16964 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#16964 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 18666 -> owner 'Diagram' uid 16964 | self 'CaseStructure'#18666 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 16964 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#16964 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 18267 -> owner 'Diagram' uid 16964 | self 'CaseStructure'#18267 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 16964 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#16964 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 18036 -> owner 'Diagram' uid 16964 | self 'CaseStructure'#18036 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 16964 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#16964 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 17722 -> owner 'Diagram' uid 16964 | self 'CaseStructure'#17722 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 16964 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#16964 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 17410 -> owner 'Diagram' uid 16964 | self 'CaseStructure'#17410 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 16964 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#16964 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 16970 -> owner 'Diagram' uid 16964 | self 'CaseStructure'#16970 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 16964 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#16964 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 15968 -> owner 'Diagram' uid 15266 | self 'CaseStructure'#15968 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 15266 -> owner 'WhileLoop' uid 15173 | self 'Diagram'#15266 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 16238 -> owner 'Diagram' uid 15266 | self 'CaseStructure'#16238 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 15266 -> owner 'WhileLoop' uid 15173 | self 'Diagram'#15266 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 16312 -> owner 'Diagram' uid 16303 | self 'ForLoop'#16312 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 16303 -> owner 'CaseStructure' uid 16238 | self 'Diagram'#16303 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 16369 -> owner 'Diagram' uid 16355 | self 'CaseStructure'#16369 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 16355 -> owner 'ForLoop' uid 16312 | self 'Diagram'#16355 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 16557 -> owner 'Diagram' uid 16303 | self 'ForLoop'#16557 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 16303 -> owner 'CaseStructure' uid 16238 | self 'Diagram'#16303 | 482 says 'CaseStructure' cast 'CaseStructure' |  
+  OBSERVED uid 15544 -> owner 'Diagram' uid 15266 | self 'EventStructure'#15544 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 15266 -> owner 'WhileLoop' uid 15173 | self 'Diagram'#15266 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 15649 -> owner 'Diagram' uid 15622 | self 'Sequence'#15649 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 15622 -> owner 'EventStructure' uid 15544 | self 'Diagram'#15622 | 482 says 'EventStructure' cast 'EventStructure' |  
+  OBSERVED uid 28709 -> owner 'Diagram' uid 15795 | self 'CaseStructure'#28709 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 15795 -> owner 'Sequence' uid 15649 | self 'Diagram'#15795 | 482 says 'Sequence' cast 'Sequence' |  
+  OBSERVED uid 21305 -> owner 'Diagram' uid 21134 | self 'ForLoop'#21305 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 21134 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#21134 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 21590 -> owner 'Diagram' uid 21577 | self 'Sequence'#21590 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 21577 -> owner 'ForLoop' uid 21305 | self 'Diagram'#21577 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 22086 -> owner 'Diagram' uid 22013 | self 'CaseStructure'#22086 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 22013 -> owner 'Sequence' uid 21590 | self 'Diagram'#22013 | 482 says 'Sequence' cast 'Sequence' |  
+  OBSERVED uid 22433 -> owner 'Diagram' uid 22427 | self 'ForLoop'#22433 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 22427 -> owner 'Sequence' uid 21590 | self 'Diagram'#22427 | 482 says 'Sequence' cast 'Sequence' |  
+  OBSERVED uid 22541 -> owner 'Diagram' uid 22532 | self 'Sequence'#22541 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 22532 -> owner 'ForLoop' uid 22433 | self 'Diagram'#22532 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 23619 -> owner 'Diagram' uid 22780 | self 'CaseStructure'#23619 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 22780 -> owner 'Sequence' uid 22541 | self 'Diagram'#22780 | 482 says 'Sequence' cast 'Sequence' |  
+  OBSERVED uid 22786 -> owner 'Diagram' uid 22780 | self 'ForLoop'#22786 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 22780 -> owner 'Sequence' uid 22541 | self 'Diagram'#22780 | 482 says 'Sequence' cast 'Sequence' |  
+  OBSERVED uid 25272 -> owner 'Diagram' uid 25266 | self 'ForLoop'#25272 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 25266 -> owner 'Sequence' uid 21590 | self 'Diagram'#25266 | 482 says 'Sequence' cast 'Sequence' |  
+  OBSERVED uid 25325 -> owner 'Diagram' uid 25290 | self 'ForLoop'#25325 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 25290 -> owner 'ForLoop' uid 25272 | self 'Diagram'#25290 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 25850 -> owner 'Diagram' uid 25769 | self 'ForLoop'#25850 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 25769 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#25769 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  FACT  structures directly inside #1175: []
+  FAIL  W P6L #637 (camera loop 1.1 + ring writer): no error, not blank, size == Bounds  {'err': 'error 1: Check Color Table Size.vi<APPEND> | <b>Complete call chain:</b> | Check Color Table Size.vi | Write PNG File.vi | OpGetImage_v0.vi', 'size': None, 'bounds_wh': None, 'blank': None, 'depth': 8, 'try': 2}
+  FAIL  W P6L #10170 (tracking loop 1.2): no error, not blank, size == Bounds  {'err': 'error 1: Check Color Table Size.vi<APPEND> | <b>Complete call chain:</b> | Check Color Table Size.vi | Write PNG File.vi | OpGetImage_v0.vi', 'size': None, 'bounds_wh': None, 'blank': None, 'depth': 8, 'try': 2}
+  FAIL  W P6L #23041 (saving loop 1.7): no error, not blank, size == Bounds  {'err': 'error 1: Check Color Table Size.vi<APPEND> | <b>Complete call chain:</b> | Check Color Table Size.vi | Write PNG File.vi | OpGetImage_v0.vi', 'size': None, 'bounds_wh': None, 'blank': None, 'depth': 8, 'try': 2}
+  FAIL  W P6L #23032 (ASI focus loop): no error, not blank, size == Bounds  {'err': 'error 1: Check Color Table Size.vi<APPEND> | <b>Complete call chain:</b> | Check Color Table Size.vi | Write PNG File.vi | OpGetImage_v0.vi', 'size': None, 'bounds_wh': None, 'blank': None, 'depth': 8, 'try': 2}
+  FAIL  W P6L #25380 (motor loop): no error, not blank, size == Bounds  {'err': '', 'size': [2538, 504], 'bounds_wh': [2538, 504], 'blank': True, 'depth': 8, 'try': 2}
+  FAIL  W P6L #1175 (display loop 1.6): no error, not blank, size == Bounds  {'err': '', 'size': [3594, 32756], 'bounds_wh': [3594, 32756], 'blank': True, 'depth': 8, 'try': 2}
+  FACT  H handles at end 55692 (after first restart 33995); refs {'opened': 2, 'closed': 2, 'live': 0, 'cached_op_vis': 3}
+  FACT  HANDLE SERIES [('after restart', 33995), ('after load', 54554), ('shot #637 depth 24', 55634), ('shot #637 depth 8', 55633), ('shot #637 depth 24', 55633), ('shot #637 depth 8', 55633), ('shot #637 depth 24', 55633), ('shot #637 depth 8', 55634), ('shot #10170 depth 24', 55634), ('shot #10170 depth 8', 55634), ('shot #23041 depth 24', 55633), ('shot #23041 depth 8', 55633), ('shot #23032 depth 24', 55636), ('shot #23032 depth 8', 55633), ('shot #25380 depth 24', 55633), ('shot #25380 depth 8', 55630), ('shot #1175 depth 24', 55632), ('shot #1175 depth 8', 55632), ('after load', 54560), ('shot #637 depth 24', 55641), ('shot #637 depth 8', 55639), ('shot #10170 depth 24', 55641), ('shot #10170 depth 8', 55639), ('shot #23041 depth 24', 55639), ('shot #23041 depth 8', 55642), ('shot #23032 depth 24', 55640), ('shot #23032 depth 8', 55641), ('shot #25380 depth 24', 55639), ('shot #25380 depth 8', 55639), ('shot #1175 depth 24', 55637), ('shot #1175 depth 8', 55640)]
+  PASS  G LabVIEW gone at exit (killed, nothing saved)  
+  PASS  K P6L copy deleted  []
+  PASS  X P6L source md5 after == pin  54f7cd2f27175b3aa993a2e7630cff40
+=== GATES: 7 pass / 6 fail; failing: W P6L #637 (camera loop 1.1 + ring writer): no error, not blank, size == Bounds, W P6L #10170 (tracking loop 1.2): no error, not blank, size == Bounds, W P6L #23041 (saving loop 1.7): no error, not blank, size == Bounds, W P6L #23032 (ASI focus loop): no error, not blank, size == Bounds, W P6L #25380 (motor loop): no error, not blank, size == Bounds, W P6L #1175 (display loop 1.6): no error, not blank, size == Bounds
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":7,"fail":6},"first_fail":"W P6L #637 (camera loop 1.1 + ring writer): no error, not blank, size == Bounds","artefacts":[{"path":"G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\pi_shots_20261016\\loops_p6l.json","md5":"cfe968306158bfa25e849e90678a3fb0"},{"path":"G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\pi_shots_20261016\\pi_shots_loops.json","md5":"278320d5092ee4a1f4d7ed2c6ec92766"}],"card":"chat-PI3","labview":"build"}
+BGRUN END rc=1 after 168s

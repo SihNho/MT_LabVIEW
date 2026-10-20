@@ -1,0 +1,46 @@
+BGRUN START 2026-10-16 14:11:17 limit 20.0 min: py -u tools/prior_art_review.py --plan-file tools/bench/cards/review_priorart-op-getimage-v2_plan.md --slug op-getimage-v2 --recipe tools/recipes/build_op_getimage_v0.py --recipe tools/bench/pi_shots_lib.py
+BGRUN PID 24464
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_op-getimage-v2.txt (109659 chars)
+   review card tools\bench\cards\review_priorart-op-getimage-v2.json
+OUTCOME: ANSWERED (131s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-10-16-priorart-op-getimage-v2.md
+COST: $1.3414  in 22 / out 9004 / cache-create 115073 / cache-read 1203089  (128s, 22 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-op-getimage-v2 verdict=novel -> tools\bench\cards\verdict_priorart-op-getimage-v2.json
+--- ANSWER ---
+**Answer: the direction is new. No Get Image op, PNG export or Node-class Invoke on a seed-retargeted donor has been built or tried before. One finding: the plan copies a helper that already exists in an importable file.**
+
+## Part A: the direction
+
+- **A1 settled already:** none. The only earlier records of Get Image, `6358C01` or Write PNG File are this card's own files: `archive/peer/2026-10-16-priorart-op-getimage.md`, `archive/peer/2026-10-16-hypothesis-op-getimage.md`, `tools/bench/build_op_getimage_v0*.log` and the `chat-PI1*` cards. The older hits are unrelated: Omar's Flatten Pixmap wiki json, and `archive/peer/2026-08-31-…-imaq-image-save-exact-roundtrip.md`, which is about saving camera images, not diagram pictures.
+- **A2 refuted already:** none beyond chat-PI1b's own M1 failure, and the plan addresses that. The cause is disposed in `archive/peer/2026-10-16-hypothesis-op-getimage.md:99-110`: the class was wrong (Node, not GObject), and a sweep cannot prove a method is absent.
+- **A3 contradicted:** none found.
+- **A4 unread evidence:** `tools/bench/diag_c100_verbs_build.py` and its logs (details in B3).
+
+## Part B: the artifact
+
+**Your question: has the Node-seed retarget on `OpSetIndexMode_v0` been built or failed before?** It has been built and verified, so it is proven prior art that supports the plan, not a blocker.
+- `tools/bench/diag_c100_verbs_build.py:173` builds `retarget(b, key, "VI Server:Node", [("6359000", False)], …)` on an `OpSetIndexMode_v0` copy (`:170`). It then puts an Invoke downstream of the cast (`:179`); that Invoke is Terminal-class, not Node-class.
+- The resulting ops `OpCreateIndicatorNested_v0` (0e5a4739) and `OpCreateControlNested_v0` (ead0d743) passed the seed step (`diag_c100_verbs_build.log:27`), assembled and saved with ExecState 1 (`diag_c100_verbs_build2.log:32-33,61-62`), and loaded cold with ExecState 1 (`diag_c100_verbs_build2.log:63-64`, `_build3.log:11-12`, `_build4.log:44-45`).
+- What is still unmeasured: a Node-class Invoke such as Get Image on that cast. The plan's M1 gate covers this.
+
+**Is there an op that gives a Node-typed reference by UID?** No. The established pattern is a Traverse index plus a UID echo: `uid_echo` at `diag_c100_verbs_build.py:163-166`, and `gscript._uid_index` as the hypothesis review notes (`gscript.py:3639-3644`). The plan follows that pattern.
+
+- **B1 already built:** no op takes a node's image.
+- **B2 already failed:** no earlier attempt at this build failed. One related warning, which the plan already avoids: run 1 of the c100 build hit a modal dialog when it called `create_control` on an Invoke's method-name pseudo-terminal (`diag_c100_verbs_build.log:29-44`). The fix was to skip names starting with "Create " (`diag_c100_verbs_build.py:183-184`). The getimage recipe creates controls only on `Image Depth` and `Background Color` (`build_op_getimage_v0.py:109`), so it does not repeat this.
+- **B3 helper exists (the one finding):** `tools/bench/pi_shots_lib.py:176-178` copies the builder class and `retarget()` from `diag_c97_tools_opbuild.py:43-125`. Its stated reason is that the c97 file "runs its build at import time".
+  - `tools/bench/diag_c100_verbs_build.py` has the same thing, importable: class `B` (`:67-136`), `retarget` (`:139-160`, described in its docstring as "diag_c97_tools_opbuild.retarget:104 verbatim in substance"), and `uid_echo` (`:163-166`).
+  - Its build runs only under `if __name__ == "__main__"` (`:560`), and 4 files already import it (`docs/toolkit-capabilities.md:3166`).
+  - `pi_shots_lib.py:9` even cites this file, but for something else.
+  - **How to refute it:** importing c100 has a side effect, `g._run.__defaults__ = (6.0, 180.0)` at `:52`, and its `retarget` uses that file's own global `gate`/`G` records. A written note that either of these makes it unsuitable releases the finding.
+- **B4 already measured:** whether Get Image includes a structure's subdiagram has never been recorded. The hypothesis review lists it as unknown (`archive/peer/2026-10-16-hypothesis-op-getimage.md:77`).
+
+## Part C: the user's rules
+
+None contradicted. There is no queue, no serial call, no camera or acquisition path, no hardware, and no per-bead number changes. The VIs under study are only loaded and never run.
+
+PRIOR-ART: helper-exists
+
+VERDICT {"schema":"verdict/1","id":"priorart-op-getimage-v2","verdict":"novel","alternative":"Node-seed retarget on OpSetIndexMode_v0 is already proven (OpCreateIndicatorNested_v0, cold ES 1); retarget/B/uid_echo are importable from tools/bench/diag_c100_verbs_build.py (main-guarded :560) instead of copying diag_c97:43-125.","discriminating_test":"Import diag_c100_verbs_build and call retarget(b,key,'VI Server:Node',[('632A800',False),('632A803',False)],pos) on an OpSetIndexMode_v0 copy; the import side effect g._run.__defaults__ (:52) is the only blocker to weigh.","violations":[],"sources":["tools/bench/diag_c100_verbs_build.py:139-173","tools/bench/diag_c100_verbs_build2.log:32-33,61-64","tools/bench/pi_shots_lib.py:176-178","archive/peer/2026-10-16-hypothesis-op-getimage.md:99-110","docs/toolkit-capabilities.md:3166,3185"],"note":"No Get Image / Write PNG / Node-class Invoke on a seed-retargeted donor found anywhere before chat-PI1. Only finding: the copied helper (helper-exists, advisory)."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-op-getimage-v2.md
+   STOP RECORD armed: tools/recipes/build_op_getimage_v0.py sha ee55dc2d4c45 verdict helper-exists -> launching it is refused until a FIXED:/REFUTED: line releases it
+   STOP RECORD armed: tools/bench/pi_shots_lib.py sha 2196cd48d46c verdict helper-exists -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 134s

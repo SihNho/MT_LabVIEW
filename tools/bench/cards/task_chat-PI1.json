@@ -1,0 +1,61 @@
+{
+ "schema": "task/1",
+ "id": "chat-PI1",
+ "kind": "build",
+ "goal": "Per brief_chat-PI1.md: build OpGetImage_v0.vi and capture readable PNG crops of the key block-diagram regions of the original VI, P6-1 and the current P6 VI (byte copies only).",
+ "why": "User 2026-10-16: the PI asked to see the actual code - original main VI, the modified VI before the harness swap, and the current structure; key parts only, not the whole diagram.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_chat-PI1.md", "md5": "e6c0328c593dac0850d28e77702d9674"},
+  {"path": "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/Min_Track N beads 4.5_KimLabMTroom_3StateClamping.vi", "md5": "2f048e3a18de3b5e3ca8368f6a24dae0"},
+  {"path": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_ring_p6_20261012_212645.vi", "md5": "c2d9c13cb40c0a5cab7433896d1df157"},
+  {"path": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/bench/lean/D1_ring_p6latest_20261014_010104.vi", "md5": "15c664e3eed1c580e05b13e42c86566f"},
+  {"path": "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_lean/tools/bench/lean_bench/lean_report_p6fix.md", "md5": "76cd7a3364c01480f83c89cc5dace3c3"},
+  {"path": "docs/frame-loop-anatomy.md", "md5": "66faecd5c990f604e1d18c4b75e91fe9"}
+ ],
+ "pass": [
+  "OpGetImage_v0.vi built; the scripting method used (class + method name) verified from LabVIEW itself and quoted",
+  "Crops A1 (original frame loop), B (P6-1 reader before fix), C (current reader after fix), D (current loop 1.1 writer) exist as PNG at native scale, each <= ~1800 x 1100 px, text in them readable",
+  "shots.json lists file, source md5, uid, bounds, crop box, pixel size, description for every crop",
+  "md5 of the three source VIs unchanged before/after; copies closed without saving; VI Server handle count back to baseline; LabVIEW process gone; labview-lock cleared"
+ ],
+ "outputs": [
+  "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/OpGetImage_v0.vi",
+  "tools/bench/pi_shots_20261016/",
+  "tools/bench/cards/result_chat-PI1.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/OpGetImage_v0.vi",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/shots_20261016/**",
+   "tools/bench/pi_shots_20261016/**",
+   "tools/bench/pi_shots*.py",
+   "tools/bench/pi_shots*.log",
+   "tools/recipes/build_op_getimage*.py",
+   "tools/bench/build_op_getimage*.log",
+   "tools/bench/cards/result_chat-PI1.json",
+   "STATUS.md"
+  ],
+  "status_edit": true,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 120
+ },
+ "unblocks": "M3",
+ "requires": [
+  {"kind": "file", "name": "tools/gscript.py"},
+  {"kind": "file", "name": "tools/kb_com.py"}
+ ],
+ "rules": [
+  "No hardware (camera, motors, ASI, VISA) and never Run a VI; the lean runner stays stopped",
+  "Originals are read-only: open byte copies in claudeDev/shots_20261016 only, Don't Save on every prompt, md5 before/after",
+  "LabVIEW commands with timeout <= 30 s or through tools/bgrun.py --material; one LabVIEW client; close every reference",
+  "No GUI automation under this card; if scripting cannot get the image, RETURN with the facts; no workaround"
+ ]
+}

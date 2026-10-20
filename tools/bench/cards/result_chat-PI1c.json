@@ -1,0 +1,22 @@
+{"schema":"result/1","id":"chat-PI1c","status":"FAIL","gates":{"pass":2,"fail":1},
+"first_fail":"M1 Node-class Invoke 6358C01 has terminals Image Depth/Background Color/Image Data (tools/bench/build_op_getimage_v0c.log)",
+"blocked_by":null,
+"artefacts":[{"path":"tools/bench/build_op_getimage_v0c.log","md5":"e8d74bd893cd5101377c4943f805adbd"},{"path":"tools/recipes/build_op_getimage_v0.py","md5":"ddf1e59fb2cbf50177c9a05e3d55f5b7"},{"path":"tools/bench/pi_shots_lib.py","md5":"47edbb5cbc1ade652ced5092b80402d8"},{"path":"tools/bench/pi_shots_20261016.py","md5":"33215b5aebec0f7e79b2b64b5a09263b"},{"path":"archive/peer/2026-10-16-hypothesis-op-getimage.md","md5":"a6be5efb2b396607bc6cd0d6a35fd447"},{"path":"archive/peer/2026-10-16-priorart-op-getimage-v2.md","md5":"3d265b676ede306b21a1a17d41a992ce"},{"path":"tools/bench/pi_shots_20261016/build_op_getimage_v0c.json","md5":"e264db4f4f3c497501fd806eedbbb20a"}],
+"facts":[
+"Node 6358C01 Invoke EXISTS; terminals: Get Image (return pair), Image Depth, BG Color, Image Data (build_op_getimage_v0c.log:8)",
+"Only miss: the card's 'Background Color' reads 'BG Color' (short name); card rule 'if they differ, RETURN' applied, nothing built (log:9-10)",
+"Hypothesis review: HYPOTHESIS partly - brief mixed Control.Get Image 6331C0C with Node.Get Image 6358C01; sweep could not prove absence (archive/peer/2026-10-16-hypothesis-op-getimage.md, disposed)",
+"Prior-art v2: verdict novel + helper-exists (c100 retarget/B/uid_echo importable); FIXED lines written, recipe imports diag_c100_verbs_build (recipe:52, pi_shots_lib.py:176)",
+"Earlier priorart-op-getimage.md (chat-PI1b) disposed: novel accepted, A4 637040D route superseded by the external ID (its 'What was done with it')",
+"Recipe redesigned: donor OpSetIndexMode_v0 + Node seed retarget (TMSC), since UID-to-GObject output is GObject-typed; M2/F1/H1 hygiene gates written but not reached",
+"Shots script tools/bench/pi_shots_20261016.py written (A1/A2/B/C/D, UID echo hard gate, tiles <=1800x1100), never run",
+"Cleanup: LabVIEW killed, verified gone (H7); scratch deleted (H4); ref_counts opened 2/closed 2/live 0 (log:11); source md5s 2f048e3a/c2d9c13c/15c664e3 unchanged",
+"Jev ladder row: build_op_getimage_v0c.log | none in jev_gate.log | - | returned at first unexpected result | FAIL M1",
+"STATUS.md labview-lock acquired 14:16, released with a 'last:' line; STATUS still >110 lines, archive/ relocation outside write globs"
+],
+"open":[
+"Accept 'BG Color' as the Background Color terminal (short name; same method) and re-dispatch with M1 expecting Image Depth / BG Color / Image Data?",
+"Allow tools/bench/op_hygiene/OpGetImage_v0.json via gscript.hygiene_run inside the build (the recipe already does it), and is ~2,000 PNG-writing calls acceptable for the record?"
+],
+"cost":{"usd":null,"minutes":17,"labview_runs":1},
+"note":"Rules 48f23831. No hardware; no VI under study opened; lean runner untouched; nothing committed. A retry needs only WANT 'BG Color' in build_op_getimage_v0.py and the key 'BG Color' in pi_shots_lib.get_image."}

@@ -1,0 +1,66 @@
+BGRUN START 2026-10-19 10:49:47 limit 40.0 min: py -u tools/recipes/build_op_getbdimage_v0.py
+BGRUN PID 21588
+
+---------- [0] restart LabVIEW
+  FACT  handles after restart 34011
+
+---------- [1] VI.Block Diagram: Get Image Scaled 42C on a scratch copy of EMPTY_v0
+  FACT  VI 42C -> Invoke #43 terminals [(0, 'reference', 'IN'), (1, 'reference out', 'OUT'), (2, 'error in (no error)', 'IN'), (3, 'error out', 'OUT'), (4, 'GetDiagramImageScaled', 'IN'), (5, 'GetDiagramImageScaled', 'OUT'), (6, 'img depth', 'IN'), (7, 'img depth', 'OUT'), (8, 'img data', 'IN'), (9, 'img data', 'OUT'), (10, 'max width', 'IN'), (11, 'max width', 'OUT'), (12, 'max height', 'IN'), (13, 'max height', 'OUT')]
+  PASS  M1 VI-class Invoke 42C terminals = GetDiagramImageScaled + img depth/img data/max width/max height (short or long, case-insensitive, nothing else)  ['GetDiagramImageScaled', 'GetDiagramImageScaled', 'img depth', 'img depth', 'img data', 'img data', 'max width', 'max width', 'max height', 'max height']
+
+---------- [2] donor copy OpReport_v3 -> OpGetBDImage_v0
+  FACT  handles after restart 33997
+  PASS  B1 donor copy ExecState 1  
+  PASS  B2 Open VI Reference (source 'vi reference') found and is a Function  (43, {43})
+
+---------- [3] Invoke VI.Get Image Scaled 42C on the vi reference (branch)
+  FACT  Get Image Scaled #324 terminals [(0, 'reference', False, 467), (1, 'reference out', True, 0), (2, 'error in (no error)', False, 0), (3, 'error out', True, 0), (4, 'GetDiagramImageScaled', False, 0), (5, 'GetDiagramImageScaled', True, 0), (6, 'img depth', False, 0), (7, 'img depth', True, 0), (8, 'img data', False, 0), (9, 'img data', True, 0), (10, 'max width', False, 0), (11, 'max width', True, 0), (12, 'max height', False, 0), (13, 'max height', True, 0)]
+  PASS  B3 Invoke.reference reads the vi reference wire, ES 1  (467, 467, 1)
+  FACT  measured terminal names used: depth 'img depth', data 'img data'
+
+---------- [4] Write PNG File.vi
+  PASS  B4a exactly one new SubVI (Write PNG File.vi)  [326]
+  FACT  Write PNG #326 terminals [(0, 'error out', True), (1, '', False), (2, '', False), (3, 'path', True), (4, '', False), (5, 'compression (default)', False), (6, '', False), (7, '', False), (8, 'error in (no error)', False), (9, '', False), (10, 'image data', False), (11, 'path to PNG file', False)]
+  PASS  B4b Write PNG has image / path / error-in sinks  ('image data', 'path to PNG file', 'error in (no error)')
+  PASS  B4c Image Data and error wires land on Write PNG, and the Invoke's OUT-side 'img data' carries the image wire (review R3)  ({'': 0, 'compression (default)': 0, 'error in (no error)': 633, 'image data': 630, 'path to PNG file': 0}, 630)
+  PASS  B5 every control/indicator created  {'controls': {'Image Depth': 'Image Depth', 'png_path': 'path to PNG file'}, 'indicators': {'png_err': 'error out 3'}}
+  FACT  Get Image Scaled inputs wired after build [('reference', 467), ('error in (no error)', 0), ('GetDiagramImageScaled', 0), ('img depth', 596), ('img data', 0), ('max width', 0), ('max height', 0)]
+  PASS  B6 ExecState 1 before the save  1
+  FACT  labels -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\pi_shots_20261016\opgetbdimage_v0_labels.json {'controls': {'Image Depth': 'Image Depth', 'png_path': 'path to PNG file'}, 'indicators': {'png_err': 'error out 3'}, 'all_controls': ['vi path', 'Class Name', 'index', 'Image Depth', 'path to PNG file'], 'op': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpGetBDImage_v0.vi', 'md5': '70fbd7e58b1af7ac1110d16baa1118ba', 'method': {'class': 'VI Server:VI', 'id': '42C', 'terminals': [(0, 'reference', 'IN'), (1, 'reference out', 'OUT'), (2, 'error in (no error)', 'IN'), (3, 'error out', 'OUT'), (4, 'GetDiagramImageScaled', 'IN'), (5, 'GetDiagramImageScaled', 'OUT'), (6, 'img depth', 'IN'), (7, 'img depth', 'OUT'), (8, 'img data', 'IN'), (9, 'img data', 'OUT'), (10, 'max width', 'IN'), (11, 'max width', 'OUT'), (12, 'max height', 'IN'), (13, 'max height', 'OUT')]}, 'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpReport_v3.vi', 'ovr': 43, 'get_image_scaled': 324, 'write_png': 326}
+
+---------- [5] cold re-read
+  FACT  handles after restart 33994
+  PASS  B7 ExecState 1 COLD in a fresh LabVIEW  1
+
+---------- [6] op hygiene (gscript.hygiene_run, 2,000 calls)
+  FACT  F1 whole diagram of scratch_hyg_OpGetBDImage_v0_20261019_105246_r00.vi -> {'err_png': ''}; PNG {'size': [857, 321], 'mode': 'RGB', 'blank': False, 'extrema': [[0, 255], [0, 255], [0, 255]]}
+  PASS  F1 no error, PNG written, RGB, not blank  ({'err_png': ''}, {'size': [857, 321], 'mode': 'RGB', 'blank': False, 'extrema': [[0, 255], [0, 255], [0, 255]]})
+  FACT  HYG OpGetBDImage_v0 round 0: 100 calls, errors 0, check [], h_pre 35168 h_post 35168 h_closed 35152, gdi 372 user 85, live 0, t 9s
+  FACT  HYG OpGetBDImage_v0 round 1: 100 calls, errors 0, check [], h_pre 35167 h_post 35166 h_closed 35149, gdi 376 user 85, live 0, t 18s
+  FACT  HYG OpGetBDImage_v0 round 2: 100 calls, errors 0, check [], h_pre 35165 h_post 35164 h_closed 35147, gdi 374 user 85, live 0, t 25s
+  FACT  HYG OpGetBDImage_v0 round 3: 100 calls, errors 0, check [], h_pre 35162 h_post 35162 h_closed 35146, gdi 374 user 85, live 0, t 30s
+  FACT  HYG OpGetBDImage_v0 round 4: 100 calls, errors 0, check [], h_pre 35163 h_post 35163 h_closed 35147, gdi 374 user 85, live 0, t 34s
+  FACT  HYG OpGetBDImage_v0 round 5: 100 calls, errors 0, check [], h_pre 35162 h_post 35160 h_closed 35144, gdi 374 user 85, live 0, t 38s
+  FACT  HYG OpGetBDImage_v0 round 6: 100 calls, errors 0, check [], h_pre 35159 h_post 35159 h_closed 35143, gdi 374 user 85, live 0, t 42s
+  FACT  HYG OpGetBDImage_v0 round 7: 100 calls, errors 0, check [], h_pre 35159 h_post 35160 h_closed 35144, gdi 374 user 85, live 0, t 46s
+  FACT  HYG OpGetBDImage_v0 round 8: 100 calls, errors 0, check [], h_pre 35160 h_post 35159 h_closed 35143, gdi 374 user 85, live 0, t 50s
+  FACT  HYG OpGetBDImage_v0 round 9: 100 calls, errors 0, check [], h_pre 35159 h_post 35160 h_closed 35144, gdi 374 user 85, live 0, t 54s
+  FACT  HYG OpGetBDImage_v0 round 10: 100 calls, errors 0, check [], h_pre 35159 h_post 35166 h_closed 35150, gdi 374 user 85, live 0, t 58s
+  FACT  HYG OpGetBDImage_v0 round 11: 100 calls, errors 0, check [], h_pre 35165 h_post 35156 h_closed 35140, gdi 374 user 85, live 0, t 61s
+  FACT  HYG OpGetBDImage_v0 round 12: 100 calls, errors 0, check [], h_pre 35154 h_post 35154 h_closed 35138, gdi 374 user 85, live 0, t 65s
+  FACT  HYG OpGetBDImage_v0 round 13: 100 calls, errors 0, check [], h_pre 35154 h_post 35154 h_closed 35138, gdi 374 user 85, live 0, t 69s
+  FACT  HYG OpGetBDImage_v0 round 14: 100 calls, errors 0, check [], h_pre 35154 h_post 35154 h_closed 35138, gdi 374 user 85, live 0, t 73s
+  FACT  HYG OpGetBDImage_v0 round 15: 100 calls, errors 0, check [], h_pre 35154 h_post 35154 h_closed 35137, gdi 374 user 85, live 0, t 78s
+  FACT  HYG OpGetBDImage_v0 round 16: 100 calls, errors 0, check [], h_pre 35153 h_post 35153 h_closed 35137, gdi 374 user 85, live 0, t 82s
+  FACT  HYG OpGetBDImage_v0 round 17: 100 calls, errors 0, check [], h_pre 35153 h_post 35145 h_closed 35129, gdi 374 user 85, live 0, t 86s
+  FACT  HYG OpGetBDImage_v0 round 18: 100 calls, errors 0, check [], h_pre 35145 h_post 35145 h_closed 35130, gdi 374 user 85, live 0, t 90s
+  FACT  HYG OpGetBDImage_v0 round 19: 100 calls, errors 0, check [], h_pre 35146 h_post 35146 h_closed 35130, gdi 374 user 85, live 0, t 94s
+  FACT  hygiene record {'status': 'PASS', 'calls': 2000, 'errors': 0, 'error_samples': [], 'max_dev_closed': 23, 'refs_live_delta': 0}
+  PASS  H1 op-hygiene record PASS  PASS
+  PASS  H2 hygiene PNGs deleted after the record (G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\pi_shots_20261016\hygiene_tmp_bd)  
+  FACT  ref_counts {'opened': 52, 'closed': 52, 'live': 0, 'cached_op_vis': 1}
+  PASS  H7 LabVIEW gone at exit (killed, nothing saved)  
+  PASS  H4 scratch deleted: scratch_getbdimage_104948.vi (+ hygiene copies)  
+=== GATES: 15 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":15,"fail":0},"first_fail":null,"artefacts":[{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpGetBDImage_v0.vi","md5":"70fbd7e58b1af7ac1110d16baa1118ba"},{"path":"G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\pi_shots_20261016\\opgetbdimage_v0_labels.json","md5":"5fe17e9c31373369dabca131ca111199"},{"path":"G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\op_hygiene\\OpGetBDImage_v0.json","md5":"b909a3817ca6d36e9bda15c63732899b"},{"path":"G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\pi_shots_20261016\\build_op_getbdimage_v0.json","md5":"e5be2b2d22d964afb0fc79cb33bd2608"}],"card":"chat-PI2b","labview":"build"}
+BGRUN END rc=0 after 280s

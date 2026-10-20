@@ -1,0 +1,21 @@
+{"schema":"result/1","id":"chat-PI1b","status":"FAIL","gates":{"pass":3,"fail":1},
+"first_fail":"M1 a GObject method with an Image output found from LabVIEW (tools/bench/build_op_getimage_v0.log)",
+"blocked_by":null,
+"artefacts":[{"path":"archive/peer/2026-10-16-priorart-op-getimage.md","md5":"303edb6c0389393028d0c29d751579d1"},{"path":"tools/bench/build_op_getimage_v0.log","md5":"7450088b6cdba82d621b92ec8aa42711"},{"path":"tools/bench/pi_shots_20261016/build_op_getimage_v0.json","md5":"7b509dd44bcbf159a632de35f20ccb19"},{"path":"tools/bench/cards/review_priorart-op-getimage_plan.md","md5":"4f9fa4af6035b9b7baf09a7fb8be8c1b"}],
+"facts":[
+"Prior-art verdict NOVEL (tools/bench/build_op_getimage_v0_priorart.log VERDICT line); its alternative: read Invoke.All Supported Methods 637040D (docs/NAMES.md:213) to get the Get Image ID by name",
+"Sweep FAILED M1: 632A401 = Highlight Object; 632A403 = RepNoAttrib/Param 0/Param 1/PaletteString; 632A407 = GetObjHelp/helpPath/helpTag/hasExample (build_op_getimage_v0.log:8-10)",
+"632A404..406 and 632A408..40F each gave an Invoke whose only terminal is 'Method' (no named method) - IDs not GObject methods (build_op_getimage_v0.log:9-19)",
+"So Get Image is not at 632A401..40F on class VI Server:GObject; its ID / class is still unknown; OpGetImage_v0.vi was NOT built (fatal gate before the donor copy)",
+"Cleanup: LabVIEW killed without saving, verified gone (H7 PASS); scratch_getimage_135659.vi deleted (H4 PASS); ref_counts opened 2 / closed 2 / live 0 (log:23)",
+"Source md5 after: 2f048e3a / c2d9c13c / 15c664e3 = pins; no source VI opened, copied or run; no shots taken",
+"Offline: gscript.op() refuses a new op without a PASS tools/bench/op_hygiene/<op>.json (tools/gscript.py:262,305-311); dir outside write globs, so get_image is refused after a build",
+"Jev ladder: no JEV-LADDER row for build_op_getimage_v0.log in tools/bench/jev_gate.log (only JEV-PREFLIGHT :7773). Row: build_op_getimage_v0.log | - | none | returned | FAIL M1",
+"STATUS.md lock acquired 13:56, released after; STATUS is ~176 lines > 110 but archive/ narrative relocation is outside the write globs"
+],
+"open":[
+"Retry with method discovery by name: read Invoke.All Supported Methods (637040D) on a GObject Invoke (or a wider ID sweep / another class, e.g. Diagram or Node), instead of 632A401..40F?",
+"Allow the op-hygiene record tools/bench/op_hygiene/OpGetImage_v0.json in the next card (gscript.op gate), or call the op through a sanctioned path?"
+],
+"cost":{"usd":null,"minutes":8,"labview_runs":1},
+"note":"Rules: docs/rules on master 7302f625. The STOP line at the top of STATUS (user needs LabVIEW, 13:19) was taken as lifted for this card by the user's quote in the brief (지금 랩뷰 프리함 사용하도록). Lean runner untouched. Nothing committed."}

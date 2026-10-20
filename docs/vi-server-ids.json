@@ -108,6 +108,24 @@
   "source": "https://labviewwiki.org/wiki/VI_class/Get_Errors_method ; https://forums.ni.com/t5/LabVIEW/Error-list-in-VI-scripting/td-p/2263216",
   "status_2026-09-09": "TRIED: build_invoke('VI Server:VI','452') creates an Invoke with only reference/error terminals (method not resolved), VI broken, with AND without SuperPrivateScriptingFeatureVisible/SuperSecretPrivateSpecialStuff/SuperPrivateSpecialStuff=True in LabVIEW.ini (tools/recipes/build_opgeterrors.py). Backlog: copy the node from a donor VI or find the right ID."
  },
+ "Node.Get Image (VERIFIED 2026-10-16, card chat-PI1d)": {
+  "class": "VI Server:Node",
+  "method": "6358C01",
+  "inputs": "Image Depth (I32: 1/4/8/24, default 8), BG Color (U32; the wiki's 'Background Color', LabVIEW shows the short name)",
+  "outputs": "Image Data (Graphics-Formats image cluster, wires into Write PNG File.vi 'image data')",
+  "terminals_read": "build_invoke('VI Server:Node','6358C01') -> reference, reference out, error in (no error), error out, Get Image (pair), Image Depth (pair), BG Color (pair), Image Data (pair) (tools/bench/build_op_getimage_v0d.log [1]); the same ID on VI Server:GObject resolves to a bare 'Method' terminal (not this method)",
+  "use": "claudeDev/OpGetImage_v0.vi (md5 b7c5667b): Traverse(Class Name,index) -> TMSC(Node seed) -> Get Image -> Write PNG File.vi, + Position/Bounds + UID echo; op hygiene PASS 2000/0 (tools/bench/op_hygiene/OpGetImage_v0.json)",
+  "source": "https://labviewwiki.org/wiki/Node_class/Get_Image_method ; tools/bench/build_op_getimage_v0d.log"
+ },
+ "VI.Block Diagram: Get Image Scaled (VERIFIED 2026-10-19, card chat-PI2b)": {
+  "class": "VI Server:VI",
+  "method": "42C",
+  "inputs": "img depth (I32; the wiki's 'Image Depth'), max width / max height (I32; the wiki's 'Maximum Width' / 'Maximum Height'; left UNWIRED = the actual diagram size). LabVIEW shows the SHORT names",
+  "outputs": "img data (the wiki's 'Image Data'; Graphics-Formats image cluster, wires into Write PNG File.vi 'image data')",
+  "terminals_read": "build_invoke('VI Server:VI','42C') -> reference, reference out, error in (no error), error out, GetDiagramImageScaled (pair), img depth (pair), img data (pair), max width (pair), max height (pair) (tools/bench/build_op_getbdimage_v0.log:8, tools/bench/build_op_getbdimage_v0b.log M1)",
+  "use": "claudeDev/OpGetBDImage_v0.vi (md5 70fbd7e5): Open VI Reference (donor OpReport_v3) -> Get Image Scaled (img depth control 'Image Depth') -> Write PNG File.vi; whole diagram, no window needed; op hygiene PASS 2000/0 (tools/bench/op_hygiene/OpGetBDImage_v0.json); F1 857x321 RGB not blank",
+  "source": "https://labviewwiki.org/wiki/VI_class/Block_Diagram.Get_Image_Scaled_method ; tools/bench/build_op_getbdimage_v0b.log ; archive/peer/2026-10-19-hypothesis-op-getbdimage.md"
+ },
  "Wire.Is Broken? (UNVERIFIED)": {
   "class": "VI Server:Wire",
   "property": "6371004",

@@ -1,0 +1,92 @@
+BGRUN START 2026-10-16 14:24:50 limit 60.0 min: py -u tools/recipes/build_op_getimage_v0.py
+BGRUN PID 9920
+
+---------- [0] restart LabVIEW
+  FACT  handles after restart 34008
+
+---------- [1] Node.Get Image 6358C01 on a scratch copy of EMPTY_v0
+  FACT  Node 6358C01 -> Invoke #43 terminals [(0, 'reference', 'IN'), (1, 'reference out', 'OUT'), (2, 'error in (no error)', 'IN'), (3, 'error out', 'OUT'), (4, 'Get Image', 'IN'), (5, 'Get Image', 'OUT'), (6, 'Image Depth', 'IN'), (7, 'Image Depth', 'OUT'), (8, 'BG Color', 'IN'), (9, 'BG Color', 'OUT'), (10, 'Image Data', 'IN'), (11, 'Image Data', 'OUT')]
+  PASS  M1 Node-class Invoke 6358C01 has terminals Image Depth/BG Color/Image Data  ['Get Image', 'Get Image', 'Image Depth', 'Image Depth', 'BG Color', 'BG Color', 'Image Data', 'Image Data']
+  FACT  GObject 6358C01 -> Invoke #44 terminals [(0, 'reference', 'IN'), (1, 'reference out', 'OUT'), (2, 'error in (no error)', 'IN'), (3, 'error out', 'OUT'), (4, 'Method', 'IN'), (5, 'Method', 'OUT')]
+  PASS  M1b GObject-class Invoke 6358C01 has no Image Depth terminal  ['Method', 'Method']
+  FACT  Node PN 632A800+632A803 terminals [(0, 'reference', 'IN'), (1, 'reference out', 'OUT'), (2, 'error in (no error)', 'IN'), (3, 'error out', 'OUT'), (4, 'Position', 'OUT'), (5, 'Bounds', 'OUT')]
+  PASS  M2 Node property outputs named Position and Bounds  ['Position', 'Bounds']
+
+---------- [2] donor copy OpSetIndexMode_v0 -> OpGetImage_v0
+  FACT  handles after restart 34010
+  PASS  B1 donor copy ExecState 1  
+net_map: node 0 uid 43 (0 s)
+net_map: node 1 uid 124 (1 s)
+net_map: node 2 uid 308 (3 s)
+net_map: node 3 uid 683 (4 s)
+net_map: node 4 uid 316 (4 s)
+net_map: node 5 uid 220 (6 s)
+net_map: node 6 uid 334 (6 s)
+net_map: purged 20/65 junk Invokes (2 s)
+net_map: purged 40/65 junk Invokes (3 s)
+net_map: purged 60/65 junk Invokes (4 s)
+net_map: 6 nodes walked in 7.4 s; 65 junk Invoke(s) purged in 4.4 s
+  GATE PASS  OpGetImage_v0 X donor IndexMode PN #220 deleted, ES 1  
+net_map: node 0 uid 43 (0 s)
+net_map: node 1 uid 124 (1 s)
+net_map: node 2 uid 308 (4 s)
+net_map: node 3 uid 683 (4 s)
+net_map: node 4 uid 316 (4 s)
+net_map: node 5 uid 118 (4 s)
+net_map: purged 20/57 junk Invokes (0 s)
+net_map: purged 40/57 junk Invokes (1 s)
+net_map: 5 nodes walked in 4.5 s; 57 junk Invoke(s) purged in 1.2 s
+  GATE PASS  OpGetImage_v0 S VI Server:Node seed 'reference' -> TMSC #683 -> PN #118: ES 1  
+  PASS  R1/R2 IndexMode PN deleted + Node seed -> TMSC -> Position/Bounds PN, ES 1 (C100.retarget)  (683, 118)
+
+---------- [3] Invoke Node.Get Image 6358C01 on the TMSC output
+  FACT  Get Image #119 terminals [(0, 'reference', False, 376), (1, 'reference out', True, 0), (2, 'error in (no error)', False, 0), (3, 'error out', True, 0), (4, 'Get Image', False, 0), (5, 'Get Image', True, 0), (6, 'Image Depth', False, 0), (7, 'Image Depth', True, 0), (8, 'BG Color', False, 0), (9, 'BG Color', True, 0), (10, 'Image Data', False, 0), (11, 'Image Data', True, 0)]
+  PASS  B3 Get Image.reference reads the TMSC output, ES 1  (376, 376, 1)
+
+---------- [4] Write PNG File.vi
+  PASS  B4a exactly one new SubVI (Write PNG File.vi)  [120]
+  FACT  Write PNG #120 terminals [(0, 'error out', True), (1, '', False), (2, '', False), (3, 'path', True), (4, '', False), (5, 'compression (default)', False), (6, '', False), (7, '', False), (8, 'error in (no error)', False), (9, '', False), (10, 'image data', False), (11, 'path to PNG file', False)]
+  PASS  B4b Write PNG has image / path / error-in sinks  ('image data', 'path to PNG file', 'error in (no error)')
+  PASS  B4c Image Data and error wires land on Write PNG  {'': 0, 'compression (default)': 0, 'error in (no error)': 546, 'image data': 543, 'path to PNG file': 0}
+
+---------- [5] Position/Bounds indicators + UID echo
+  PASS  B5 every control/indicator created  {'controls': {'Image Depth': 'Image Depth', 'BG Color': 'Background Color', 'png_path': 'path to PNG file'}, 'indicators': {'png_err': 'error out 2', 'Position': 'Position', 'Bounds': 'Bounds', 'pn_err': 'error out 3', 'UID': 'UID', 'echo_err': 'error out 4'}}
+  PASS  B6 ExecState 1 before the save  1
+  FACT  labels -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\pi_shots_20261016\opgetimage_v0_labels.json {'controls': {'Image Depth': 'Image Depth', 'BG Color': 'Background Color', 'png_path': 'path to PNG file'}, 'indicators': {'png_err': 'error out 2', 'Position': 'Position', 'Bounds': 'Bounds', 'pn_err': 'error out 3', 'UID': 'UID', 'echo_err': 'error out 4'}, 'all_controls': ['vi path', 'Class Name', 'index', 'vi path 2', 'location (0, 0)', 'Properties', 'Class Name 2', 'index 2', 'reference', 'Image Depth', 'Background Color', 'path to PNG file'], 'op': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpGetImage_v0.vi', 'md5': 'b7c5667bf86ed58b4751d8c10a45da48', 'method': {'class': 'VI Server:Node', 'id': '6358C01', 'terminals': [(0, 'reference', 'IN'), (1, 'reference out', 'OUT'), (2, 'error in (no error)', 'IN'), (3, 'error out', 'OUT'), (4, 'Get Image', 'IN'), (5, 'Get Image', 'OUT'), (6, 'Image Depth', 'IN'), (7, 'Image Depth', 'OUT'), (8, 'BG Color', 'IN'), (9, 'BG Color', 'OUT'), (10, 'Image Data', 'IN'), (11, 'Image Data', 'OUT')]}, 'donor': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpSetIndexMode_v0.vi', 'tmsc': 683, 'pn': 118, 'get_image': 119, 'write_png': 120, 'echo_pn': 121, 'seed_class': 'VI Server:Node'}
+
+---------- [6] cold re-read
+  FACT  handles after restart 34004
+  PASS  B7 ExecState 1 COLD in a fresh LabVIEW  1
+
+---------- [7] op hygiene (gscript.hygiene_run, 2,000 calls)
+  FACT  F1 Traverse('Node')[0] uid 220 -> {'index': 0, 'echo': 220, 'position': (728, 244), 'bounds': (86, 35), 'err_png': '', 'err_pn': '', 'err_echo': '', 'rect': (728, 244, 814, 279)}; PNG size (86, 35)
+  PASS  F1 echo == uid, no errors, PNG written and readable  {'index': 0, 'echo': 220, 'position': (728, 244), 'bounds': (86, 35), 'err_png': '', 'err_pn': '', 'err_echo': '', 'rect': (728, 244, 814, 279)}
+  FACT  HYG OpGetImage_v0 round 0: 100 calls, errors 0, check [], h_pre 35219 h_post 35218 h_closed 35202, gdi 368 user 85, live 0, t 11s
+  FACT  HYG OpGetImage_v0 round 1: 100 calls, errors 0, check [], h_pre 35217 h_post 35215 h_closed 35199, gdi 370 user 85, live 0, t 20s
+  FACT  HYG OpGetImage_v0 round 2: 100 calls, errors 0, check [], h_pre 35214 h_post 35215 h_closed 35200, gdi 370 user 85, live 0, t 24s
+  FACT  HYG OpGetImage_v0 round 3: 100 calls, errors 0, check [], h_pre 35215 h_post 35211 h_closed 35196, gdi 370 user 85, live 0, t 27s
+  FACT  HYG OpGetImage_v0 round 4: 100 calls, errors 0, check [], h_pre 35211 h_post 35212 h_closed 35196, gdi 370 user 85, live 0, t 29s
+  FACT  HYG OpGetImage_v0 round 5: 100 calls, errors 0, check [], h_pre 35211 h_post 35212 h_closed 35196, gdi 370 user 85, live 0, t 32s
+  FACT  HYG OpGetImage_v0 round 6: 100 calls, errors 0, check [], h_pre 35212 h_post 35212 h_closed 35197, gdi 370 user 85, live 0, t 34s
+  FACT  HYG OpGetImage_v0 round 7: 100 calls, errors 0, check [], h_pre 35212 h_post 35211 h_closed 35196, gdi 370 user 85, live 0, t 36s
+  FACT  HYG OpGetImage_v0 round 8: 100 calls, errors 0, check [], h_pre 35211 h_post 35212 h_closed 35197, gdi 370 user 85, live 0, t 39s
+  FACT  HYG OpGetImage_v0 round 9: 100 calls, errors 0, check [], h_pre 35211 h_post 35211 h_closed 35196, gdi 370 user 85, live 0, t 41s
+  FACT  HYG OpGetImage_v0 round 10: 100 calls, errors 0, check [], h_pre 35211 h_post 35211 h_closed 35196, gdi 370 user 85, live 0, t 43s
+  FACT  HYG OpGetImage_v0 round 11: 100 calls, errors 0, check [], h_pre 35212 h_post 35211 h_closed 35196, gdi 370 user 85, live 0, t 46s
+  FACT  HYG OpGetImage_v0 round 12: 100 calls, errors 0, check [], h_pre 35211 h_post 35212 h_closed 35197, gdi 370 user 85, live 0, t 48s
+  FACT  HYG OpGetImage_v0 round 13: 100 calls, errors 0, check [], h_pre 35212 h_post 35211 h_closed 35196, gdi 370 user 85, live 0, t 50s
+  FACT  HYG OpGetImage_v0 round 14: 100 calls, errors 0, check [], h_pre 35211 h_post 35211 h_closed 35196, gdi 370 user 85, live 0, t 53s
+  FACT  HYG OpGetImage_v0 round 15: 100 calls, errors 0, check [], h_pre 35211 h_post 35212 h_closed 35196, gdi 370 user 85, live 0, t 55s
+  FACT  HYG OpGetImage_v0 round 16: 100 calls, errors 0, check [], h_pre 35214 h_post 35217 h_closed 35203, gdi 370 user 85, live 0, t 58s
+  FACT  HYG OpGetImage_v0 round 17: 100 calls, errors 0, check [], h_pre 35218 h_post 35207 h_closed 35192, gdi 370 user 85, live 0, t 60s
+  FACT  HYG OpGetImage_v0 round 18: 100 calls, errors 0, check [], h_pre 35208 h_post 35207 h_closed 35192, gdi 370 user 85, live 0, t 62s
+  FACT  HYG OpGetImage_v0 round 19: 100 calls, errors 0, check [], h_pre 35207 h_post 35207 h_closed 35192, gdi 370 user 85, live 0, t 65s
+  FACT  hygiene record {'status': 'PASS', 'calls': 2000, 'errors': 0, 'error_samples': [], 'max_dev_closed': 10, 'refs_live_delta': 0}
+  PASS  H1 op-hygiene record PASS  PASS
+  PASS  H2 hygiene PNGs deleted after the record (G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\pi_shots_20261016\hygiene_tmp)  
+  FACT  ref_counts {'opened': 57, 'closed': 57, 'live': 0, 'cached_op_vis': 2}
+  PASS  H7 LabVIEW gone at exit (killed, nothing saved)  
+  PASS  H4 scratch deleted: scratch_getimage_142451.vi (+ hygiene copies)  
+=== GATES: 17 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":17,"fail":0},"first_fail":null,"artefacts":[{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpGetImage_v0.vi","md5":"b7c5667bf86ed58b4751d8c10a45da48"},{"path":"G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\pi_shots_20261016\\opgetimage_v0_labels.json","md5":"cd549317010736f0222952ac28035b1b"},{"path":"G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\op_hygiene\\OpGetImage_v0.json","md5":"634593838e81d997cbff82c56e5e0b66"},{"path":"G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\pi_shots_20261016\\build_op_getimage_v0d.json","md5":"24490883b8a9eacede4eac6509973ed5"}],"card":"chat-PI1d","labview":"build"}
+BGRUN END rc=0 after 276s

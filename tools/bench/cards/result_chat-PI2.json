@@ -1,0 +1,20 @@
+{"schema":"result/1","id":"chat-PI2","status":"FAIL","gates":{"pass":2,"fail":1},
+"first_fail":"M1 VI-class Invoke 42C has Image Depth / *Width* / *Height* / Image Data: got short names img depth / img data / max width / max height (tools/bench/build_op_getbdimage_v0.log:9)",
+"blocked_by":{"device":"guard_peer","message":"after the M1 FAIL, guard_peer refuses further commands until a hypothesis review names build_op_getbdimage_v0.log; the card's flags.peers is [priorart] only"},
+"artefacts":[{"path":"tools/recipes/build_op_getbdimage_v0.py","md5":"5be768fd28128477ff914094869bd91e"},{"path":"tools/bench/pi_shots_ops.py","md5":"52fb62a4718a296677808bbedb9c8b53"},{"path":"tools/bench/pi_shots_lib.py","md5":"cdaee41a171a791f369ad4858abbd97a"},{"path":"tools/bench/build_op_getbdimage_v0.log","md5":"61bacb1b3a24a045980f79d4c463461e"},{"path":"tools/bench/pi_shots_20261016/build_op_getbdimage_v0.json","md5":"b387a77274da5f1c60dc4cae4ba106b2"},{"path":"archive/peer/2026-10-19-priorart-op-getbdimage.md","md5":"66a63f884d4e4cd12c3cfdd2bc70de30"}],
+"facts":[
+"Prior-art: verdict novel; no 42C record anywhere; alternative donor OpMakeDefault_v0 offered, not applied (archive/peer/2026-10-19-priorart-op-getbdimage.md, VERDICT line)",
+"M1: build_invoke('VI Server:VI','42C') on EMPTY_v0 scratch -> Invoke #43, terminals GetDiagramImageScaled, img depth, img data, max width, max height, IN/OUT pairs (build_op_getbdimage_v0.log:8)",
+"These are LabVIEW short names for the wiki's Image Depth / Image Data / Maximum Width / Maximum Height (same as BG Color for Node.Get Image, chat-PI1c). My gate wanted the long names, case-sensitive",
+"The run stopped at M1 (fatal): OpGetBDImage_v0.vi NOT built, no hygiene record, no op_<name>.png, no ops.json; vi-server-ids.json not edited (build_op_getbdimage_v0.log:10-15)",
+"LabVIEW killed (nothing saved) and gone; scratch_getbdimage_103757.vi deleted; ref_counts opened 2 / closed 2 / live 0; handles 34001 after restart (log:5,12-14)",
+"Op VIs never opened: no shots run, so their md5s are untouched (pi_shots_ops.py never launched)",
+"Jev ladder: build_op_getbdimage_v0.log | new-problem p=0.656 | hypothesis review owed (old path) | returned (card has no hypothesis peer) | FAIL 2/1",
+"Built ready for a rerun: pi_shots_lib.get_bd_image + png_stats (self-test 5/0, pi_shots_lib_selftest.log), tools/bench/pi_shots_ops.py (7 Op copies, retry once in fresh LabVIEW)",
+"Rerun patch: M1 gate and B3/B4 terminal names -> 'img depth' (control) and 'img data' (to Write PNG) at build_op_getbdimage_v0.py:71-72,100,112; log names v0b. Not applied (recipe left as run)"
+],
+"open":[
+"Accept LabVIEW's short names (img depth / img data / max width / max height) for 42C, as with BG Color, and re-dispatch with the M1/B-gate patch plus a hypothesis peer in flags.peers (or a guard_peer release)?"
+],
+"cost":{"usd":null,"minutes":13,"labview_runs":1},
+"note":"Brief said RETURN only if names differ beyond short names; the guard_peer block forced the return before that could be applied. STATUS lock released + one history line; STATUS ~188 lines (>110), archive move outside write globs. Nothing committed; no hardware; only op VIs run."}

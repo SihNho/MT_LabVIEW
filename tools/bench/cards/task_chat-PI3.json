@@ -1,0 +1,98 @@
+{
+ "schema": "task/1",
+ "id": "chat-PI3",
+ "kind": "measure",
+ "goal": "Per brief_chat-PI3.md: run tools/bench/pi_shots_loops.py - whole While-loop PNGs of P6L in a fresh LabVIEW, with per-shot handle readings.",
+ "why": "chat-PI2b made the seven Op PNGs (kept after review 2026-10-19-pi-shots-ops-handles); the P6L loop shots were not run.",
+ "inputs": [
+  {
+   "path": "tools/bench/cards/brief_chat-PI3.md",
+   "md5": "9dcf7ee7077d9891ca0c2eeb7e97521f"
+  },
+  {
+   "path": "tools/bench/cards/result_chat-PI2b.json",
+   "md5": "92420f05a4bc026298f19d657c65a91f"
+  },
+  {
+   "path": "tools/bench/cards/result_chat-PI1f.json",
+   "md5": "e4a3965077c72d3ab40e0b243db8e45e"
+  },
+  {
+   "path": "archive/peer/2026-10-19-pi-shots-ops-handles.md",
+   "md5": "eb8ebad33d1cf317dc342270044b8bb4"
+  },
+  {
+   "path": "tools/bench/pi_shots_loops.py",
+   "md5": "41f9b140946b1ba966a182dadd0cfaad"
+  },
+  {
+   "path": "tools/bench/pi_shots_lib.py",
+   "md5": "cdaee41a171a791f369ad4858abbd97a"
+  },
+  {
+   "path": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/OpGetImage_v0.vi",
+   "md5": "b7c5667bf86ed58b4751d8c10a45da48"
+  },
+  {
+   "path": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/bench/lean/D1_ring_fxdP6L_20261016_115105.vi",
+   "md5": "54f7cd2f27175b3aa993a2e7630cff40"
+  }
+ ],
+ "pass": [
+  "Handles logged after load and after every shot; #637 shot 3x first: flat after shot 1 (else STOP, leak)",
+  "raw_W_P6L_<uid>.png for #637 #10170 #23041 #23032 #25380 (+#1175 or its largest inner structure), not blank, size == Bounds",
+  "loops_p6l.json: uid, role, Bounds, file, blank flag, handles before/after",
+  "P6L md5 unchanged; copy closed unsaved; refs closed; LabVIEW gone; labview-lock cleared"
+ ],
+ "outputs": [
+  "tools/bench/pi_shots_20261016/",
+  "tools/bench/cards/result_chat-PI3.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/shots_20261016/**",
+   "tools/bench/pi_shots_20261016/**",
+   "tools/bench/pi_shots*.py",
+   "tools/bench/pi_shots*.log",
+   "tools/bench/cards/result_chat-PI3.json",
+   "tools/bench/jev_*",
+   "STATUS.md"
+  ],
+  "status_edit": true,
+  "git_commit": false,
+  "peers": [
+   "hypothesis"
+  ]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "unblocks": "M3",
+ "requires": [
+  {
+   "kind": "file",
+   "name": "tools/gscript.py"
+  },
+  {
+   "kind": "file",
+   "name": "tools/kb_com.py"
+  },
+  {
+   "kind": "file",
+   "name": "tools/prior_art_review.py"
+  }
+ ],
+ "rules": [
+  "No hardware (camera, motors, ASI, VISA) and never Run a VI; the lean runner stays stopped",
+  "Open the P6L byte copy only, alone in a fresh LabVIEW; Don't Save on every prompt; md5 before/after",
+  "LabVIEW commands with timeout <= 30 s or through tools/bgrun.py --material; one LabVIEW client; close every reference",
+  "Handle counts are logged and judged per shot (flat vs steady rise), not against a fixed +1000 threshold",
+  "No GUI automation; if scripting cannot get an image after the retries, RETURN with the facts"
+ ],
+ "retry_of_card": "chat-PI2b"
+}

@@ -1,0 +1,20 @@
+{"schema":"result/1","id":"chat-PI1","status":"BLOCKED","gates":{"pass":0,"fail":0},
+"first_fail":null,
+"blocked_by":{"device":"guard_cycle","message":"premature-build: tools/recipes/build_op_getimage_v0.py has no prior-art review newer than itself (newest archive/peer/2026-10-13-priorart-c170-paced60.md); remedy = prior_art_review.py dispatch, but card flags.peers is [] - not routed around"},
+"artefacts":[{"path":"tools/recipes/build_op_getimage_v0.py","md5":"7ad4f5e2498466268d9d6732913247ce"},{"path":"tools/bench/pi_shots_lib.py","md5":"ad67c5e11dcddd3af4246e41c99ad45c"}],
+"facts":[
+"No LabVIEW was started; no VI copied, opened or built; OpGetImage_v0.vi does NOT exist; the 3 source md5s read 2f048e3a / c2d9c13c / 15c664e3 (unchanged)",
+"Refusal 1 guard_bash is_vi_modifying: draft imported stagekit + save -> stage needing a plan; logged fp-106; script now uses gscript directly as tools/bench/diag_c100_verbs_build.py:29-30",
+"Refusal 2 guard_cycle premature-build (tools/hooks/guard_cycle.py:604): a new tools/recipes/*.py needs a prior-art review newer than itself; card peers [] forbids dispatching it -> BLOCKED",
+"Recipe ready, not run: donor OpOwnerChain_v1 (as tools/bench/diag_swap_build.py:3-5); method ID found by sweeping 632A401,632A403..40F on a scratch EMPTY_v0 copy, reading terminal names",
+"Get Image method ID is recorded nowhere in the repo: docs/vi-server-ids.json has GObject.Move 632A400 / Replace 632A402 only; GObject.Bounds 632A803 (:20) UNVERIFIED",
+"Shared helpers tools/bench/pi_shots_lib.py (gates + RESULT line, sweep/term, restart/kill, rect/crop_box, get_image wrapper); offline selftest 4/0",
+"Shots script not written: plan = one LabVIEW per source, source preloaded read-only, renamed copy links by name; raw = Get Image of the loop; crops from node Position+Bounds",
+"STATUS.md lock acquired then released (never launched). STATUS.md is 174 lines > 110; archive/ is outside the write globs, so not relocated"
+],
+"open":[
+"Re-issue with flags.peers [\"priorart\"] (prior-art review of tools/recipes/build_op_getimage_v0.py), or allow the op build under tools/bench/pi_shots*.py (guard_cycle does not gate tools/bench, as tools/bench/diag_swap_build.py built OpReplaceGObj_v0)?",
+"Move get_image()/sweep/term from tools/bench/pi_shots_lib.py into gscript.py (outside this card's write globs) once the op exists?"
+],
+"cost":{"usd":null,"minutes":13,"labview_runs":0},
+"note":"Rules version: docs/rules as checked out on master 7302f625. Lean runner untouched (STOP file present). Nothing committed."}

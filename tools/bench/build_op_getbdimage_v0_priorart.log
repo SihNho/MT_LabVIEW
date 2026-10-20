@@ -1,0 +1,40 @@
+BGRUN START 2026-10-19 10:34:55 limit 20.0 min: py -u tools/prior_art_review.py --plan-file tools/bench/cards/review_priorart-op-getbdimage_plan.md --slug op-getbdimage --recipe tools/recipes/build_op_getbdimage_v0.py --recipe tools/bench/pi_shots_lib.py --recipe tools/bench/pi_shots_ops.py
+BGRUN PID 20956
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_op-getbdimage.txt (115052 chars)
+   review card tools\bench\cards\review_priorart-op-getbdimage.json
+OUTCOME: ANSWERED (124s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-10-19-priorart-op-getbdimage.md
+COST: $1.6623  in 30 / out 9016 / cache-create 141858 / cache-read 1734883  (122s, 24 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-op-getbdimage verdict=novel -> tools\bench\cards\verdict_priorart-op-getbdimage.json
+--- ANSWER ---
+**Verdict: novel.** Nothing in the project already gives a whole-diagram image. VI method 42C ("Block Diagram: Get Image Scaled") is not recorded anywhere, and no file shows it being refused. No existing helper is copied by hand. No user rule is touched. I took no lock and built, edited and ran nothing.
+
+## PART A: the direction
+- **A1, already decided?** No. The only earlier image decision was for one node per image, and its prior-art review found it novel (`archive/peer/2026-10-16-priorart-op-getimage-v3.md`, card chat-PI1d). That op is recorded at `docs/vi-server-ids.json:111-117` ("Node.Get Image … images ONE node"). The ID list holds no `42C`; the only VI method IDs there are 49D, 410 and 452 (`docs/vi-server-ids.json:42-43,105`).
+- **A2, already tried and abandoned?** No. The record of the last failure, chat-PI1f, says the cause was the P6L copy, not the image route: "P6L Get Image fails … while P6-1 in the same LabVIEW session works" (`tools/bench/cards/result_chat-PI1f.json:18`). The plan's step "retry once in a fresh LabVIEW" follows that note.
+- **A3, contradicted?** No conflict found. The plan's citation `diag_bdloaded_reader.log:13` matches the file: "connect2 -> wire delta 0, ExecState 0". The plan's claim that OpReport_v3 has no Close Reference matches `docs/toolkit-capabilities.md:527`.
+- **A4, evidence it missed?** The hypothesis review of 2026-10-16 should have been read. It warns that two things are unknown: whether an image renders when the VI was opened through ActiveX with no diagram window, and whether a structure's image includes its contents. It says to treat both as measurements, not predictions (`archive/peer/2026-10-16-hypothesis-op-getimage.md:77-78`). The plan's F1 check (PNG not blank) already covers the first one, so this does not block.
+
+## PART B: the artifact
+- **B1, already built?** No. claudeDev holds no `OpGetBDImage*.vi`. The `get_bd_image` row at `docs/toolkit-capabilities.md:4130` is this card's own new wrapper.
+- **B2, this exact build already failed?** No. The plan reuses the same `Write PNG File.vi` tail that gave "error 1" in chat-PI1f. That error came on a 3594×32756-pixel image (`result_chat-PI1f.json:9-10`). The Op VIs are small diagrams, so this does not block, but it is worth recording the PNG size in `ops.json`.
+- **B3, hand-rolling an existing helper?** No. The recipe imports the shared builder (`diag_c100_verbs_build.B`) and uses `gscript.hygiene_run`, `subvis` and `report_all` (`tools/gscript.py:366,731,768`). `png_stats` is new: the chat-PI1f blank check was done by hand with PIL and was never made a function (no `getextrema` anywhere else in `tools/bench/*.py`). Putting it in `pi_shots_lib` removes that one-off rather than copying it.
+- **B4, already measured?** No. No log records the whole-diagram size of any Op VI.
+
+**On your donor question (for information, does not block):** two existing ops already use the plain shape `Open VI Reference → VI-class Invoke` with one wire and no branch:
+- OpMakeDefault_v0 (method 3F3), built by stripping OpWire_v1 to the Open VI Reference alone and then calling `build_invoke("VI Server:VI", ...)` with a plain `g.wire` (`tools/recipes/build_opmakedefault.py:6-7,40-63`, `docs/NAMES.md:588-589`).
+- OpFPLabels_v0, built the same way.
+
+That pattern would avoid the extra branch. With the OpReport_v3 donor, every call also runs the donor's Traverse. Both routes are proven: the plan's branch route is also cited as accepted (`build_keystone.log:1738-1740`). Which donor to use is a design choice for the other reviews.
+
+## PART C: the user's rules
+No contradiction. There is no hardware, no frame path, no queue, and no change to any per-bead number. Only small claudeDev Op VIs are opened, as byte copies.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-op-getbdimage","verdict":"novel","alternative":"Donor alternative (non-blocking): the strip-to-Open-VI-Reference + plain g.wire VI-class Invoke pattern of OpMakeDefault_v0/OpFPLabels_v0 (build_opmakedefault.py:6-7,40-63) avoids the branch and the donor's per-call Traverse.","discriminating_test":"F1 on a fresh byte copy: Get Image Scaled with unwired Max W/H returns error 0 and a non-blank RGB PNG; record its pixel size (Write PNG error 1 in chat-PI1f came on a 3594x32756 image).","violations":[],"sources":["docs/vi-server-ids.json:111-117","docs/vi-server-ids.json:42-43","tools/bench/cards/result_chat-PI1f.json:9-10","tools/bench/cards/result_chat-PI1f.json:18","archive/peer/2026-10-16-hypothesis-op-getimage.md:77-78","tools/recipes/build_opmakedefault.py:6-7","tools/bench/diag_bdloaded_reader.log:13","docs/toolkit-capabilities.md:527"],"note":"No 42C / Get Image Scaled record or refusal anywhere; no OpGetBDImage*.vi in claudeDev; png_stats replaces the one-off PIL check of chat-PI1f."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-op-getbdimage.md
+   STOP RECORD: none - 2026-10-19-priorart-op-getbdimage.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/build_op_getbdimage_v0.py sha 1990f5f1feb3 -> these bytes are released by this review; editing them again re-arms the gate
+   NOVEL RECORD written: tools/bench/pi_shots_lib.py sha dc689415f4e9 -> these bytes are released by this review; editing them again re-arms the gate
+   NOVEL RECORD written: tools/bench/pi_shots_ops.py sha ed146e6ac5be -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 127s

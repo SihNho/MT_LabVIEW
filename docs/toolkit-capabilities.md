@@ -867,7 +867,7 @@ so out loud — as a gate, with a cheap test scheduled before the work that depe
 
 ## Scripting functions - generated from code (card chat-F2)
 
-Outcome of every call: `ok | no_output | failed | timed_out` (tools/fncontract.py). Contract column = the declared postconditions `[measure, on_fail]` or `none - <reason>`. Record = tools/bench/fn_records/ (fresh-pass only while the function's source md5 equals the record's). 152 rows; records: fresh-fail 3, fresh-pass 54, none 66, planned 24, stale 5.
+Outcome of every call: `ok | no_output | failed | timed_out` (tools/fncontract.py). Contract column = the declared postconditions `[measure, on_fail]` or `none - <reason>`. Record = tools/bench/fn_records/ (fresh-pass only while the function's source md5 equals the record's). 152 rows; records: fresh-fail 3, fresh-pass 53, none 66, planned 24, stale 6.
 
 | function | arguments | outcome contract | record | source |
 |---|---|---|---|---|
@@ -878,16 +878,16 @@ Outcome of every call: `ok | no_output | failed | timed_out` (tools/fncontract.p
 | `gscript.build_invoke` | target, cls, method_id, location, diagram_index=0 | none - not on a stagekit/stagexec/P4 path; a postcondition is declared before a plan uses it (fn_records lists it as unrecorded) | none | tools/gscript.py:2692 |
 | `gscript.build_kernel` | target, loop_at=(4000, 300), parallel=4, tunnel='Array of cal clusters', bead_vi='Track 1 of N bds xyz-kernel-reentra... | none - not on a stagekit/stagexec/P4 path; a postcondition is declared before a plan uses it (fn_records lists it as unrecorded) | none | tools/gscript.py:2615 |
 | `gscript.build_property` | target, cls, props, location, diagram_index=0 | none - not on a stagekit/stagexec/P4 path; a postcondition is declared before a plan uses it (fn_records lists it as unrecorded) | none | tools/gscript.py:2727 |
-| `gscript.case_frame_wire` | target, case_uid, frame_index, src, dst | new_wire == 1 [result, raise] | planned | tools/gscript.py:5187 |
+| `gscript.case_frame_wire` | target, case_uid, frame_index, src, dst | new_wire == 1 [result, raise] | planned | tools/gscript.py:5189 |
 | `gscript.case_frames` | target, case_uid | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | none | tools/gscript.py:3666 |
 | `gscript.case_in` | target, diagram_uid, location, selector_label, frame_names=('0, Default', '1'), position=None | new_objects == 1 [existing-raise, existing] | planned | tools/gscript.py:3695 |
-| `gscript.case_inner_face` | target, tunnel_uid, frame_index | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | none | tools/gscript.py:5166 |
-| `gscript.case_wired` | target, diagram_uid, src_node_uid, src_term, pos=(40, 40), donor=None | new_objects == 1, selector_wired == 1 [existing-raise, existing] | planned | tools/gscript.py:5078 |
+| `gscript.case_inner_face` | target, tunnel_uid, frame_index | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | none | tools/gscript.py:5168 |
+| `gscript.case_wired` | target, diagram_uid, src_node_uid, src_term, pos=(40, 40), donor=None | new_objects == 1, selector_wired == 1 [existing-raise, existing] | planned | tools/gscript.py:5080 |
 | `gscript.close_panel` | target | none - session / editor state (panel, load, save, revert); no countable diagram effect | fresh-fail | tools/gscript.py:1615 |
 | `gscript.connect2` | target, diagram_index, sink_node, sink_term, src_node, src_term | none - not on a stagekit/stagexec/P4 path; a postcondition is declared before a plan uses it (fn_records lists it as unrecorded) | none | tools/gscript.py:3254 |
 | `gscript.connect_ctl` | target, panel_index, node_index, terminal_index | none - not on a stagekit/stagexec/P4 path; a postcondition is declared before a plan uses it (fn_records lists it as unrecorded) | none | tools/gscript.py:1312 |
 | `gscript.connect_ctl_ind` | target, sink_panel_index, src_panel_index | none - not on a stagekit/stagexec/P4 path; a postcondition is declared before a plan uses it (fn_records lists it as unrecorded) | none | tools/gscript.py:1338 |
-| `gscript.connect_term_uid` | target, sink_uid, src_uid | new_wire == 1 [result, raise] | fresh-pass | tools/gscript.py:5141 |
+| `gscript.connect_term_uid` | target, sink_uid, src_uid | new_wire == 1 [result, raise] | fresh-pass | tools/gscript.py:5143 |
 | `gscript.connect_terminals` | target, sink_node, sink_term, src_node, src_term | new_wires >= 1 [result, record] | planned | tools/gscript.py:3028 |
 | `gscript.conpane` | target, max_terminals=32 | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | none | tools/gscript.py:3365 |
 | `gscript.conpane_assign` | target, control_label, terminal_index | none - not on a stagekit/stagexec/P4 path; a postcondition is declared before a plan uses it (fn_records lists it as unrecorded) | none | tools/gscript.py:3422 |
@@ -963,7 +963,7 @@ Outcome of every call: `ok | no_output | failed | timed_out` (tools/fncontract.p
 | `gscript.shift_reg` | target, loop_index, reg_index, class_name='WhileLoop' | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | fresh-pass | tools/gscript.py:1036 |
 | `gscript.shift_reg_left` | target, loop_index, reg_index, left_index=0, class_name='WhileLoop' | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | fresh-pass | tools/gscript.py:1069 |
 | `gscript.sr_init_const` | target, loop_uid, face_uid, diagram_uid, donor, pos=(40, 40), loop_cls='WhileLoop' | none - not on a stagekit/stagexec/P4 path; a postcondition is declared before a plan uses it (fn_records lists it as unrecorded) | none | tools/gscript.py:2377 |
-| `gscript.struct_copy_nested` | target, diagram_uid, cls, donor, pos=(40, 40) | new_objects == 1 [existing-raise, existing] | fresh-pass | tools/gscript.py:5016 |
+| `gscript.struct_copy_nested` | target, diagram_uid, cls, donor, pos=(40, 40) | new_objects == 1 [existing-raise, existing] | stale | tools/gscript.py:5016 |
 | `gscript.subvis` | target, diagram_index, purge=False, strict=True, **controls | none - read-only query: returns LabVIEW's own listing; no count is expected without the caller's plan (the caller's census / step diff judges it) | none | tools/gscript.py:768 |
 | `gscript.term_index` | target, diagram_uid, node_uid, name, is_source | matches == 1, node_echo == node_uid [inline, raise] | none | tools/gscript.py:4999 |
 | `gscript.tunnel_indicator` | target, tunnel_index | none - not on a stagekit/stagexec/P4 path; a postcondition is declared before a plan uses it (fn_records lists it as unrecorded) | none | tools/gscript.py:2240 |
@@ -1026,11 +1026,12 @@ Outcome of every call: `ok | no_output | failed | timed_out` (tools/fncontract.p
 
 <!-- GENERATED fn-table END -->
 
+
 <!-- GENERATED fn-list BEGIN (tools/gen_capabilities.py - every public function of every SHARED tools file, by import graph; do not edit by hand) -->
 
 ## Every public function of the shared tools files - generated from code (card chat-T7)
 
-A file is SHARED when at least one OTHER file under tools/ imports it (import graph, measured at generation; cache tools/bench/capabilities_shared.json). Look here before writing any logic (docs/script-writing.md rule 8). 217 files, 2703 functions: 1495 described by a docstring, 304 by docs/fn_descriptions.json (existing functions, card chat-T8), 904 undocumented (per file in the table below). Regenerated at every cycle end and when a shared file is written.
+A file is SHARED when at least one OTHER file under tools/ imports it (import graph, measured at generation; cache tools/bench/capabilities_shared.json). Look here before writing any logic (docs/script-writing.md rule 8). 218 files, 2733 functions: 1514 described by a docstring, 304 by docs/fn_descriptions.json (existing functions, card chat-T8), 915 undocumented (per file in the table below). Regenerated at every cycle end and when a shared file is written.
 
 | file | kind | imported by | functions | side file | undocumented |
 |---|---|---|---|---|---|
@@ -1054,7 +1055,7 @@ A file is SHARED when at least one OTHER file under tools/ imports it (import gr
 | [`tools/gate_fp.py`](#tools-gate-fp-py) | shared module | 8 | 10 | 3 | 0 |
 | [`tools/gateclass.py`](#tools-gateclass-py) | shared module | 13 | 14 | 3 | 0 |
 | [`tools/gen_capabilities.py`](#tools-gen-capabilities-py) | shared module | 7 | 21 | 0 | 0 |
-| [`tools/gscript.py`](#tools-gscript-py) | shared module | 656 | 135 | 9 | 0 |
+| [`tools/gscript.py`](#tools-gscript-py) | shared module | 660 | 135 | 9 | 0 |
 | [`tools/hash_probe.py`](#tools-hash-probe-py) | shared module | 64 | 2 | 2 | 0 |
 | [`tools/invcheck.py`](#tools-invcheck-py) | shared module | 9 | 7 | 0 | 0 |
 | [`tools/jev.py`](#tools-jev-py) | shared module | 33 | 10 | 2 | 0 |
@@ -1072,11 +1073,11 @@ A file is SHARED when at least one OTHER file under tools/ imports it (import gr
 | [`tools/logclass.py`](#tools-logclass-py) | shared module | 17 | 9 | 0 | 0 |
 | [`tools/lv_errorlist.py`](#tools-lv-errorlist-py) | shared module | 5 | 25 | 12 | 0 |
 | [`tools/lvclick.py`](#tools-lvclick-py) | shared module | 4 | 18 | 0 | 10 |
-| [`tools/motor_gate.py`](#tools-motor-gate-py) | shared module | 6 | 21 | 0 | 9 |
+| [`tools/motor_gate.py`](#tools-motor-gate-py) | shared module | 8 | 31 | 0 | 9 |
 | [`tools/outcome_review.py`](#tools-outcome-review-py) | shared module | 3 | 6 | 0 | 3 |
 | [`tools/prior_art_review.py`](#tools-prior-art-review-py) | shared module | 2 | 7 | 0 | 2 |
 | [`tools/priorart_diff.py`](#tools-priorart-diff-py) | shared module | 8 | 8 | 0 | 5 |
-| [`tools/protocol.py`](#tools-protocol-py) | shared module | 704 | 63 | 14 | 0 |
+| [`tools/protocol.py`](#tools-protocol-py) | shared module | 705 | 63 | 14 | 0 |
 | [`tools/retro_due.py`](#tools-retro-due-py) | shared module | 2 | 6 | 0 | 2 |
 | [`tools/retrospective.py`](#tools-retrospective-py) | shared module | 2 | 8 | 0 | 2 |
 | [`tools/rules_coverage.py`](#tools-rules-coverage-py) | shared module | 2 | 11 | 0 | 6 |
@@ -1091,7 +1092,7 @@ A file is SHARED when at least one OTHER file under tools/ imports it (import gr
 | [`tools/vigraph.py`](#tools-vigraph-py) | shared module | 178 | 22 | 4 | 0 |
 | [`tools/violations.py`](#tools-violations-py) | shared module | 2 | 5 | 0 | 2 |
 | [`tools/wiki_build.py`](#tools-wiki-build-py) | shared module | 93 | 11 | 0 | 5 |
-| [`tools/bench/bench_prep.py`](#tools-bench-bench-prep-py) | shared file in the bench folder (move to tools/ later) | 305 | 5 | 0 | 4 |
+| [`tools/bench/bench_prep.py`](#tools-bench-bench-prep-py) | shared file in the bench folder (move to tools/ later) | 306 | 5 | 0 | 4 |
 | [`tools/bench/build_opstopmode_v0.py`](#tools-bench-build-opstopmode-v0-py) | shared file in the bench folder (move to tools/ later) | 2 | 24 | 0 | 23 |
 | [`tools/bench/build_ringpickslot_v2.py`](#tools-bench-build-ringpickslot-v2-py) | shared file in the bench folder (move to tools/ later) | 1 | 13 | 0 | 13 |
 | [`tools/bench/c131_2_reach.py`](#tools-bench-c131-2-reach-py) | shared file in the bench folder (move to tools/ later) | 2 | 1 | 0 | 0 |
@@ -1103,7 +1104,7 @@ A file is SHARED when at least one OTHER file under tools/ imports it (import gr
 | [`tools/bench/camera_contract.py`](#tools-bench-camera-contract-py) | shared file in the bench folder (move to tools/ later) | 1 | 8 | 0 | 5 |
 | [`tools/bench/d0_locate.py`](#tools-bench-d0-locate-py) | shared file in the bench folder (move to tools/ later) | 1 | 11 | 0 | 6 |
 | [`tools/bench/d1_rewire_map.py`](#tools-bench-d1-rewire-map-py) | shared file in the bench folder (move to tools/ later) | 9 | 3 | 0 | 2 |
-| [`tools/bench/diag_c100_verbs_build.py`](#tools-bench-diag-c100-verbs-build-py) | shared file in the bench folder (move to tools/ later) | 4 | 32 | 0 | 27 |
+| [`tools/bench/diag_c100_verbs_build.py`](#tools-bench-diag-c100-verbs-build-py) | shared file in the bench folder (move to tools/ later) | 5 | 32 | 0 | 27 |
 | [`tools/bench/diag_c108c_graph.py`](#tools-bench-diag-c108c-graph-py) | shared file in the bench folder (move to tools/ later) | 7 | 13 | 0 | 9 |
 | [`tools/bench/diag_c115d_sel.py`](#tools-bench-diag-c115d-sel-py) | shared file in the bench folder (move to tools/ later) | 1 | 5 | 0 | 3 |
 | [`tools/bench/diag_c118_p0.py`](#tools-bench-diag-c118-p0-py) | shared file in the bench folder (move to tools/ later) | 2 | 5 | 0 | 5 |
@@ -1158,6 +1159,7 @@ A file is SHARED when at least one OTHER file under tools/ imports it (import gr
 | [`tools/bench/m8_legs.py`](#tools-bench-m8-legs-py) | shared file in the bench folder (move to tools/ later) | 1 | 5 | 0 | 0 |
 | [`tools/bench/m8b_replay_compare.py`](#tools-bench-m8b-replay-compare-py) | shared file in the bench folder (move to tools/ later) | 4 | 22 | 0 | 5 |
 | [`tools/bench/opmodels_lib.py`](#tools-bench-opmodels-lib-py) | shared file in the bench folder (move to tools/ later) | 3 | 6 | 0 | 3 |
+| [`tools/bench/pi_shots_lib.py`](#tools-bench-pi-shots-lib-py) | shared file in the bench folder (move to tools/ later) | 3 | 20 | 0 | 11 |
 | [`tools/bench/prep_c143_3_elrule.py`](#tools-bench-prep-c143-3-elrule-py) | shared file in the bench folder (move to tools/ later) | 11 | 0 | 0 | 0 |
 | [`tools/bench/prep_c156_a1_1_lib.py`](#tools-bench-prep-c156-a1-1-lib-py) | shared file in the bench folder (move to tools/ later) | 72 | 6 | 0 | 1 |
 | [`tools/bench/prep_c156_a1_2_lib.py`](#tools-bench-prep-c156-a1-2-lib-py) | shared file in the bench folder (move to tools/ later) | 7 | 8 | 0 | 0 |
@@ -1180,7 +1182,7 @@ A file is SHARED when at least one OTHER file under tools/ imports it (import gr
 | [`tools/bench/verify_d1_s2.py`](#tools-bench-verify-d1-s2-py) | shared file in the bench folder (move to tools/ later) | 1 | 9 | 0 | 6 |
 | [`tools/recipes/build_d1_m3a1.py`](#tools-recipes-build-d1-m3a1-py) | recipe imported by another file | 25 | 46 | 0 | 23 |
 | [`tools/recipes/build_d1_m3a3b_d3.py`](#tools-recipes-build-d1-m3a3b-d3-py) | recipe imported by another file | 4 | 21 | 0 | 17 |
-| [`tools/recipes/build_d1_v0.py`](#tools-recipes-build-d1-v0-py) | recipe imported by another file | 183 | 24 | 0 | 16 |
+| [`tools/recipes/build_d1_v0.py`](#tools-recipes-build-d1-v0-py) | recipe imported by another file | 185 | 24 | 0 | 16 |
 | [`tools/recipes/build_opcaseframes_v0.py`](#tools-recipes-build-opcaseframes-v0-py) | recipe imported by another file | 1 | 5 | 0 | 4 |
 | [`tools/recipes/build_opconnectfromwire_v0.py`](#tools-recipes-build-opconnectfromwire-v0-py) | recipe imported by another file | 55 | 12 | 0 | 10 |
 | [`tools/recipes/build_opconnectnested_v1.py`](#tools-recipes-build-opconnectnested-v1-py) | recipe imported by another file | 72 | 16 | 0 | 12 |
@@ -1685,7 +1687,7 @@ shared module; imported by 7 file(s): `tools/bench/diag_c158_a2_5_check.py`, `to
 
 ### tools/gscript.py
 
-shared module; imported by 656 file(s): `tools/allterms.py`, `tools/bench/allterms_s1.py`, `tools/bench/allterms_s2.py`, `tools/bench/allterms_s3.py`, `tools/bench/allterms_s4.py`, `tools/bench/allterms_tmscclass.py` ...
+shared module; imported by 660 file(s): `tools/allterms.py`, `tools/bench/allterms_s1.py`, `tools/bench/allterms_s2.py`, `tools/bench/allterms_s3.py`, `tools/bench/allterms_s4.py`, `tools/bench/allterms_tmscclass.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -1820,10 +1822,10 @@ shared module; imported by 656 file(s): `tools/allterms.py`, `tools/bench/allter
 | `wire_remove_loose_ends` | target, wire_uid, index=None | 'Wire.RemoveLooseEnds' (6370C08) on Wire #wire_uid of 'target' through OpWireRemoveLooseEnds_v0. 'index' = the | docstring | - | 4980 |
 | `term_index` | target, diagram_uid, node_uid, name, is_source | Card 123-7 (PD248(b)): (diagram index, node index, terminal index, row) of the ONE terminal named 'name' with direction | docstring | - | 4999 |
 | `struct_copy_nested` | target, diagram_uid, cls, donor, pos=(40, 40) | Copy structure 'donor['uid']' (class 'cls') of the claudeDev file 'donor['donor']' onto Diagram #diagram_uid of 'target' | docstring | - | 5016 |
-| `case_wired` | target, diagram_uid, src_node_uid, src_term, pos=(40, 40), donor=None | Card 123-5 S1: a Case structure on Diagram #diagram_uid whose SELECTOR is wired from output terminal 'src_term' (name) | docstring | - | 5078 |
-| `connect_term_uid` | target, sink_uid, src_uid | OpConnectTermUid_v0: Terminal.Connect Wire on terminal #sink_uid with Wire Source = terminal #src_uid (any owner, any | docstring | - | 5141 |
-| `case_inner_face` | target, tunnel_uid, frame_index | The inner terminal of tunnel #tunnel_uid in frame 'frame_index' of its case (case_frames' Frames[] order; a boolean | docstring | - | 5166 |
-| `case_frame_wire` | target, case_uid, frame_index, src, dst | A wire on frame 'frame_index' of case #case_uid. 'src' / 'dst' = {"tunnel": uid} (that tunnel's inner face in this | docstring | - | 5187 |
+| `case_wired` | target, diagram_uid, src_node_uid, src_term, pos=(40, 40), donor=None | Card 123-5 S1: a Case structure on Diagram #diagram_uid whose SELECTOR is wired from output terminal 'src_term' (name) | docstring | - | 5080 |
+| `connect_term_uid` | target, sink_uid, src_uid | OpConnectTermUid_v0: Terminal.Connect Wire on terminal #sink_uid with Wire Source = terminal #src_uid (any owner, any | docstring | - | 5143 |
+| `case_inner_face` | target, tunnel_uid, frame_index | The inner terminal of tunnel #tunnel_uid in frame 'frame_index' of its case (case_frames' Frames[] order; a boolean | docstring | - | 5168 |
+| `case_frame_wire` | target, case_uid, frame_index, src, dst | A wire on frame 'frame_index' of case #case_uid. 'src' / 'dst' = {"tunnel": uid} (that tunnel's inner face in this | docstring | - | 5189 |
 
 ### tools/hash_probe.py
 
@@ -2102,31 +2104,41 @@ shared module; imported by 4 file(s): `tools/bench/m3v1_verify.py`, `tools/recip
 
 ### tools/motor_gate.py
 
-shared module; imported by 6 file(s): `tools/bench/drive_m8_replay_p6.py`, `tools/bench/m8_legs.py`, `tools/bench/m8b_replay_compare.py`, `tools/bench/selftest_motor_fail_exit.py`, `tools/bench/selftest_motor_gate2.py`, `tools/cycle_runner.py`
+shared module; imported by 8 file(s): `tools/bench/drive_m8_replay_p6.py`, `tools/bench/m8_legs.py`, `tools/bench/m8b_replay_compare.py`, `tools/bench/selftest_motor_fail_exit.py`, `tools/bench/selftest_motor_gate2.py`, `tools/bench/selftest_motor_gate_relative.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
-| `Decision` | (class) | (undocumented) | - | - | 98 |
-| `rig_state` | status_text | 'disassembled' / 'assembled' / 'experiment' / 'unknown'. | docstring | - | 109 |
-| `read_status` | path=None | (undocumented) | - | - | 130 |
-| `load_limits` | path=None | The user-editable limit file. Returns None if missing/unreadable -> everything is refused. | docstring | - | 138 |
-| `session_info` | path=None | (undocumented) | - | - | 156 |
-| `decide_asi` | cmd, args, raw | (undocumented) | - | - | 193 |
-| `decide_pi` | cmd, args, raw | (undocumented) | - | - | 222 |
-| `decide_rotor` | cmd, args, raw | (undocumented) | - | - | 241 |
-| `decide` | device, command, state=None | The whole command-class decision, with no I/O to a port. 'state' is injected so the self-test can run every | docstring | - | 253 |
-| `parse_pi_limits` | text | 'LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0' -> dict, or None.  This is the POST-WRITE readback. | docstring | selftest_motor_gate2.py | 282 |
-| `parse_pi_ref` | text | 'REFSTATE RON=0 FRF=1 POS=0.00000 POS_BEFORE=0.00000 ERR=0' -> dict, or None. | docstring | - | 306 |
-| `parse_asi_limits` | text | 'LIMITS SL X=-3.847494 Y=-4.774393 SU X=0.152497 Y=-0.774402' -> dict, or None. | docstring | - | 322 |
-| `check_pi_readback` | rb, lo, hi, tol=DEFAULT_TOL | (ok, message). rb = parse_pi_limits() output. Every readback field present must match. | docstring | - | 332 |
-| `check_asi_readback` | rb, sl, su, tol=DEFAULT_TOL | (undocumented) | - | - | 345 |
-| `session_start` | limits, pi_call=None, asi_call=None, session_path=None, out=print | Write the file's limits into BOTH controllers and verify by readback. rc 0 = both verified, else 3. | docstring | - | 374 |
-| `session_end` | limits, pi_call=None, asi_call=None, session_path=None, out=print | Release the controller limits (PI lo..release_hi, ASI +-release) and delete the session file. | docstring | - | 429 |
-| `log` | device, command, d, dry | (undocumented) | - | - | 458 |
-| `transmit` | device, command, d, limits | Send ONE decided motion command. The SENDER re-reads the controller limits inside the same port open, | docstring | - | 476 |
-| `main` | argv=None | (undocumented) | - | - | 535 |
-| `fail_line` | rc | One 'FAIL:' line for a non-zero exit (cycle 69, device-failed repair). pi_testmove_20260923e.log:23/34 held a | docstring | - | 616 |
-| `result_line` | rc | C6 (docs/session-protocol.md, user-approved 2026-09-24): the gate's verdict as its LAST line. bgrun's body scan | docstring | - | 625 |
+| `Decision` | (class) | (undocumented) | - | - | 131 |
+| `rig_state` | status_text | 'disassembled' / 'assembled' / 'experiment' / 'unknown'. | docstring | - | 142 |
+| `read_status` | path=None | (undocumented) | - | - | 163 |
+| `load_limits` | path=None | The user-editable limit file. Returns None if missing/unreadable -> everything is refused. | docstring | - | 171 |
+| `rotor_block_ok` | r | The optional "rotor" block of motor_limits.json. Anything malformed -> the whole file is refused. | docstring | - | 205 |
+| `rotor_hex_to_pulses` | h | One 8-hex-digit POS field -> signed pulses (two's complement, 32 bit). 'FFFFFFF6' -> -10. None if malformed: | docstring | - | 216 |
+| `parse_rotor_pos_reply` | text | 'POS hhhhhhhh,hhhhhhhh' (2-axis PMC-2HS) or 'POS hhhhhhhh' -> X pulses (signed), or None. | docstring | - | 225 |
+| `parse_rotor_fresh` | text | The sender's 'FRESH RAW=<reply> POS=<int>' line -> pulses, ONLY if the gate's own parse of the raw reply | docstring | - | 231 |
+| `rotor_window_from_pos` | limits, pos | (undocumented) | - | - | 242 |
+| `rotor_target_check` | window, kind, value, fresh_pos=None | (ok, target_pulses, message). kind 'abs' (PAB value) or 'rel' (PIC value, needs fresh_pos). | docstring | - | 248 |
+| `parse_asi_fresh` | text | 'FRESH X=<units> Y=<units>' (motor_asi_io.ps1 -Mode read) -> (x_units, y_units) or None. | docstring | - | 272 |
+| `relative_window` | limits, x_units, y_units | User 2026-10-15 ("그냥 실행 당시 위치를 기준으로 하자"): the ASI window is the stage position at session start | docstring | - | 278 |
+| `asi_window` | limits, sess=None | The ASI SL/SU in force: the file's absolute window, or (relative mode) the one the open session recorded. | docstring | - | 288 |
+| `session_info` | path=None | (undocumented) | - | - | 299 |
+| `decide_asi` | cmd, args, raw | (undocumented) | - | - | 336 |
+| `decide_pi` | cmd, args, raw | (undocumented) | - | - | 365 |
+| `decide_rotor` | cmd, args, raw, limits=None, session=None, fresh_pos=None | Rotor = PMC-2HS X axis. Unlike PI/ASI the NUMERIC envelope is decided here (and again by the sender inside | docstring | - | 387 |
+| `decide` | device, command, state=None, limits=None, session=None, fresh_pos=None | The whole command-class decision, with no I/O to a port. 'state' is injected so the self-test can run every | docstring | - | 448 |
+| `parse_pi_limits` | text | 'LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0' -> dict, or None.  This is the POST-WRITE readback. | docstring | selftest_motor_gate2.py | 481 |
+| `parse_pi_ref` | text | 'REFSTATE RON=0 FRF=1 POS=0.00000 POS_BEFORE=0.00000 ERR=0' -> dict, or None. | docstring | - | 505 |
+| `parse_asi_limits` | text | 'LIMITS SL X=-3.847494 Y=-4.774393 SU X=0.152497 Y=-0.774402' -> dict, or None. | docstring | - | 521 |
+| `check_pi_readback` | rb, lo, hi, tol=DEFAULT_TOL | (ok, message). rb = parse_pi_limits() output. Every readback field present must match. | docstring | - | 531 |
+| `check_asi_readback` | rb, sl, su, tol=DEFAULT_TOL | (undocumented) | - | - | 544 |
+| `session_start` | limits, pi_call=None, asi_call=None, session_path=None, out=print, asi_read=None, rotor_read=None | Write the file's limits into BOTH controllers and verify by readback. rc 0 = both verified, else 3. | docstring | - | 581 |
+| `session_end` | limits, pi_call=None, asi_call=None, session_path=None, out=print | Release the controller limits (PI lo..release_hi, ASI +-release) and delete the session file. | docstring | - | 671 |
+| `log` | device, command, d, dry | (undocumented) | - | - | 700 |
+| `transmit` | device, command, d, limits | Send ONE decided motion command. The SENDER re-reads the controller limits inside the same port open, | docstring | - | 718 |
+| `transmit_rotor` | command, d, limits, session=None, run=None | Send ONE rotor PAB/PIC (X only) through tools/motor_rotor_io.ps1. The SENDER, inside one port open: reads POS | docstring | - | 772 |
+| `main` | argv=None | (undocumented) | - | - | 822 |
+| `fail_line` | rc | One 'FAIL:' line for a non-zero exit (cycle 69, device-failed repair). pi_testmove_20260923e.log:23/34 held a | docstring | - | 903 |
+| `result_line` | rc | C6 (docs/session-protocol.md, user-approved 2026-09-24): the gate's verdict as its LAST line. bgrun's body scan | docstring | - | 912 |
 
 ### tools/outcome_review.py
 
@@ -2172,7 +2184,7 @@ shared module; imported by 8 file(s): `tools/bench/diag_c147_c3_3_proven.py`, `t
 
 ### tools/protocol.py
 
-shared module; imported by 704 file(s): `tools/audit_cycle.py`, `tools/bench/build_op_const_loopterm_77.py`, `tools/bench/build_op_termtype.py`, `tools/bench/build_opstopmode_v0.py`, `tools/bench/build_opwiringrules_v0.py`, `tools/bench/c109_errorlist_reverdict.py` ...
+shared module; imported by 705 file(s): `tools/audit_cycle.py`, `tools/bench/build_op_const_loopterm_77.py`, `tools/bench/build_op_termtype.py`, `tools/bench/build_opstopmode_v0.py`, `tools/bench/build_opwiringrules_v0.py`, `tools/bench/c109_errorlist_reverdict.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -2990,7 +3002,7 @@ shared module; imported by 93 file(s): `tools/bench/build_kswap_88.py`, `tools/b
 
 ### tools/bench/bench_prep.py
 
-shared file in the bench folder (move to tools/ later); imported by 305 file(s): `tools/bench/allterms_s4.py`, `tools/bench/allterms_v1_check.py`, `tools/bench/build_kswap_88.py`, `tools/bench/build_op_const_loopterm_77.py`, `tools/bench/build_op_termtype.py`, `tools/bench/build_opstopmode_v0.py` ...
+shared file in the bench folder (move to tools/ later); imported by 306 file(s): `tools/bench/allterms_s4.py`, `tools/bench/allterms_v1_check.py`, `tools/bench/build_kswap_88.py`, `tools/bench/build_op_const_loopterm_77.py`, `tools/bench/build_op_termtype.py`, `tools/bench/build_opstopmode_v0.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -3160,7 +3172,7 @@ shared file in the bench folder (move to tools/ later); imported by 9 file(s): `
 
 ### tools/bench/diag_c100_verbs_build.py
 
-shared file in the bench folder (move to tools/ later); imported by 4 file(s): `tools/bench/diag_c124_opconnecttermuid.py`, `tools/bench/diag_c125_5_opfs.py`, `tools/bench/diag_c126_2_op.py`, `tools/bench/diag_c126_4_op.py`
+shared file in the bench folder (move to tools/ later); imported by 5 file(s): `tools/bench/diag_c124_opconnecttermuid.py`, `tools/bench/diag_c125_5_opfs.py`, `tools/bench/diag_c126_2_op.py`, `tools/bench/diag_c126_4_op.py`, `tools/recipes/build_op_getimage_v0.py`
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -4091,6 +4103,33 @@ shared file in the bench folder (move to tools/ later); imported by 3 file(s): `
 | `apply_delete_object` | terms, node_uid | DELETE_OBJECT MODEL v0 (delete_object #7201, #27605; plus the setup of remove_bad_wires_1, delete #1628): the node and | docstring | - | 125 |
 | `summary` | d | (undocumented) | - | - | 141 |
 
+### tools/bench/pi_shots_lib.py
+
+shared file in the bench folder (move to tools/ later); imported by 3 file(s): `tools/bench/pi_shots_20261016.py`, `tools/bench/pi_shots_20261019.py`, `tools/recipes/build_op_getimage_v0.py`
+
+| function | arguments | what it does | from | self-test | line |
+|---|---|---|---|---|---|
+| `md5` | p | (undocumented) | - | - | 26 |
+| `Rec` | (class) | gate/fact recorder; finish() prints the summary and the C6 RESULT line and returns the exit code. | docstring | - | 30 |
+| `Rec.head` | t | (undocumented) | - | - | 36 |
+| `Rec.gate` | label, ok, detail='', fatal=False | (undocumented) | - | - | 39 |
+| `Rec.fact` | line | (undocumented) | - | - | 46 |
+| `Rec.finish` | out_json | (undocumented) | - | - | 49 |
+| `StopRun` | (class) | (undocumented) | - | - | 62 |
+| `g` |  | (undocumented) | - | - | 66 |
+| `restart` |  | Kill + start LabVIEW (bench_prep.restart_labview, ~50 s) and drop gscript's cached references. | docstring | - | 71 |
+| `handles` |  | (undocumented) | - | - | 78 |
+| `kill_and_verify` |  | Stop LabVIEW WITHOUT saving anything (process kill) and return True when no LabVIEW.exe is left. | docstring | - | 83 |
+| `sweep` | t, diagram_index=0, max_n=80 | {node uid: (Nodes[] index, terminal rows)} of one diagram (gscript.node_terms_uid per index). | docstring | - | 95 |
+| `term` | by, uid, name=None, src=None, pick=None | (undocumented) | - | - | 106 |
+| `tl` | by, uid | (undocumented) | - | - | 113 |
+| `rect` | position, bounds | (left, top, right, bottom) from GObject.Position (left, top) and GObject.Bounds. Bounds is taken as | docstring | - | 117 |
+| `crop_box` | struct_rect, node_rects, pad=40, img_size=None | Crop box in IMAGE pixels: the union of node_rects (diagram coordinates) + pad, shifted by the structure's | docstring | - | 128 |
+| `labels` |  | (undocumented) | - | - | 139 |
+| `get_image` | target, uid, png_path, depth=24, bg=16777215, cls='Node', index=None | Run OpGetImage_v0 (card chat-PI1c) on object #uid of 'target' (must be LOADED): Traverse('cls')[index] -> | docstring | - | 146 |
+| `get_bd_image` | target, png_path, depth=24 | Run OpGetBDImage_v0 (card chat-PI2) on 'target': Open VI Reference(vi path) -> VI.Block Diagram: Get Image | docstring | - | 180 |
+| `png_stats` | path | {size, mode, blank, extrema} of a PNG; blank = every channel is a single value (an all-white / all-one-colour image). | docstring | - | 193 |
+
 ### tools/bench/prep_c143_3_elrule.py
 
 shared file in the bench folder (move to tools/ later); imported by 11 file(s): `tools/bench/prep_c142_5_pred.py`, `tools/bench/prep_c143_3_pred.py`, `tools/bench/prep_c143_5_pred.py`, `tools/bench/prep_c143_6_pred.py`, `tools/bench/prep_c143_p1_pred.py`, `tools/bench/prep_c144_1_pred.py` ...
@@ -4437,7 +4476,7 @@ recipe imported by another file; imported by 4 file(s): `tools/bench/diag_c86_no
 
 ### tools/recipes/build_d1_v0.py
 
-recipe imported by another file; imported by 183 file(s): `tools/bench/build_op_const_loopterm_77.py`, `tools/bench/c52_astcheck.py`, `tools/bench/c52r2_astcheck.py`, `tools/bench/c52r3_astcheck.py`, `tools/bench/c53_astcheck.py`, `tools/bench/c73_l7r_live.py` ...
+recipe imported by another file; imported by 185 file(s): `tools/bench/build_op_const_loopterm_77.py`, `tools/bench/c52_astcheck.py`, `tools/bench/c52r2_astcheck.py`, `tools/bench/c52r3_astcheck.py`, `tools/bench/c53_astcheck.py`, `tools/bench/c73_l7r_live.py` ...
 
 | function | arguments | what it does | from | self-test | line |
 |---|---|---|---|---|---|
@@ -5470,3 +5509,4 @@ hook - reference; imported by 2 file(s): `tools/bench/selftest_report_gate_fp31.
 | `main` |  | (undocumented) | - | - | 135 |
 
 <!-- GENERATED fn-list END -->
+

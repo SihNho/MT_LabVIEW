@@ -1,0 +1,38 @@
+BGRUN START 2026-10-16 13:54:14 limit 20.0 min: py -u tools/prior_art_review.py --plan-file tools/bench/cards/review_priorart-op-getimage_plan.md --slug op-getimage --recipe tools/recipes/build_op_getimage_v0.py
+BGRUN PID 17000
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_op-getimage.txt (109536 chars)
+   review card tools\bench\cards\review_priorart-op-getimage.json
+OUTCOME: ANSWERED (124s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-10-16-priorart-op-getimage.md
+COST: $1.3610  in 18 / out 6998 / cache-create 129668 / cache-read 918231  (120s, 15 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-op-getimage verdict=novel -> tools\bench\cards\verdict_priorart-op-getimage.json
+--- ANSWER ---
+**Verdict: novel.** Nothing in this project already turns a block-diagram object into an image through VI Scripting. No earlier attempt at that failed, nothing recorded settles or refutes the idea, and none of the user's rules is contradicted.
+
+## Part A: the direction
+
+- **A1, settled already:** no. The only record of this direction is the 2026-10-16 STATUS line ("diagram screenshots for the PI … needs a new Get-Image Op VI; regions to be discussed with the user"). That line names the need. It does not answer it.
+- **A2, refuted already:** no. Diagram screenshots in the archive were all taken through the GUI window capture: `tools/lv_gui.ps1 -Action shotwin` (`archive/GUI_PLAYBOOK.md:420`, `tools/recipes/build_opmove.py:93`, `archive/bench-2026-09-04/EXECUTOR_TASK.md:19`). The card rules GUI capture out. No archived file tries and drops a scripted "Get Image" on a GObject. The VI Snippet rows (`archive/VI_SCRIPTING_GUIDE.md:252`, `archive/OPTIONS_beyond_gui.md:87`, `docs/d1-route-b-plan.md:636`) are about PNGs that carry diagram *code*, used to move code between VIs. They are not readable pictures, so they don't cover this case.
+- **A3, contradicted:** no conflict. One recipe claim checks out exactly: `docs/vi-server-ids.json:19-20` records `GObject.Position` 632A800 and `GObject.Bounds` 632A803, and `:74` records only `GObject.Move` 632A400 in the 632A4xx method range. The `632A402` Replace ID is in `docs/m8-real-run-plan.md:147`.
+- **A4, unread evidence (not blocking):** `archive/peer/2026-09-06-invoke-class-name-string-format.md:55` and `docs/NAMES.md:213` record `Invoke.All Supported Methods` = 637040D. That property returns every method's Unique ID together with its name. It would identify "Get Image" by name in one read, where the recipe sweeps 14 candidate IDs and guesses from terminal names (`build_op_getimage_v0.py:40,51-66`). This is a cheaper and more direct route. It is not prior art for the op itself, so I am not giving it a slug.
+
+## Part B: the artifact
+
+- **B1, already built:** no. Searching `tools/gscript.py`, `docs/toolkit-capabilities.md`, `docs/NAMES.md` and `docs/labview/**` for Get Image, Write PNG or 632A4xx methods finds only IMAQdx camera rows (for example `docs/toolkit-capabilities.md:40`). The donor is real and documented: OpOwnerChain_v1 = `UID to GObject Reference.vi` → … (`docs/cycle14-plan.md:54`, `docs/toolkit-capabilities.md:3369`). `OpReplaceGObj_v0` was built the same way (`tools/bench/diag_swap_build.py:1-7`, `tools/gscript.py:3392-3398`).
+- **B2, already failed:** no. The only earlier run, `tools/bench/build_op_getimage_v0_priorart.log:1-4`, is this review being dispatched. No build log exists.
+- **B3, helper exists (notes, not blocking):**
+  - `pi_shots_lib.sweep`/`term` (`tools/bench/pi_shots_lib.py:95-110`) are copies of `diag_swap_build.py:24-38`. The file says so itself (`pi_shots_lib.py:11-12`). The same pattern appears in about 10 other files, for example `tools/recipes/build_opownerchain_v1.py:196` and `tools/bench/diag_c118_r1_opbuild.py:37`, and gscript has no shared version, so no existing call is being bypassed.
+  - `kill_and_verify` (`pi_shots_lib.py:83-92`) does the same job as `tools/stagexec.py:4758 kill_labview_at_exit` and `tools/bench/drive_legguard.py:49 kill_labview`. The script avoids stagexec/stagekit on purpose (fp-106, `pi_shots_lib.py:7-9`).
+  - `d0_locate.save_crop` (`docs/toolkit-capabilities.md:3152`) defaults to `scale=4`. The plan asks for native-scale crops, so it doesn't fit.
+- **B4, already measured:** no. Nothing records GObject image sizes, or Bounds values for While "B" / #10170 / #27509.
+
+## Part C: the user's rules
+
+No contradiction. The plan only reads byte copies with a scripting op and never runs a VI under study. It adds no queue, adds no serial call on the frame path, does not touch acquisition, and leaves every per-bead number unchanged. U1–U13 do not apply.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-op-getimage","verdict":"novel","alternative":"Read Invoke.All Supported Methods (637040D, docs/NAMES.md:213) once to get the Get Image method ID by name, instead of sweeping 632A401..40F and guessing from terminal names.","discriminating_test":"grep Get Image/Write PNG/632A4xx over gscript.py, toolkit-capabilities.md, NAMES.md, vi-server-ids.json, archive/peer: only IMAQdx rows plus Move/Replace 632A400/402; diagram shots in the archive were GUI shotwin only.","violations":[],"sources":["docs/vi-server-ids.json:19-20","docs/vi-server-ids.json:74","docs/NAMES.md:213","archive/peer/2026-09-06-invoke-class-name-string-format.md:55","archive/GUI_PLAYBOOK.md:420","tools/bench/diag_swap_build.py:1-7","docs/toolkit-capabilities.md:40","tools/bench/build_op_getimage_v0_priorart.log:1-4"],"note":"Non-blocking: sweep/term/kill_and_verify in pi_shots_lib copy existing code (diag_swap_build.py:24-38, stagexec.py:4758), as the file itself says; a shared home in gscript is still open."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-op-getimage.md
+   STOP RECORD: none - 2026-10-16-priorart-op-getimage.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/build_op_getimage_v0.py sha 8f84c2e966bf -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 127s

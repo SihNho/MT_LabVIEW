@@ -1,0 +1,114 @@
+{
+ "schema": "task/1",
+ "id": "chat-PI2",
+ "kind": "build",
+ "goal": "Per brief_chat-PI2.md: build OpGetBDImage_v0.vi on VI method BD.Get Image Scaled (42C) and save whole-diagram PNGs of seven Op VIs (byte copies).",
+ "why": "User 2026-10-19 wants the Op VIs in the PI deck: diagram photo, what it does, why it is needed. Op VIs are small, so the whole diagram is readable.",
+ "inputs": [
+  {
+   "path": "tools/bench/cards/brief_chat-PI2.md",
+   "md5": "cad2cec8fb5fd9eaca81f488b83c5659"
+  },
+  {
+   "path": "tools/recipes/build_op_getimage_v0.py",
+   "md5": "b7877b4827451f9fd6b6546166bce97f"
+  },
+  {
+   "path": "tools/bench/pi_shots_lib.py",
+   "md5": "4e71bfce01975cc16fc038f8561c7fcd"
+  },
+  {
+   "path": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/OpReport_v3.vi",
+   "md5": "0743701a249b6ac20a5dab9ee676c09c"
+  },
+  {
+   "path": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/OpWireSource_v5.vi",
+   "md5": "5dc45a04ea5d809f5ca57e9309ed59c5"
+  },
+  {
+   "path": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/OpMoveIn_v0.vi",
+   "md5": "b9107c75c76cf2828bef9915660b2716"
+  },
+  {
+   "path": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/OpConnectNested_v1.vi",
+   "md5": "b7a1bb56cefe2b4632125e6bda0d7221"
+  },
+  {
+   "path": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/OpCreateLocalRead_v0.vi",
+   "md5": "f695d97a36ae127cd2dd3ca6b1fc1089"
+  },
+  {
+   "path": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/OpForLoopParSet_v0.vi",
+   "md5": "868e1f42004a1c3c5a9997c3c822899d"
+  },
+  {
+   "path": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/OpGetImage_v0.vi",
+   "md5": "b7c5667bf86ed58b4751d8c10a45da48"
+  }
+ ],
+ "pass": [
+  "BD.Get Image Scaled verified from LabVIEW by terminal names; prior-art review newer than the recipe; verdict quoted",
+  "OpGetBDImage_v0.vi built with a PASS op_hygiene record; method recorded in docs/vi-server-ids.json as VERIFIED",
+  "Seven op_<name>.png at native size (24-bit) + ops.json complete",
+  "Op VI md5s unchanged; copies closed unsaved; handle count back to baseline; LabVIEW gone; labview-lock cleared"
+ ],
+ "outputs": [
+  "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/OpGetBDImage_v0.vi",
+  "tools/bench/pi_shots_20261016/",
+  "tools/bench/cards/result_chat-PI2.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "archive/peer/2026-10-19-priorart-op-getbdimage*",
+   "tools/bench/cards/review_*op-getbdimage*",
+   "tools/bench/jev_*",
+   "tools/bench/op_hygiene/OpGetBDImage_v0*",
+   "docs/vi-server-ids.json",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/OpGetBDImage_v0.vi",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/shots_20261016/**",
+   "tools/bench/pi_shots_20261016/**",
+   "tools/bench/pi_shots*.py",
+   "tools/bench/pi_shots*.log",
+   "tools/recipes/build_op_getbdimage*.py",
+   "tools/bench/build_op_getbdimage*.log",
+   "tools/bench/build_op_getbdimage*.json",
+   "tools/bench/cards/result_chat-PI2.json",
+   "STATUS.md"
+  ],
+  "status_edit": true,
+  "git_commit": false,
+  "peers": [
+   "priorart"
+  ]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 90
+ },
+ "unblocks": "M3",
+ "requires": [
+  {
+   "kind": "file",
+   "name": "tools/gscript.py"
+  },
+  {
+   "kind": "file",
+   "name": "tools/kb_com.py"
+  },
+  {
+   "kind": "file",
+   "name": "tools/prior_art_review.py"
+  }
+ ],
+ "rules": [
+  "The op build stays in tools/recipes/ and passes the prior-art gate; never move it to tools/bench to skip the gate",
+  "No hardware (camera, motors, ASI, VISA) and never Run a VI; the lean runner stays stopped",
+  "Open byte copies of the Op VIs only, Don't Save on every prompt, md5 before/after",
+  "LabVIEW commands with timeout <= 30 s or through tools/bgrun.py --material; one LabVIEW client; close every reference",
+  "No GUI automation under this card; if scripting cannot get the image, RETURN with the facts; no workaround"
+ ]
+}

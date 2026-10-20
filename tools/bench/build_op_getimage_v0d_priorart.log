@@ -1,0 +1,49 @@
+BGRUN START 2026-10-16 14:22:25 limit 20.0 min: py -u tools/prior_art_review.py --plan-file tools/bench/cards/review_priorart-op-getimage-v3_plan.md --slug op-getimage-v3 --recipe tools/recipes/build_op_getimage_v0.py --recipe tools/bench/pi_shots_lib.py
+BGRUN PID 5800
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_op-getimage-v3.txt (109601 chars)
+   review card tools\bench\cards\review_priorart-op-getimage-v3.json
+OUTCOME: ANSWERED (96s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-10-16-priorart-op-getimage-v3.md
+COST: $1.3523  in 20 / out 7650 / cache-create 120655 / cache-read 1169894  (93s, 17 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-op-getimage-v3 verdict=novel -> tools\bench\cards\verdict_priorart-op-getimage-v3.json
+--- ANSWER ---
+**Answer: no. Renaming the terminal to `BG Color` and adding the hygiene-PNG folder don't bring back anything this project already owns or has ruled out. `BG Color` and Node.Get Image are not in `docs/vi-server-ids.json` or `docs/toolkit-capabilities.md`, so there is nothing to reuse. There is one finding: an old line in the recipe contradicts the new folder rule.**
+
+## PART A: the direction
+
+- **A1, already decided: none.** No decision in STATUS.md, `docs/` or `archive/` covers how to screenshot a diagram with Get Image. STATUS.md lists the op as pending ("needs a new Get-Image Op VI"). The search for `Get Image` in `docs/` only finds the camera's IMAQdx Get Image, a different VI: `docs/camera-acquisition-facts.md:657`, `docs/decisions.md:20`, `docs/main-vi-subvi-identity.md:61`.
+- **A2, already refuted: none.** The record has three earlier attempts:
+  - chat-PI1b looked for the method on the wrong class (GObject) and found no image output (`tools/bench/build_op_getimage_v0.log:8-23`). The plan fixes this by using the Node class.
+  - chat-PI1c failed only on the terminal's name (`tools/bench/build_op_getimage_v0c.log:8-9`).
+  - The v2 prior-art finding was released by two FIXED: lines (`archive/peer/2026-10-16-priorart-op-getimage-v2.md:378-379`).
+  
+  None of these argues against the direction.
+- **A3, contradicted: one finding, inside the recipe itself.**
+  - New rule, `tools/recipes/build_op_getimage_v0.py:63`: `HYG_DIR = os.path.join(L.OUTDIR, "hygiene_tmp")    # card chat-PI1d rule: hygiene PNGs here, deleted after the record`. The rule comes from the card, `tools/bench/cards/task_chat-PI1d.json:120`: "Op hygiene PNGs go to tools/bench/pi_shots_20261016/hygiene_tmp and are deleted after the record".
+  - Old text, `tools/recipes/build_op_getimage_v0.py:190-191`: the `workload_text` passed to `g.hygiene_run` still says `"... (Traverse('Node')[0], depth 24, PNG to %%TEMP%%) ..."`.
+  - That string is saved into the permanent hygiene record `tools/bench/op_hygiene/OpGetImage_v0.json`. The record would then name the wrong folder, against the code and the card rule.
+  - The fix is one line. A FIXED: line naming `:191` releases it.
+  - Smaller, no slug: the docstring still says "card chat-PI1c" (`:5`), and line 11 still names the input "Background Color". Line 31 already explains the short name.
+- **A4, evidence not read: none.** The rename comes from measured terminal names (`build_op_getimage_v0c.log:8`). The only earlier prediction of the name was the hypothesis review's, and it said "Background Color" (`archive/peer/2026-10-16-hypothesis-op-getimage.md:33`). The rename replaces that with the measured name, and nothing else in the files disagrees.
+  - In the same log, every parameter of the Invoke appears twice, once as input and once as output: `(8,'BG Color','IN'),(9,'BG Color','OUT'),(10,'Image Data','IN'),(11,'Image Data','OUT')`. The helpers choose the direction explicitly. `B.ctl` takes the input side (`tools/bench/diag_c100_verbs_build.py:110`), and `B.ind` the output side (`:103`). So the rename doesn't make terminal picking ambiguous. I didn't check how `g.wire`/OpWire picks a side for `Image Data` (`tools/gscript.py:1698-1728`), because that is a question about whether the plan works, not about prior art. The plan's own gate B4c (`build_op_getimage_v0.py:132`) checks it.
+
+## PART B: the artifact
+
+- **B1, already built: none.** No OpGetImage op, recipe or helper exists anywhere besides this card's own files.
+  - `docs/vi-server-ids.json` holds `GObject.Position` 632A800 (`:19`), `GObject.Bounds` 632A803 (`:20`) and `GObject.UID` 632A813 (`:61`). The plan already uses exactly these IDs (`build_op_getimage_v0.py:88,102`, and `diag_c100_verbs_build.py:164`).
+  - There is no `6358C01`, `Get Image`, `BG Color` or `Image Data` entry to reuse.
+  - The `BG Color (Transparent)` / `BG color(transparent)` names in `docs/wiki/subvi/*.json` (for example `check N bead pos v2.json:1803`) are terminals of picture/vision subVIs inside the original. They are not this method.
+- **B2, already failed: yes, but this plan fixes the cause.** chat-PI1c's only failure was the name check at M1 (`build_op_getimage_v0c.log:9`). `WANT` at `:61`, the control loop at `:115`, and `pi_shots_lib.py:162` all now use `BG Color`, which matches the measured terminal list.
+- **B3, a helper already exists: none new.** The v2 B3 fix is still in place: the recipe imports the shared helpers (`build_op_getimage_v0.py:53`, and `pi_shots_lib.py:176-177`). For hygiene, the plan uses `g.hygiene_run`, which STATUS.md says every op hygiene check must go through.
+- **B4, already measured: none.** No crop of a diagram image has been measured or recorded in this project.
+
+## PART C: the user's rules
+
+- **C1: no rule is contradicted.** The work is an offline op that makes images for the PI. It doesn't touch hardware, the frame path, or any per-bead number.
+
+PRIOR-ART: contradicted
+
+VERDICT {"schema":"verdict/1","id":"priorart-op-getimage-v3","verdict":"novel","alternative":"Rename and folder bring back nothing already owned or refuted; no Get Image/BG Color entry in vi-server-ids.json or toolkit-capabilities.md. One self-contradiction: recipe :191 workload_text says 'PNG to %TEMP%', but :63 and the card rule put PNGs in pi_shots_20261016/hygiene_tmp.","discriminating_test":"Open build_op_getimage_v0.py:190-191 and :63; if the workload_text names hygiene_tmp, the finding is released (FIXED: line).","violations":[],"sources":["tools/recipes/build_op_getimage_v0.py:63","tools/recipes/build_op_getimage_v0.py:191","tools/bench/cards/task_chat-PI1d.json:120","tools/bench/build_op_getimage_v0c.log:8","docs/vi-server-ids.json:19","archive/peer/2026-10-16-priorart-op-getimage-v2.md:378"],"note":"PRIOR-ART: contradicted (stale workload_text that would be saved into op_hygiene/OpGetImage_v0.json); one-line fix."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-op-getimage-v3.md
+   STOP RECORD armed: tools/recipes/build_op_getimage_v0.py sha f67dc246f1c1 verdict contradicted -> launching it is refused until a FIXED:/REFUTED: line releases it
+   STOP RECORD armed: tools/bench/pi_shots_lib.py sha fbdf12865b80 verdict contradicted -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 99s

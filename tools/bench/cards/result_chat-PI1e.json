@@ -1,0 +1,22 @@
+{"schema":"result/1","id":"chat-PI1e","status":"FAIL","gates":{"pass":32,"fail":1},
+"first_fail":"B every listed uid found in p61: Flat Sequence #29721 not in Traverse('Node') of the P6-1 copy (tools/bench/pi_shots_20261016e.log)",
+"blocked_by":null,
+"artefacts":[{"path":"tools/bench/pi_shots_20261016/A1_original_frame_loop.png","md5":"26c02ac16aa4c150b4f0b8df8bb1e713"},{"path":"tools/bench/pi_shots_20261016/raw_A_orig_637.png","md5":"38d4adfab40efe8bc304d3cad0db6c9c"},{"path":"tools/bench/pi_shots_20261016/raw_B_p61_10170.png","md5":"71be2514737f837cb7f4176ec34ea4b4"},{"path":"tools/bench/pi_shots_20261016/shots.json","md5":"e18cafb32f775bc9f7a7af472fa98d37"},{"path":"tools/bench/pi_shots_20261016/pi_shots_20261016.json","md5":"bb4f9b9a123f02814afe7d01b097085d"},{"path":"tools/bench/pi_shots_20261016e.log","md5":"43347de8f37c6cf2925ad7d4a89c9fdb"},{"path":"tools/bench/pi_shots_20261016.py","md5":"29280f5faf91d8bdc42d232797af5ba9"}],
+"facts":[
+"A PASS: owner chains #6810 and #5058 both = Diagram 639 -> WhileLoop 637 (pi_shots_20261016e.log, A owner chain lines)",
+"Names: #6810 'get buff image-lost frames.vi', #5058 'Track N beads four-fold over-kernel-v3.vi'; 90 subVI calls over 170 diagrams (log A facts)",
+"Save/plot in While 637: visible #376 'save trace.vi'; in Case #2222: #5696 'N bead plot dZ.vi', #6085 'N bead plot Z.vi'; 6 others outside loop 637 (log)",
+"A1_original_frame_loop.png 1400x900 RGB (raw While 637 3754x1905 == Bounds); opened: Get buff image, 4x N bd master kernel, Save trace, a z plot icon readable (shots.json)",
+"No A2: the only visible save/plot member (#376) fitted in A1 (greedy, pi_shots_20261016.py part_a)",
+"B FAIL: P6-1 While #10170 imaged 5827x6014 == Bounds; 10 of 11 uids found; #29721 absent; no FlatSequence class among its 71 Traverse('Node') neighbours (pi_shots_20261016.json facts)",
+"Neighbour #29720 is a Local at (15675,5905) next to pick #29719; D's #27509 is also a Flat Sequence, so it would likely miss the same way (not run)",
+"Caution: all nested B nodes report rect top-left (15629,5859) or (15675,5905) (log E p61 lines), so Position for nested objects looks owner-relative; a B/C crop from these rects would be misplaced",
+"LabVIEW killed (nothing saved), gone (tasklist empty); shots_20261016 copies deleted; source md5s 2f048e3a/c2d9c13c/15c664e3 unchanged (log G/K/X)",
+"Jev ladder: pi_shots_20261016e.log | no JEV-LADDER row in jev_gate.log | - | returned at first unexpected result | FAIL B (32/1)"
+],
+"open":[
+"Flat Sequence #29721/#27509 are not Traverse('Node') objects: use another Traverse class (e.g. 'FlatSequence'), or crop B/C/D by the enclosing While/Case?",
+"Nested-object Position looks owner-relative (B rects); should the crop offset add each owner's position up the chain, or crop B/C/D from the raw While images by eye?"
+],
+"cost":{"usd":null,"minutes":11,"labview_runs":1},
+"note":"Edited pi_shots_20261016.py (22700 dropped, owner-chain A, save/plot by name, strict uid check). shots.json for A1 written by hand from log E lines. STATUS lock released; STATUS 179 lines, archive move outside write globs. Nothing committed; no hardware."}

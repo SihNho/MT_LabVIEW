@@ -1,0 +1,122 @@
+{
+ "schema": "task/1",
+ "id": "chat-PI1d",
+ "kind": "build",
+ "retry_of_card": "chat-PI1c",
+ "goal": "Per brief_chat-PI1.md: build OpGetImage_v0.vi on Node.Get Image 6358C01 (terminal BG Color accepted), then capture PNG crops A1/B/C/D (byte copies).",
+ "why": "chat-PI1c FAIL M1 only because LabVIEW names the input 'BG Color' (short name), not 'Background Color'. Same method; judgement accepts it.",
+ "inputs": [
+  {
+   "path": "tools/bench/cards/brief_chat-PI1.md",
+   "md5": "e6c0328c593dac0850d28e77702d9674"
+  },
+  {
+   "path": "archive/peer/2026-10-16-priorart-op-getimage.md",
+   "md5": "4c957bd4686993a2c443b17f98806dd8"
+  },
+  {
+   "path": "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/Min_Track N beads 4.5_KimLabMTroom_3StateClamping.vi",
+   "md5": "2f048e3a18de3b5e3ca8368f6a24dae0"
+  },
+  {
+   "path": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_ring_p6_20261012_212645.vi",
+   "md5": "c2d9c13cb40c0a5cab7433896d1df157"
+  },
+  {
+   "path": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/bench/lean/D1_ring_p6latest_20261014_010104.vi",
+   "md5": "15c664e3eed1c580e05b13e42c86566f"
+  },
+  {
+   "path": "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_lean/tools/bench/lean_bench/lean_report_p6fix.md",
+   "md5": "76cd7a3364c01480f83c89cc5dace3c3"
+  },
+  {
+   "path": "tools/bench/cards/result_chat-PI1c.json",
+   "md5": "de6c2e3aeb3b9e10ac3ab75c12abfb0e"
+  },
+  {
+   "path": "tools/bench/build_op_getimage_v0c.log",
+   "md5": "e8d74bd893cd5101377c4943f805adbd"
+  },
+  {
+   "path": "tools/recipes/build_op_getimage_v0.py",
+   "md5": "ddf1e59fb2cbf50177c9a05e3d55f5b7"
+  },
+  {
+   "path": "tools/bench/pi_shots_lib.py",
+   "md5": "47edbb5cbc1ade652ced5092b80402d8"
+  },
+  {
+   "path": "tools/bench/pi_shots_20261016.py",
+   "md5": "33215b5aebec0f7e79b2b64b5a09263b"
+  }
+ ],
+ "pass": [
+  "Prior-art review newer than the edited recipe (the one-word 'BG Color' change); verdict line quoted",
+  "Node Invoke 6358C01 terminals read from LabVIEW = Image Depth / BG Color / Image Data; else RETURN",
+  "OpGetImage_v0.vi built with a PASS op_hygiene record; method class + ID added to docs/vi-server-ids.json as VERIFIED",
+  "Crops A1/B/C/D exist as PNG at native scale (24-bit), each <= ~1800 x 1100 px, text readable; shots.json complete",
+  "Source md5s unchanged; copies closed unsaved; handle count back to baseline; LabVIEW gone; labview-lock cleared"
+ ],
+ "outputs": [
+  "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/OpGetImage_v0.vi",
+  "tools/bench/pi_shots_20261016/",
+  "tools/bench/cards/result_chat-PI1d.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "archive/peer/2026-10-16-priorart-op-getimage*",
+   "archive/peer/2026-10-16-hypothesis-op-getimage*",
+   "tools/bench/cards/review_*op-getimage*",
+   "tools/bench/jev_*",
+   "tools/bench/op_hygiene/OpGetImage_v0*",
+   "docs/vi-server-ids.json",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/OpGetImage_v0.vi",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/shots_20261016/**",
+   "tools/bench/pi_shots_20261016/**",
+   "tools/bench/pi_shots*.py",
+   "tools/bench/pi_shots*.log",
+   "tools/recipes/build_op_getimage*.py",
+   "tools/bench/build_op_getimage*.log",
+   "tools/bench/build_op_getimage*.json",
+   "tools/bench/cards/result_chat-PI1d.json",
+   "STATUS.md"
+  ],
+  "status_edit": true,
+  "git_commit": false,
+  "peers": [
+   "priorart"
+  ]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 120
+ },
+ "unblocks": "M3",
+ "requires": [
+  {
+   "kind": "file",
+   "name": "tools/gscript.py"
+  },
+  {
+   "kind": "file",
+   "name": "tools/kb_com.py"
+  },
+  {
+   "kind": "file",
+   "name": "tools/prior_art_review.py"
+  }
+ ],
+ "rules": [
+  "The op build stays in tools/recipes/ and passes the prior-art gate; never move it to tools/bench to skip the gate",
+  "No hardware (camera, motors, ASI, VISA) and never Run a VI; the lean runner stays stopped",
+  "Originals are read-only: open byte copies in claudeDev/shots_20261016 only, Don't Save on every prompt, md5 before/after",
+  "LabVIEW commands with timeout <= 30 s or through tools/bgrun.py --material; one LabVIEW client; close every reference",
+  "No GUI automation under this card; if scripting cannot get the image, RETURN with the facts; no workaround",
+  "Op hygiene PNGs go to tools/bench/pi_shots_20261016/hygiene_tmp and are deleted after the record"
+ ]
+}

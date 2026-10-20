@@ -1,0 +1,46 @@
+BGRUN START 2026-10-19 10:43:25 limit 15.0 min: powershell -NoProfile -ExecutionPolicy Bypass -File tools/peer.ps1 -Agent claude -Role hypothesis -Slug hypothesis-op-getbdimage -TimeoutSec 600 -TaskFile C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/f25a8474-c027-486a-b371-e6285c7a18c7/scratchpad/hyp_op_getbdimage.md
+BGRUN PID 5716
+OUTCOME: ANSWERED (121s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-10-19-hypothesis-op-getbdimage.md
+COST: $0.7004  in 18 / out 8610 / cache-create 46999 / cache-read 483270  (117s, 15 turn(s))
+--- ANSWER ---
+**VERDICT: supported on which method this is. Not proven on why the names are short, but that doesn't change the fix. The weakest part of the retry is the loosened M1 gate.** Nothing was run, built or edited, and no lock was taken. I couldn't write the review file because Write is turned off in this session, so the full review is here.
+
+**1. Strongest reason the claim may be wrong.** "The terminal Name returns short names" is a guess made after the result, not a measured mechanism.
+- Node.Get Image read `Image Depth` for that parameter (`tools/bench/build_op_getimage_v0d.log:8`). Here the same parameter reads `img depth`.
+- So either NI gave this method its own abbreviations, or something else picks the name format.
+- I couldn't check NI's short-name list: the documentation.help copy of the NI page returned 403. The wiki gives only long names: [labviewwiki](https://labviewwiki.org/wiki/VI_class/Block_Diagram.Get_Image_Scaled_method).
+
+**2. Alternative explanation.** The node's display name setting (short or long names) may decide the names, rather than something fixed in Name itself.
+- This run can't tell the two apart.
+- It doesn't matter for the retry: the builder creates the node through the same `g.build_invoke` call (`tools/recipes/build_op_getbdimage_v0.py:66` and `:88`), so it should see the same names.
+- The method itself is clearly right. The return terminal is named `GetDiagramImageScaled`, which matches NI's page name VI_Get_Diagram_ImageScaled. The four parameters match the wiki's four.
+
+**3. Risks in the retry plan, worst first, each with what would show it:**
+- **R1. The new M1 can't fail.** Ignoring case, accepting short or long names, and "any name containing width" would pass almost anything.
+  - Fix: require exactly the list measured at `build_op_getbdimage_v0.log:8`.
+  - Shows it: any other list fails the gate.
+- **R2. Labels file key (your question c).** `pi_shots_lib.py:187` reads `c["Image Depth"]`.
+  - Keep that key and store whatever label `b.ctl` returns. The new control is probably labelled with the long name: in v0d, `BG Color` became a control labelled `Background Color` (`build_op_getimage_v0d.log:53`).
+  - Renaming the key to `img depth` would make the first F1 call fail with a KeyError.
+  - Shows it: the labels JSON after B5.
+- **R3. Picking the IN or OUT row (your question a): low risk.**
+  - `B.ctl` takes only the input row (`tools/bench/diag_c100_verbs_build.py:110`), so `img depth` gets row 6 (IN), which is correct.
+  - `B.w` wires by name through OpWire. The same route wired the duplicated `Image Data` correctly in v0d (`build_op_getimage_v0d.log:50`).
+  - A wrong pick would be an input wired to an input. That is a broken wire, so B6 (ExecState 1) would fail.
+  - Gap: B4c only checks that Write PNG's input is wired, not where the wire comes from. Add a check that row 9 (`img data` OUT) carries a wire.
+- **R4. Running with no window open (your question b): medium risk.**
+  - The wiki says the method "Must wait until user interface is idle" and loads both the front panel and block diagram into memory itself, so neither needs to be open.
+  - It also says it isn't available in the Run-Time Engine. NI's documentation also excludes control VIs, global VIs, polymorphic VIs and strict type definitions ([labviewwiki](https://labviewwiki.org/wiki/VI_class/Block_Diagram.Get_Image_Scaled_method), [NI help copy](https://documentation.help/NI-LabView-Local-Project-Settings/VI_Get_Diagram_ImageScaled.html)).
+  - I found no published error code for a busy interface. The likely failure is a hang, not an error.
+  - Counter-evidence: Node.Get Image ran 2,000 calls with no window open (card chat-PI1d).
+  - Shows it: F1 running past its time limit while the error stays empty.
+- **R5. Image depth 1 crashed this method in LabVIEW 2014–2015**, fixed in 2017 ([NI 2017 bug fixes](https://www.ni.com/en/support/documentation/bugs/17/labview-2017-bug-fixes.html)). This doesn't matter at depth 24; just never default it to 1.
+
+**4. What would refute the hypothesis.** The cold re-read (B7) or the F1 build showing different names for the same 42C node, or F1 returning an error or a blank PNG with depth 24 wired. Either would mean the names or the method are not what M1 assumes.
+
+**5. Cheapest test that separates the two causes.** It costs nothing extra in the retry: log the node's display name setting next to the terminal names in step [1].
+- If it reads "short names", both explanations still hold and nothing changes.
+- If it reads "long names" while the terminals still show `img depth`, the display setting is ruled out and your explanation stands.
+
+What would change my mind: F1 fails with no error while using the same names. That would point at R4 (the busy-interface wait), not at the names.
+BGRUN END rc=0 after 121s

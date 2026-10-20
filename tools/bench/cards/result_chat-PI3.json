@@ -1,0 +1,21 @@
+{"schema":"result/1","id":"chat-PI3","status":"FAIL","gates":{"pass":7,"fail":6},
+"first_fail":"W P6L #637 (camera loop 1.1 + ring writer): no error, not blank, size == Bounds - error 1 Write PNG File.vi / Check Color Table Size.vi (tools/bench/pi_shots_loops.log:229)",
+"blocked_by":null,
+"artefacts":[{"path":"tools/bench/pi_shots_loops.py","md5":"569bd4ade35be59d6492d549f7285c35"},{"path":"tools/bench/pi_shots_loops.log","md5":"dd0ddf9a0643c50734f91ece216b1325"},{"path":"tools/bench/pi_shots_20261016/loops_p6l.json","md5":"cfe968306158bfa25e849e90678a3fb0"},{"path":"tools/bench/pi_shots_20261016/pi_shots_loops.json","md5":"278320d5092ee4a1f4d7ed2c6ec92766"},{"path":"tools/bench/pi_shots_20261016/raw_W_P6L_25380.png","md5":"d46b1faaa74ca129a4f3a36a0a9766c0"},{"path":"tools/bench/pi_shots_20261016/raw_W_P6L_1175.png","md5":"7de46be99c97f83bfe9b3a6f3f9b22d0"}],
+"facts":[
+"No leak: handles 33995 restart -> 54554 after P6L load -> 55634 after 1st #637 shot (+1078), then 55633/55633/55635 after #637 shots 1-3; gate L PASS (pi_shots_loops.log:6,9,12,27)",
+"Every later Get Image call moved handles by -3..+3; second fresh LabVIEW same pattern (load 54560, 1st shot +1081); end 55692, refs 2/2 closed (pi_shots_loops.log:30-80,235)",
+"#637 #10170 #23041 #23032: GObject Bounds height 0 (8860x0, 36528x0, 3710x0, 35789x0), all at y 223 (loops_p6l.json; pi_shots_loops.log:13)",
+"Those 4: depth 24 -> 'error 1: Write PNG File.vi', depth 8 -> 'error 1: Check Color Table Size.vi'; same in both fresh LabVIEWs; no PNG written (pi_shots_loops.log:12-14,58-72)",
+"#25380 (2538x504) and #1175 (3594x32756) wrote PNGs, no error, size == Bounds, but ALL WHITE at depth 24 and 8, both tries (pi_shots_loops.log:43-51,233-234)",
+"#1175 fallback: no structure found directly inside it; owner hops through FlatSequenceFrame gave error 1055 in OpOwnerChain_v1 (pi_shots_loops.log:84-228)",
+"P6L source md5 54f7cd2f before/after; copy md5 == pin; copy deleted; LabVIEW killed (nothing saved) and gone (pi_shots_loops.log:3,7,237-239)",
+"Script change: handle log after load / before+after every shot, #637 x3 leak gate (pre-registered d2,d3 > 50), order #637 x3 then #10170 #23041 #23032 #25380 #1175 (pi_shots_loops.py:22-28)",
+"Jev ladder: pi_shots_loops.log | no JEV-LADDER row in jev_gate.log | - | returned at first FAIL (retries per brief done in-run) | FAIL 7/6",
+"STATUS lock set before the run and released after, one history line added (STATUS.md:8,69-70)"
+],
+"open":[
+"Bounds height 0 for 4 While loops and all-white images for the other 2 (P6L loaded headless, diagram never opened): next try with the block diagram window opened first, or another capture method?"
+],
+"cost":{"usd":null,"minutes":7,"labview_runs":1},
+"note":"One bgrun (168 s) holding two fresh LabVIEW sessions per the brief's retry ladder. Not diagnosed further (card chat-P2). Stale raw_W_P6L_15173.png (10:24, card PI1f) left untouched. STATUS ~192 lines; archive move outside write globs. Nothing committed; no hardware; no VI Run of the copy."}

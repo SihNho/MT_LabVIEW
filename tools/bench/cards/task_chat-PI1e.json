@@ -1,0 +1,120 @@
+{
+ "schema": "task/1",
+ "id": "chat-PI1e",
+ "kind": "measure",
+ "retry_of_card": "chat-PI1d",
+ "goal": "Per brief_chat-PI1.md + brief_chat-PI1e.md: with the built OpGetImage_v0.vi, capture PNG crops A1/B/C/D of the three VIs (byte copies); 22700 dropped.",
+ "why": "chat-PI1d built and verified the op; shots stopped because uid 22700 (from a working-copy doc) is not in the original. Judgement drops it.",
+ "inputs": [
+  {
+   "path": "tools/bench/cards/brief_chat-PI1.md",
+   "md5": "e6c0328c593dac0850d28e77702d9674"
+  },
+  {
+   "path": "archive/peer/2026-10-16-priorart-op-getimage.md",
+   "md5": "4c957bd4686993a2c443b17f98806dd8"
+  },
+  {
+   "path": "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/Min_Track N beads 4.5_KimLabMTroom_3StateClamping.vi",
+   "md5": "2f048e3a18de3b5e3ca8368f6a24dae0"
+  },
+  {
+   "path": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_ring_p6_20261012_212645.vi",
+   "md5": "c2d9c13cb40c0a5cab7433896d1df157"
+  },
+  {
+   "path": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/bench/lean/D1_ring_p6latest_20261014_010104.vi",
+   "md5": "15c664e3eed1c580e05b13e42c86566f"
+  },
+  {
+   "path": "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_lean/tools/bench/lean_bench/lean_report_p6fix.md",
+   "md5": "76cd7a3364c01480f83c89cc5dace3c3"
+  },
+  {
+   "path": "tools/bench/pi_shots_lib.py",
+   "md5": "4e71bfce01975cc16fc038f8561c7fcd"
+  },
+  {
+   "path": "tools/bench/pi_shots_20261016.py",
+   "md5": "33215b5aebec0f7e79b2b64b5a09263b"
+  },
+  {
+   "path": "tools/bench/cards/brief_chat-PI1e.md",
+   "md5": "7ac4c4608ea479f9dbf54f55908d6c8d"
+  },
+  {
+   "path": "tools/bench/cards/result_chat-PI1d.json",
+   "md5": "751a25000f8690307a9de6719be951fc"
+  },
+  {
+   "path": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/OpGetImage_v0.vi",
+   "md5": "b7c5667bf86ed58b4751d8c10a45da48"
+  },
+  {
+   "path": "tools/bench/op_hygiene/OpGetImage_v0.json",
+   "md5": "634593838e81d997cbff82c56e5e0b66"
+  },
+  {
+   "path": "tools/bench/pi_shots_20261016.log",
+   "md5": "8ad7b7f3487b97c693aede1726090658"
+  }
+ ],
+ "pass": [
+  "Crop A: owner While of #6810 and #5058 found (same loop) and quoted; save/plot calls added where readable",
+  "Crops A1/B/C/D exist as PNG at native scale (24-bit), each <= ~1800 x 1100 px, text readable; shots.json complete",
+  "Source md5s unchanged; copies closed unsaved; handle count back to baseline; LabVIEW gone; labview-lock cleared"
+ ],
+ "outputs": [
+  "tools/bench/pi_shots_20261016/",
+  "tools/bench/cards/result_chat-PI1e.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "archive/peer/2026-10-16-priorart-op-getimage*",
+   "archive/peer/2026-10-16-hypothesis-op-getimage*",
+   "tools/bench/cards/review_*op-getimage*",
+   "tools/bench/jev_*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/shots_20261016/**",
+   "tools/bench/pi_shots_20261016/**",
+   "tools/bench/pi_shots*.py",
+   "tools/bench/pi_shots*.log",
+   "tools/bench/build_op_getimage*.log",
+   "tools/bench/build_op_getimage*.json",
+   "tools/bench/cards/result_chat-PI1e.json",
+   "STATUS.md"
+  ],
+  "status_edit": true,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 120
+ },
+ "unblocks": "M3",
+ "requires": [
+  {
+   "kind": "file",
+   "name": "tools/gscript.py"
+  },
+  {
+   "kind": "file",
+   "name": "tools/kb_com.py"
+  },
+  {
+   "kind": "file",
+   "name": "tools/prior_art_review.py"
+  }
+ ],
+ "rules": [
+  "No hardware (camera, motors, ASI, VISA) and never Run a VI; the lean runner stays stopped",
+  "Originals are read-only: open byte copies in claudeDev/shots_20261016 only, Don't Save on every prompt, md5 before/after",
+  "LabVIEW commands with timeout <= 30 s or through tools/bgrun.py --material; one LabVIEW client; close every reference",
+  "No GUI automation under this card; if scripting cannot get the image, RETURN with the facts; no workaround",
+  "OpGetImage_v0.vi is used as built; no rebuild, no recipe edit"
+ ]
+}

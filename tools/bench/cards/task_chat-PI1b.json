@@ -1,0 +1,71 @@
+{
+ "schema": "task/1",
+ "id": "chat-PI1b",
+ "kind": "build",
+ "retry_of_card": "chat-PI1",
+ "goal": "Per brief_chat-PI1.md: prior-art review of build_op_getimage_v0.py, then (not WRONG) build OpGetImage_v0.vi and capture PNG crops A1/B/C/D of the three VIs (byte copies).",
+ "why": "chat-PI1 was BLOCKED by guard_cycle premature-build: a new recipe needs a prior-art review newer than itself and that card allowed no peers. This card adds the priorart peer, nothing else.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_chat-PI1.md", "md5": "e6c0328c593dac0850d28e77702d9674"},
+  {"path": "tools/bench/cards/result_chat-PI1.json", "md5": "847717f1ab38c73a74b4e8a61332d567"},
+  {"path": "tools/recipes/build_op_getimage_v0.py", "md5": "7ad4f5e2498466268d9d6732913247ce"},
+  {"path": "tools/bench/pi_shots_lib.py", "md5": "ad67c5e11dcddd3af4246e41c99ad45c"},
+  {"path": "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/Min_Track N beads 4.5_KimLabMTroom_3StateClamping.vi", "md5": "2f048e3a18de3b5e3ca8368f6a24dae0"},
+  {"path": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_ring_p6_20261012_212645.vi", "md5": "c2d9c13cb40c0a5cab7433896d1df157"},
+  {"path": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/bench/lean/D1_ring_p6latest_20261014_010104.vi", "md5": "15c664e3eed1c580e05b13e42c86566f"},
+  {"path": "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_lean/tools/bench/lean_bench/lean_report_p6fix.md", "md5": "76cd7a3364c01480f83c89cc5dace3c3"}
+ ],
+ "pass": [
+  "Prior-art review run on tools/recipes/build_op_getimage_v0.py; verdict line quoted; a WRONG verdict = RETURN before any LabVIEW build",
+  "OpGetImage_v0.vi built; the scripting method used (class + method name + ID) verified from LabVIEW itself and quoted",
+  "Crops A1 (original frame loop), B (P6-1 reader before fix), C (current reader after fix), D (current loop 1.1 writer) exist as PNG at native scale, each <= ~1800 x 1100 px, text readable",
+  "shots.json lists file, source md5, uid, bounds, crop box, pixel size, description for every crop",
+  "md5 of the three source VIs unchanged before/after; copies closed without saving; handle count back to baseline; LabVIEW process gone; labview-lock cleared"
+ ],
+ "outputs": [
+  "archive/peer/2026-10-16-priorart-op-getimage.md",
+  "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/OpGetImage_v0.vi",
+  "tools/bench/pi_shots_20261016/",
+  "tools/bench/cards/result_chat-PI1b.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "archive/peer/2026-10-16-priorart-op-getimage*",
+   "tools/bench/cards/review_priorart-op-getimage*",
+   "tools/bench/jev_*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/OpGetImage_v0.vi",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/shots_20261016/**",
+   "tools/bench/pi_shots_20261016/**",
+   "tools/bench/pi_shots*.py",
+   "tools/bench/pi_shots*.log",
+   "tools/recipes/build_op_getimage*.py",
+   "tools/bench/build_op_getimage*.log",
+   "tools/bench/cards/result_chat-PI1b.json",
+   "STATUS.md"
+  ],
+  "status_edit": true,
+  "git_commit": false,
+  "peers": ["priorart"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 120
+ },
+ "unblocks": "M3",
+ "requires": [
+  {"kind": "file", "name": "tools/gscript.py"},
+  {"kind": "file", "name": "tools/kb_com.py"},
+  {"kind": "file", "name": "tools/prior_art_review.py"}
+ ],
+ "rules": [
+  "The op build stays in tools/recipes/ and passes the prior-art gate; never move it to tools/bench to skip the gate",
+  "No hardware (camera, motors, ASI, VISA) and never Run a VI; the lean runner stays stopped",
+  "Originals are read-only: open byte copies in claudeDev/shots_20261016 only, Don't Save on every prompt, md5 before/after",
+  "LabVIEW commands with timeout <= 30 s or through tools/bgrun.py --material; one LabVIEW client; close every reference",
+  "No GUI automation under this card; if scripting cannot get the image, RETURN with the facts; no workaround"
+ ]
+}
