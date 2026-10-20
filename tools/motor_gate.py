@@ -819,6 +819,34 @@ def _append_log(tag, rc, text):
 
 
 # ---------------------------------------------------------------- CLI
+RIG_DIR = r"G:\Codes\rig"     # the shared rig lock module + file (user 2026-10-21; not an env var on purpose)
+RIG_STATES_OK = ("assembled", "disassembled")
+
+
+def rig_lock_ok(kind, states=RIG_STATES_OK):
+    """The shared rig lock (user 2026-10-21, debate riglock-v6 item 6). The caller's token comes in RIGLOCK_TOKEN from
+    the lock holder (the lean queue, or rig_session.py). kind 'end' = cleanup (limits release): ownership only, also in
+    the experiment state (user item 9: the rig is returned to its initial condition). Anything else (session start,
+    reference move, --execute): riglock.permitted - holder AND state in `states` (the gate: assembled / disassembled;
+    the lean cycle hooks pass assembled only); experiment always no.
+    Fails CLOSED: no token, module or lock file unreadable -> refused. -> (ok, why)."""
+    token = os.environ.get("RIGLOCK_TOKEN", "").strip()
+    if not token:
+        return False, "no RIGLOCK_TOKEN - the rig lock is not held by this process tree (lean queue / rig_session.py)"
+    try:
+        if RIG_DIR not in sys.path:
+            sys.path.insert(0, RIG_DIR)
+        import riglock
+        ok = riglock.check(token) if kind == "end" else riglock.permitted(token, tuple(states))
+    except Exception as e:                                   # noqa: BLE001 - fail closed
+        return False, "rig lock unreadable (%s: %s)" % (type(e).__name__, e)
+    if ok:
+        return True, "rig lock held"
+    if kind == "end":
+        return False, "this token is not the rig lock holder (or the holder process is gone)"
+    return False, "rig lock does not permit work: not the holder, or rig state not in %s" % "/".join(states)
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(description="the single gateway for motion commands to PI / ASI / rotor")
     p.add_argument("--session", choices=["start", "end"], default=None,
@@ -852,6 +880,10 @@ def main(argv=None):
             sys.stderr.write("REFUSED: rig state %r - the session hook opens both motor ports (CLAUDE.md 1b)\n"
                              % state)
             return 3
+        lok, lwhy = rig_lock_ok(a.session)
+        if not lok:
+            sys.stderr.write("REFUSED: %s - --session %s needs the shared rig lock\n" % (lwhy, a.session))
+            return 3
         return session_start(limits) if a.session == "start" else session_end(limits)
     if a.reference:
         # 2026-09-23: a power-cycled C-863 restarts with POS 0 at the stage's physical spot; the session-start hook
@@ -862,6 +894,10 @@ def main(argv=None):
             return 3
         if len(a.reference.strip()) < 4:
             sys.stderr.write("REFUSED: --reference needs the user's order text\n")
+            return 3
+        lok, lwhy = rig_lock_ok("reference")
+        if not lok:
+            sys.stderr.write("REFUSED: %s - a reference move needs the shared rig lock\n" % lwhy)
             return 3
         print("USER-ORDERED REFERENCE MOVE: %r" % a.reference)
         rc, text = _run_ps(PI_SENDER, ["-Mode", "reference", "-SettleTimeoutS", "120"], timeout=180)
@@ -889,6 +925,10 @@ def main(argv=None):
     if not sess:
         sys.stderr.write("REFUSED: no session file %s - run `py tools/motor_gate.py --session start` first, which "
                          "installs the CONTROLLER limits and verifies them\n" % SESSION_PATH)
+        return 3
+    lok, lwhy = rig_lock_ok("execute")
+    if not lok:
+        sys.stderr.write("REFUSED: %s - --execute needs the shared rig lock\n" % lwhy)
         return 3
     print("session opened %s" % sess.get("started"))
     return transmit(a.device.lower(), a.command, d, limits)
