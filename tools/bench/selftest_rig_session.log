@@ -1,0 +1,15 @@
+BGRUN START 2026-10-21 01:37:10 limit 5.0 min: py -u tools/bench/selftest_rig_session.py
+BGRUN PID 7056
+PASS  a normal job -> rc 0, token passed, start + labview + end, lock released 
+PASS  b another live holder -> rc 2, nothing touched 
+PASS  c experiment -> rc 2, nothing touched 
+PASS  d cleanup fails -> rc 3, lock KEPT 
+PASS  e motor start fails -> command not run, cleanup run, lock released, rc 4 
+PASS  f experiment declared mid-job -> command killed, cleanup run, lock released, rc 4 3 s
+PASS  g live holder -> recovery refused (rc 2) 
+PASS  h stale holder during an experiment -> refused (rc 2), nothing touched 
+PASS  i a recovery check fails -> rc 3, lock kept in RECOVERING 
+PASS  j stale holder, checks pass -> recovered + released (rc 0), log has 'recovered' 
+NO MOTION COMMAND WAS SENT, NO PORT WAS OPENED AND LabVIEW WAS NOT TOUCHED BY THIS RUN.
+RESULT {"schema": "result-line/1", "status": "PASS", "gates": {"pass": 10, "fail": 0}, "first_fail": null, "artefacts": []}
+BGRUN END rc=0 after 4s
