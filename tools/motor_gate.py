@@ -29,6 +29,11 @@ hardware now enforces was only a place for the two to disagree. What this file s
      controllers and verifies them by readback; `--session end` releases them (PI 0..52, ASI +-500). `--execute`
      refuses unless a session file exists AND a FRESH readback of the controller limits, taken inside the same
      port open as the transmit and before it, matches the file within 0.001.
+     MAGNET RETURN (Q2, user 2026-10-21 "Q2 동의함"): with a session open, `--session end` first sends `MOV 1 0`
+     through the same send path as --execute (0 mm = the ceiling, the magnet farthest from the sample) while the
+     limits are still set, and verifies POS within MAGNET_HOME_TOL_MM; not verified -> nothing is released and the
+     session file is kept (the rig lock holder then keeps the lock). Also in the experiment state. The rotor is left
+     where it is (not decided).
 An abnormal exit therefore leaves the limits ON in the controllers, which is the safe direction.
 
 UNITS - stated explicitly because getting this wrong is the whole risk:
@@ -668,8 +673,69 @@ def session_start(limits, pi_call=None, asi_call=None, session_path=None, out=pr
     return 0
 
 
-def session_end(limits, pi_call=None, asi_call=None, session_path=None, out=print):
-    """Release the controller limits (PI lo..release_hi, ASI +-release) and delete the session file."""
+MAGNET_HOME_MM = 0.0        # Q2 (user 2026-10-21): 0 mm = the ceiling, the magnet farthest from the sample
+MAGNET_HOME_TOL_MM = 0.01   # the PI sender's own "reached" test (motor_send_pi.ps1, |final - target| < 0.01)
+
+
+def parse_pi_pos(text, prefix):
+    """The POS? value on the FIRST line starting with `prefix` ('after:' of a send, 'before:' of a limits mode); the
+    controller answers '1=<value>'. -> float or None."""
+    m = re.search(r"(?m)^%s\s+POS\?=(?:1=)?([-+0-9.eE]+)" % re.escape(prefix), text or "")
+    return float(m.group(1)) if m else None
+
+
+def _pi_send_call(canon, lo, hi, tol):
+    """ONE 'MOV 1 <n>' through motor_send_pi.ps1 send mode: one-shot token file, the controller limits read back inside
+    the same port open BEFORE the transmit (refused, exit 7, unless they are lo..hi), then poll POS? until settled."""
+    tok = _token_file(canon)
+    try:
+        return _run_ps(PI_SENDER, ["-Mode", "send", "-Command", canon, "-TokenFile", tok,
+                                   "-ExpectLo", "%g" % lo, "-ExpectHi", "%g" % hi, "-Tol", "%g" % tol], timeout=180)
+    finally:
+        if os.path.exists(tok):
+            os.remove(tok)
+
+
+def magnet_home(limits, pi_send=None, out=print):
+    """Q2 (user 2026-10-21 "Q2 동의함"): the PI magnet back to MAGNET_HOME_MM while the session limits are still set,
+    through the --execute send path (class decision, token, limit readback inside the port open, settle poll).
+    Verified = sender rc 0 + its 'RESULT: reached' + the limits it read back are the session's + POS after within
+    MAGNET_HOME_TOL_MM. `pi_send` (canon, lo, hi, tol) -> (rc, text) is injected by the self-test. -> (ok, why, pos)."""
+    canon = "MOV 1 %g" % MAGNET_HOME_MM
+    d = decide_pi("MOV", ["1", "%g" % MAGNET_HOME_MM], canon)
+    if not d.allowed:
+        return False, "the gate's class decision refused %r: %s" % (canon, d.reason), None
+    tol = float(limits.get("tolerance", DEFAULT_TOL))
+    lo, hi = float(limits["pi"]["lo_mm"]), float(limits["pi"]["hi_mm"])
+    try:
+        rc, text = (pi_send or _pi_send_call)(canon, lo, hi, tol)
+    except (OSError, subprocess.SubprocessError) as e:
+        return False, "sender failed to run (%s: %s)" % (type(e).__name__, e), None
+    out(text.strip())
+    log("pi", canon, d, dry=False)
+    _append_log("PI-MAGNET-HOME", rc, text)
+    ok_lim, msg_lim = check_pi_readback(parse_pi_limits(text), lo, hi, tol)
+    pos = parse_pi_pos(text, "after:")
+    why = []
+    if rc != 0:
+        why.append("sender code %d (%s)" % (rc, EXIT_MEANING.get(rc, "sender's own code")))
+    if "RESULT: reached" not in (text or ""):
+        why.append("no 'RESULT: reached' line")
+    if not ok_lim:
+        why.append(msg_lim)
+    if pos is None or abs(pos - MAGNET_HOME_MM) > MAGNET_HOME_TOL_MM:
+        why.append("POS after = %s, not within %g mm of %g" % (pos, MAGNET_HOME_TOL_MM, MAGNET_HOME_MM))
+    if why:
+        return False, "NOT verified: " + "; ".join(why), pos
+    return True, "verified at %g mm (POS %s, tol %g; limits %g..%g still set during the move)" % (
+        MAGNET_HOME_MM, pos, MAGNET_HOME_TOL_MM, lo, hi), pos
+
+
+def session_end(limits, pi_call=None, asi_call=None, session_path=None, out=print, pi_send=None):
+    """With a session open: the PI magnet back to 0 mm and verified (magnet_home) BEFORE anything is released (Q2); then
+    release the controller limits (PI lo..release_hi, ASI +-release) and delete the session file. No session file = no
+    gate motion was possible since the last verified end -> release only (the PI position is in the 'before:' line).
+    A return that fails or is not verified releases NOTHING and keeps the session file (rc 3)."""
     pi_call = pi_call or (lambda mode, lo, hi: _pi_limits_call(mode, lo, hi))
     asi_call = asi_call or (lambda mode, sl, su: _asi_limits_call(mode, sl, su))
     tol = float(limits.get("tolerance", DEFAULT_TOL))
@@ -677,22 +743,47 @@ def session_end(limits, pi_call=None, asi_call=None, session_path=None, out=prin
     rel = limits["asi"]["release"]
     sl = {"X": float(rel["sl"]), "Y": float(rel["sl"])}
     su = {"X": float(rel["su"]), "Y": float(rel["su"])}
+    path = session_path or SESSION_PATH
+    sess = session_info(path)
+    homed = bool(sess) and bool(sess.get("magnet_home"))
+    if sess and not homed:
+        ok_home, why_home, pos = magnet_home(limits, pi_send, out)
+        out("PI  : magnet return to %g mm: %s" % (MAGNET_HOME_MM, why_home))
+        if not ok_home:
+            out("SESSION END INCOMPLETE - the magnet return was not verified, so NO limit was released and the session "
+                "file is KEPT; the user must look before the rig is used")
+            return 3
+        # recorded, so a retry after a later failed release does not need the (by then released) session limits
+        sess["magnet_home"] = {"at": time.strftime("%Y-%m-%d %H:%M:%S"), "pos_mm": pos}
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(sess, f, indent=2, sort_keys=True)
+    elif homed:
+        out("PI  : magnet return already verified at %s (POS %s) by an earlier end attempt"
+            % (sess["magnet_home"].get("at"), sess["magnet_home"].get("pos_mm")))
+    else:
+        out("PI  : no open session file - magnet return skipped (no gate motion was possible since the last verified "
+            "end); PI position: see the 'before:' line below")
     rc, text = pi_call("limits-release", lo, hi)
     out(text.strip())
     ok_pi, msg_pi = check_pi_readback(parse_pi_limits(text), lo, hi, tol)
     out("PI  : %s (sender code=%d)" % (msg_pi, rc))
+    ok_pos = True
+    if sess:      # a second, independent POS read (new port open, before the release write) must still say 0
+        p2 = parse_pi_pos(text, "before:")
+        ok_pos = p2 is not None and abs(p2 - MAGNET_HOME_MM) <= MAGNET_HOME_TOL_MM
+        out("PI  : magnet POS re-read before the release = %s -> %s" % (p2, "at 0 mm" if ok_pos else "NOT at 0 mm"))
     rc2, text2 = asi_call("limits-release", sl, su)
     out(text2.strip())
     ok_asi, msg_asi = check_asi_readback(parse_asi_limits(text2), sl, su, tol)
     out("ASI : %s (sender code=%d)" % (msg_asi, rc2))
-    path = session_path or SESSION_PATH
-    if not (ok_pi and rc == 0 and ok_asi and rc2 == 0):
+    if not (ok_pi and rc == 0 and ok_asi and rc2 == 0 and ok_pos):
         out("SESSION END INCOMPLETE - the session file is KEPT so the mismatch stays visible; --execute will "
             "refuse anyway because the readback no longer matches the file")
         return 3
     if os.path.exists(path):
         os.remove(path)
-    out("SESSION END OK - controller limits released, %s deleted" % path)
+    out("SESSION END OK - %scontroller limits released, %s deleted"
+        % ("magnet at 0 mm, " if sess else "", path))
     return 0
 
 
@@ -754,14 +845,7 @@ def transmit(device, command, d, limits):
         return 5
     lo, hi = float(limits["pi"]["lo_mm"]), float(limits["pi"]["hi_mm"])
     canon = "MOV 1 %s" % ("%.4f" % d.detail["targets_mm"][-1]).rstrip("0").rstrip(".")
-    tok = _token_file(canon)
-    try:
-        rc, text = _run_ps(PI_SENDER, ["-Mode", "send", "-Command", canon, "-TokenFile", tok,
-                                       "-ExpectLo", "%g" % lo, "-ExpectHi", "%g" % hi, "-Tol", "%g" % tol],
-                           timeout=180)
-    finally:
-        if os.path.exists(tok):
-            os.remove(tok)
+    rc, text = _pi_send_call(canon, lo, hi, tol)
     print(text.strip())
     ok, msg = check_pi_readback(parse_pi_limits(text), lo, hi, tol)
     print("GATE re-check of the sender's readback: %s" % msg)
@@ -900,7 +984,11 @@ def main(argv=None):
     status_text = read_status(a.status)
     state = rig_state(status_text)
     if a.session:
-        if state != "assembled" and state != "disassembled":
+        # --session end is the CLEANUP (magnet back to 0 mm, limits released): also in the experiment state, for the
+        # lock holder only (user 2026-10-21 item 9 "초기 조건으로 돌려줘야" and Q2 "Q2 동의함" - an experiment declared
+        # mid-job still returns the rig to its initial condition). Start stays refused there; unknown refuses both.
+        ok_states = ("assembled", "disassembled") + (("experiment",) if a.session == "end" else ())
+        if state not in ok_states:
             sys.stderr.write("REFUSED: rig state %r - the session hook opens both motor ports (CLAUDE.md 1b)\n"
                              % state)
             return 3

@@ -34,6 +34,7 @@ session, not a silent override.
 ## Originals, computation and the new VI's design (24)
 
 - [script_port_is_a_separate_project](script_port_is_a_separate_project.md) (2026-10-20) - LabVIEW -> script-language port wanted (maintenance, future Andor iXon) but planned as a SEPARATE project, not inside V6; language and tolerance still open
+- [rig_magnet_return_and_followups](rig_magnet_return_and_followups.md) (2026-10-21/22) - Q2 "Q2 동의함": session end returns the PI magnet to 0 mm (verified) before the limits are released, also on a mid-job experiment, else lock kept; Q1 ASI release +-500 = original (Z never written); Q3 Arduino deferred; follow-ups 1-4 applied ("V6 후속작업 실시")
 - [riglock_labview2scr_fixes_approved](riglock_labview2scr_fixes_approved.md) (2026-10-21) - "승인": riglock CR-1..4; rig_session job-object kill + own-LabVIEW-only close + start refusal; motor_gate refuses when STATUS.md and rig_lock.json disagree; RULES.md preamble / CR-5 final / AI add-on / experiment hook (guard_experiment.py)
 - [riglock_v6_wiring_approvals](riglock_v6_wiring_approvals.md) (2026-10-21) - shared rig lock wiring: items 0 (assembled), 3, 5, 7, 10 approved; 9 rejected (mid-cycle experiment still returns the rig to its initial condition); 1, 2, 4, 6, 8, 11 pending
 - [diagram_layout_by_direct_coordinates](diagram_layout_by_direct_coordinates.md) (2026-10-19) - diagram tidy by direct coordinates (not Clean Up / Shrink Wrap); GUI resize only for structure size on scratch + P6L byte copy; future builders keep code inside their loop's zone

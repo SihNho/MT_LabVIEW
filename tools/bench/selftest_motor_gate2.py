@@ -32,7 +32,12 @@ PREDICTION CONTRACT (each numbered line is one case; the run FAILS if any case's
    3h --session start, VERIFY lines OK but no 'VERIFY-RESULT'   rc 3 (a truncated transcript is not a verify)
    3i --session start, PI refused on all 3 attempts             rc 3, ASI sender called 0 times [cycle 69 (a)]
    2c --session start, first LIMITS TMX=39, LAST TMX=52, rc 0   rc 3, parse reads TMX=52 [cycle 69 (b)]
-   4  --session end, both releases read back                    rc 0, session file deleted
+   4  --session end, MOV 1 0 under 0..39 FIRST, then both releases  rc 0, session file deleted (Q2, 2026-10-21)
+   4b-4g the return rejected / not at target / POS 0.5 / limits already released / sender error / truncated
+                                                                rc 3, NOTHING released, session file kept
+   4h no session file                                           no return, release only, rc 0
+   4i the release's own before-POS is 30                        rc 3, session file kept
+   4j ASI release fails after a verified return; retry          retry skips the return, releases, rc 0
   EXECUTE PRECONDITIONS:
    5  --execute with no session file                            rc 3, transmit NEVER called
    6  transmit() when the sender reports LIMITS != the file     rc != 0 and the gate says MISMATCH
@@ -149,6 +154,21 @@ PI_REL = (0, PI_HEAD39 + PI_LIM52
           + "RESULT: controller limits are TMN=0 TMX=52 (mode limits-release)")
 # -Mode send (:159 LIMITS, :206 RESULT reached / :161 SEND REFUSED exit 7)
 PI_SEND_OK = PI_LIM39 + "SENT: MOV 1 5\nERR? right after send = 0\nRESULT: reached 5 (target 5)"
+# -Mode send of the session-end magnet return 'MOV 1 0' (Q2, user 2026-10-21): :159 LIMITS, :164 before, :182 SENT,
+# :184 ERR?, :198 after, :206 RESULT reached / :205 REJECTED / :207 NOT at target; :161 SEND REFUSED (limits released)
+PI_HOME_HEAD = PI_LIM39 + "before: POS?=1=38.50000  SVO?=1=1  FRF?=1  VEL?=1=10  ERR?=0\nSENT: MOV 1 0\n"
+PI_HOME_OK = (PI_HOME_HEAD + "ERR? right after send = 0\n"
+              "after:  POS?=1=0.00010  ONT?=1=1  ERR?=0  elapsed=9.5s\nRESULT: reached 0 (target 0)")
+PI_HOME_REJECTED = (PI_HOME_HEAD + "ERR? right after send = 5\nafter:  POS?=1=38.50000  ONT?=1=1  ERR?=0  elapsed=1.5s\n"
+                    "RESULT: REJECTED BY THE CONTROLLER - ERR 5 right after send, POS=38.5 (target 0)\n"
+                    "FAIL: PI MOV rejected by the controller (ERR 5, target 0, POS=38.5)")
+PI_HOME_NOTAT = (PI_HOME_HEAD + "ERR? right after send = 0\nafter:  POS?=1=12.40000  ONT?=1=0  ERR?=0  elapsed=90.0s\n"
+                 "RESULT: NOT at target - final=12.4 target=0  (ERR right after send was 0)\n"
+                 "FAIL: PI MOV NOT at target (final=12.4 target=0)")
+PI_HOME_LIM52 = (PI_LIM52 + "SEND REFUSED: controller limits TMN=0 TMX=52 do not match the file (0..39) - run the "
+                 "session-start hook")
+# -Mode limits-release AFTER a verified return: the sender's own `before:` read (:81) shows the magnet at 0
+PI_REL0 = (0, PI_REL[1].replace("POS?=30.00000", "POS?=1=0.00010"))
 PI_SEND_BAD = (PI_LIM52 + "SEND REFUSED: controller limits TMN=0 TMX=52 do not match the file (0..39) - run the "
                "session-start hook")
 # 2026-09-18, STATUS.md OPEN 55: motor_send_pi.ps1:52 now also prints a PRE-write `PRELIMITS TMN=..
@@ -256,13 +276,79 @@ def main():
             "code=%d rb.TMX=%s" % (rc, rb and rb.get("TMX")), "code=3 rb.TMX=52",
             "parse_pi_limits judges the last ^LIMITS line (post-reference readback)")
 
-        start([PI_OK])
-        rc = mg.session_end(LIMITS, pi_call=lambda *a: PI_REL, asi_call=lambda *a: (0, ASI_REL),
-                            session_path=sess, out=quiet)
+        # ---- 4 session end = magnet back to 0 mm (Q2, user 2026-10-21) THEN the release; every sender injected.
+        # The real senders are pointed at a missing file and the journal at the temp dir: a stub that is not reached
+        # can never fall through to COM3.
+        real_end = (mg.PI_SENDER, mg.ASI_IO, mg.LOG_PATH)
+        mg.PI_SENDER = mg.ASI_IO = os.path.join(tmpdir, "no_such_sender.ps1")
+        mg.LOG_PATH = os.path.join(tmpdir, "motor_gate_end.log")
+        seq = []
+
+        def end(send, rel=PI_REL0, asi=(0, ASI_REL), with_session=True):
+            del seq[:]
+            if with_session:
+                start([PI_OK])
+            elif os.path.exists(sess):
+                os.remove(sess)
+
+            def pi_send(canon, lo, hi, tol):
+                seq.append(("send", canon, lo, hi))
+                if isinstance(send, Exception):
+                    raise send
+                return send
+
+            def pi_call(mode, lo, hi):
+                seq.append(("pi", mode, lo, hi))
+                return rel
+
+            def asi_call(mode, sl, su):
+                seq.append(("asi", mode))
+                return asi
+            return mg.session_end(LIMITS, pi_call=pi_call, asi_call=asi_call, session_path=sess, out=quiet,
+                                  pi_send=pi_send)
+
+        rc = end((0, PI_HOME_OK))
+        row(rc == 0 and not os.path.exists(sess) and [s[0] for s in seq] == ["send", "pi", "asi"]
+            and seq[0][1:] == ("MOV 1 0", 0.0, 39.0) and seq[1][1:] == ("limits-release", 0.0, 52.0),
+            "4 end: MOV 1 0 under 0..39, then release", "hook", "--session end",
+            "code=%d file=%s seq=%s" % (rc, os.path.exists(sess), [s[0] for s in seq]),
+            "code=0 file=False seq=send,pi,asi", "the return is sent while the session limits are still set")
+        for label, send, why in (
+                ("4b return REJECTED (ERR, rc 9)", (9, PI_HOME_REJECTED), "a rejected return releases nothing"),
+                ("4c return NOT at target (rc 8)", (8, PI_HOME_NOTAT), "POS 12.4 is not home"),
+                ("4d rc 0 but POS 0.5", (0, PI_HOME_OK.replace("POS?=1=0.00010", "POS?=1=0.50000")),
+                 "the gate's own POS check, not the sender's word"),
+                ("4e limits already released (rc 7)", (7, PI_HOME_LIM52), "no return outside the session limits"),
+                ("4f sender cannot run", OSError("no powershell"), "an exception is a failed return"),
+                ("4g no 'RESULT: reached' line", (0, PI_HOME_OK.replace("RESULT: reached 0 (target 0)", "")),
+                 "a truncated transcript is not a return")):
+            rc = end(send)
+            row(rc == 3 and os.path.exists(sess) and [s[0] for s in seq] == ["send"], label, "hook", "--session end",
+                "code=%d file=%s seq=%s" % (rc, os.path.exists(sess), [s[0] for s in seq]),
+                "code=3 file=True seq=send", why)
+        rc = end((0, PI_HOME_OK), with_session=False)
+        row(rc == 0 and [s[0] for s in seq] == ["pi", "asi"], "4h no session file -> no return, release only",
+            "hook", "--session end", "code=%d seq=%s" % (rc, [s[0] for s in seq]), "code=0 seq=pi,asi",
+            "no gate motion was possible since the last verified end")
+        rc = end((0, PI_HOME_OK), rel=PI_REL)
+        row(rc == 3 and os.path.exists(sess), "4i POS re-read before release = 30", "hook", "--session end",
+            "code=%d file=%s" % (rc, os.path.exists(sess)), "code=3 file=True",
+            "the second, independent POS read must also say 0")
+        rc = end((0, PI_HOME_OK), asi=(0, ASI_BAD))
+        rec = json.load(open(sess, encoding="utf-8")) if os.path.exists(sess) else {}
+        seq_first = [s[0] for s in seq]
+        del seq[:]
+        rc2 = mg.session_end(LIMITS, pi_call=lambda *a: (seq.append(("pi",)), PI_REL0)[1],
+                             asi_call=lambda *a: (seq.append(("asi",)), (0, ASI_REL))[1], session_path=sess,
+                             out=quiet, pi_send=lambda *a: (seq.append(("send",)), (9, PI_HOME_REJECTED))[1])
+        row(rc == 3 and seq_first == ["send", "pi", "asi"] and (rec.get("magnet_home") or {}).get("pos_mm") == 0.0001
+            and rc2 == 0 and [s[0] for s in seq] == ["pi", "asi"] and not os.path.exists(sess),
+            "4j ASI release fails -> retry skips the done return", "hook", "--session end",
+            "codes=%d,%d seq2=%s" % (rc, rc2, [s[0] for s in seq]), "codes=3,0 seq2=pi,asi",
+            "the verified return is recorded in the session file; a retry only releases")
+        mg.PI_SENDER, mg.ASI_IO, mg.LOG_PATH = real_end
     finally:
         mg.time.sleep = real_sleep
-    row(rc == 0 and not os.path.exists(sess), "4 end releases and deletes", "hook", "--session end",
-        "code=%d file=%s" % (rc, os.path.exists(sess)), "code=0 file=False", "release readback 0..52 / +-500")
 
     # ---- 5 --execute with no session file: transmit must never be reached ----
     called = []

@@ -688,7 +688,8 @@ def motor_limits_hook(phase, n, a, bench, runner_log, status_text):
     command nobody called.
 
     Returns (ok, reason). 'ok' means the gate ran, exited 0, printed its OK line AND both readback-verify lines.
-    Rig state 실험중 / unknown: the ports are the user's - nothing is sent, the skip is logged, ok=True.
+    Rig state unknown, or 실험중 at START: the ports are the user's - nothing is sent, the skip is logged, ok=True.
+    The END also runs in 실험중 (item 9 + Q2, 2026-10-21: magnet to 0 mm, limits released).
     Dry runs and --no-motor-hooks skip too (self-tests must not open serial ports)."""
     stamp = time.strftime("%Y-%m-%d %H:%M:%S")
     if a.dry_run or a.dry_cmd or getattr(a, "no_motor_hooks", False):
@@ -700,7 +701,9 @@ def motor_limits_hook(phase, n, a, bench, runner_log, status_text):
         state = motor_gate.rig_state(status_text)
     except Exception as e:  # noqa: BLE001
         state = "unknown (%s)" % e
-    if state not in ("assembled", "disassembled"):
+    # the END runs in the experiment state too (user 2026-10-21 item 9 + Q2: an experiment declared mid-cycle still gets
+    # the magnet back to 0 mm and the limits released - the rig at its initial condition); the start never does
+    if state not in ("assembled", "disassembled") and not (phase == "end" and state == "experiment"):
         log_line(runner_log, "MOTOR-LIMITS | %s | cycle %d %s | skipped: rig state %s (ports are the user's)"
                  % (stamp, n, phase, state))
         return True, "skipped: rig state %s" % state
@@ -752,62 +755,27 @@ def _lv_quit_graceful(timeout_s):
         return "quit call failed: %s" % e
 
 
-def _lv_kill():
-    try:
-        r = subprocess.run(["taskkill", "/F", "/T", "/IM", LV_IMAGE], capture_output=True, text=True, timeout=30)
-        return "taskkill rc=%d" % r.returncode
-    except Exception as e:  # noqa: BLE001
-        return "taskkill failed: %s" % e
-
-
-def _wait_gone(limit_s, poll_s=2.0):
-    t0 = time.time()
-    while True:
-        p = _lv_pids()
-        if p == []:
-            return True
-        if time.time() - t0 >= limit_s:
-            return False
-        time.sleep(poll_s)
-
-
-def labview_close_hook(n, a, bench, runner_log, status_text):
+def labview_close_hook(n, a, bench, runner_log, status_text, t0=None, root_pid=None):
     """User 2026-09-24 ("사이클 종료하고서는 제대로 LabVIEW 끄는것 잊지 말것, 특히 카메라가 계속 Acquisition 하면 기계에
-    좋지 않으니"; CLAUDE.md 1b MOTOR GRANT): after the motor end hook, every cycle ends with LabVIEW CLOSED and VERIFIED
-    GONE - COM Quit first (graceful), then taskkill /F (force; nothing is ever saved), then tasklist must show no
-    LabVIEW.exe. Returns (ok, reason). Skipped (logged, ok=True) under --dry-run/--dry-cmd/--no-labview-close and in
-    rig state 실험중/unknown (then LabVIEW is the user's experiment - it is never killed by the runner)."""
+    좋지 않으니"; CLAUDE.md 1b MOTOR GRANT): every cycle ends with ITS LabVIEW CLOSED and VERIFIED GONE.
+    B4 (user 2026-10-21 "승인"; follow-up "V6 후속작업 실시" 2026-10-22): only the LabVIEW this cycle OWNS is closed -
+    rig_session.close_labview / own_labview: created after the cycle began (`t0`, Windows FILETIME) AND COM-launched
+    (`/Automation`) or a live descendant of `root_pid` (the process holding the rig lock for the cycle). COM Quit only
+    when every running LabVIEW is ours, else taskkill /F by pid (nothing is ever saved); then tasklist. Any other
+    LabVIEW may be a user's: it is left running and the verdict is INCOMPLETE (ok False) - the caller keeps the rig
+    lock. The same in the experiment state (B3: our LabVIEW is closed, the user's never), so `status_text` no longer
+    decides anything (kept for the callers). t0 None = nothing is provably ours -> a running LabVIEW is INCOMPLETE.
+    Returns (ok, reason); reason starts with OK: / FAIL: / INCOMPLETE: (or 'skipped' under --dry-run/--dry-cmd/
+    --no-labview-close)."""
     stamp = time.strftime("%Y-%m-%d %H:%M:%S")
     if a.dry_run or a.dry_cmd or getattr(a, "no_labview_close", False):
         log_line(runner_log, "LABVIEW-CLOSE | %s | cycle %d | skipped (dry run / --no-labview-close)" % (stamp, n))
         return True, "skipped"
-    try:
-        import motor_gate
-        state = motor_gate.rig_state(status_text)
-    except Exception as e:  # noqa: BLE001
-        state = "unknown (%s)" % e
-    if state not in ("assembled", "disassembled"):
-        log_line(runner_log, "LABVIEW-CLOSE | %s | cycle %d | skipped: rig state %s (LabVIEW is the user's)"
-                 % (stamp, n, state))
-        return True, "skipped: rig state %s" % state
-    pids = _lv_pids()
-    if pids is None:
-        verdict, ok = "FAIL: tasklist could not be read", False
-    elif not pids:
-        verdict, ok = "OK: no LabVIEW.exe was running", True
-    else:
-        steps = [_lv_quit_graceful(LV_GRACE_S)]
-        if _wait_gone(LV_GRACE_S):
-            verdict, ok = "OK: closed gracefully (pids %s; %s)" % (pids, steps[0]), True
-        else:
-            steps.append(_lv_kill())
-            gone = _wait_gone(LV_FORCE_WAIT_S)
-            left = _lv_pids()
-            ok = bool(gone and left == [])
-            verdict = ("OK: forced (pids %s; %s)" % (pids, "; ".join(steps)) if ok else
-                       "FAIL: LabVIEW.exe still running after quit + force (pids %s; %s)" % (left, "; ".join(steps)))
-    log_line(runner_log, "LABVIEW-CLOSE | %s | cycle %d | %s" % (stamp, n, verdict))
-    return ok, verdict
+    sys.path.insert(0, HERE)
+    import rig_session
+    if t0 is None:
+        t0 = rig_session._filetime_now()          # nothing started after "now" -> nothing is provably this cycle's
+    return rig_session.close_labview(runner_log, t0, None, root_pid, who="cycle %d" % n)
 
 
 def bgrun_reap_hook(n, bench, runner_log):
@@ -1846,6 +1814,11 @@ def _loop(a, status_path, bench, runner_log, prompt, run_t0, hb):
                 f.write(next_md5_before)
         except OSError:
             pass
+        # B4 (2026-10-22): a LabVIEW started from here on (the Error List check's included) counts as this cycle's own;
+        # labview_close_hook closes only those at the cycle end
+        sys.path.insert(0, HERE)
+        import rig_session
+        lv_t0 = rig_session._filetime_now()
         # ERROR LIST at cycle start, BEFORE the motor start hook (user decision 5, 2026-09-24; card chat-C2). FAIL to
         # read = RUNNER STOP before the cycle (no motor limits were set yet); MISMATCH = the cycle runs, its cycle/1
         # card carries the result and the prompt says to deal with those errors first.
@@ -1949,13 +1922,15 @@ def _loop(a, status_path, bench, runner_log, prompt, run_t0, hb):
         else:
             capabilities_hook(n, runner_log)                  # card chat-T7: the function list, before the commit that carries it
             git_commit_cycle(n, runner_log)
-        # MOTOR LIMITS OFF at cycle end, verified by readback (user 2026-09-23). Runs whatever the session's exit
-        # was; a release that cannot be verified stops the runner and is written into STATUS, because limits left
-        # ON silently are exactly what happened between 2026-09-18 and 2026-09-23.
+        # LabVIEW CLOSED AND VERIFIED GONE at every cycle end (the camera must not keep acquiring - user 2026-09-24):
+        # only the cycle's own (B4). FIRST since 2026-10-22, as in lean_cycle_hooks / rig_session: no VI of ours may
+        # hold COM3 or drive the magnet while the motor end hook returns it to 0 mm (Q2) and releases the limits.
+        ok_lv, why_lv = labview_close_hook(n, a, bench, runner_log, read(status_path), t0=lv_t0, root_pid=os.getpid())
+        # MOTOR LIMITS OFF at cycle end, verified by readback (user 2026-09-23), after the magnet return to 0 mm (Q2,
+        # inside motor_gate --session end). Runs whatever the session's exit was; a release that cannot be verified
+        # stops the runner and is written into STATUS, because limits left ON silently are exactly what happened
+        # between 2026-09-18 and 2026-09-23.
         ok_end, why_end = motor_limits_hook("end", n, a, bench, runner_log, read(status_path))
-        # LabVIEW CLOSED AND VERIFIED GONE at every cycle end, after the motor end hook and whatever it returned (the
-        # camera must not keep acquiring - user 2026-09-24). Its failure stops the runner below.
-        ok_lv, why_lv = labview_close_hook(n, a, bench, runner_log, read(status_path))
         # BGRUN REAPER at cycle end (card 92-4): close the record of any bgrun killed from outside during the cycle.
         bgrun_reap_hook(n, bench, runner_log)
         cost =("$%.4f" % (env["total_cost_usd"] + assign_cost)) if isinstance(env, dict) and isinstance(

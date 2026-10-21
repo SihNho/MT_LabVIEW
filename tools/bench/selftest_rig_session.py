@@ -16,6 +16,7 @@ import contextlib
 import io
 import json
 import os
+import signal
 import subprocess
 import sys
 import tempfile
@@ -210,6 +211,36 @@ for q in (old, new_com, new_hand, new_member):
 check("m B4 own = new COM-launched + new job member; foreign = older one + new hand-started",
       sorted(own) == sorted([new_com.pid, new_member.pid]) and sorted(foreign) == sorted([old.pid, new_hand.pid]),
       "own %s foreign %s" % (own, foreign))
+
+# B4 for the cycle hooks (follow-up 2026-10-22): a LIVE descendant of the lock holder's process (root_pid) is own; an
+# orphan whose parent already exited (the `Start-Process LabVIEW.exe` shape) is not provable -> foreign. Real child
+# processes of this test (python sleepers named as LabVIEW by a faked command-line read), nothing is killed by RS.
+t_job = RS._filetime_now()
+time.sleep(0.5)
+kid = subprocess.Popen(sleeper)
+opid = os.path.join(TMP, "orphan_pid.txt")
+mid = subprocess.Popen([sys.executable, "-c",
+                        "import subprocess,sys\n"
+                        "g = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(60)'], "
+                        "creationflags=0x00000008|0x00000200)\n"
+                        "open(r'%s','w').write(str(g.pid))\n" % opid])
+mid.wait()
+orphan = read_pids(opid, 1)[0]
+RS._cmdlines = lambda image: {kid.pid: "LabVIEW.exe", orphan: "LabVIEW.exe"}
+own, foreign = RS.own_labview([kid.pid, orphan], t_job, [], root_pid=os.getpid())
+own_other, _f = RS.own_labview([kid.pid], t_job, [], root_pid=dead_pid())
+RS._cmdlines = real_cl
+kid.kill()
+kid.wait()
+os.kill(orphan, signal.SIGTERM)                  # this test's own python sleeper (TerminateProcess on Windows)
+ft = RS.iso_to_filetime("2026-10-22T10:00:00+09:00")
+check("m2 B4 live descendant of root_pid = own; orphan (parent gone) = foreign; another root = not own",
+      own == [kid.pid] and foreign == [orphan] and own_other == [],
+      "own %s foreign %s other %s" % (own, foreign, own_other))
+check("m3 iso_to_filetime: riglock `since` -> FILETIME (offset honoured; 1970-01-01Z = 116444736000000000)",
+      ft == RS.iso_to_filetime("2026-10-22T01:00:00+00:00")
+      and RS.iso_to_filetime("1970-01-01T00:00:00+00:00") == 116444736000000000
+      and RS.iso_to_filetime(None) is None, "ft %s" % ft)
 
 # ---- B1: permitted() raising (stuck mutex) must still kill the child AND its grandchild before the cleanup
 pidfile = os.path.join(TMP, "tree_pids.txt")

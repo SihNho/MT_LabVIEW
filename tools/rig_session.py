@@ -199,23 +199,71 @@ def _cmdlines(image):
     return res
 
 
-def own_labview(pids, t0, members):
+def iso_to_filetime(s):
+    """riglock's `since` (ISO time with offset, riglock._now) -> Windows FILETIME, comparable with proc_created().
+    None when unreadable."""
+    import datetime
+    try:
+        return int((datetime.datetime.fromisoformat(s).timestamp() + 11644473600) * 10 ** 7)
+    except (TypeError, ValueError):
+        return None
+
+
+def _parents():
+    """{pid: parent pid} of every running process (CIM); {} when it cannot be read - then no descent is proven."""
+    ps = "Get-CimInstance Win32_Process | ForEach-Object { '{0}|{1}' -f $_.ProcessId, $_.ParentProcessId }"
+    try:
+        r = subprocess.run(["powershell", "-NoProfile", "-Command", ps], capture_output=True, text=True, timeout=60)
+    except Exception:                                        # noqa: BLE001
+        return {}
+    res = {}
+    for ln in (r.stdout or "").splitlines():
+        a, _, b = ln.strip().partition("|")
+        if a.isdigit() and b.isdigit():
+            res[int(a)] = int(b)
+    return res
+
+
+def descends_from(pid, root_pid, parents, max_depth=32):
+    """True when `pid`'s LIVE parent chain reaches root_pid. Each parent must be alive and created no later than its
+    child (a reused pid number is not a parent); a dead link ends the chain -> False (not proven)."""
+    if not root_pid:
+        return False
+    child, child_t = pid, riglock.proc_created(pid)
+    for _ in range(max_depth):
+        par = parents.get(child)
+        if not par or par == child or child_t is None:
+            return False
+        par_t = riglock.proc_created(par)
+        if par_t is None or par_t > child_t:
+            return False
+        if par == root_pid:
+            return True
+        child, child_t = par, par_t
+    return False
+
+
+def own_labview(pids, t0, members, root_pid=None):
     """Split running LabVIEW pids into (own, foreign). OWN = created after the job began (t0, FILETIME) AND either a
-    member of the job or launched by COM (`/Automation`, the LabVIEW.Application LocalServer32 command line). A pid
-    alone is not proof (debate l2s-conflict-01), so anything not proven ours is foreign and left alone."""
+    member of the job, launched by COM (`/Automation`, the LabVIEW.Application LocalServer32 command line), or (cycle
+    hooks, follow-up 2026-10-22) a live descendant of root_pid, the lock holder's process. A pid alone is not proof
+    (debate l2s-conflict-01), so anything not proven ours is foreign and left alone."""
     cls = _cmdlines("LabVIEW.exe")
+    parents = _parents() if root_pid else {}
     own, foreign = [], []
     for pid in pids:
         created = riglock.proc_created(pid)
         new = created is not None and created > t0
         com = "/automation" in (cls.get(pid) or "").lower()
-        (own if new and (pid in (members or ()) or com) else foreign).append(pid)
+        mine = new and (pid in (members or ()) or com or descends_from(pid, root_pid, parents))
+        (own if mine else foreign).append(pid)
     return own, foreign
 
 
-def close_labview(log_path, t0=None, members=None):
+def close_labview(log_path, t0=None, members=None, root_pid=None, who="rig_session"):
     """Close the LabVIEW this job started, verified gone (B4). -> (ok, why); ok False = failed OR incomplete (a
-    LabVIEW that is not provably ours is still running - it may be a user's, so it is never touched)."""
+    LabVIEW that is not provably ours is still running - it may be a user's, so it is never touched). The verdict
+    starts with OK: / FAIL: (own LabVIEW not gone, or unreadable) / INCOMPLETE: (own gone, a foreign one left)."""
     import cycle_runner as CR
     pids = CR._lv_pids()
     if pids is None:
@@ -223,7 +271,7 @@ def close_labview(log_path, t0=None, members=None):
     elif not pids:
         verdict, ok = "OK: no LabVIEW.exe was running", True
     else:
-        own, foreign = own_labview(pids, t0 or 0, members)
+        own, foreign = own_labview(pids, t0 or 0, members, root_pid)
         steps = []
 
         def own_alive():                                 # unreadable tasklist = assume still alive
@@ -249,7 +297,7 @@ def close_labview(log_path, t0=None, members=None):
                            "lock kept for the user to look (own closed: %s; %s)" % (foreign, own, "; ".join(steps))), False
         else:
             verdict, ok = "OK: own LabVIEW closed (pids %s; %s)" % (own, "; ".join(steps)), True
-    CR.log_line(log_path, "LABVIEW-CLOSE | %s | rig_session | %s" % (time.strftime("%Y-%m-%d %H:%M:%S"), verdict))
+    CR.log_line(log_path, "LABVIEW-CLOSE | %s | %s | %s" % (time.strftime("%Y-%m-%d %H:%M:%S"), who, verdict))
     return ok, verdict
 
 

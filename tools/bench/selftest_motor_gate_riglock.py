@@ -91,6 +91,42 @@ check("B2 STATUS.md experiment vs lock assembled -> start refused, reason names 
       not with_token(tok, "start")[0] and "DISAGREES" in with_token(tok, "start")[1])
 check("B2 disagreement -> execute refused", not with_token(tok, "execute")[0])
 check("B2 disagreement -> end (cleanup) still ok", with_token(tok, "end")[0])
+
+# main(): an experiment declared mid-job (STATUS.md 실험중 AND rig_lock.json experiment) -> `--session end` still runs for
+# the holder (item 9 + Q2: magnet home, limits released); `--session start` is refused. In-process, both session
+# functions replaced by recorders - no sender can be reached.
+ran = []
+real_ss, real_se = mg.session_start, mg.session_end
+mg.session_start = lambda *a, **k: (ran.append("start"), 0)[1]
+mg.session_end = lambda *a, **k: (ran.append("end"), 0)[1]
+rl.set_state("experiment", "selftest", "temp")
+jr = os.path.join(TMP, "journal_main.log")
+
+
+def gate_main(argv, token):
+    del ran[:]
+    os.environ.pop("RIGLOCK_TOKEN", None)
+    if token:
+        os.environ["RIGLOCK_TOKEN"] = token
+    try:
+        return mg.main(argv + ["--status", STATUS_TMP, "--journal", jr])
+    finally:
+        os.environ.pop("RIGLOCK_TOKEN", None)
+
+
+rc_e = gate_main(["--session", "end"], tok)
+check("experiment, holder -> --session end runs (cleanup: magnet home + release)", rc_e == 0 and ran == ["end"],
+      "rc=%d ran=%s" % (rc_e, ran))
+rc_s = gate_main(["--session", "start"], tok)
+check("experiment, holder -> --session start refused, nothing run", rc_s == 3 and ran == [], "rc=%d ran=%s" % (rc_s, ran))
+rc_n = gate_main(["--session", "end"], None)
+check("experiment, no token -> --session end refused, nothing run", rc_n == 3 and ran == [], "rc=%d ran=%s" % (rc_n, ran))
+with open(STATUS_TMP, "w", encoding="utf-8") as fh:
+    fh.write("no machine key here\n")
+rc_u = gate_main(["--session", "end"], tok)
+check("unknown STATUS rig-state, holder -> --session end refused (default-deny)", rc_u == 3 and ran == [],
+      "rc=%d ran=%s" % (rc_u, ran))
+mg.session_start, mg.session_end = real_ss, real_se
 rl.set_state("assembled", "selftest", "temp")
 rl.release(tok)
 check("released -> end refused", not with_token(tok, "end")[0])

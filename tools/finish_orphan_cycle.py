@@ -38,8 +38,10 @@ def main():
     end = time.strftime("%Y-%m-%d %H:%M:%S")
     CR.land_retrospective(bench, log)
     CR.git_commit_cycle(x.cycle, log)
-    ok_end, why_end = CR.motor_limits_hook("end", x.cycle, a, bench, log, CR.read(status_path))
+    # LabVIEW first (2026-10-22): the motor end returns the magnet to 0 mm through COM3 before releasing the limits.
+    # No cycle start time is known here, so any running LabVIEW is not provably the cycle's -> INCOMPLETE (B4)
     ok_lv, why_lv = CR.labview_close_hook(x.cycle, a, bench, log, CR.read(status_path))
+    ok_end, why_end = CR.motor_limits_hook("end", x.cycle, a, bench, log, CR.read(status_path))
     CR.bgrun_reap_hook(x.cycle, bench, log)
     line = ("CYCLE %d | %s | %s | exit ? (orphaned: runner died, finished by finish_orphan_cycle.py) | $? | "
             "motor-end %s, labview-close %s" % (x.cycle, x.started, end, "OK" if ok_end else why_end,

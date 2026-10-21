@@ -16,8 +16,10 @@ PREDICTION CONTRACT (all PASS):
      add_steer_decision appends ONE valid open item to a COPY of decisions_pending.json
   S6 runner (--dry-cmd, temp bench with a steer card): cycle card carries `steer`; a session that never answers is
      STOPPED after 2 cycles, exit 3, reason names the steer, decisions_pending gets the item
-  S7 labview_close_hook: dry run skipped; rig 실험중 skipped (nothing killed); none running OK; graceful OK;
-     force OK; still running after force -> FAIL; tasklist unreadable -> FAIL
+  S7 labview_close_hook, B4 since 2026-10-22 (only the cycle's OWN LabVIEW): dry run skipped; none running OK;
+     own only -> quit OK; own survives quit -> taskkill by its pid OK; own still running -> FAIL; foreign only ->
+     INCOMPLETE, nothing touched; own + foreign -> no COM quit, own killed, INCOMPLETE; 실험중 -> own still closed;
+     tasklist unreadable -> FAIL; no cycle start time -> INCOMPLETE
   S8 regression: selftest_protocol, selftest_cycle_runner, selftest_cycle_runner_ff, selftest_launch_gate all rc 0
     py tools/bgrun.py --material --max-min 15 --log tools/bench/selftest_item34.log -- py -u tools/bench/selftest_item34.py
 """
@@ -141,45 +143,82 @@ else:
          items[-1]["id"])
     gate("S6d LABVIEW-CLOSE skipped under --dry-cmd (logged)", "LABVIEW-CLOSE |" in log and "skipped (dry run" in log)
 
-print("---------- S7 labview_close_hook with fake process primitives")
+print("---------- S7 labview_close_hook (B4, 2026-10-22: only the cycle's OWN LabVIEW) with fake process primitives")
+# _lv_pids / _lv_quit_graceful, rig_session.own_labview and the per-pid taskkill are ALL fakes: no real pid is killed.
+import rig_session as RS  # noqa: E402
 A = argparse.Namespace(dry_run=False, dry_cmd="", no_labview_close=False)
 ASM = "rig-state: assembled\n"
 rl = os.path.join(TMP, "runner7.log")
 CR.LV_GRACE_S, CR.LV_FORCE_WAIT_S = 0.2, 0.2
 calls = []
+real_own, real_sub = RS.own_labview, RS.subprocess
 
 
-def fake(pid_seq, quit_msg="quit rc=0"):
+class _FakeSub(object):
+    @staticmethod
+    def run(cmd, **k):
+        calls.append("kill %s" % cmd[-1])
+        return argparse.Namespace(returncode=0, stdout="", stderr="")
+
+
+def fake(pid_seq, own=(), quit_msg="quit rc=0"):
     seq = list(pid_seq)
     CR._lv_pids = lambda: (seq.pop(0) if len(seq) > 1 else seq[0])
     CR._lv_quit_graceful = lambda t: calls.append("quit") or quit_msg
-    CR._lv_kill = lambda: calls.append("kill") or "taskkill rc=0"
+    RS.own_labview = lambda pids, t0, members, root_pid=None: ([p for p in pids if p in own],
+                                                                [p for p in pids if p not in own])
+    RS.subprocess = _FakeSub
+    del calls[:]
 
 
-ok, why = CR.labview_close_hook(1, argparse.Namespace(dry_run=True, dry_cmd="", no_labview_close=False), TMP, rl, ASM)
-gate("S7a dry run -> skipped", ok and why == "skipped", why)
-calls.clear()
-fake([[123]])
-ok, why = CR.labview_close_hook(1, A, TMP, rl, "rig-state: 실험중\n")
-gate("S7b rig 실험중 -> skipped, nothing quit or killed", ok and "skipped" in why and calls == [], (why, calls))
-fake([[]])
-ok, why = CR.labview_close_hook(1, A, TMP, rl, ASM)
-gate("S7c none running -> OK", ok and "no LabVIEW" in why, why)
-calls.clear()
-fake([[123], []])
-ok, why = CR.labview_close_hook(1, A, TMP, rl, ASM)
-gate("S7d graceful quit closes it -> OK, no kill", ok and "gracefully" in why and calls == ["quit"], (why, calls))
-calls.clear()
-fake([[123], [123], [123], [], []])
-ok, why = CR.labview_close_hook(1, A, TMP, rl, ASM)
-gate("S7e quit fails, force works -> OK forced", ok and "forced" in why and calls == ["quit", "kill"], (why, calls))
-calls.clear()
-fake([[123]])
-ok, why = CR.labview_close_hook(1, A, TMP, rl, ASM)
-gate("S7f still running after quit + force -> FAIL", not ok and "still running" in why, why)
-fake([None])
-ok, why = CR.labview_close_hook(1, A, TMP, rl, ASM)
-gate("S7g tasklist unreadable -> FAIL", not ok and "tasklist" in why, why)
+def hook(status=ASM, t0=1):
+    return CR.labview_close_hook(1, A, TMP, rl, status, t0=t0, root_pid=4242)
+
+
+try:
+    ok, why = CR.labview_close_hook(1, argparse.Namespace(dry_run=True, dry_cmd="", no_labview_close=False), TMP, rl,
+                                    ASM)
+    gate("S7a dry run -> skipped", ok and why == "skipped", why)
+    fake([[]])
+    ok, why = hook()
+    gate("S7b none running -> OK", ok and "no LabVIEW" in why, why)
+    fake([[123], [123], []], own=(123,))
+    ok, why = hook()
+    gate("S7c only our own -> COM quit closes it, OK, no kill", ok and why.startswith("OK") and calls == ["quit"],
+         (why, calls))
+    fake([[123], [123], [123], [123], []], own=(123,))
+    ok, why = hook()
+    gate("S7d own survives the quit -> taskkill by ITS pid, OK", ok and calls[:1] == ["quit"] and "kill 123" in calls,
+         (why, calls))
+    fake([[123]], own=(123,))
+    ok, why = hook()
+    gate("S7e own still running after quit + kill -> FAIL", not ok and why.startswith("FAIL"), why)
+    fake([[456]])
+    ok, why = hook()
+    gate("S7f only a foreign LabVIEW (a user's?) -> INCOMPLETE, no quit, no kill", not ok
+         and why.startswith("INCOMPLETE") and calls == [], (why, calls))
+    fake([[123, 456], [123, 456], [123, 456], [456]], own=(123,))
+    ok, why = hook()
+    gate("S7g own + foreign -> no COM quit (it could reach the user's), kill 123 only, INCOMPLETE", not ok
+         and why.startswith("INCOMPLETE") and calls == ["kill 123"], (why, calls))
+    fake([[123], [123], []], own=(123,))
+    ok, why = hook(status="rig-state: 실험중\n")
+    gate("S7h rig 실험중 -> our own LabVIEW is still closed (B3), OK", ok and calls == ["quit"], (why, calls))
+    fake([None])
+    ok, why = hook()
+    gate("S7i tasklist unreadable -> FAIL", not ok and "tasklist" in why, why)
+    fake([[os.getpid()]])
+    # the REAL ownership test (its read-only CIM query included); t0 None -> "now": nothing is provably ours. The fake
+    # quit stays, so even a wrong verdict could not reach a real LabVIEW; a kill would show in the fake list below.
+    RS.own_labview = real_own
+    real_cl = RS._cmdlines
+    RS._cmdlines = lambda image: {os.getpid(): "LabVIEW.exe /Automation"}
+    ok, why = CR.labview_close_hook(1, A, TMP, rl, ASM)
+    gate("S7j no cycle start time (t0 None) -> a running LabVIEW is foreign: INCOMPLETE, nothing killed", not ok
+         and why.startswith("INCOMPLETE") and calls == [], (why, calls))
+    RS._cmdlines = real_cl
+finally:
+    RS.own_labview, RS.subprocess = real_own, real_sub
 
 print("---------- S8 regression self-tests")
 for name in ("selftest_protocol.py", "selftest_cycle_runner.py", "selftest_cycle_runner_ff.py", "selftest_launch_gate.py"):

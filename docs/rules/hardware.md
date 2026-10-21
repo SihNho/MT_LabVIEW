@@ -48,6 +48,11 @@ never restated here.
   start while LabVIEW runs, kills its whole job (job object) before releasing limits, closes only its own LabVIEW;
   while `rig_lock.json` says experiment, `tools/hooks/guard_experiment.py` blocks device / LabVIEW / kill / lock-acquire /
   install commands and screen clicks (reads and screenshots pass) - `G:\Codes\rig\RULES.md` section 5.
+  **Magnet return (Q2 "Q2 동의함", applied 2026-10-22, `docs/decisions/rig_magnet_return_and_followups.md`):**
+  `motor_gate.py --session end` first sends `MOV 1 0` (0 mm = the ceiling, farthest from the sample) through the send
+  path while the session limits are still set and verifies POS within 0.01 mm; not verified -> nothing released, the
+  session file and the lock are kept. `--session end` runs in the experiment state too, for the lock holder only. Cycle
+  ends (cycle_runner, lean hooks) close only the cycle's own LabVIEW, LabVIEW first, then the motor end.
 - **While disassembled, hardware measurement is expected work** (VISA/serial latency, motor-read cost, rotor
   negative-angle check) - not deferred. `docs/rules/CLAUDE-full-2026-10-10.md:74-76`
 - **The rotor is SIGNED** - the new VI uses `SetCommand_signed.vi` and follows the hardware number with its sign; the
