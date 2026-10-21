@@ -43,6 +43,11 @@ never restated here.
   `G:\Codes\rig\RULES.md`** (user 2026-10-21). In V6 the lock is wired into the lean queue + cycle hooks, `motor_gate.py`
   (session / reference / execute need the lock; cleanup = ownership), `tools/rig_session.py` (chat / one-off rig jobs)
   and `tools/rig_recover.py` (dead holder, user's words only) - decision `docs/decisions/riglock_v6_wiring_approvals.md`.
+  **Fixes approved 2026-10-21 ("승인", `docs/decisions/riglock_labview2scr_fixes_approved.md`):** new device work is
+  refused while STATUS.md `rig-state:` and `rig_lock.json` disagree (motor_gate, rig_session); rig_session refuses to
+  start while LabVIEW runs, kills its whole job (job object) before releasing limits, closes only its own LabVIEW;
+  while `rig_lock.json` says experiment, `tools/hooks/guard_experiment.py` blocks device / LabVIEW / kill / lock-acquire /
+  install commands and screen clicks (reads and screenshots pass) - `G:\Codes\rig\RULES.md` section 5.
 - **While disassembled, hardware measurement is expected work** (VISA/serial latency, motor-read cost, rotor
   negative-angle check) - not deferred. `docs/rules/CLAUDE-full-2026-10-10.md:74-76`
 - **The rotor is SIGNED** - the new VI uses `SetCommand_signed.vi` and follows the hardware number with its sign; the

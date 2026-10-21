@@ -1,0 +1,105 @@
+BGRUN START 2026-10-21 12:07:52 limit 5.0 min: py -u tools/bench/selftest_motor_gate_rotor.py
+BGRUN PID 19460
+PASS  L1 live motor_limits.json accepted with rotor block  {'_comment': "2026-10-19 user ('-5?? ?? + 5??', '?? ??? ??? ???? ??? ?????'): Autonics PMC-2HS X axis, COM5 9600 8N1, native unit pulses, 0.72 deg/pulse (500 pulses = 1 turn). mode 'relative' = the session-start hook reads POS (read-only) and every PAB/PIC target must lie in start +- half_width_pulses (2500 = 5 turns; the gate refuses a wider value). Enforced by motor_gate.py + motor_rotor_io.ps1, NOT by the controller (its EEPROM soft limit is not installed - docs/rotor-protocol.md). max_speed = SPD argument cap (the main VI's 'Rot Speed' default 100; actual pps = SPD x speed multiplier).", 'mode': 'relative', 'half_width_pulses': 2500, 'deg_per_pulse': 0.72, 'max_speed': 100}
+PASS  L2 half width 2501 -> file refused  
+PASS  L2 half width 0 -> file refused  
+PASS  L2 half width 2500.0 float -> file refused  
+PASS  L2 deg 0.70 -> file refused  
+PASS  L2 speed 101 -> file refused  
+PASS  L2 mode controller -> file refused  
+PASS  L3 no rotor block -> still accepted  
+PASS  S1 FFFFFFF6 -> -10 pulses -> -7.2 deg  -10
+PASS  S2 FFFFFA24 -> -1500 (-1080 deg)  
+PASS  S3 000186A0 -> 100000  
+PASS  S4 7FFFFFFF / 80000000  
+PASS  S5 4-digit field -> None  
+PASS  S6 POS FFFFFFF6,00000000 -> -10  
+PASS  S7 FRESH line agreeing -> -10  
+PASS  S8 FRESH unsigned misread (4294967286) -> None  
+PASS  W1 start rc 0, window -1500..3500 around 1000  (0, {'center_pulses': 1000, 'deg_per_pulse': 0.72, 'half_width_pulses': 2500, 'hi_pulses': 3500, 'lo_pulses': -1500, 'mode': 'relative'})
+PASS  W2 rotor read fails -> PI/ASI session ok, rotor_window None  0
+PASS  W3 no rotor block -> no read, no rotor_window key  
+PASS  A PAB 3500 -> ALLOW  rotor PAB rotor target 3500 pulses (2520.00 deg) inside the session window -1500..3500
+PASS  A PAB 3501 -> REFUSE  rotor PAB rotor target 3501 pulses (2520.72 deg) OUTSIDE the session window -1500..3500 pulses (start 1000 +- 2500 = +-5 turns)
+PASS  A PAB -1500 -> ALLOW  rotor PAB rotor target -1500 pulses (-1080.00 deg) inside the session window -1500..3500
+PASS  A PAB -1501 -> REFUSE  rotor PAB rotor target -1501 pulses (-1080.72 deg) OUTSIDE the session window -1500..3500 pulses (start 1000 +- 2500 = +-5 turns)
+PASS  A PAB 0 -> ALLOW  rotor PAB rotor target 0 pulses (0.00 deg) inside the session window -1500..3500
+PASS  A PAB -10 -> ALLOW  rotor PAB rotor target -10 pulses (-7.20 deg) inside the session window -1500..3500
+PASS  A PAB 100000 -> REFUSE  rotor PAB rotor target 100000 pulses (72000.00 deg) OUTSIDE the session window -1500..3500 pulses (start 1000 +- 2500 = +-5 turns)
+PASS  A PAB -7200 -> REFUSE  rotor PAB rotor target -7200 pulses (-5184.00 deg) OUTSIDE the session window -1500..3500 pulses (start 1000 +- 2500 = +-5 turns)
+PASS  R1 PIC 2500 from fresh 1000 -> ALLOW  rotor PIC rotor target 3500 pulses (2520.00 deg) inside the session window -1500..3500
+PASS  R1 PIC 2501 from fresh 1000 -> REFUSE  rotor PIC rotor target 3501 pulses (2520.72 deg) OUTSIDE the session window -1500..3500 pulses (start 1000 +- 2500 = +-5 turns)
+PASS  R1 PIC -2500 from fresh 1000 -> ALLOW  rotor PIC rotor target -1500 pulses (-1080.00 deg) inside the session window -1500..3500
+PASS  R1 PIC -2501 from fresh 1000 -> REFUSE  rotor PIC rotor target -1501 pulses (-1080.72 deg) OUTSIDE the session window -1500..3500 pulses (start 1000 +- 2500 = +-5 turns)
+PASS  R2 PIC +1000 from fresh 3000 (target 4000) -> REFUSE  rotor PIC rotor target 4000 pulses (2880.00 deg) OUTSIDE the session window -1500..3500 pulses (start 1000 +- 2500 = +-5 turns)
+PASS  R3 PIC -1500 without a fresh position -> allowed by class, needs_fresh_pos  rotor PIC -1500 - allowed by class; the target (FRESH POS + -1500) is checked against the session window -1500..3500 inside the transmit's port open
+PASS  R4 PIC 5001 larger than the whole window -> REFUSE  rotor PIC 5001: a step larger than the whole window (5000 pulses) can never stay inside it
+PASS  R4 PIC -5001 larger than the whole window -> REFUSE  rotor PIC -5001: a step larger than the whole window (5000 pulses) can never stay inside it
+PASS  R5 rotor_target_check PIC without fresh -> refused  relative rotor move needs a FRESH position read
+PASS  Y 'PAB 10, -1' refused  rotor 'PAB': exactly one signed decimal X value expected (the rotor is the X axis; a Y component or any other form is refused), got '10, -1'
+PASS  Y 'PAB , 1500' refused  rotor 'PAB': exactly one signed decimal X value expected (the rotor is the X axis; a Y component or any other form is refused), got ', 1500'
+PASS  Y 'PIC , -1500' refused  rotor 'PIC': exactly one signed decimal X value expected (the rotor is the X axis; a Y component or any other form is refused), got ', -1500'
+PASS  Y 'PIC 10,10' refused  rotor 'PIC': exactly one signed decimal X value expected (the rotor is the X axis; a Y component or any other form is refused), got '10,10'
+PASS  Y 'PAB X=10' refused  rotor 'PAB': exactly one signed decimal X value expected (the rotor is the X axis; a Y component or any other form is refused), got 'X=10'
+PASS  F 'CLL X' refused  rotor 'CLL' (clear the active position counter - shifts the coordinate the envelope is measured in) - never permitted through this gate
+PASS  F 'CLL XY' refused  rotor 'CLL' (clear the active position counter - shifts the coordinate the envelope is measured in) - never permitted through this gate
+PASS  F 'CLR X' refused  rotor 'CLR' (clear the actual position counter - shifts the coordinate the envelope is measured in) - never permitted through this gate
+PASS  F 'HOM X' refused  rotor 'HOM' (home search - drives to the home sensor, ignores the soft limit, may clear the counter) - never permitted through this gate
+PASS  F 'OGE X' refused  rotor 'OGE' (force-end a home search) - never permitted through this gate
+PASS  F 'IHS XE6,0064' refused  rotor 'IHS' (EEPROM write (2-byte parameters: mode bits incl. soft-limit enable, speed multiplier ...)) - never permitted through this gate
+PASS  F 'IXS X7A,00000064' refused  rotor 'IXS' (EEPROM write (4-byte parameters: soft limits, home offset, position data)) - never permitted through this gate
+PASS  F 'RST' refused  rotor 'RST' (reset the motion-control IC (counter state not documented)) - never permitted through this gate
+PASS  F 'PRG XY00' refused  rotor 'PRG' (run a stored program - its moves are not bounded by this gate) - never permitted through this gate
+PASS  F 'PST X 00' refused  rotor 'PST' (step a stored program) - never permitted through this gate
+PASS  F 'JOG +X' refused  rotor 'JOG' (continuous drive with no end point - cannot be bounded) - never permitted through this gate
+PASS  F 'SSM X1' refused  rotor 'SSM' (select stored drive speed 1-4 - bypasses the speed cap) - never permitted through this gate
+PASS  F 'OUT 0001' refused  rotor 'OUT' (drive output bits) - never permitted through this gate
+PASS  F 'STO X' refused  rotor 'STO' (stop - not transmittable through this gate (default-deny; a stop needs no envelope but the gate implements only the bounded move path)) - never permitted through this gate
+PASS  F 'SCI 19200,8,1,0' refused  rotor command 'SCI' (args ['19200,8,1,0']) is not on the allow-list (default-deny)
+PASS  Q 'POS' allowed (no session needed)  rotor read-only query 'POS'
+PASS  Q 'SPD' allowed (no session needed)  rotor read-only query 'SPD'
+PASS  Q 'VER' allowed (no session needed)  rotor read-only query 'VER'
+PASS  Q 'ERD X' allowed (no session needed)  rotor read-only query 'ERD' X
+PASS  Q 'INR X' allowed (no session needed)  rotor read-only query 'INR' X
+PASS  Q 'IXR X7A' allowed (no session needed)  rotor read-only query 'IXR' X7A
+PASS  Q 'IHR XE6' allowed (no session needed)  rotor read-only query 'IHR' XE6
+PASS  Q IXR Y7A refused  
+PASS  V SPD 100 -> ALLOW  rotor drive speed SPD 100 (cap 100)
+PASS  V SPD 50 -> ALLOW  rotor drive speed SPD 50 (cap 100)
+PASS  V SPD 101 -> REFUSE  rotor SPD 101 outside 1..100 (the cap is the main VI's default 'Rot Speed'; docs/rotor-protocol.md)
+PASS  V SPD 0 -> REFUSE  rotor SPD 0 outside 1..100 (the cap is the main VI's default 'Rot Speed'; docs/rotor-protocol.md)
+PASS  V SPD 100,100 -> REFUSE  rotor 'SPD': exactly one signed decimal X value expected (the rotor is the X axis; a Y component or any other form is refused), got '100,100'
+PASS  V SPD 8000 -> REFUSE  rotor SPD 8000 outside 1..100 (the cap is the main VI's default 'Rot Speed'; docs/rotor-protocol.md)
+PASS  M1 no session -> PAB 0 refused  
+PASS  M2 rotor_window None -> refused  
+PASS  M3 window half width != file -> refused  
+PASS  M4 limits without rotor block -> refused  
+PASS  E1 experiment refuses a move  
+PASS  E2 experiment refuses POS  
+PASS  E3 unknown state refuses  
+PASS  E4 compound refused  
+PASS  E5 disassembled allows an in-window PAB  
+FRESH RAW='POS 000003E8,00000000' POS=1000
+TARGET=500 window=-1500..3500
+SENT: SPD 100 ; PIC -500
+RESULT: reached 500 (target 500)
+GATE re-check of the sender's fresh read: rotor target 500 pulses (360.00 deg) inside the session window -1500..3500
+PASS  T1 in-window PIC -> rc 0; window and speed passed to the sender  (0, ['-Mode', 'send', '-Command', 'PIC -500', '-TokenFile', 'C:\\Users\\KimLab\\AppData\\Local\\Temp\\motor_gate_7gkr_t0q.tok', '-Lo', '-1500', '-Hi', '3500', '-Speed', '100'])
+FRESH RAW='POS 00000BB8,00000000' POS=3000
+RESULT: reached 5400
+GATE re-check of the sender's fresh read: rotor target 5400 pulses (3888.00 deg) OUTSIDE the session window -1500..3500 pulses (start 1000 +- 2500 = +-5 turns)
+PASS  T2 sender rc 0 but fresh 3000 + 2400 is outside -> gate rc 3  3
+FRESH RAW='POS FFFFFFF6,00000000' POS=4294967286
+RESULT: reached 0
+GATE re-check of the sender's fresh read: NO parseable FRESH line (sign check failed or no read)
+PASS  T3 FRESH sign disagreement -> gate rc 3  3
+REFUSED: rotor - no open session records a rotor window
+PASS  T4 no session -> rc 3, sender never run  3
+SEND REFUSED: target 0 outside
+GATE re-check of the sender's fresh read: NO parseable FRESH line (sign check failed or no read)
+PASS  T5 sender's own refusal (exit 7, no FRESH) passes through as non-zero  7
+REFUSED (rotor): rotor 'PAB' refused: no open session with a rotor window - run `py tools/motor_gate.py --session start` (it reads the rotor POS and records start +- 2500 pulses)
+PASS  C1 CLI --execute rotor without a session -> rc 3, nothing sent  (3, 0)
+NO MOTION COMMAND WAS SENT AND NO PORT WAS OPENED BY THIS RUN.
+RESULT {"schema": "result-line/1", "status": "PASS", "gates": {"pass": 85, "fail": 0}, "first_fail": null, "artefacts": []}
+BGRUN END rc=0 after 1s

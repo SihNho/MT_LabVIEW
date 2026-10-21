@@ -623,6 +623,18 @@ def _main():
     cmd = ti.get("command", "") or ""
     if isinstance(cmd, list):          # Codex may send argv as a list (chat 2026-10-10: a list crashed this hook)
         cmd = " ".join(str(x) for x in cmd)
+    # EXPERIMENT (user 2026-10-21 "승인", G:\Codes\rig\RULES.md section 5): while rig_lock.json says experiment, no
+    # device / LabVIEW / kill / lock-acquire / install command and no screen click; reads and screenshots pass.
+    # Checked FIRST, for every session (runner cells included), not disabled by any env var.
+    try:
+        import guard_experiment
+        rc, msg = guard_experiment.decide(data)
+    except Exception as e:     # noqa: BLE001 - a broken check must not wedge the chat; say so on stderr
+        rc, msg = 0, None
+        sys.stderr.write("guard_experiment failed (%s: %s) - experiment check skipped\n" % (type(e).__name__, e))
+    if rc:
+        sys.stderr.write(msg + "\n")
+        return rc
     # SESSION PROTOCOL v1, C2 (2026-09-24): a card-carrying sub-agent (payload has agent_id + agent_type) is bound to
     # its task/1 card by its first command, `py tools/protocol.py bind <card>`, and every later command is checked
     # against the card's flags (labview / gui / hardware / run_vi / status_edit / git_commit / peers). ONE decision

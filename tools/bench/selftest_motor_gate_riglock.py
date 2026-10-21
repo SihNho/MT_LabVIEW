@@ -49,6 +49,20 @@ def with_token(tok, kind):
             os.environ["RIGLOCK_TOKEN"] = old
 
 
+STATUS_TMP = os.path.join(TMP, "STATUS_b2.md")
+mg.STATUS_PATH = STATUS_TMP          # B2 (2026-10-21): rig_lock_ok compares STATUS.md with rig_lock.json - a temp copy
+_set_state = rl.set_state
+
+
+def both_states(state, by, note="", **k):
+    """The chat records the user's word in BOTH places; this test follows it so B2 sees them agree."""
+    r = _set_state(state, by, note, **k)
+    with open(STATUS_TMP, "w", encoding="utf-8") as fh:
+        fh.write("rig-state: %s\n" % state)
+    return r
+
+
+rl.set_state = both_states
 check("lock dir is the temp dir", rl.DEFAULT_DIR == TMP, rl.DEFAULT_DIR)
 check("no lock file -> start refused", not with_token("0" * 16, "start")[0])
 rl.set_state("assembled", "selftest", "temp", init=True)
@@ -70,6 +84,13 @@ check("holder, experiment -> start refused", not with_token(tok, "start")[0])
 check("holder, experiment -> execute refused", not with_token(tok, "execute")[0])
 check("holder, experiment -> end (cleanup) ok", with_token(tok, "end")[0])
 check("other token, experiment -> end refused", not with_token("f" * 16, "end")[0])
+rl.set_state("assembled", "selftest", "temp")
+with open(STATUS_TMP, "w", encoding="utf-8") as fh:
+    fh.write("rig-state: 실험중\n")
+check("B2 STATUS.md experiment vs lock assembled -> start refused, reason names the disagreement",
+      not with_token(tok, "start")[0] and "DISAGREES" in with_token(tok, "start")[1])
+check("B2 disagreement -> execute refused", not with_token(tok, "execute")[0])
+check("B2 disagreement -> end (cleanup) still ok", with_token(tok, "end")[0])
 rl.set_state("assembled", "selftest", "temp")
 rl.release(tok)
 check("released -> end refused", not with_token(tok, "end")[0])

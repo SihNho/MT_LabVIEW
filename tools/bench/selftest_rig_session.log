@@ -13,3 +13,53 @@ PASS  j stale holder, checks pass -> recovered + released (rc 0), log has 'recov
 NO MOTION COMMAND WAS SENT, NO PORT WAS OPENED AND LabVIEW WAS NOT TOUCHED BY THIS RUN.
 RESULT {"schema": "result-line/1", "status": "PASS", "gates": {"pass": 10, "fail": 0}, "first_fail": null, "artefacts": []}
 BGRUN END rc=0 after 4s
+BGRUN START 2026-10-21 12:05:45 limit 5.0 min: py -u tools/bench/selftest_rig_session.py
+BGRUN PID 25752
+PASS  a normal job -> rc 0, token passed, start + labview + end, lock released 
+PASS  b another live holder -> rc 2, nothing touched 
+PASS  c experiment -> rc 2, nothing touched 
+PASS  d cleanup fails -> rc 3, lock KEPT 
+PASS  e motor start fails -> command not run, cleanup run, lock released, rc 4 
+PASS  f experiment declared mid-job -> command killed, cleanup run, lock released, rc 4, CLEANUP COMPLETE notice (B3) 3 s
+PASS  k B2 STATUS.md experiment, rig_lock.json assembled -> rc 2, nothing touched, no holder 
+PASS  k2 B2 STATUS.md without rig-state -> rc 2, nothing touched 
+PASS  k3 B2 in motor_gate: agree -> start ok; disagree -> start refused; cleanup (end) not gated 
+PASS  l B4 LabVIEW already running -> rc 2, nothing touched 
+PASS  l2 B4 process list unreadable -> rc 2 (unsure = refuse) 
+PASS  m B4 own = new COM-launched + new job member; foreign = older one + new hand-started own [7608, 20984] foreign [13672, 12052]
+PASS  n B1 permitted() raises TimeoutError -> child + grandchild killed BEFORE limits release, cleanup run, lock released, rc 4, RESULT line pids [1188, 7708], 1 s
+FAIL  o B1 orphaned grandchild (parent already exited, taskkill /T misses it) -> killed before limits release, rc 0 pids []
+PASS  p B3 job not verified gone -> limits NOT released (no 'end'), lock KEPT, rc 3 
+PASS  q job membership: NEEDS_TOKEN job ran inside the job and passed 
+PASS  g live holder -> recovery refused (rc 2) 
+PASS  h stale holder during an experiment -> refused (rc 2), nothing touched 
+PASS  i a recovery check fails -> rc 3, lock kept in RECOVERING 
+PASS  j stale holder, checks pass -> recovered + released (rc 0), log has 'recovered', no token in the RESULT (A3) 
+NO MOTION COMMAND WAS SENT, NO PORT WAS OPENED AND LabVIEW WAS NOT TOUCHED BY THIS RUN.
+RESULT {"schema": "result-line/1", "status": "FAIL", "gates": {"pass": 19, "fail": 1}, "first_fail": null, "artefacts": []}
+BGRUN END rc=1 after 29s
+BGRUN START 2026-10-21 12:06:24 limit 5.0 min: py -u tools/bench/selftest_rig_session.py
+BGRUN PID 26172
+PASS  a normal job -> rc 0, token passed, start + labview + end, lock released 
+PASS  b another live holder -> rc 2, nothing touched 
+PASS  c experiment -> rc 2, nothing touched 
+PASS  d cleanup fails -> rc 3, lock KEPT 
+PASS  e motor start fails -> command not run, cleanup run, lock released, rc 4 
+PASS  f experiment declared mid-job -> command killed, cleanup run, lock released, rc 4, CLEANUP COMPLETE notice (B3) 3 s
+PASS  k B2 STATUS.md experiment, rig_lock.json assembled -> rc 2, nothing touched, no holder 
+PASS  k2 B2 STATUS.md without rig-state -> rc 2, nothing touched 
+PASS  k3 B2 in motor_gate: agree -> start ok; disagree -> start refused; cleanup (end) not gated 
+PASS  l B4 LabVIEW already running -> rc 2, nothing touched 
+PASS  l2 B4 process list unreadable -> rc 2 (unsure = refuse) 
+PASS  m B4 own = new COM-launched + new job member; foreign = older one + new hand-started own [8268, 23224] foreign [8296, 19584]
+PASS  n B1 permitted() raises TimeoutError -> child + grandchild killed BEFORE limits release, cleanup run, lock released, rc 4, RESULT line pids [14744, 19120], 1 s
+PASS  o B1 orphaned grandchild (parent already exited, taskkill /T misses it) -> killed before limits release, rc 0 pids [26592, 2732]
+PASS  p B3 job not verified gone -> limits NOT released (no 'end'), lock KEPT, rc 3 
+PASS  q job membership: NEEDS_TOKEN job ran inside the job and passed 
+PASS  g live holder -> recovery refused (rc 2) 
+PASS  h stale holder during an experiment -> refused (rc 2), nothing touched 
+PASS  i a recovery check fails -> rc 3, lock kept in RECOVERING 
+PASS  j stale holder, checks pass -> recovered + released (rc 0), log has 'recovered', no token in the RESULT (A3) 
+NO MOTION COMMAND WAS SENT, NO PORT WAS OPENED AND LabVIEW WAS NOT TOUCHED BY THIS RUN.
+RESULT {"schema": "result-line/1", "status": "PASS", "gates": {"pass": 20, "fail": 0}, "first_fail": null, "artefacts": []}
+BGRUN END rc=0 after 6s

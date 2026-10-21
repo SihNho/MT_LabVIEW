@@ -58,7 +58,9 @@ def main(argv=None):
     env = dict(os.environ, RIGLOCK_TOKEN=token)
 
     lv_log = os.path.join(RS.LOGDIR, "rig_recover_labview_%s.log" % stamp)
-    lv_ok, lv_why = RS.close_labview(lv_log)
+    # B4 (user 2026-10-21 "승인"): only the LabVIEW the dead holder's job started (COM-launched after it began) is
+    # closed; any other LabVIEW may be a user's - left running, and the lock stays RECOVERING for the user to look
+    lv_ok, lv_why = RS.close_labview(lv_log, (st.get("holder") or {}).get("created") or 0)
     tl = subprocess.run(["tasklist", "/FI", "IMAGENAME eq LabVIEW.exe"], capture_output=True, text=True,
                         errors="replace").stdout
     gone = "LabVIEW.exe" not in tl

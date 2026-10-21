@@ -823,16 +823,39 @@ RIG_DIR = r"G:\Codes\rig"     # the shared rig lock module + file (user 2026-10-
 RIG_STATES_OK = ("assembled", "disassembled")
 
 
-def rig_lock_ok(kind, states=RIG_STATES_OK):
+def rig_state_agree(status_text=None):
+    """B2 (user 2026-10-21 "승인", debate l2s-conflict-01 C1): V6 reads the rig state from STATUS.md `rig-state:`,
+    LabVIEW2Scr from rig_lock.json. NEW device work is refused unless both say the same known state. Cleanup is not
+    gated by this (it only needs ownership). Fails CLOSED on any read error. -> (ok, why)."""
+    st = rig_state(read_status() if status_text is None else status_text)
+    try:
+        if RIG_DIR not in sys.path:
+            sys.path.insert(0, RIG_DIR)
+        import riglock
+        lk = (riglock.status().get("rig_state") or {}).get("value") or "missing"
+    except Exception as e:                                   # noqa: BLE001 - fail closed
+        return False, "rig_lock.json unreadable (%s: %s) - cannot compare the rig state" % (type(e).__name__, e)
+    if st == lk and st in ("assembled", "disassembled", "experiment"):
+        return True, "rig state agrees: %s" % st
+    return False, ("rig state DISAGREES: STATUS.md says %s, rig_lock.json says %s - no new device work until the "
+                   "chat records the user's word in both (riglock.py set-state + STATUS.md rig-state)" % (st, lk))
+
+
+def rig_lock_ok(kind, states=RIG_STATES_OK, status_text=None):
     """The shared rig lock (user 2026-10-21, debate riglock-v6 item 6). The caller's token comes in RIGLOCK_TOKEN from
     the lock holder (the lean queue, or rig_session.py). kind 'end' = cleanup (limits release): ownership only, also in
     the experiment state (user item 9: the rig is returned to its initial condition). Anything else (session start,
     reference move, --execute): riglock.permitted - holder AND state in `states` (the gate: assembled / disassembled;
-    the lean cycle hooks pass assembled only); experiment always no.
+    the lean cycle hooks pass assembled only); experiment always no; and (B2) STATUS.md and rig_lock.json must agree
+    (`status_text` = the STATUS.md text the caller decided on; None = read STATUS.md).
     Fails CLOSED: no token, module or lock file unreadable -> refused. -> (ok, why)."""
     token = os.environ.get("RIGLOCK_TOKEN", "").strip()
     if not token:
         return False, "no RIGLOCK_TOKEN - the rig lock is not held by this process tree (lean queue / rig_session.py)"
+    if kind != "end":
+        agree, why = rig_state_agree(status_text)
+        if not agree:
+            return False, why
     try:
         if RIG_DIR not in sys.path:
             sys.path.insert(0, RIG_DIR)
@@ -874,13 +897,14 @@ def main(argv=None):
                          "verifies the CONTROLLER limits from it, so nothing is permitted without it\n"
                          % (a.limits or LIMITS_PATH))
         return 3
-    state = rig_state(read_status(a.status))
+    status_text = read_status(a.status)
+    state = rig_state(status_text)
     if a.session:
         if state != "assembled" and state != "disassembled":
             sys.stderr.write("REFUSED: rig state %r - the session hook opens both motor ports (CLAUDE.md 1b)\n"
                              % state)
             return 3
-        lok, lwhy = rig_lock_ok(a.session)
+        lok, lwhy = rig_lock_ok(a.session, status_text=status_text)
         if not lok:
             sys.stderr.write("REFUSED: %s - --session %s needs the shared rig lock\n" % (lwhy, a.session))
             return 3
@@ -895,7 +919,7 @@ def main(argv=None):
         if len(a.reference.strip()) < 4:
             sys.stderr.write("REFUSED: --reference needs the user's order text\n")
             return 3
-        lok, lwhy = rig_lock_ok("reference")
+        lok, lwhy = rig_lock_ok("reference", status_text=status_text)
         if not lok:
             sys.stderr.write("REFUSED: %s - a reference move needs the shared rig lock\n" % lwhy)
             return 3
@@ -926,7 +950,7 @@ def main(argv=None):
         sys.stderr.write("REFUSED: no session file %s - run `py tools/motor_gate.py --session start` first, which "
                          "installs the CONTROLLER limits and verifies them\n" % SESSION_PATH)
         return 3
-    lok, lwhy = rig_lock_ok("execute")
+    lok, lwhy = rig_lock_ok("execute", status_text=status_text)
     if not lok:
         sys.stderr.write("REFUSED: %s - --execute needs the shared rig lock\n" % lwhy)
         return 3
