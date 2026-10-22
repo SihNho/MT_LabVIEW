@@ -13,8 +13,9 @@ The user's decisions, one file each, copied VERBATIM from Claude Code's memory d
 A later decision wins over an earlier one; a decision the rules contradict is a question for the judgement
 session, not a silent override.
 
-## Hardware, motors and the rig (15)
+## Hardware, motors and the rig (16)
 
+- [rig_optics_and_reference_beads](rig_optics_and_reference_beads.md) (2026-10-22) - owner facts: 50x oil (100x before), SP-5000M 5 um pixels binning 2 (~200 nm/px nominal vs 84 nm in .cal, open), polystyrene reference beads in every run, fixture bead 1 = reference, "16X" = DNA name, LUT 100 nm x ~6 um
 - [camera_free_runs_never_gate_it](camera_free_runs_never_gate_it.md) (2026-09-15) - The camera runs its own acquisition loop independently of the PC by design, because PC-driven frame control is not trusted — so no software mechanism may ever throttle,…
 - [camera_settings_in_vi_cal_out_of_scope](camera_settings_in_vi_cal_out_of_scope.md) (2026-09-25) - The user's 2026-09-25 decisions — camera settings (frame rate, ROI, …) belong INSIDE the new VI's panel, not in NI MAX, and should be saved as metadata with the data; th…
 - [experimental_load_beads_and_frame_rate](experimental_load_beads_and_frame_rate.md) (2026-09-25) - The user's 2026-09-25 statement of the real experimental load — typically 8 beads, sometimes 15; frame loss already occurs intermittently at 90 Hz and grows at 150 Hz; t…
