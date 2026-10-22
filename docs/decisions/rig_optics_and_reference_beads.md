@@ -12,6 +12,6 @@ User 2026-10-22 (chat): "현재 SP5000M-USB 사용중", "레퍼런스 비드가 
 
 Full table with sources: `G:\Codes\LabVIEW2Scr\docs\rig-facts.md` (commit 7c37a6a). Fixture (20260906 ... test) bead 1 = reference bead (z range 0.21 um, frame-to-frame x 0.0085 px, z 4.1 nm); beads 2-5 tethered.
 
-**Why:** pixel size and the reference bead decide every tracking-precision comparison; the .cal file's `pixel distance` 84 nm disagrees with the 50x nominal ~200 nm/px - owner 2026-10-22: "예전 렌즈 사용할 때 기록인듯. (100X)". If 84 was measured at 100x (nominal 100), 50x may be ~168 nm/px; measure it. Force analysis from x fluctuations may take 84 for 50x data (scales (px/84)^2, ~4-5.7x) - open in LabVIEW2Scr Q3.07.
+**Why:** pixel size and the reference bead decide every tracking-precision comparison; the .cal file's `pixel distance` 84 nm disagrees with the 50x nominal ~200 nm/px - owner 2026-10-22: "예전 렌즈 사용할 때 기록인듯. (100X)". If 84 was measured at 100x (nominal 100), 50x may be ~168 nm/px; measure it. LabVIEW never uses this number; analysis runs in MATLAB with its own parameters (owner 2026-10-22: "Matlab 분석할때 거기 있는 파라미터 사용함. 그러니 사실 랩뷰에서는 사용 안하는 숫자").
 
-**How to apply:** use bead 1 as the noise floor on the fixture; quote nm figures as nominal until Q3.07 is answered; never assume 16X is a magnification. Related: [[script_port_is_a_separate_project]].
+**How to apply:** use bead 1 as the noise floor on the fixture; quote nm figures as nominal until the 50x pixel size is measured; never assume 16X is a magnification. Related: [[script_port_is_a_separate_project]].
